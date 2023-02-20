@@ -1,0 +1,24 @@
+{
+  "name": "anchor-template",
+  "version": "1.0.0",
+  "private": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build:program": "anchor build",
+    "build:sdk": "yarn solita && tsc",
+    "build": "yarn build:program & yarn build:sdk",
+    "deploy": "anchor deploy",
+    "build-deploy": "yarn build && yarn deploy",
+    "scripts": "ts-node ./scripts/index.ts"
+  },
+  "dependencies": {
+    "@project-serum/anchor": "^0.26.0"
+  },
+  "devDependencies": {
+    "@metaplex-foundation/solita": "^0.19.3",
+    "@types/bn.js": "^5.1.0",
+    "prettier": "^2.6.2",
+    "typescript": "^4.3.5"
+  }
+}
