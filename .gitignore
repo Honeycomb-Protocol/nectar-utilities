@@ -5,6 +5,7 @@ target
 **/*.rs.bk
 node_modules
 test-ledger
-yarn.lock
+yarn-error.log
 package-lock.json
 .crates
+dist
