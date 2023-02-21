@@ -23,9 +23,9 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "useUnknownInCatchVariables": false,
-    "rootDir": "./src"
+    "rootDir": "./packages"
   },
-  "include": ["./src"],
+  "include": ["./packages"],
   "exclude": ["node_modules",
     "dist", "build", "lib"]
 }

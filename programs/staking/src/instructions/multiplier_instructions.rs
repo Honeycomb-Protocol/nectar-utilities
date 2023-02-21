@@ -1,33 +1,47 @@
 use {
-    crate::{state::*, traits::Default},
+    crate::state::*,
     anchor_lang::prelude::*,
+    hpl_hive_control::state::{DelegateAuthority, Project},
+    hpl_utils::traits::Default,
 };
 
 /// Accounts used in initialize multiplier instruction
 #[derive(Accounts)]
 pub struct InitMultipliers<'info> {
-    /// Project state account
-    #[account(mut, has_one = authority)]
-    pub project: Account<'info, Project>,
+    /// StakingProject state account
+    #[account(mut, has_one = project)]
+    pub staking_project: Account<'info, StakingProject>,
 
     /// Multiplier state account
     #[account(
-        init, payer = authority,
+        init, payer = payer,
         space = Multipliers::LEN,
         seeds = [
             b"multipliers",
-            project.key().as_ref()
+            staking_project.key().as_ref()
         ],
         bump,
     )]
     pub multipliers: Account<'info, Multipliers>,
 
+    /// The wallet that holds authority for this action
+    #[account()]
+    pub authority: Signer<'info>,
+
     /// The wallet that pays for the rent
     #[account(mut)]
-    pub authority: Signer<'info>,
+    pub payer: Signer<'info>,
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    // HIVE CONTROL
+    #[account()]
+    pub project: Box<Account<'info, Project>>,
+    #[account()]
+    pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub vault: AccountInfo<'info>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
@@ -41,19 +55,19 @@ pub fn init_multipliers(ctx: Context<InitMultipliers>, args: InitMultipliersArgs
     multipliers.set_defaults();
     multipliers.bump = ctx.bumps["multipliers"];
     multipliers.decimals = args.decimals;
-    multipliers.project = ctx.accounts.project.key();
+    multipliers.staking_project = ctx.accounts.staking_project.key();
     Ok(())
 }
 
 /// Accounts used in add multiplier instruction
 #[derive(Accounts)]
 pub struct AddMultiplier<'info> {
-    /// Project state account
-    #[account(mut, has_one = authority)]
-    pub project: Account<'info, Project>,
+    /// StakingProject state account
+    #[account(mut, has_one = project)]
+    pub staking_project: Account<'info, StakingProject>,
 
     /// Multiplier state account
-    #[account(mut, has_one = project)]
+    #[account(mut, has_one = staking_project)]
     pub multipliers: Account<'info, Multipliers>,
 
     /// The wallet that pays for the rent
@@ -69,6 +83,14 @@ pub struct AddMultiplier<'info> {
 
     /// RENT SYSVAR
     pub rent_sysvar: Sysvar<'info, Rent>,
+
+    // HIVE CONTROL
+    #[account()]
+    pub project: Box<Account<'info, Project>>,
+    #[account()]
+    pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub vault: AccountInfo<'info>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]

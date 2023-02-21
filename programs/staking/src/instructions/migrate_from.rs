@@ -1,10 +1,12 @@
 use {
-    crate::{errors::ErrorCode, state::*, traits::Default},
+    crate::{errors::ErrorCode, state::*},
     anchor_lang::{prelude::*, solana_program},
     anchor_spl::{
         associated_token::AssociatedToken,
         token::{self, Mint, Token, TokenAccount},
     },
+    hpl_hive_control::state::{DelegateAuthority, Project},
+    hpl_utils::traits::Default,
     mpl_token_metadata::state::{Metadata, TokenMetadataAccount},
 };
 
@@ -18,9 +20,9 @@ pub struct MigrateCustodial<'info> {
     #[account(mut, constraint = nft_account.mint == nft_mint.key() && nft_account.owner == escrow.key())]
     pub nft_account: Box<Account<'info, TokenAccount>>,
 
-    /// Project state account
+    /// StakingProject state account
     #[account()]
-    pub project: Box<Account<'info, Project>>,
+    pub staking_project: Box<Account<'info, StakingProject>>,
 
     /// NFT state account
     #[account(
@@ -29,7 +31,7 @@ pub struct MigrateCustodial<'info> {
       seeds = [
         b"nft",
         nft_mint.key().as_ref(),
-        project.key().as_ref(),
+        staking_project.key().as_ref(),
       ],
       bump,
     )]
@@ -64,15 +66,15 @@ pub struct MigrateCustodial<'info> {
     pub deposit_account: Option<Account<'info, TokenAccount>>,
 
     /// Staker state account
-    #[account(mut, has_one = wallet, has_one = project)]
-    pub staker: Account<'info, Staker>,
+    #[account(mut, has_one = wallet, has_one = staking_project)]
+    pub staker: Box<Account<'info, Staker>>,
 
     /// The wallet that the NFT is associated with
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(mut)]
     pub wallet: AccountInfo<'info>,
 
-    /// The wallet that holds the authority over the project
+    /// The wallet that holds the authority over the staking_project
     #[account(mut)]
     pub authority: Signer<'info>,
 
@@ -102,6 +104,14 @@ pub struct MigrateCustodial<'info> {
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(address = solana_program::sysvar::instructions::ID)]
     pub sysvar_instructions: AccountInfo<'info>,
+
+    // HIVE CONTROL
+    #[account()]
+    pub project: Box<Account<'info, Project>>,
+    #[account()]
+    pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub vault: AccountInfo<'info>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, Default)]
@@ -112,14 +122,14 @@ pub struct MigrateArgs {
 
 /// Initialize staker state
 pub fn migrate_custodial(ctx: Context<MigrateCustodial>, args: MigrateArgs) -> Result<()> {
-    let project = &ctx.accounts.project;
+    let staking_project = &ctx.accounts.staking_project;
     let nft = &mut ctx.accounts.nft;
     let staker = &mut ctx.accounts.staker;
 
     // INITIALIZE NFT
     nft.set_defaults();
     nft.bump = ctx.bumps["nft"];
-    nft.project = project.key();
+    nft.staking_project = staking_project.key();
     nft.mint = ctx.accounts.nft_mint.key();
     let metadata_account_info = &ctx.accounts.nft_metadata;
     if metadata_account_info.data_is_empty() {
@@ -131,8 +141,11 @@ pub fn migrate_custodial(ctx: Context<MigrateCustodial>, args: MigrateArgs) -> R
         msg!("Metadata mint does not match NFT mint");
         return Err(ErrorCode::InvalidMetadata.into());
     }
-    let validation_out =
-        hpl_utils::validate_collection_creator(metadata, &project.collections, &project.creators)?;
+    let validation_out = hpl_utils::validate_collection_creator(
+        metadata,
+        &staking_project.collections,
+        &staking_project.creators,
+    )?;
 
     match validation_out {
         hpl_utils::ValidateCollectionCreatorOutput::Collection { address } => {
@@ -143,7 +156,7 @@ pub fn migrate_custodial(ctx: Context<MigrateCustodial>, args: MigrateArgs) -> R
         }
     }
 
-    match project.lock_type {
+    match staking_project.lock_type {
         LockType::Custoday => {
             if let Some(deposit_account) = &ctx.accounts.deposit_account {
                 hpl_utils::transfer(

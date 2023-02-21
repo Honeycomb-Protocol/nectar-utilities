@@ -1,14 +1,16 @@
 use {
-    crate::{state::*, traits::Default},
+    crate::state::*,
     anchor_lang::prelude::*,
+    hpl_hive_control::state::{Project},
+    hpl_utils::traits::Default,
 };
 
 /// Accounts used in initialize staker instruction
 #[derive(Accounts)]
 pub struct InitStaker<'info> {
-    /// Project state account
-    #[account(mut)]
-    pub project: Account<'info, Project>,
+    /// StakingProject state account
+    #[account(has_one = project)]
+    pub staking_project: Account<'info, StakingProject>,
 
     /// Staker state account
     #[account(
@@ -17,7 +19,7 @@ pub struct InitStaker<'info> {
       seeds = [
           b"staker",
           wallet.key().as_ref(),
-          project.key().as_ref(),
+          staking_project.key().as_ref(),
       ],
       bump,
   )]
@@ -29,6 +31,12 @@ pub struct InitStaker<'info> {
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    // HIVE CONTROL
+    #[account()]
+    pub project: Box<Account<'info, Project>>,
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub vault: AccountInfo<'info>,
 }
 
 /// Initialize staker state
@@ -36,7 +44,7 @@ pub fn init_staker(ctx: Context<InitStaker>) -> Result<()> {
     let staker = &mut ctx.accounts.staker;
     staker.set_defaults();
     staker.bump = ctx.bumps["staker"];
-    staker.project = ctx.accounts.project.key();
+    staker.staking_project = ctx.accounts.staking_project.key();
     staker.wallet = ctx.accounts.wallet.key();
     Ok(())
 }

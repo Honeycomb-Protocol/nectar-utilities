@@ -1,12 +1,12 @@
-use {crate::traits::*, anchor_lang::prelude::*};
+use {anchor_lang::prelude::*, hpl_utils::traits::*};
 
 /// The staking account linked to the NFT
 #[account]
 pub struct NFT {
     pub bump: u8,
 
-    /// The project this NFT is staked in
-    pub project: Pubkey,
+    /// The staking_project this NFT is staked in
+    pub staking_project: Pubkey,
 
     /// wallet of the staker
     pub staker: Pubkey,
@@ -38,7 +38,7 @@ impl Default for NFT {
 
     fn set_defaults(&mut self) {
         self.bump = 0;
-        self.project = Pubkey::default();
+        self.staking_project = Pubkey::default();
         self.staker = Pubkey::default();
         self.mint = Pubkey::default();
         self.creator = Pubkey::default();

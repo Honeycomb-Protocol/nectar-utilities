@@ -1,47 +1,52 @@
 use {
-    crate::{state::*, traits::Default},
+    crate::state::*,
     anchor_lang::prelude::*,
     anchor_spl::token::{self, Mint, Token, TokenAccount},
+    hpl_hive_control::{
+        program::HplHiveControl,
+        state::{DelegateAuthority, Project},
+    },
+    hpl_utils::traits::Default,
 };
 
-/// Accounts used in create project instruction
+/// Accounts used in create staking_project instruction
 #[derive(Accounts)]
-pub struct CreateProject<'info> {
+pub struct CreateStakingProject<'info> {
     /// CHECK: This is not dangerous because we don't read or write from this account
     pub key: AccountInfo<'info>,
 
-    /// Project state account
+    /// StakingProject state account
     #[account(
       init, payer = payer,
-      space = Project::LEN,
+      space = StakingProject::LEN,
       seeds = [
-        b"project".as_ref(),
+        b"staking_project".as_ref(),
+        project.key().as_ref(),
         key.key().as_ref()
       ],
       bump
     )]
-    pub project: Account<'info, Project>,
+    pub staking_project: Box<Account<'info, StakingProject>>,
 
-    /// The wallet that holds the authority over the assembler
-    /// CHECK: This is not dangerous because we don't read or write from this account
-    pub authority: AccountInfo<'info>,
-
-    /// Reward mint address to be used for the project
-    pub reward_mint: Account<'info, Mint>,
+    /// Reward mint address to be used for the staking_project
+    pub reward_mint: Box<Account<'info, Mint>>,
 
     /// Reward token account used as vault
     #[account(
       init, payer = payer,
       seeds = [
         b"vault",
-        project.key().as_ref(),
+        staking_project.key().as_ref(),
         reward_mint.key().as_ref()
       ],
       bump,
       token::mint = reward_mint,
-      token::authority = project
+      token::authority = staking_project
     )]
-    pub vault: Account<'info, TokenAccount>,
+    pub reward_vault: Account<'info, TokenAccount>,
+
+    /// The wallet that holds the authority over the assembler
+    pub authority: Signer<'info>,
 
     /// The wallet that pays for the rent
     #[account(mut)]
@@ -53,10 +58,22 @@ pub struct CreateProject<'info> {
     /// SPL TOKEN PROGRAM
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
+
+    /// NATIVE RENT SYSVAR
+    pub rent_sysvar: Sysvar<'info, Rent>,
+
+    // HIVE CONTROL
+    #[account()]
+    pub project: Box<Account<'info, Project>>,
+    #[account()]
+    pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub vault: AccountInfo<'info>,
+    pub hive_control: Program<'info, HplHiveControl>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
-pub struct CreateProjectArgs {
+pub struct CreateStakingProjectArgs {
     pub name: String,
     pub lock_type: Option<LockType>,
     pub rewards_per_duration: u64,
@@ -69,62 +86,73 @@ pub struct CreateProjectArgs {
     pub end_time: Option<i64>,
 }
 
-/// Create a new project
-pub fn create_project(ctx: Context<CreateProject>, args: CreateProjectArgs) -> Result<()> {
-    let project = &mut ctx.accounts.project;
-    project.set_defaults();
+/// Create a new staking_project
+pub fn create_staking_project(
+    ctx: Context<CreateStakingProject>,
+    args: CreateStakingProjectArgs,
+) -> Result<()> {
+    let staking_project = &mut ctx.accounts.staking_project;
+    staking_project.set_defaults();
 
-    project.bump = ctx.bumps["project"];
-    project.vault_bump = ctx.bumps["vault"];
-    project.key = ctx.accounts.key.key();
-    project.authority = ctx.accounts.authority.key();
-    project.reward_mint = ctx.accounts.reward_mint.key();
-    project.vault = ctx.accounts.vault.key();
-    project.name = args.name;
-    project.lock_type = args.lock_type.unwrap_or(LockType::Freeze);
-    project.rewards_per_duration = args.rewards_per_duration;
-    project.rewards_duration = args.rewards_duration.unwrap_or(1);
-    project.max_rewards_duration = args.max_rewards_duration;
-    project.min_stake_duration = args.min_stake_duration;
-    project.cooldown_duration = args.cooldown_duration;
-    project.reset_stake_duration = args.reset_stake_duration.unwrap_or(true);
-    project.start_time = args.start_time;
-    project.end_time = args.end_time;
+    staking_project.bump = ctx.bumps["staking_project"];
+    staking_project.vault_bump = ctx.bumps["vault"];
+    staking_project.project = ctx.accounts.project.key();
+    staking_project.key = ctx.accounts.key.key();
+    staking_project.reward_mint = ctx.accounts.reward_mint.key();
+    staking_project.vault = ctx.accounts.reward_vault.key();
+    staking_project.name = args.name;
+    staking_project.lock_type = args.lock_type.unwrap_or(LockType::Freeze);
+    staking_project.rewards_per_duration = args.rewards_per_duration;
+    staking_project.rewards_duration = args.rewards_duration.unwrap_or(1);
+    staking_project.max_rewards_duration = args.max_rewards_duration;
+    staking_project.min_stake_duration = args.min_stake_duration;
+    staking_project.cooldown_duration = args.cooldown_duration;
+    staking_project.reset_stake_duration = args.reset_stake_duration.unwrap_or(true);
+    staking_project.start_time = args.start_time;
+    staking_project.end_time = args.end_time;
 
     Ok(())
 }
 
-/// Accounts used in update project instruction
+/// Accounts used in update staking_project instruction
 #[derive(Accounts)]
-pub struct UpdateProject<'info> {
-    /// Project state account
-    #[account(mut, has_one = authority)]
-    pub project: Account<'info, Project>,
+pub struct UpdateStakingProject<'info> {
+    /// StakingProject state account
+    #[account(mut, has_one = project)]
+    pub staking_project: Account<'info, StakingProject>,
 
-    /// The wallet that holds the authority over the assembler
-    /// CHECK: This is not dangerous because we don't read or write from this account
-    pub new_authority: Option<AccountInfo<'info>>,
-
-    /// Collection mint address to be used for the project
+    /// Collection mint address to be used for the staking_project
     pub collection: Option<Account<'info, Mint>>,
 
-    /// Creator address to be used for the project
+    /// Creator address to be used for the staking_project
     /// CHECK: This is not dangerous because we don't read or write from this account
     pub creator: Option<AccountInfo<'info>>,
 
-    /// The wallet that pays for the rent
+    /// The wallet that holds authority for this action
     #[account(mut)]
     pub authority: Signer<'info>,
+
+    /// The wallet that pays for the rent
+    #[account(mut)]
+    pub payer: Signer<'info>,
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
 
     /// SYSVAR RENT
     pub rent: Sysvar<'info, Rent>,
+
+    // HIVE CONTROL
+    #[account()]
+    pub project: Box<Account<'info, Project>>,
+    #[account()]
+    pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub vault: AccountInfo<'info>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
-pub struct UpdateProjectArgs {
+pub struct UpdateStakingProjectArgs {
     pub name: Option<String>,
     pub rewards_per_duration: Option<u64>,
     pub rewards_duration: Option<u64>,
@@ -136,69 +164,70 @@ pub struct UpdateProjectArgs {
     pub end_time: Option<i64>,
 }
 
-/// Update a project
-pub fn update_project(ctx: Context<UpdateProject>, args: UpdateProjectArgs) -> Result<()> {
-    let project = &mut ctx.accounts.project;
+/// Update a staking_project
+pub fn update_staking_project(
+    ctx: Context<UpdateStakingProject>,
+    args: UpdateStakingProjectArgs,
+) -> Result<()> {
+    let staking_project = &mut ctx.accounts.staking_project;
 
-    project.name = args.name.unwrap_or(project.name.clone());
-    project.rewards_per_duration = args
+    staking_project.name = args.name.unwrap_or(staking_project.name.clone());
+    staking_project.rewards_per_duration = args
         .rewards_per_duration
-        .unwrap_or(project.rewards_per_duration);
-    project.rewards_duration = args.rewards_duration.unwrap_or(project.rewards_duration);
+        .unwrap_or(staking_project.rewards_per_duration);
+    staking_project.rewards_duration = args
+        .rewards_duration
+        .unwrap_or(staking_project.rewards_duration);
 
-    project.max_rewards_duration = if args.max_rewards_duration.is_some() {
+    staking_project.max_rewards_duration = if args.max_rewards_duration.is_some() {
         args.max_rewards_duration
     } else {
-        project.max_rewards_duration
+        staking_project.max_rewards_duration
     };
-    project.min_stake_duration = if args.min_stake_duration.is_some() {
+    staking_project.min_stake_duration = if args.min_stake_duration.is_some() {
         args.min_stake_duration
     } else {
-        project.min_stake_duration
+        staking_project.min_stake_duration
     };
-    project.cooldown_duration = if args.cooldown_duration.is_some() {
+    staking_project.cooldown_duration = if args.cooldown_duration.is_some() {
         args.cooldown_duration
     } else {
-        project.cooldown_duration
+        staking_project.cooldown_duration
     };
-    project.reset_stake_duration = args
+    staking_project.reset_stake_duration = args
         .reset_stake_duration
-        .unwrap_or(project.reset_stake_duration);
-    project.start_time = if args.start_time.is_some() {
+        .unwrap_or(staking_project.reset_stake_duration);
+    staking_project.start_time = if args.start_time.is_some() {
         args.start_time
     } else {
-        project.start_time
+        staking_project.start_time
     };
-    project.end_time = if args.end_time.is_some() {
+    staking_project.end_time = if args.end_time.is_some() {
         args.end_time
     } else {
-        project.end_time
+        staking_project.end_time
     };
-
-    if let Some(new_authority) = &ctx.accounts.new_authority {
-        project.authority = new_authority.key();
-    }
 
     if let Some(collection) = &ctx.accounts.collection {
         hpl_utils::reallocate(
             1,
-            project.to_account_info(),
-            ctx.accounts.authority.to_account_info(),
+            staking_project.to_account_info(),
+            ctx.accounts.payer.to_account_info(),
             &ctx.accounts.rent,
             &ctx.accounts.system_program,
         )?;
-        project.collections.push(collection.key());
+        staking_project.collections.push(collection.key());
     }
 
     if let Some(creator) = &ctx.accounts.creator {
         hpl_utils::reallocate(
             1,
-            project.to_account_info(),
-            ctx.accounts.authority.to_account_info(),
+            staking_project.to_account_info(),
+            ctx.accounts.payer.to_account_info(),
             &ctx.accounts.rent,
             &ctx.accounts.system_program,
         )?;
-        project.creators.push(creator.key());
+        staking_project.creators.push(creator.key());
     }
 
     Ok(())

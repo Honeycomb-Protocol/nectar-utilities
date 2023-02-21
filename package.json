@@ -11,6 +11,7 @@
     "scripts": "ts-node ./scripts/index.ts"
   },
   "dependencies": {
+    "@honeycomb-protocol/hive-control": "^0.0.11",
     "@metaplex-foundation/js": "^0.18.1",
     "@solana/spl-token": "^0.3.7",
     "@solana/web3.js": "^1.73.2"

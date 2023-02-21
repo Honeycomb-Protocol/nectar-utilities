@@ -1,10 +1,12 @@
 use {
-    crate::{errors::ErrorCode, state::*, traits::Default},
+    crate::{errors::ErrorCode, state::*},
     anchor_lang::{prelude::*, solana_program},
     anchor_spl::{
         associated_token::AssociatedToken,
         token::{self, CloseAccount, Mint, Token, TokenAccount},
     },
+    hpl_hive_control::state::{DelegateAuthority, Project},
+    hpl_utils::traits::Default,
     mpl_token_metadata::{
         instruction::{DelegateArgs, RevokeArgs},
         state::{Metadata, TokenMetadataAccount},
@@ -14,9 +16,9 @@ use {
 /// Accounts used in init NFT instruction
 #[derive(Accounts)]
 pub struct InitNFT<'info> {
-    /// Project state account
-    #[account()]
-    pub project: Account<'info, Project>,
+    /// StakingProject state account
+    #[account(has_one = project)]
+    pub staking_project: Account<'info, StakingProject>,
 
     /// NFT state account
     #[account(
@@ -25,7 +27,7 @@ pub struct InitNFT<'info> {
         seeds = [
           b"nft",
           nft_mint.key().as_ref(),
-          project.key().as_ref(),
+          staking_project.key().as_ref(),
         ],
         bump,
       )]
@@ -46,16 +48,24 @@ pub struct InitNFT<'info> {
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    // HIVE CONTROL
+    #[account()]
+    pub project: Box<Account<'info, Project>>,
+    #[account()]
+    pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub vault: AccountInfo<'info>,
 }
 
 /// Init NFT
 pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
-    let project = &ctx.accounts.project;
+    let staking_project = &ctx.accounts.staking_project;
 
     let nft = &mut ctx.accounts.nft;
     nft.set_defaults();
     nft.bump = ctx.bumps["nft"];
-    nft.project = ctx.accounts.project.key();
+    nft.staking_project = ctx.accounts.staking_project.key();
     nft.mint = ctx.accounts.nft_mint.key();
 
     let metadata_account_info = &ctx.accounts.nft_metadata;
@@ -71,8 +81,11 @@ pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
         return Err(ErrorCode::InvalidMetadata.into());
     }
 
-    let validation_out =
-        hpl_utils::validate_collection_creator(metadata, &project.collections, &project.creators);
+    let validation_out = hpl_utils::validate_collection_creator(
+        metadata,
+        &staking_project.collections,
+        &staking_project.creators,
+    );
 
     match validation_out {
         Ok(x) => {
@@ -87,13 +100,13 @@ pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
             return Ok(());
         }
         Err(_) => {
-            if project.allowed_mints {
-                if project.authority == ctx.accounts.wallet.key() {
-                    return Ok(());
-                } else if project.authority != ctx.accounts.wallet.key() {
-                    return Err(ErrorCode::OnlyOwner.into());
-                }
-            }
+            // if staking_project.allowed_mints {
+            //     if staking_project.authority == ctx.accounts.wallet.key() {
+            //         return Ok(());
+            //     } else if staking_project.authority != ctx.accounts.wallet.key() {
+            //         return Err(ErrorCode::OnlyOwner.into());
+            //     }
+            // }
             return Err(ErrorCode::InvalidMetadata.into());
         }
     }
@@ -102,21 +115,21 @@ pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
 /// Accounts used in stake instruction
 #[derive(Accounts)]
 pub struct Stake<'info> {
-    /// Project state account
-    #[account()]
-    pub project: Box<Account<'info, Project>>,
+    /// StakingProject state account
+    #[account(has_one = project)]
+    pub staking_project: Box<Account<'info, StakingProject>>,
 
     /// NFT state account
-    #[account(mut, has_one = project)]
+    #[account(mut, has_one = staking_project)]
     pub nft: Box<Account<'info, NFT>>,
 
     /// Mint address of the NFT
     #[account(mut, constraint = nft_mint.key() == nft.mint)]
-    pub nft_mint: Account<'info, Mint>,
+    pub nft_mint: Box<Account<'info, Mint>>,
 
     /// Token account of the NFT
     #[account(mut, constraint = nft_account.mint == nft_mint.key() && nft_account.owner == wallet.key())]
-    pub nft_account: Account<'info, TokenAccount>,
+    pub nft_account: Box<Account<'info, TokenAccount>>,
 
     /// NFT token metadata
     /// CHECK: This is not dangerous because we don't read or write from this account
@@ -134,7 +147,7 @@ pub struct Stake<'info> {
     pub nft_token_record: Option<AccountInfo<'info>>,
 
     /// Staker state account
-    #[account(mut, has_one = project, has_one = wallet)]
+    #[account(mut, has_one = staking_project, has_one = wallet)]
     pub staker: Account<'info, Staker>,
 
     /// The account that will hold the nft sent on expedition
@@ -182,15 +195,21 @@ pub struct Stake<'info> {
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(address = solana_program::sysvar::instructions::ID)]
     pub sysvar_instructions: AccountInfo<'info>,
+
+    // HIVE CONTROL
+    #[account()]
+    pub project: Box<Account<'info, Project>>,
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub vault: AccountInfo<'info>,
 }
 
 /// Stake NFT
 pub fn stake(ctx: Context<Stake>) -> Result<()> {
-    let project = &ctx.accounts.project;
+    let staking_project = &ctx.accounts.staking_project;
     let nft = &mut ctx.accounts.nft;
     let staker = &mut ctx.accounts.staker;
 
-    if let Some(cooldown_duration) = project.cooldown_duration {
+    if let Some(cooldown_duration) = staking_project.cooldown_duration {
         let duration = nft.last_unstaked_at + i64::try_from(cooldown_duration).unwrap();
         if ctx.accounts.clock.unix_timestamp < duration {
             msg!(
@@ -202,16 +221,16 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
     }
 
     let wallet_key = ctx.accounts.wallet.key();
-    let project_key = project.key();
+    let staking_project_key = staking_project.key();
     let staker_seeds = &[
         b"staker",
         wallet_key.as_ref(),
-        project_key.as_ref(),
+        staking_project_key.as_ref(),
         &[staker.bump],
     ];
     let staker_signer = &[&staker_seeds[..]];
 
-    match project.lock_type {
+    match staking_project.lock_type {
         LockType::Freeze => {
             let metadata_account_info = &ctx.accounts.nft_metadata;
             if metadata_account_info.data_is_empty() {
@@ -297,7 +316,7 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
 
     nft.last_staked_at = ctx.accounts.clock.unix_timestamp;
     nft.staker = staker.key();
-    if project.reset_stake_duration {
+    if staking_project.reset_stake_duration {
         nft.staked_at = ctx.accounts.clock.unix_timestamp;
     }
     staker.total_staked += 1;
@@ -308,21 +327,21 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
 /// Accounts used in unstake instruction
 #[derive(Accounts)]
 pub struct Unstake<'info> {
-    /// Project state account
-    #[account()]
-    pub project: Box<Account<'info, Project>>,
+    /// StakingProject state account
+    #[account(has_one = project)]
+    pub staking_project: Box<Account<'info, StakingProject>>,
 
     /// NFT state account
-    #[account(mut, has_one = project, has_one = staker)]
+    #[account(mut, has_one = staking_project, has_one = staker)]
     pub nft: Box<Account<'info, NFT>>,
 
     /// Mint address of the NFT
     #[account(mut, constraint = nft_mint.key() == nft.mint)]
-    pub nft_mint: Account<'info, Mint>,
+    pub nft_mint: Box<Account<'info, Mint>>,
 
     /// Token account of the NFT
     #[account(mut, constraint = nft_account.mint == nft_mint.key() && nft_account.owner == wallet.key())]
-    pub nft_account: Account<'info, TokenAccount>,
+    pub nft_account: Box<Account<'info, TokenAccount>>,
 
     /// NFT token metadata
     /// CHECK: This is not dangerous because we don't read or write from this account
@@ -353,7 +372,7 @@ pub struct Unstake<'info> {
     pub deposit_token_record: Option<AccountInfo<'info>>,
 
     /// Staker state account
-    #[account(mut, has_one = project, has_one = wallet)]
+    #[account(mut, has_one = staking_project, has_one = wallet)]
     pub staker: Account<'info, Staker>,
 
     /// The wallet that pays for the rent
@@ -382,15 +401,21 @@ pub struct Unstake<'info> {
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(address = solana_program::sysvar::instructions::ID)]
     pub sysvar_instructions: AccountInfo<'info>,
+
+    // HIVE CONTROL
+    #[account()]
+    pub project: Box<Account<'info, Project>>,
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub vault: AccountInfo<'info>,
 }
 
 /// Unstake NFT
 pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
-    let project = &ctx.accounts.project;
+    let staking_project = &ctx.accounts.staking_project;
     let staker = &mut ctx.accounts.staker;
     let nft = &mut ctx.accounts.nft;
 
-    if let Some(min_stake_duration) = project.min_stake_duration {
+    if let Some(min_stake_duration) = staking_project.min_stake_duration {
         let duration = nft.last_staked_at + i64::try_from(min_stake_duration).unwrap();
         if ctx.accounts.clock.unix_timestamp < duration {
             msg!(
@@ -408,16 +433,16 @@ pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
     staker.total_staked -= 1;
 
     let wallet_key = ctx.accounts.wallet.key();
-    let project_key = project.key();
+    let staking_project_key = staking_project.key();
     let staker_seeds = &[
         b"staker",
         wallet_key.as_ref(),
-        project_key.as_ref(),
+        staking_project_key.as_ref(),
         &[staker.bump],
     ];
     let staker_signer = &[&staker_seeds[..]];
 
-    match project.lock_type {
+    match staking_project.lock_type {
         LockType::Freeze => {
             let metadata_account_info = &ctx.accounts.nft_metadata;
             if metadata_account_info.data_is_empty() {
