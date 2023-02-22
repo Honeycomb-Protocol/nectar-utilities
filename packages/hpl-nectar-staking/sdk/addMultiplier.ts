@@ -12,7 +12,7 @@ import { createCtx } from "../utils";
 type AddMultiplierArgs = {
   metaplex: Metaplex;
   project: web3.PublicKey;
-  stakingProject: web3.PublicKey;
+  stakingPool: web3.PublicKey;
   args: AddStakingMultiplierArgs;
   programId?: web3.PublicKey;
   delegateAuthority?: web3.PublicKey;
@@ -20,7 +20,7 @@ type AddMultiplierArgs = {
 
 type CreateAddMultiplierCtxArgs = {
   project: web3.PublicKey;
-  stakingProject: web3.PublicKey;
+  stakingPool: web3.PublicKey;
   authority: web3.PublicKey;
   payer: web3.PublicKey;
   args: AddStakingMultiplierArgs;
@@ -31,14 +31,14 @@ type CreateAddMultiplierCtxArgs = {
 export function createAddMultiplierCtx(args: CreateAddMultiplierCtxArgs) {
   const programId = args.programId || PROGRAM_ID;
 
-  const [multipliers] = getMultipliersPda(args.stakingProject, programId);
+  const [multipliers] = getMultipliersPda(args.stakingPool, programId);
 
   const instructions: web3.TransactionInstruction[] = [
     createAddMultiplierInstruction(
       {
         project: args.project,
         vault: VAULT,
-        stakingProject: args.stakingProject,
+        stakingPool: args.stakingPool,
         multipliers,
         delegateAuthority: args.delegateAuthority || programId,
         authority: args.authority,
@@ -58,7 +58,7 @@ export async function addMultiplier(args: AddMultiplierArgs) {
   const wallet = mx.identity();
   const ctx = createAddMultiplierCtx({
     project: args.project,
-    stakingProject: args.stakingProject,
+    stakingPool: args.stakingPool,
     authority: wallet.publicKey,
     payer: wallet.publicKey,
     args: args.args,

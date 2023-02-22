@@ -1,8 +1,8 @@
 use {anchor_lang::prelude::*, hpl_utils::traits::*};
 
-/// The NFT collection staking_project state account
+/// The NFT collection staking_pool state account
 #[account]
-pub struct StakingProject {
+pub struct StakingPool {
     pub bump: u8,
     pub vault_bump: u8,
     pub project: Pubkey,
@@ -17,7 +17,7 @@ pub struct StakingProject {
     /// Lock type { Freeze, Custody }
     pub lock_type: LockType,
 
-    /// name of the staking_project
+    /// name of the staking_pool
     pub name: String,
 
     /// The rewards per selected duration
@@ -50,13 +50,13 @@ pub struct StakingProject {
     /// The unix_timestamp when the statking ends
     pub end_time: Option<i64>,
 
-    /// The collection mint addresses to be used for the staking_project
+    /// The collection mint addresses to be used for the staking_pool
     pub collections: Vec<u8>,
 
-    /// The creator addresses to be used for the staking_project
+    /// The creator addresses to be used for the staking_pool
     pub creators: Vec<u8>,
 }
-impl Default for StakingProject {
+impl Default for StakingPool {
     const LEN: usize = 8 + 268;
 
     fn set_defaults(&mut self) {

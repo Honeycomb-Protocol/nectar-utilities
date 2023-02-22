@@ -16,7 +16,7 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  */
 export type StakerArgs = {
   bump: number
-  stakingProject: web3.PublicKey
+  stakingPool: web3.PublicKey
   wallet: web3.PublicKey
   totalStaked: beet.bignum
 }
@@ -32,7 +32,7 @@ export const stakerDiscriminator = [171, 229, 193, 85, 67, 177, 151, 4]
 export class Staker implements StakerArgs {
   private constructor(
     readonly bump: number,
-    readonly stakingProject: web3.PublicKey,
+    readonly stakingPool: web3.PublicKey,
     readonly wallet: web3.PublicKey,
     readonly totalStaked: beet.bignum
   ) {}
@@ -43,7 +43,7 @@ export class Staker implements StakerArgs {
   static fromArgs(args: StakerArgs) {
     return new Staker(
       args.bump,
-      args.stakingProject,
+      args.stakingPool,
       args.wallet,
       args.totalStaked
     )
@@ -153,7 +153,7 @@ export class Staker implements StakerArgs {
   pretty() {
     return {
       bump: this.bump,
-      stakingProject: this.stakingProject.toBase58(),
+      stakingPool: this.stakingPool.toBase58(),
       wallet: this.wallet.toBase58(),
       totalStaked: (() => {
         const x = <{ toNumber: () => number }>this.totalStaked
@@ -183,7 +183,7 @@ export const stakerBeet = new beet.BeetStruct<
   [
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['bump', beet.u8],
-    ['stakingProject', beetSolana.publicKey],
+    ['stakingPool', beetSolana.publicKey],
     ['wallet', beetSolana.publicKey],
     ['totalStaked', beet.u64],
   ],

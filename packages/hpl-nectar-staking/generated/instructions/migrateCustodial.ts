@@ -39,7 +39,7 @@ export const migrateCustodialStruct = new beet.BeetArgsStruct<
  *
  * @property [_writable_, **signer**] escrow
  * @property [_writable_] nftAccount
- * @property [] stakingProject
+ * @property [] stakingPool
  * @property [_writable_] nft
  * @property [_writable_] nftMint
  * @property [_writable_] nftMetadata
@@ -63,7 +63,7 @@ export const migrateCustodialStruct = new beet.BeetArgsStruct<
 export type MigrateCustodialInstructionAccounts = {
   escrow: web3.PublicKey
   nftAccount: web3.PublicKey
-  stakingProject: web3.PublicKey
+  stakingPool: web3.PublicKey
   nft: web3.PublicKey
   nftMint: web3.PublicKey
   nftMetadata: web3.PublicKey
@@ -125,7 +125,7 @@ export function createMigrateCustodialInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.stakingProject,
+      pubkey: accounts.stakingPool,
       isWritable: false,
       isSigner: false,
     },

@@ -4,7 +4,7 @@ import {
   createStakeInstruction,
   LockType,
   PROGRAM_ID,
-  StakingProject,
+  StakingPool,
 } from "../generated";
 import { AvailableNft, Context } from "../types";
 import { Metaplex } from "@metaplex-foundation/js";
@@ -14,7 +14,7 @@ import {
   getDepositPda,
   getNftPda,
   getStakerPda,
-  getStakingProjectPda,
+  getStakingPoolPda,
   METADATA_PROGRAM_ID,
 } from "../pdas";
 import { createCtx, getOrFetchNft, getOrFetchStaker } from "../utils";
@@ -24,13 +24,13 @@ import { VAULT } from "@honeycomb-protocol/hive-control";
 
 type StakeArgs = {
   metaplex: Metaplex;
-  stakingProject: StakingProject;
+  stakingPool: StakingPool;
   nfts: AvailableNft[];
 };
 
 type CreateStakeCtxArgs = {
   metaplex: Metaplex;
-  stakingProject: StakingProject;
+  stakingPool: StakingPool;
   nft: AvailableNft;
   isFirst?: boolean;
   programId?: web3.PublicKey;
@@ -38,7 +38,7 @@ type CreateStakeCtxArgs = {
 
 type CreateStakeTransactionArgs = {
   project: web3.PublicKey;
-  stakingProject: web3.PublicKey;
+  stakingPool: web3.PublicKey;
   nftMint: web3.PublicKey;
   wallet: web3.PublicKey;
   lockType?: LockType; // default: LockType.Freeze,
@@ -49,14 +49,14 @@ type CreateStakeTransactionArgs = {
 export function createStakeInstructionV2(args: CreateStakeTransactionArgs) {
   const programId = args.programId || PROGRAM_ID;
 
-  const [nft] = getNftPda(args.stakingProject, args.nftMint);
+  const [nft] = getNftPda(args.stakingPool, args.nftMint);
   const nftAccount = splToken.getAssociatedTokenAddressSync(
     args.nftMint,
     args.wallet
   );
   const [nftMetadata] = getMetadataAccount_(args.nftMint);
   const [nftEdition] = getMetadataAccount_(args.nftMint, { __kind: "edition" });
-  const [staker] = getStakerPda(args.stakingProject, args.wallet);
+  const [staker] = getStakerPda(args.stakingPool, args.wallet);
 
   let nftTokenRecord: web3.PublicKey | undefined,
     depositAccount: web3.PublicKey | undefined,
@@ -83,7 +83,7 @@ export function createStakeInstructionV2(args: CreateStakeTransactionArgs) {
     {
       project: args.project,
       vault: VAULT,
-      stakingProject: args.stakingProject,
+      stakingPool: args.stakingPool,
       nft,
       nftMint: args.nftMint,
       nftAccount,
@@ -111,9 +111,9 @@ export async function createStakeCtx({
   const signers: web3.Signer[] = [];
 
   const wallet = mx.identity();
-  const [stakingProjectAddress] = getStakingProjectPda(
-    args.stakingProject.project,
-    args.stakingProject.key,
+  const [staking_poolAddress] = getStakingPoolPda(
+    args.stakingPool.project,
+    args.stakingPool.key,
     args.programId
   );
 
@@ -121,13 +121,13 @@ export async function createStakeCtx({
     const staker = await getOrFetchStaker(
       mx.connection,
       wallet.publicKey,
-      stakingProjectAddress,
+      staking_poolAddress,
       args.programId
     );
     if (!staker) {
       const initStakerCtx = createInitStakerCtx({
-        project: args.stakingProject.project,
-        stakingProject: stakingProjectAddress,
+        project: args.stakingPool.project,
+        stakingPool: staking_poolAddress,
         wallet: wallet.publicKey,
         programId: args.programId,
       });
@@ -139,13 +139,13 @@ export async function createStakeCtx({
   const nft = await getOrFetchNft(
     mx.connection,
     args.nft.tokenMint,
-    stakingProjectAddress,
+    staking_poolAddress,
     args.programId
   );
   if (!nft) {
     const initNftCtx = createInitNFTCtx({
-      project: args.stakingProject.project,
-      stakingProject: stakingProjectAddress,
+      project: args.stakingPool.project,
+      stakingPool: staking_poolAddress,
       nftMint: args.nft.tokenMint,
       wallet: wallet.publicKey,
       programId: args.programId,
@@ -156,11 +156,11 @@ export async function createStakeCtx({
 
   instructions.push(
     createStakeInstructionV2({
-      project: args.stakingProject.project,
-      stakingProject: stakingProjectAddress,
+      project: args.stakingPool.project,
+      stakingPool: staking_poolAddress,
       nftMint: args.nft.tokenMint,
       wallet: wallet.publicKey,
-      lockType: args.stakingProject.lockType,
+      lockType: args.stakingPool.lockType,
       tokenStandard: args.nft.tokenStandard,
       programId: args.programId,
     })
@@ -175,7 +175,7 @@ export async function stake({ metaplex: mx, ...args }: StakeArgs) {
     args.nfts.map((nft, i) =>
       createStakeCtx({
         metaplex: mx,
-        stakingProject: args.stakingProject,
+        stakingPool: args.stakingPool,
         nft,
         isFirst: i == 0,
       })

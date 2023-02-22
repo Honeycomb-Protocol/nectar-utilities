@@ -16,9 +16,9 @@ use {
 /// Accounts used in init NFT instruction
 #[derive(Accounts)]
 pub struct InitNFT<'info> {
-    /// StakingProject state account
+    /// StakingPool state account
     #[account(has_one = project)]
-    pub staking_project: Account<'info, StakingProject>,
+    pub staking_pool: Account<'info, StakingPool>,
 
     /// NFT state account
     #[account(
@@ -27,7 +27,7 @@ pub struct InitNFT<'info> {
         seeds = [
           b"nft",
           nft_mint.key().as_ref(),
-          staking_project.key().as_ref(),
+          staking_pool.key().as_ref(),
         ],
         bump,
       )]
@@ -61,12 +61,12 @@ pub struct InitNFT<'info> {
 
 /// Init NFT
 pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
-    let staking_project = &ctx.accounts.staking_project;
+    let staking_pool = &ctx.accounts.staking_pool;
 
     let nft = &mut ctx.accounts.nft;
     nft.set_defaults();
     nft.bump = ctx.bumps["nft"];
-    nft.staking_project = ctx.accounts.staking_project.key();
+    nft.staking_pool = ctx.accounts.staking_pool.key();
     nft.mint = ctx.accounts.nft_mint.key();
 
     let metadata_account_info = &ctx.accounts.nft_metadata;
@@ -89,7 +89,7 @@ pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
         .collections
         .iter()
         .filter_map(|x| {
-            let key = if staking_project.collections.contains(&index) {
+            let key = if staking_pool.collections.contains(&index) {
                 Some(*x)
             } else {
                 None
@@ -106,7 +106,7 @@ pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
         .creators
         .iter()
         .filter_map(|x| {
-            let key = if staking_project.creators.contains(&index) {
+            let key = if staking_pool.creators.contains(&index) {
                 Some(*x)
             } else {
                 None
@@ -131,10 +131,10 @@ pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
             return Ok(());
         }
         Err(_) => {
-            // if staking_project.allowed_mints {
-            //     if staking_project.authority == ctx.accounts.wallet.key() {
+            // if staking_pool.allowed_mints {
+            //     if staking_pool.authority == ctx.accounts.wallet.key() {
             //         return Ok(());
-            //     } else if staking_project.authority != ctx.accounts.wallet.key() {
+            //     } else if staking_pool.authority != ctx.accounts.wallet.key() {
             //         return Err(ErrorCode::OnlyOwner.into());
             //     }
             // }
@@ -146,12 +146,12 @@ pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
 /// Accounts used in stake instruction
 #[derive(Accounts)]
 pub struct Stake<'info> {
-    /// StakingProject state account
+    /// StakingPool state account
     #[account(has_one = project)]
-    pub staking_project: Box<Account<'info, StakingProject>>,
+    pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// NFT state account
-    #[account(mut, has_one = staking_project)]
+    #[account(mut, has_one = staking_pool)]
     pub nft: Box<Account<'info, NFT>>,
 
     /// Mint address of the NFT
@@ -178,7 +178,7 @@ pub struct Stake<'info> {
     pub nft_token_record: Option<AccountInfo<'info>>,
 
     /// Staker state account
-    #[account(mut, has_one = staking_project, has_one = wallet)]
+    #[account(mut, has_one = staking_pool, has_one = wallet)]
     pub staker: Account<'info, Staker>,
 
     /// The account that will hold the nft sent on expedition
@@ -237,11 +237,11 @@ pub struct Stake<'info> {
 
 /// Stake NFT
 pub fn stake(ctx: Context<Stake>) -> Result<()> {
-    let staking_project = &ctx.accounts.staking_project;
+    let staking_pool = &ctx.accounts.staking_pool;
     let nft = &mut ctx.accounts.nft;
     let staker = &mut ctx.accounts.staker;
 
-    if let Some(cooldown_duration) = staking_project.cooldown_duration {
+    if let Some(cooldown_duration) = staking_pool.cooldown_duration {
         let duration = nft.last_unstaked_at + i64::try_from(cooldown_duration).unwrap();
         if ctx.accounts.clock.unix_timestamp < duration {
             msg!(
@@ -253,16 +253,16 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
     }
 
     let wallet_key = ctx.accounts.wallet.key();
-    let staking_project_key = staking_project.key();
+    let pool_key = staking_pool.key();
     let staker_seeds = &[
         b"staker",
         wallet_key.as_ref(),
-        staking_project_key.as_ref(),
+        pool_key.as_ref(),
         &[staker.bump],
     ];
     let staker_signer = &[&staker_seeds[..]];
 
-    match staking_project.lock_type {
+    match staking_pool.lock_type {
         LockType::Freeze => {
             let metadata_account_info = &ctx.accounts.nft_metadata;
             if metadata_account_info.data_is_empty() {
@@ -348,7 +348,7 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
 
     nft.last_staked_at = ctx.accounts.clock.unix_timestamp;
     nft.staker = staker.key();
-    if staking_project.reset_stake_duration {
+    if staking_pool.reset_stake_duration {
         nft.staked_at = ctx.accounts.clock.unix_timestamp;
     }
     staker.total_staked += 1;
@@ -359,12 +359,12 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
 /// Accounts used in unstake instruction
 #[derive(Accounts)]
 pub struct Unstake<'info> {
-    /// StakingProject state account
+    /// StakingPool state account
     #[account(has_one = project)]
-    pub staking_project: Box<Account<'info, StakingProject>>,
+    pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// NFT state account
-    #[account(mut, has_one = staking_project, has_one = staker)]
+    #[account(mut, has_one = staking_pool, has_one = staker)]
     pub nft: Box<Account<'info, NFT>>,
 
     /// Mint address of the NFT
@@ -404,7 +404,7 @@ pub struct Unstake<'info> {
     pub deposit_token_record: Option<AccountInfo<'info>>,
 
     /// Staker state account
-    #[account(mut, has_one = staking_project, has_one = wallet)]
+    #[account(mut, has_one = staking_pool, has_one = wallet)]
     pub staker: Account<'info, Staker>,
 
     /// The wallet that pays for the rent
@@ -444,11 +444,11 @@ pub struct Unstake<'info> {
 
 /// Unstake NFT
 pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
-    let staking_project = &ctx.accounts.staking_project;
+    let staking_pool = &ctx.accounts.staking_pool;
     let staker = &mut ctx.accounts.staker;
     let nft = &mut ctx.accounts.nft;
 
-    if let Some(min_stake_duration) = staking_project.min_stake_duration {
+    if let Some(min_stake_duration) = staking_pool.min_stake_duration {
         let duration = nft.last_staked_at + i64::try_from(min_stake_duration).unwrap();
         if ctx.accounts.clock.unix_timestamp < duration {
             msg!(
@@ -466,16 +466,16 @@ pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
     staker.total_staked -= 1;
 
     let wallet_key = ctx.accounts.wallet.key();
-    let staking_project_key = staking_project.key();
+    let pool_key = staking_pool.key();
     let staker_seeds = &[
         b"staker",
         wallet_key.as_ref(),
-        staking_project_key.as_ref(),
+        pool_key.as_ref(),
         &[staker.bump],
     ];
     let staker_signer = &[&staker_seeds[..]];
 
-    match staking_project.lock_type {
+    match staking_pool.lock_type {
         LockType::Freeze => {
             let metadata_account_info = &ctx.accounts.nft_metadata;
             if metadata_account_info.data_is_empty() {

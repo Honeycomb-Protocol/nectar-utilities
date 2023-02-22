@@ -20,9 +20,9 @@ pub struct MigrateCustodial<'info> {
     #[account(mut, constraint = nft_account.mint == nft_mint.key() && nft_account.owner == escrow.key())]
     pub nft_account: Box<Account<'info, TokenAccount>>,
 
-    /// StakingProject state account
+    /// StakingPool state account
     #[account()]
-    pub staking_project: Box<Account<'info, StakingProject>>,
+    pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// NFT state account
     #[account(
@@ -31,7 +31,7 @@ pub struct MigrateCustodial<'info> {
       seeds = [
         b"nft",
         nft_mint.key().as_ref(),
-        staking_project.key().as_ref(),
+        staking_pool.key().as_ref(),
       ],
       bump,
     )]
@@ -66,7 +66,7 @@ pub struct MigrateCustodial<'info> {
     pub deposit_account: Option<Account<'info, TokenAccount>>,
 
     /// Staker state account
-    #[account(mut, has_one = wallet, has_one = staking_project)]
+    #[account(mut, has_one = wallet, has_one = staking_pool)]
     pub staker: Box<Account<'info, Staker>>,
 
     /// The wallet that the NFT is associated with
@@ -74,7 +74,7 @@ pub struct MigrateCustodial<'info> {
     #[account(mut)]
     pub wallet: AccountInfo<'info>,
 
-    /// The wallet that holds the authority over the staking_project
+    /// The wallet that holds the authority over the staking_pool
     #[account(mut)]
     pub authority: Signer<'info>,
 
@@ -123,14 +123,14 @@ pub struct MigrateArgs {
 
 /// Initialize staker state
 pub fn migrate_custodial(ctx: Context<MigrateCustodial>, args: MigrateArgs) -> Result<()> {
-    let staking_project = &ctx.accounts.staking_project;
+    let staking_pool = &ctx.accounts.staking_pool;
     let nft = &mut ctx.accounts.nft;
     let staker = &mut ctx.accounts.staker;
 
     // INITIALIZE NFT
     nft.set_defaults();
     nft.bump = ctx.bumps["nft"];
-    nft.staking_project = staking_project.key();
+    nft.staking_pool = staking_pool.key();
     nft.mint = ctx.accounts.nft_mint.key();
     let metadata_account_info = &ctx.accounts.nft_metadata;
     if metadata_account_info.data_is_empty() {
@@ -150,7 +150,7 @@ pub fn migrate_custodial(ctx: Context<MigrateCustodial>, args: MigrateArgs) -> R
         .collections
         .iter()
         .filter_map(|x| {
-            let key = if staking_project.collections.contains(&index) {
+            let key = if staking_pool.collections.contains(&index) {
                 Some(*x)
             } else {
                 None
@@ -167,7 +167,7 @@ pub fn migrate_custodial(ctx: Context<MigrateCustodial>, args: MigrateArgs) -> R
         .creators
         .iter()
         .filter_map(|x| {
-            let key = if staking_project.creators.contains(&index) {
+            let key = if staking_pool.creators.contains(&index) {
                 Some(*x)
             } else {
                 None
@@ -188,7 +188,7 @@ pub fn migrate_custodial(ctx: Context<MigrateCustodial>, args: MigrateArgs) -> R
         }
     }
 
-    match staking_project.lock_type {
+    match staking_pool.lock_type {
         LockType::Custoday => {
             if let Some(deposit_account) = &ctx.accounts.deposit_account {
                 hpl_utils::transfer(

@@ -22,7 +22,7 @@ export const initStakerStruct = new beet.BeetArgsStruct<{
 /**
  * Accounts required by the _initStaker_ instruction
  *
- * @property [] stakingProject
+ * @property [] stakingPool
  * @property [_writable_] staker
  * @property [_writable_, **signer**] wallet
  * @property [] project
@@ -32,7 +32,7 @@ export const initStakerStruct = new beet.BeetArgsStruct<{
  * @category generated
  */
 export type InitStakerInstructionAccounts = {
-  stakingProject: web3.PublicKey
+  stakingPool: web3.PublicKey
   staker: web3.PublicKey
   wallet: web3.PublicKey
   systemProgram?: web3.PublicKey
@@ -62,7 +62,7 @@ export function createInitStakerInstruction(
   })
   const keys: web3.AccountMeta[] = [
     {
-      pubkey: accounts.stakingProject,
+      pubkey: accounts.stakingPool,
       isWritable: false,
       isSigner: false,
     },

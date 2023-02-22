@@ -11,11 +11,11 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
 import { LockType, lockTypeBeet } from '../types/LockType'
 
 /**
- * Arguments used to create {@link StakingProject}
+ * Arguments used to create {@link StakingPool}
  * @category Accounts
  * @category generated
  */
-export type StakingProjectArgs = {
+export type StakingPoolArgs = {
   bump: number
   vaultBump: number
   project: web3.PublicKey
@@ -38,15 +38,15 @@ export type StakingProjectArgs = {
   creators: Uint8Array
 }
 
-export const stakingProjectDiscriminator = [233, 46, 2, 127, 221, 160, 137, 203]
+export const stakingPoolDiscriminator = [203, 19, 214, 220, 220, 154, 24, 102]
 /**
- * Holds the data for the {@link StakingProject} Account and provides de/serialization
+ * Holds the data for the {@link StakingPool} Account and provides de/serialization
  * functionality for that data
  *
  * @category Accounts
  * @category generated
  */
-export class StakingProject implements StakingProjectArgs {
+export class StakingPool implements StakingPoolArgs {
   private constructor(
     readonly bump: number,
     readonly vaultBump: number,
@@ -71,10 +71,10 @@ export class StakingProject implements StakingProjectArgs {
   ) {}
 
   /**
-   * Creates a {@link StakingProject} instance from the provided args.
+   * Creates a {@link StakingPool} instance from the provided args.
    */
-  static fromArgs(args: StakingProjectArgs) {
-    return new StakingProject(
+  static fromArgs(args: StakingPoolArgs) {
+    return new StakingPool(
       args.bump,
       args.vaultBump,
       args.project,
@@ -99,19 +99,19 @@ export class StakingProject implements StakingProjectArgs {
   }
 
   /**
-   * Deserializes the {@link StakingProject} from the data of the provided {@link web3.AccountInfo}.
+   * Deserializes the {@link StakingPool} from the data of the provided {@link web3.AccountInfo}.
    * @returns a tuple of the account data and the offset up to which the buffer was read to obtain it.
    */
   static fromAccountInfo(
     accountInfo: web3.AccountInfo<Buffer>,
     offset = 0
-  ): [StakingProject, number] {
-    return StakingProject.deserialize(accountInfo.data, offset)
+  ): [StakingPool, number] {
+    return StakingPool.deserialize(accountInfo.data, offset)
   }
 
   /**
    * Retrieves the account info from the provided address and deserializes
-   * the {@link StakingProject} from its data.
+   * the {@link StakingPool} from its data.
    *
    * @throws Error if no account info is found at the address or if deserialization fails
    */
@@ -119,15 +119,15 @@ export class StakingProject implements StakingProjectArgs {
     connection: web3.Connection,
     address: web3.PublicKey,
     commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
-  ): Promise<StakingProject> {
+  ): Promise<StakingPool> {
     const accountInfo = await connection.getAccountInfo(
       address,
       commitmentOrConfig
     )
     if (accountInfo == null) {
-      throw new Error(`Unable to find StakingProject account at ${address}`)
+      throw new Error(`Unable to find StakingPool account at ${address}`)
     }
-    return StakingProject.fromAccountInfo(accountInfo, 0)[0]
+    return StakingPool.fromAccountInfo(accountInfo, 0)[0]
   }
 
   /**
@@ -141,64 +141,64 @@ export class StakingProject implements StakingProjectArgs {
       '5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG'
     )
   ) {
-    return beetSolana.GpaBuilder.fromStruct(programId, stakingProjectBeet)
+    return beetSolana.GpaBuilder.fromStruct(programId, stakingPoolBeet)
   }
 
   /**
-   * Deserializes the {@link StakingProject} from the provided data Buffer.
+   * Deserializes the {@link StakingPool} from the provided data Buffer.
    * @returns a tuple of the account data and the offset up to which the buffer was read to obtain it.
    */
-  static deserialize(buf: Buffer, offset = 0): [StakingProject, number] {
-    return stakingProjectBeet.deserialize(buf, offset)
+  static deserialize(buf: Buffer, offset = 0): [StakingPool, number] {
+    return stakingPoolBeet.deserialize(buf, offset)
   }
 
   /**
-   * Serializes the {@link StakingProject} into a Buffer.
+   * Serializes the {@link StakingPool} into a Buffer.
    * @returns a tuple of the created Buffer and the offset up to which the buffer was written to store it.
    */
   serialize(): [Buffer, number] {
-    return stakingProjectBeet.serialize({
-      accountDiscriminator: stakingProjectDiscriminator,
+    return stakingPoolBeet.serialize({
+      accountDiscriminator: stakingPoolDiscriminator,
       ...this,
     })
   }
 
   /**
    * Returns the byteSize of a {@link Buffer} holding the serialized data of
-   * {@link StakingProject} for the provided args.
+   * {@link StakingPool} for the provided args.
    *
    * @param args need to be provided since the byte size for this account
    * depends on them
    */
-  static byteSize(args: StakingProjectArgs) {
-    const instance = StakingProject.fromArgs(args)
-    return stakingProjectBeet.toFixedFromValue({
-      accountDiscriminator: stakingProjectDiscriminator,
+  static byteSize(args: StakingPoolArgs) {
+    const instance = StakingPool.fromArgs(args)
+    return stakingPoolBeet.toFixedFromValue({
+      accountDiscriminator: stakingPoolDiscriminator,
       ...instance,
     }).byteSize
   }
 
   /**
    * Fetches the minimum balance needed to exempt an account holding
-   * {@link StakingProject} data from rent
+   * {@link StakingPool} data from rent
    *
    * @param args need to be provided since the byte size for this account
    * depends on them
    * @param connection used to retrieve the rent exemption information
    */
   static async getMinimumBalanceForRentExemption(
-    args: StakingProjectArgs,
+    args: StakingPoolArgs,
     connection: web3.Connection,
     commitment?: web3.Commitment
   ): Promise<number> {
     return connection.getMinimumBalanceForRentExemption(
-      StakingProject.byteSize(args),
+      StakingPool.byteSize(args),
       commitment
     )
   }
 
   /**
-   * Returns a readable version of {@link StakingProject} properties
+   * Returns a readable version of {@link StakingPool} properties
    * and can be used to convert to JSON and/or logging
    */
   pretty() {
@@ -261,9 +261,9 @@ export class StakingProject implements StakingProjectArgs {
  * @category Accounts
  * @category generated
  */
-export const stakingProjectBeet = new beet.FixableBeetStruct<
-  StakingProject,
-  StakingProjectArgs & {
+export const stakingPoolBeet = new beet.FixableBeetStruct<
+  StakingPool,
+  StakingPoolArgs & {
     accountDiscriminator: number[] /* size: 8 */
   }
 >(
@@ -290,6 +290,6 @@ export const stakingProjectBeet = new beet.FixableBeetStruct<
     ['collections', beet.bytes],
     ['creators', beet.bytes],
   ],
-  StakingProject.fromArgs,
-  'StakingProject'
+  StakingPool.fromArgs,
+  'StakingPool'
 )

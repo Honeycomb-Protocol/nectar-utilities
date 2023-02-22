@@ -8,16 +8,16 @@ use {
 /// Accounts used in fund rewards instruction
 #[derive(Accounts)]
 pub struct FundRewards<'info> {
-    /// StakingProject state account
+    /// StakingPool state account
     #[account(has_one = project)]
-    pub staking_project: Account<'info, StakingProject>,
+    pub staking_pool: Account<'info, StakingPool>,
 
     /// Mint address of the reward token
-    #[account(mut, constraint = reward_mint.key() == staking_project.reward_mint)]
+    #[account(mut, constraint = reward_mint.key() == staking_pool.reward_mint)]
     pub reward_mint: Account<'info, Mint>,
 
     /// Reward Vault
-    #[account(mut, constraint = reward_vault.key() == staking_project.vault)]
+    #[account(mut, constraint = reward_vault.key() == staking_pool.vault)]
     pub reward_vault: Account<'info, TokenAccount>,
 
     /// Payee token account
@@ -61,16 +61,16 @@ pub fn fund_rewards(ctx: Context<FundRewards>, amount: u64) -> Result<()> {
 /// Accounts used in withdraw rewards instruction
 #[derive(Accounts)]
 pub struct WithdrawRewards<'info> {
-    /// StakingProject state account
+    /// StakingPool state account
     #[account(has_one = project)]
-    pub staking_project: Box<Account<'info, StakingProject>>,
+    pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// Mint address of the reward token
-    #[account(mut, constraint = reward_mint.key() == staking_project.reward_mint)]
+    #[account(mut, constraint = reward_mint.key() == staking_pool.reward_mint)]
     pub reward_mint: Box<Account<'info, Mint>>,
 
     /// Reward Vault
-    #[account(mut, constraint = reward_vault.key() == staking_project.vault)]
+    #[account(mut, constraint = reward_vault.key() == staking_pool.vault)]
     pub reward_vault: Account<'info, TokenAccount>,
 
     /// Payee token account
@@ -103,13 +103,13 @@ pub struct WithdrawRewards<'info> {
 
 /// Withdraw rewards
 pub fn withdraw_rewards(ctx: Context<WithdrawRewards>, amount: u64) -> Result<()> {
-    let staking_project_seeds = &[
-        b"staking_project".as_ref(),
-        ctx.accounts.staking_project.project.as_ref(),
-        ctx.accounts.staking_project.key.as_ref(),
-        &[ctx.accounts.staking_project.bump],
+    let pool_seeds = &[
+        b"staking_pool".as_ref(),
+        ctx.accounts.staking_pool.project.as_ref(),
+        ctx.accounts.staking_pool.key.as_ref(),
+        &[ctx.accounts.staking_pool.bump],
     ];
-    let staking_project_signer = &[&staking_project_seeds[..]];
+    let pool_signer = &[&pool_seeds[..]];
 
     token::transfer(
         CpiContext::new_with_signer(
@@ -117,9 +117,9 @@ pub fn withdraw_rewards(ctx: Context<WithdrawRewards>, amount: u64) -> Result<()
             Transfer {
                 from: ctx.accounts.reward_vault.to_account_info(),
                 to: ctx.accounts.token_account.to_account_info(),
-                authority: ctx.accounts.staking_project.to_account_info(),
+                authority: ctx.accounts.staking_pool.to_account_info(),
             },
-            staking_project_signer,
+            pool_signer,
         ),
         amount,
     )?;
@@ -129,24 +129,24 @@ pub fn withdraw_rewards(ctx: Context<WithdrawRewards>, amount: u64) -> Result<()
 /// Accounts used in fund rewards instruction
 #[derive(Accounts)]
 pub struct ClaimRewards<'info> {
-    /// StakingProject state account
+    /// StakingPool state account
     #[account(has_one = project)]
-    pub staking_project: Box<Account<'info, StakingProject>>,
+    pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// Multpliers state account
-    #[account(has_one = staking_project)]
+    #[account(has_one = staking_pool)]
     pub multipliers: Option<Account<'info, Multipliers>>,
 
     /// NFT state account
-    #[account(mut, has_one = staking_project, has_one = staker)]
+    #[account(mut, has_one = staking_pool, has_one = staker)]
     pub nft: Box<Account<'info, NFT>>,
 
     /// Mint address of the reward token
-    #[account(mut, constraint = reward_mint.key() == staking_project.reward_mint)]
+    #[account(mut, constraint = reward_mint.key() == staking_pool.reward_mint)]
     pub reward_mint: Box<Account<'info, Mint>>,
 
     /// Reward Vault
-    #[account(mut, constraint = reward_vault.key() == staking_project.vault)]
+    #[account(mut, constraint = reward_vault.key() == staking_pool.vault)]
     pub reward_vault: Box<Account<'info, TokenAccount>>,
 
     /// Payee token account
@@ -154,7 +154,7 @@ pub struct ClaimRewards<'info> {
     pub token_account: Account<'info, TokenAccount>,
 
     /// Staker state account
-    #[account(mut, has_one = staking_project, has_one = wallet)]
+    #[account(mut, has_one = staking_pool, has_one = wallet)]
     pub staker: Account<'info, Staker>,
 
     /// The wallet that pays for the rent
@@ -180,17 +180,17 @@ pub struct ClaimRewards<'info> {
 
 /// Claim rewards
 pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
-    let staking_project = &ctx.accounts.staking_project;
+    let staking_pool = &ctx.accounts.staking_pool;
     let nft = &mut ctx.accounts.nft;
 
     let mut seconds_elapsed: u64 =
         u64::try_from(ctx.accounts.clock.unix_timestamp - nft.last_claim).unwrap();
 
-    if seconds_elapsed < staking_project.rewards_per_duration {
+    if seconds_elapsed < staking_pool.rewards_per_duration {
         return Err(ErrorCode::RewardsNotAvailable.into());
     }
 
-    if let Some(max_rewards_duration) = staking_project.max_rewards_duration {
+    if let Some(max_rewards_duration) = staking_pool.max_rewards_duration {
         if max_rewards_duration < seconds_elapsed {
             seconds_elapsed = max_rewards_duration;
         }
@@ -198,8 +198,7 @@ pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
 
     nft.last_claim = ctx.accounts.clock.unix_timestamp;
 
-    let rewards_per_second =
-        staking_project.rewards_per_duration / staking_project.rewards_duration;
+    let rewards_per_second = staking_pool.rewards_per_duration / staking_pool.rewards_duration;
     let mut rewards_amount = rewards_per_second * seconds_elapsed;
 
     let mut multplier_decimals: u64 = 1;
@@ -273,13 +272,13 @@ pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
 
     rewards_amount = (rewards_amount * total_multipliers) / multplier_decimals;
 
-    let staking_project_seeds = &[
-        b"staking_project".as_ref(),
-        staking_project.project.as_ref(),
-        staking_project.key.as_ref(),
-        &[ctx.accounts.staking_project.bump],
+    let pool_seeds = &[
+        b"staking_pool".as_ref(),
+        staking_pool.project.as_ref(),
+        staking_pool.key.as_ref(),
+        &[ctx.accounts.staking_pool.bump],
     ];
-    let staking_project_signer = &[&staking_project_seeds[..]];
+    let pool_signer = &[&pool_seeds[..]];
 
     token::transfer(
         CpiContext::new_with_signer(
@@ -287,9 +286,9 @@ pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
             Transfer {
                 from: ctx.accounts.reward_vault.to_account_info(),
                 to: ctx.accounts.token_account.to_account_info(),
-                authority: staking_project.to_account_info(),
+                authority: staking_pool.to_account_info(),
             },
-            staking_project_signer,
+            pool_signer,
         ),
         rewards_amount,
     )?;

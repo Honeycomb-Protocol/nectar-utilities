@@ -38,13 +38,13 @@ export const getMetadataAccount_ = (
   return web3.PublicKey.findProgramAddressSync(seeds, programId);
 };
 
-export const getStakingProjectPda = (
+export const getStakingPoolPda = (
   project: web3.PublicKey,
   key: web3.PublicKey,
   programId: web3.PublicKey = PROGRAM_ID
 ) => {
   return web3.PublicKey.findProgramAddressSync(
-    [Buffer.from("staking_project"), project.toBuffer(), key.toBuffer()],
+    [Buffer.from("staking_pool"), project.toBuffer(), key.toBuffer()],
     programId
   );
 };

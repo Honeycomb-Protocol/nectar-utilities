@@ -8,7 +8,7 @@ import { createCtx } from "../utils";
 type InitNFTArgs = {
   metaplex: Metaplex;
   project: web3.PublicKey;
-  stakingProject: web3.PublicKey;
+  stakingPool: web3.PublicKey;
   nftMint: web3.PublicKey;
   delegateAuthority?: web3.PublicKey;
   programId?: web3.PublicKey;
@@ -16,7 +16,7 @@ type InitNFTArgs = {
 
 type CreateInitNftCtxArgs = {
   project: web3.PublicKey;
-  stakingProject: web3.PublicKey;
+  stakingPool: web3.PublicKey;
   nftMint: web3.PublicKey;
   wallet: web3.PublicKey;
   delegateAuthority?: web3.PublicKey;
@@ -25,7 +25,7 @@ type CreateInitNftCtxArgs = {
 
 export function createInitNFTCtx(args: CreateInitNftCtxArgs) {
   const programId = args.programId || PROGRAM_ID;
-  const [nft] = getNftPda(args.stakingProject, args.nftMint, programId);
+  const [nft] = getNftPda(args.stakingPool, args.nftMint, programId);
   const [nftMetadata] = getMetadataAccount_(args.nftMint);
 
   const instructions: web3.TransactionInstruction[] = [
@@ -33,7 +33,7 @@ export function createInitNFTCtx(args: CreateInitNftCtxArgs) {
       {
         project: args.project,
         vault: VAULT,
-        stakingProject: args.stakingProject,
+        stakingPool: args.stakingPool,
         nft,
         nftMetadata,
         nftMint: args.nftMint,
@@ -51,7 +51,7 @@ export async function initNft({ metaplex: mx, ...args }: InitNFTArgs) {
   const wallet = mx.identity();
   const ctx = createInitNFTCtx({
     project: args.project,
-    stakingProject: args.stakingProject,
+    stakingPool: args.stakingPool,
     nftMint: args.nftMint,
     wallet: wallet.publicKey,
     delegateAuthority: args.delegateAuthority,

@@ -1,26 +1,26 @@
 use {anchor_lang::prelude::*, hpl_utils::traits::*};
 
-/// The staking_project multiplier state account
+/// The staking_pool multiplier state account
 #[account]
 pub struct Multipliers {
     pub bump: u8,
 
-    /// The staking_project this multiplier is associated with
-    pub staking_project: Pubkey,
+    /// The staking_pool this multiplier is associated with
+    pub staking_pool: Pubkey,
 
     /// The decimals for multipliers
     pub decimals: u8,
 
-    /// The duration multipliers for the staking_project
+    /// The duration multipliers for the staking_pool
     pub duration_multipliers: Vec<Multiplier>,
 
-    /// The duration multipliers for the staking_project
+    /// The duration multipliers for the staking_pool
     pub count_multipliers: Vec<Multiplier>,
 
-    /// The duration multipliers for the staking_project
+    /// The duration multipliers for the staking_pool
     pub creator_multipliers: Vec<Multiplier>,
 
-    /// The duration multipliers for the staking_project
+    /// The duration multipliers for the staking_pool
     pub collection_multipliers: Vec<Multiplier>,
 }
 impl Default for Multipliers {
@@ -28,7 +28,7 @@ impl Default for Multipliers {
 
     fn set_defaults(&mut self) {
         self.bump = 0;
-        self.staking_project = Pubkey::default();
+        self.staking_pool = Pubkey::default();
         self.decimals = 0;
         self.duration_multipliers = vec![];
         self.count_multipliers = vec![];

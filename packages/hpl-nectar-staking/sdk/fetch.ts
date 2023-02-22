@@ -3,29 +3,29 @@ import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import * as web3 from "@solana/web3.js";
 import { AvailableNft, StakedNft, TokenAccountInfo } from "../types";
-import { NFT, StakingProject, Staker } from "../generated";
-import { getStakerPda, getStakingProjectPda } from "../pdas";
-import { createProjectPda, Project } from "@honeycomb-protocol/hive-control";
+import { NFT, StakingPool, Staker } from "../generated";
+import { getStakerPda, getStakingPoolPda } from "../pdas";
+import { getProjectPda, Project } from "@honeycomb-protocol/hive-control";
 
 type FetchArgs = {
   connection: web3.Connection;
   commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig;
 };
 
-type FetchStakingProjectArgs = FetchArgs & { address: web3.PublicKey };
-export const fetchStakingProject = (args: FetchStakingProjectArgs) =>
-  StakingProject.fromAccountAddress(
+type FetchStakingPoolArgs = FetchArgs & { address: web3.PublicKey };
+export const fetchStakingPool = (args: FetchStakingPoolArgs) =>
+  StakingPool.fromAccountAddress(
     args.connection,
     args.address,
     args.commitmentOrConfig
   );
 
 type FetchStakerArgs = FetchArgs & {
-  stakingProjectAddress: web3.PublicKey;
+  staking_poolAddress: web3.PublicKey;
   walletAddress: web3.PublicKey;
 };
 export const fetchStaker = (args: FetchStakerArgs) => {
-  const [staker] = getStakerPda(args.stakingProjectAddress, args.walletAddress);
+  const [staker] = getStakerPda(args.staking_poolAddress, args.walletAddress);
   return Staker.fromAccountAddress(
     args.connection,
     staker,
@@ -35,7 +35,7 @@ export const fetchStaker = (args: FetchStakerArgs) => {
 
 type FetchStakedNftsArgs = {
   metaplex: Metaplex;
-  stakingProjectAddress: web3.PublicKey;
+  staking_poolAddress: web3.PublicKey;
   walletAddress?: web3.PublicKey;
 };
 export const fetchStakedNfts = async ({
@@ -43,12 +43,9 @@ export const fetchStakedNfts = async ({
   ...args
 }: FetchStakedNftsArgs) => {
   const gpa = NFT.gpaBuilder();
-  gpa.addFilter("stakingProject", args.stakingProjectAddress);
+  gpa.addFilter("stakingPool", args.staking_poolAddress);
   if (args.walletAddress) {
-    const [staker] = getStakerPda(
-      args.stakingProjectAddress,
-      args.walletAddress
-    );
+    const [staker] = getStakerPda(args.staking_poolAddress, args.walletAddress);
     gpa.addFilter("staker", staker);
   }
 
@@ -60,7 +57,6 @@ export const fetchStakedNfts = async ({
     .nfts()
     .findAllByMintList({ mints: nfts.map((x) => x.mint) })
     .then((metaplexNfts) => {
-      console.log("metaplexNfts", metaplexNfts);
       return (
         metaplexNfts.filter((x) => x.model == "metadata") as Metadata[]
       ).map(
@@ -78,7 +74,7 @@ export const fetchStakedNfts = async ({
 type FetchAvailableNfts = {
   metaplex: Metaplex;
   project: Project;
-  stakingProject: StakingProject;
+  stakingPool: StakingPool;
   walletAddress?: web3.PublicKey;
   allowedMints?: web3.PublicKey[];
 };
@@ -86,9 +82,9 @@ export const fetchAvailableNfts = async ({
   metaplex: mx,
   ...args
 }: FetchAvailableNfts) => {
-  const [projectAddress] = createProjectPda(args.project.key);
-  if (!args.stakingProject.project.equals(projectAddress))
-    throw new Error("StakingProject does not belong to the Project provided!");
+  const [projectAddress] = getProjectPda(args.project.key);
+  if (!args.stakingPool.project.equals(projectAddress))
+    throw new Error("StakingPool does not belong to the Project provided!");
 
   const ownedTokenAccounts: TokenAccountInfo[] = await mx.connection
     .getParsedTokenAccountsByOwner(
@@ -133,16 +129,16 @@ export const fetchAvailableNfts = async ({
     );
 
   let filteredNfts: AvailableNft[] = [];
-  if (args.stakingProject.allowedMints) {
-    const [stakingProjectAddress] = getStakingProjectPda(
-      args.stakingProject.project,
-      args.stakingProject.key
+  if (args.stakingPool.allowedMints) {
+    const [staking_poolAddress] = getStakingPoolPda(
+      args.stakingPool.project,
+      args.stakingPool.key
     );
 
     const allowedMints: web3.PublicKey[] =
       args.allowedMints ||
       (await NFT.gpaBuilder()
-        .addFilter("stakingProject", stakingProjectAddress)
+        .addFilter("stakingPool", staking_poolAddress)
         .addFilter("staker", web3.PublicKey.default)
         .run(mx.connection)
         .then((nfts) =>
@@ -157,23 +153,16 @@ export const fetchAvailableNfts = async ({
     ];
   }
 
-  const validCollections = !!args.stakingProject.collections.length
+  const validCollections = !!args.stakingPool.collections.length
     ? args.project.collections.filter((_, i) =>
-        args.stakingProject.collections.includes(i)
+        args.stakingPool.collections.includes(i)
       )
     : [];
-  const validCreators = !!args.stakingProject.creators
+  const validCreators = !!args.stakingPool.creators
     ? args.project.creators.filter((_, i) =>
-        args.stakingProject.creators.includes(i)
+        args.stakingPool.creators.includes(i)
       )
     : [];
-
-  console.log(
-    "validCollections",
-    validCollections.map((x) => x.toString()),
-    "validCreators",
-    validCreators.map((x) => x.toString())
-  );
 
   filteredNfts = [
     ...filteredNfts,
@@ -193,8 +182,6 @@ export const fetchAvailableNfts = async ({
     ),
   ];
 
-  console.log("filteredNfts", filteredNfts.length);
-
   filteredNfts = filteredNfts.filter(
     (nft, index, self) =>
       self.findIndex((t) => t.address.equals(nft.address)) === index
@@ -208,33 +195,33 @@ type FetchAllArgs = FetchStakerArgs &
 export const fetchAll = async ({
   metaplex: mx,
   project,
-  stakingProjectAddress,
+  staking_poolAddress,
   walletAddress,
   allowedMints,
 }: FetchAllArgs) => {
-  const stakingProject = await fetchStakingProject({
+  const stakingPool = await fetchStakingPool({
     connection: mx.connection,
-    address: stakingProjectAddress,
+    address: staking_poolAddress,
   });
 
   return {
-    stakingProject,
+    stakingPool,
     staker: walletAddress
       ? await fetchStaker({
           connection: mx.connection,
-          stakingProjectAddress,
+          staking_poolAddress,
           walletAddress,
         })
       : undefined,
     stakedNfts: await fetchStakedNfts({
       metaplex: mx,
-      stakingProjectAddress,
+      staking_poolAddress,
       walletAddress,
     }),
     availableNfts: await fetchAvailableNfts({
       metaplex: mx,
       project,
-      stakingProject,
+      stakingPool,
       allowedMints,
       walletAddress,
     }),

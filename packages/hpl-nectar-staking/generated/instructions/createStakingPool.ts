@@ -9,39 +9,39 @@ import * as splToken from '@solana/spl-token'
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
 import {
-  CreateStakingProjectArgs,
-  createStakingProjectArgsBeet,
-} from '../types/CreateStakingProjectArgs'
+  CreateStakingPoolArgs,
+  createStakingPoolArgsBeet,
+} from '../types/CreateStakingPoolArgs'
 
 /**
  * @category Instructions
- * @category CreateStakingProject
+ * @category CreateStakingPool
  * @category generated
  */
-export type CreateStakingProjectInstructionArgs = {
-  args: CreateStakingProjectArgs
+export type CreateStakingPoolInstructionArgs = {
+  args: CreateStakingPoolArgs
 }
 /**
  * @category Instructions
- * @category CreateStakingProject
+ * @category CreateStakingPool
  * @category generated
  */
-export const createStakingProjectStruct = new beet.FixableBeetArgsStruct<
-  CreateStakingProjectInstructionArgs & {
+export const createStakingPoolStruct = new beet.FixableBeetArgsStruct<
+  CreateStakingPoolInstructionArgs & {
     instructionDiscriminator: number[] /* size: 8 */
   }
 >(
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['args', createStakingProjectArgsBeet],
+    ['args', createStakingPoolArgsBeet],
   ],
-  'CreateStakingProjectInstructionArgs'
+  'CreateStakingPoolInstructionArgs'
 )
 /**
- * Accounts required by the _createStakingProject_ instruction
+ * Accounts required by the _createStakingPool_ instruction
  *
  * @property [] key
- * @property [_writable_] stakingProject
+ * @property [_writable_] stakingPool
  * @property [] rewardMint
  * @property [_writable_] rewardVault
  * @property [_writable_] project
@@ -52,12 +52,12 @@ export const createStakingProjectStruct = new beet.FixableBeetArgsStruct<
  * @property [] rentSysvar
  * @property [] hiveControl
  * @category Instructions
- * @category CreateStakingProject
+ * @category CreateStakingPool
  * @category generated
  */
-export type CreateStakingProjectInstructionAccounts = {
+export type CreateStakingPoolInstructionAccounts = {
   key: web3.PublicKey
-  stakingProject: web3.PublicKey
+  stakingPool: web3.PublicKey
   rewardMint: web3.PublicKey
   rewardVault: web3.PublicKey
   project: web3.PublicKey
@@ -72,12 +72,12 @@ export type CreateStakingProjectInstructionAccounts = {
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const createStakingProjectInstructionDiscriminator = [
-  206, 199, 6, 53, 41, 132, 120, 208,
+export const createStakingPoolInstructionDiscriminator = [
+  104, 58, 70, 37, 225, 212, 145, 93,
 ]
 
 /**
- * Creates a _CreateStakingProject_ instruction.
+ * Creates a _CreateStakingPool_ instruction.
  *
  * Optional accounts that are not provided will be omitted from the accounts
  * array passed with the instruction.
@@ -88,16 +88,16 @@ export const createStakingProjectInstructionDiscriminator = [
  * @param args to provide as instruction data to the program
  *
  * @category Instructions
- * @category CreateStakingProject
+ * @category CreateStakingPool
  * @category generated
  */
-export function createCreateStakingProjectInstruction(
-  accounts: CreateStakingProjectInstructionAccounts,
-  args: CreateStakingProjectInstructionArgs,
+export function createCreateStakingPoolInstruction(
+  accounts: CreateStakingPoolInstructionAccounts,
+  args: CreateStakingPoolInstructionArgs,
   programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
 ) {
-  const [data] = createStakingProjectStruct.serialize({
-    instructionDiscriminator: createStakingProjectInstructionDiscriminator,
+  const [data] = createStakingPoolStruct.serialize({
+    instructionDiscriminator: createStakingPoolInstructionDiscriminator,
     ...args,
   })
   const keys: web3.AccountMeta[] = [
@@ -107,7 +107,7 @@ export function createCreateStakingProjectInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.stakingProject,
+      pubkey: accounts.stakingPool,
       isWritable: true,
       isSigner: false,
     },

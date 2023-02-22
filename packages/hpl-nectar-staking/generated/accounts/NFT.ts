@@ -16,7 +16,7 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  */
 export type NFTArgs = {
   bump: number
-  stakingProject: web3.PublicKey
+  stakingPool: web3.PublicKey
   staker: web3.PublicKey
   mint: web3.PublicKey
   creator: web3.PublicKey
@@ -38,7 +38,7 @@ export const nFTDiscriminator = [88, 10, 146, 176, 101, 11, 40, 217]
 export class NFT implements NFTArgs {
   private constructor(
     readonly bump: number,
-    readonly stakingProject: web3.PublicKey,
+    readonly stakingPool: web3.PublicKey,
     readonly staker: web3.PublicKey,
     readonly mint: web3.PublicKey,
     readonly creator: web3.PublicKey,
@@ -55,7 +55,7 @@ export class NFT implements NFTArgs {
   static fromArgs(args: NFTArgs) {
     return new NFT(
       args.bump,
-      args.stakingProject,
+      args.stakingPool,
       args.staker,
       args.mint,
       args.creator,
@@ -171,7 +171,7 @@ export class NFT implements NFTArgs {
   pretty() {
     return {
       bump: this.bump,
-      stakingProject: this.stakingProject.toBase58(),
+      stakingPool: this.stakingPool.toBase58(),
       staker: this.staker.toBase58(),
       mint: this.mint.toBase58(),
       creator: this.creator.toBase58(),
@@ -237,7 +237,7 @@ export const nFTBeet = new beet.BeetStruct<
   [
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['bump', beet.u8],
-    ['stakingProject', beetSolana.publicKey],
+    ['stakingPool', beetSolana.publicKey],
     ['staker', beetSolana.publicKey],
     ['mint', beetSolana.publicKey],
     ['creator', beetSolana.publicKey],

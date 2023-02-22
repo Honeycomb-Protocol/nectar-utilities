@@ -1,5 +1,5 @@
-export * from "./createProject";
-export * from "./updateProject";
+export * from "./createStakingPool";
+export * from "./updateStakingPool";
 export * from "./initMultipliers";
 export * from "./addMultiplier";
 export * from "./initNFT";

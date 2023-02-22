@@ -2,13 +2,13 @@ import * as web3 from "@solana/web3.js";
 import { getDependencies } from "./utils";
 import {
   claimRewards,
-  createProject,
+  createStakingPool,
   fetchAvailableNfts,
   fetchStakedNfts,
   fundRewards,
   LockType,
   stake,
-  StakingProject,
+  StakingPool,
   unstake,
 } from "../packages/hpl-nectar-staking";
 import { Project } from "@honeycomb-protocol/hive-control";
@@ -27,8 +27,8 @@ export default async function (
   );
   console.log(deployments);
   switch (action) {
-    case "create-project":
-      const createProjectRes = await createProject({
+    case "create-pool":
+      const createStakingPoolRes = await createStakingPool({
         metaplex: mx,
         project,
         args: {
@@ -64,14 +64,11 @@ export default async function (
         multipliersDecimals: 3,
       });
 
-      console.log("Tx:", createProjectRes.response.signature);
-      console.log(
-        "StakingProject: ",
-        createProjectRes.stakingProject.toString()
-      );
+      console.log("Tx:", createStakingPoolRes.response.signature);
+      console.log("StakingPool: ", createStakingPoolRes.stakingPool.toString());
       setDeployments({
         ...deployments,
-        project: createProjectRes.stakingProject,
+        pool: createStakingPoolRes.stakingPool,
       });
       break;
 
@@ -80,40 +77,40 @@ export default async function (
         mx.connection,
         project
       );
-      const stakeStakingProject = await StakingProject.fromAccountAddress(
+      const stakeStakingPool = await StakingPool.fromAccountAddress(
         mx.connection,
-        new web3.PublicKey(deployments.project)
+        new web3.PublicKey(deployments.pool)
       );
       const availableNfts = await fetchAvailableNfts({
         metaplex: mx,
         project: projectAccount,
-        stakingProject: stakeStakingProject,
+        stakingPool: stakeStakingPool,
         walletAddress: mx.identity().publicKey,
       });
 
       const stakeResponses = await stake({
         metaplex: mx,
-        stakingProject: stakeStakingProject,
+        stakingPool: stakeStakingPool,
         nfts: [availableNfts[0]],
       });
       console.log("Responses:", stakeResponses);
       break;
 
     case "unstake":
-      const stakingProjectAddress = new web3.PublicKey(deployments.project);
-      const unstakeStakingProject = await StakingProject.fromAccountAddress(
+      const staking_poolAddress = new web3.PublicKey(deployments.pool);
+      const unstakeStakingPool = await StakingPool.fromAccountAddress(
         mx.connection,
-        stakingProjectAddress
+        staking_poolAddress
       );
       const stakedNfts = await fetchStakedNfts({
         metaplex: mx,
-        stakingProjectAddress: stakingProjectAddress,
+        staking_poolAddress: staking_poolAddress,
         walletAddress: mx.identity().publicKey,
       });
 
       const unstakeResponses = await unstake({
         metaplex: mx,
-        stakingProject: unstakeStakingProject,
+        stakingPool: unstakeStakingPool,
         nfts: [stakedNfts[0]],
       });
       console.log("Responses:", unstakeResponses);
@@ -123,7 +120,7 @@ export default async function (
       const fundRewardsResponse = await fundRewards({
         metaplex: mx,
         project,
-        stakingProject: new web3.PublicKey(deployments.project),
+        stakingPool: new web3.PublicKey(deployments.pool),
         amount: Number(args[0]) * 1000000000,
       });
       console.log("Tx:", fundRewardsResponse.response.signature);
@@ -133,7 +130,7 @@ export default async function (
       const claimRewardsResponse = await claimRewards({
         metaplex: mx,
         project,
-        stakingProject: new web3.PublicKey(deployments.project),
+        stakingPool: new web3.PublicKey(deployments.pool),
         nftMint: new web3.PublicKey(args[0]),
       });
       console.log("Tx:", claimRewardsResponse.response.signature);

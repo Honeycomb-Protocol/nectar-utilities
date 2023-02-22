@@ -10,9 +10,9 @@ declare_id!("5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG");
 pub mod hpl_nectar_staking {
     use super::*;
 
-    pub fn create_staking_project(
-        ctx: Context<CreateStakingProject>,
-        args: CreateStakingProjectArgs,
+    pub fn create_staking_pool(
+        ctx: Context<CreateStakingPool>,
+        args: CreateStakingPoolArgs,
     ) -> Result<()> {
         hpl_hive_control::cpi::add_remove_service(
             CpiContext::new(
@@ -35,21 +35,21 @@ pub mod hpl_nectar_staking {
             ),
             hpl_hive_control::instructions::AddRemoveServiceArgs {
                 service: hpl_hive_control::state::Service::Staking {
-                    pool_id: ctx.accounts.staking_project.key(),
+                    pool_id: ctx.accounts.staking_pool.key(),
                 },
                 remove: Some(false),
             },
         )?;
 
-        instructions::create_staking_project(ctx, args)
+        instructions::create_staking_pool(ctx, args)
     }
 
-    pub fn update_staking_project(
-        ctx: Context<UpdateStakingProject>,
-        args: UpdateStakingProjectArgs,
+    pub fn update_staking_pool(
+        ctx: Context<UpdateStakingPool>,
+        args: UpdateStakingPoolArgs,
     ) -> Result<()> {
         hpl_hive_control::instructions::platform_gate(
-            hpl_hive_control::constants::ACTIONS.manage_staking_project,
+            hpl_hive_control::constants::ACTIONS.manage_staking_pool,
             &ctx.accounts.project,
             ctx.accounts.authority.key(),
             ctx.accounts.payer.to_account_info(),
@@ -58,7 +58,7 @@ pub mod hpl_nectar_staking {
             ctx.accounts.system_program.to_account_info(),
         )?;
 
-        instructions::update_staking_project(ctx, args)
+        instructions::update_staking_pool(ctx, args)
     }
 
     pub fn init_multipliers(
@@ -66,7 +66,7 @@ pub mod hpl_nectar_staking {
         args: InitMultipliersArgs,
     ) -> Result<()> {
         hpl_hive_control::instructions::platform_gate(
-            hpl_hive_control::constants::ACTIONS.manage_staking_project,
+            hpl_hive_control::constants::ACTIONS.manage_staking_pool,
             &ctx.accounts.project,
             ctx.accounts.authority.key(),
             ctx.accounts.payer.to_account_info(),
@@ -80,7 +80,7 @@ pub mod hpl_nectar_staking {
 
     pub fn add_multiplier(ctx: Context<AddMultiplier>, args: AddMultiplierArgs) -> Result<()> {
         hpl_hive_control::instructions::platform_gate(
-            hpl_hive_control::constants::ACTIONS.manage_staking_project,
+            hpl_hive_control::constants::ACTIONS.manage_staking_pool,
             &ctx.accounts.project,
             ctx.accounts.authority.key(),
             ctx.accounts.payer.to_account_info(),
@@ -150,7 +150,7 @@ pub mod hpl_nectar_staking {
 
     pub fn fund_rewards(ctx: Context<FundRewards>, amount: u64) -> Result<()> {
         hpl_hive_control::instructions::platform_gate(
-            hpl_hive_control::constants::ACTIONS.manage_staking_project,
+            hpl_hive_control::constants::ACTIONS.manage_staking_pool,
             &ctx.accounts.project,
             ctx.accounts.wallet.key(),
             ctx.accounts.wallet.to_account_info(),
@@ -164,7 +164,7 @@ pub mod hpl_nectar_staking {
 
     pub fn withdraw_rewards(ctx: Context<WithdrawRewards>, amount: u64) -> Result<()> {
         hpl_hive_control::instructions::platform_gate(
-            hpl_hive_control::constants::ACTIONS.withdraw_staking_rewards,
+            hpl_hive_control::constants::ACTIONS.withdraw_staking_pool_rewards,
             &ctx.accounts.project,
             ctx.accounts.authority.key(),
             ctx.accounts.payer.to_account_info(),
@@ -192,7 +192,7 @@ pub mod hpl_nectar_staking {
 
     pub fn migrate_custodial(ctx: Context<MigrateCustodial>, args: MigrateArgs) -> Result<()> {
         hpl_hive_control::instructions::platform_gate(
-            hpl_hive_control::constants::ACTIONS.manage_staking_project,
+            hpl_hive_control::constants::ACTIONS.manage_staking_pool,
             &ctx.accounts.project,
             ctx.accounts.authority.key(),
             ctx.accounts.payer.to_account_info(),

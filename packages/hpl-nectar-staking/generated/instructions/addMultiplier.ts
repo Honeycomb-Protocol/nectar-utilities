@@ -39,7 +39,7 @@ export const addMultiplierStruct = new beet.FixableBeetArgsStruct<
 /**
  * Accounts required by the _addMultiplier_ instruction
  *
- * @property [_writable_] stakingProject
+ * @property [_writable_] stakingPool
  * @property [_writable_] multipliers
  * @property [_writable_, **signer**] authority
  * @property [_writable_, **signer**] payer
@@ -52,7 +52,7 @@ export const addMultiplierStruct = new beet.FixableBeetArgsStruct<
  * @category generated
  */
 export type AddMultiplierInstructionAccounts = {
-  stakingProject: web3.PublicKey
+  stakingPool: web3.PublicKey
   multipliers: web3.PublicKey
   authority: web3.PublicKey
   payer: web3.PublicKey
@@ -94,7 +94,7 @@ export function createAddMultiplierInstruction(
   })
   const keys: web3.AccountMeta[] = [
     {
-      pubkey: accounts.stakingProject,
+      pubkey: accounts.stakingPool,
       isWritable: true,
       isSigner: false,
     },

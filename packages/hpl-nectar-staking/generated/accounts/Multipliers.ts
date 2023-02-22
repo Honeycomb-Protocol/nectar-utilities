@@ -17,7 +17,7 @@ import { Multiplier, multiplierBeet } from '../types/Multiplier'
  */
 export type MultipliersArgs = {
   bump: number
-  stakingProject: web3.PublicKey
+  stakingPool: web3.PublicKey
   decimals: number
   durationMultipliers: Multiplier[]
   countMultipliers: Multiplier[]
@@ -36,7 +36,7 @@ export const multipliersDiscriminator = [129, 233, 66, 228, 168, 129, 38, 204]
 export class Multipliers implements MultipliersArgs {
   private constructor(
     readonly bump: number,
-    readonly stakingProject: web3.PublicKey,
+    readonly stakingPool: web3.PublicKey,
     readonly decimals: number,
     readonly durationMultipliers: Multiplier[],
     readonly countMultipliers: Multiplier[],
@@ -50,7 +50,7 @@ export class Multipliers implements MultipliersArgs {
   static fromArgs(args: MultipliersArgs) {
     return new Multipliers(
       args.bump,
-      args.stakingProject,
+      args.stakingPool,
       args.decimals,
       args.durationMultipliers,
       args.countMultipliers,
@@ -165,7 +165,7 @@ export class Multipliers implements MultipliersArgs {
   pretty() {
     return {
       bump: this.bump,
-      stakingProject: this.stakingProject.toBase58(),
+      stakingPool: this.stakingPool.toBase58(),
       decimals: this.decimals,
       durationMultipliers: this.durationMultipliers,
       countMultipliers: this.countMultipliers,
@@ -188,7 +188,7 @@ export const multipliersBeet = new beet.FixableBeetStruct<
   [
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['bump', beet.u8],
-    ['stakingProject', beetSolana.publicKey],
+    ['stakingPool', beetSolana.publicKey],
     ['decimals', beet.u8],
     ['durationMultipliers', beet.array(multiplierBeet)],
     ['countMultipliers', beet.array(multiplierBeet)],

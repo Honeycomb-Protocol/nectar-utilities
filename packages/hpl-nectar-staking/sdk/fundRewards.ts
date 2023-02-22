@@ -2,7 +2,7 @@ import * as web3 from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
 import {
   createFundRewardsInstruction,
-  StakingProject,
+  StakingPool,
   PROGRAM_ID,
 } from "../generated";
 import { Metaplex } from "@metaplex-foundation/js";
@@ -13,14 +13,14 @@ import { createCtx } from "../utils";
 type FundRewardsArgs = {
   metaplex: Metaplex;
   project: web3.PublicKey;
-  stakingProject: web3.PublicKey;
+  stakingPool: web3.PublicKey;
   amount: number;
   programId?: web3.PublicKey;
 };
 
 type CreateFundRewardsCrxArgs = {
   project: web3.PublicKey;
-  stakingProject: web3.PublicKey;
+  stakingPool: web3.PublicKey;
   rewardMint: web3.PublicKey;
   wallet: web3.PublicKey;
   amount: number;
@@ -30,7 +30,7 @@ type CreateFundRewardsCrxArgs = {
 export function createFundRewardsCtx(args: CreateFundRewardsCrxArgs) {
   const programId = args.programId || PROGRAM_ID;
   const [rewardVault] = getVaultPda(
-    args.stakingProject,
+    args.stakingPool,
     args.rewardMint,
     programId
   );
@@ -45,7 +45,7 @@ export function createFundRewardsCtx(args: CreateFundRewardsCrxArgs) {
       {
         project: args.project,
         vault: VAULT,
-        stakingProject: args.stakingProject,
+        stakingPool: args.stakingPool,
         rewardMint: args.rewardMint,
         rewardVault,
         tokenAccount,
@@ -62,16 +62,16 @@ export function createFundRewardsCtx(args: CreateFundRewardsCrxArgs) {
 }
 
 export async function fundRewards({ metaplex: mx, ...args }: FundRewardsArgs) {
-  const stakingProjectAccount = await StakingProject.fromAccountAddress(
+  const staking_poolAccount = await StakingPool.fromAccountAddress(
     mx.connection,
-    args.stakingProject
+    args.stakingPool
   );
 
   const wallet = mx.identity();
   const ctx = createFundRewardsCtx({
     project: args.project,
-    stakingProject: args.stakingProject,
-    rewardMint: stakingProjectAccount.rewardMint,
+    stakingPool: args.stakingPool,
+    rewardMint: staking_poolAccount.rewardMint,
     wallet: wallet.publicKey,
     amount: args.amount,
     programId: args.programId,

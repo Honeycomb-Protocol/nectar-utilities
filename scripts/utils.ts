@@ -8,7 +8,7 @@ import { keypairIdentity, Metaplex } from "@metaplex-foundation/js";
 export const devnetConfig: Config = {
   network: "devnet",
   // endpoint: "https://api.devnet.solana.com/",
-  // endpoint: "https://metaplex.devnet.rpcpool.com/",
+  // endpoint: "https://metaplex.devnet.rpcstaking_pool.com/",
   endpoint:
     "https://lingering-newest-sheet.solana-devnet.quiknode.pro/fb6e6465df3955a06fd5ddec2e5b003896f56adb/",
 };

@@ -6,9 +6,9 @@ use {
 /// Accounts used in initialize staker instruction
 #[derive(Accounts)]
 pub struct InitStaker<'info> {
-    /// StakingProject state account
+    /// StakingPool state account
     #[account(has_one = project)]
-    pub staking_project: Account<'info, StakingProject>,
+    pub staking_pool: Account<'info, StakingPool>,
 
     /// Staker state account
     #[account(
@@ -17,7 +17,7 @@ pub struct InitStaker<'info> {
       seeds = [
           b"staker",
           wallet.key().as_ref(),
-          staking_project.key().as_ref(),
+          staking_pool.key().as_ref(),
       ],
       bump,
   )]
@@ -43,7 +43,7 @@ pub fn init_staker(ctx: Context<InitStaker>) -> Result<()> {
     let staker = &mut ctx.accounts.staker;
     staker.set_defaults();
     staker.bump = ctx.bumps["staker"];
-    staker.staking_project = ctx.accounts.staking_project.key();
+    staker.staking_pool = ctx.accounts.staking_pool.key();
     staker.wallet = ctx.accounts.wallet.key();
     Ok(())
 }

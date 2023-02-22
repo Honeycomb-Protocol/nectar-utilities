@@ -7,7 +7,7 @@
 
 import * as beet from '@metaplex-foundation/beet'
 import { LockType, lockTypeBeet } from './LockType'
-export type CreateStakingProjectArgs = {
+export type CreateStakingPoolArgs = {
   name: string
   lockType: beet.COption<LockType>
   rewardsPerDuration: beet.bignum
@@ -24,8 +24,8 @@ export type CreateStakingProjectArgs = {
  * @category userTypes
  * @category generated
  */
-export const createStakingProjectArgsBeet =
-  new beet.FixableBeetArgsStruct<CreateStakingProjectArgs>(
+export const createStakingPoolArgsBeet =
+  new beet.FixableBeetArgsStruct<CreateStakingPoolArgs>(
     [
       ['name', beet.utf8String],
       ['lockType', beet.coption(lockTypeBeet)],
@@ -38,5 +38,5 @@ export const createStakingProjectArgsBeet =
       ['startTime', beet.coption(beet.i64)],
       ['endTime', beet.coption(beet.i64)],
     ],
-    'CreateStakingProjectArgs'
+    'CreateStakingPoolArgs'
   )

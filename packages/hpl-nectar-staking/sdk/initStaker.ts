@@ -8,27 +8,27 @@ import { createCtx } from "../utils";
 type InitStakerArgs = {
   metaplex: Metaplex;
   project: web3.PublicKey;
-  stakingProject: web3.PublicKey;
+  stakingPool: web3.PublicKey;
   programId?: web3.PublicKey;
 };
 
 type CreateInitStakerCtxArgs = {
   project: web3.PublicKey;
-  stakingProject: web3.PublicKey;
+  stakingPool: web3.PublicKey;
   wallet: web3.PublicKey;
   programId?: web3.PublicKey;
 };
 
 export function createInitStakerCtx(args: CreateInitStakerCtxArgs) {
   const programId = args.programId || PROGRAM_ID;
-  const [staker] = getStakerPda(args.stakingProject, args.wallet, programId);
+  const [staker] = getStakerPda(args.stakingPool, args.wallet, programId);
 
   const instructions: web3.TransactionInstruction[] = [
     createInitStakerInstruction(
       {
         project: args.project,
         vault: VAULT,
-        stakingProject: args.stakingProject,
+        stakingPool: args.stakingPool,
         staker,
         wallet: args.wallet,
       },
@@ -43,7 +43,7 @@ export async function initStaker({ metaplex: mx, ...args }: InitStakerArgs) {
   const wallet = mx.identity();
   const ctx = createInitStakerCtx({
     project: args.project,
-    stakingProject: args.stakingProject,
+    stakingPool: args.stakingPool,
     wallet: wallet.publicKey,
     programId: args.programId,
   });

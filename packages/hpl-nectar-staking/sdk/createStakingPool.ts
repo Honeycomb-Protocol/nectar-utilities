@@ -1,16 +1,16 @@
 import * as web3 from "@solana/web3.js";
 import {
-  createCreateStakingProjectInstruction,
-  CreateStakingProjectArgs,
+  createCreateStakingPoolInstruction,
+  CreateStakingPoolArgs,
   AddMultiplierArgs,
   PROGRAM_ID,
 } from "../generated";
 import { Context } from "../types";
 import { Metaplex } from "@metaplex-foundation/js";
-import { createUpdateProjectCtx } from "./updateProject";
+import { createUpdateProjectCtx } from "./updateStakingPool";
 import { createInitMultiplierCtx } from "./initMultipliers";
 import { createAddMultiplierCtx } from "./addMultiplier";
-import { getStakingProjectPda, getVaultPda } from "../pdas";
+import { getStakingPoolPda, getVaultPda } from "../pdas";
 import {
   VAULT,
   HIVECONTROL_PROGRAM_ID,
@@ -21,7 +21,7 @@ type CreateProjectArgs = {
   metaplex: Metaplex;
   project: web3.PublicKey;
   rewardMint: web3.PublicKey;
-  args: CreateStakingProjectArgs;
+  args: CreateStakingPoolArgs;
   collections?: web3.PublicKey[];
   creators?: web3.PublicKey[];
   multipliers?: AddMultiplierArgs[];
@@ -35,7 +35,7 @@ type CreateCreateProjectCtxArgs = {
   rewardMint: web3.PublicKey;
   authority: web3.PublicKey;
   payer: web3.PublicKey;
-  args: CreateStakingProjectArgs;
+  args: CreateStakingPoolArgs;
   collections?: web3.PublicKey[];
   creators?: web3.PublicKey[];
   multipliers?: AddMultiplierArgs[];
@@ -46,20 +46,20 @@ type CreateCreateProjectCtxArgs = {
 
 export function createCreateProjectCtx(
   args: CreateCreateProjectCtxArgs
-): Context & { stakingProject: web3.PublicKey } {
+): Context & { stakingPool: web3.PublicKey } {
   const programId = args.programId || PROGRAM_ID;
 
   const key = web3.Keypair.generate().publicKey;
-  const [stakingProject] = getStakingProjectPda(args.project, key, programId);
-  const [rewardVault] = getVaultPda(stakingProject, args.rewardMint, programId);
+  const [stakingPool] = getStakingPoolPda(args.project, key, programId);
+  const [rewardVault] = getVaultPda(stakingPool, args.rewardMint, programId);
 
   const instructions: web3.TransactionInstruction[] = [
-    createCreateStakingProjectInstruction(
+    createCreateStakingPoolInstruction(
       {
         project: args.project,
         vault: VAULT,
         key,
-        stakingProject,
+        stakingPool,
         rewardMint: args.rewardMint,
         rewardVault,
         delegateAuthority: args.delegateAuthority || programId,
@@ -87,7 +87,7 @@ export function createCreateProjectCtx(
             endTime: null,
           },
           project: args.project,
-          stakingProject: stakingProject,
+          stakingPool: stakingPool,
           authority: args.authority,
           payer: args.payer,
           collection,
@@ -111,7 +111,7 @@ export function createCreateProjectCtx(
             endTime: null,
           },
           project: args.project,
-          stakingProject: stakingProject,
+          stakingPool: stakingPool,
           authority: args.authority,
           payer: args.payer,
           creator,
@@ -127,7 +127,7 @@ export function createCreateProjectCtx(
               decimals: args.multipliersDecimals || 9,
             },
             project: args.project,
-            stakingProject,
+            stakingPool,
             authority: args.authority,
             payer: args.payer,
             delegateAuthority: args.delegateAuthority || programId,
@@ -138,7 +138,7 @@ export function createCreateProjectCtx(
             (multiplier) =>
               createAddMultiplierCtx({
                 project: args.project,
-                stakingProject,
+                stakingPool,
                 authority: args.authority,
                 payer: args.payer,
                 args: multiplier,
@@ -152,11 +152,11 @@ export function createCreateProjectCtx(
 
   return {
     ...createCtx(instructions),
-    stakingProject,
+    stakingPool,
   };
 }
 
-export async function createProject({
+export async function createStakingPool({
   metaplex: mx,
   ...args
 }: CreateProjectArgs) {
@@ -182,6 +182,6 @@ export async function createProject({
     response: await mx
       .rpc()
       .sendAndConfirmTransaction(ctx.tx, { skipPreflight: true }, ctx.signers),
-    stakingProject: ctx.stakingProject,
+    stakingPool: ctx.stakingPool,
   };
 }

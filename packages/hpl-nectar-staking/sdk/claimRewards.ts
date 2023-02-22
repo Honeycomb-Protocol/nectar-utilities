@@ -2,7 +2,7 @@ import * as web3 from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
 import {
   createClaimRewardsInstruction,
-  StakingProject,
+  StakingPool,
   PROGRAM_ID,
 } from "../generated";
 import { Metaplex } from "@metaplex-foundation/js";
@@ -13,14 +13,14 @@ import { VAULT } from "@honeycomb-protocol/hive-control";
 type ClaimRewardsArgs = {
   metaplex: Metaplex;
   project: web3.PublicKey;
-  stakingProject: web3.PublicKey;
+  stakingPool: web3.PublicKey;
   nftMint: web3.PublicKey;
   programId?: web3.PublicKey;
 };
 
 type CreateClaimRewardsCtxArgs = {
   project: web3.PublicKey;
-  stakingProject: web3.PublicKey;
+  stakingPool: web3.PublicKey;
   nftMint: web3.PublicKey;
   rewardMint: web3.PublicKey;
   wallet: web3.PublicKey;
@@ -31,13 +31,13 @@ type CreateClaimRewardsCtxArgs = {
 export function createClaimRewardsCtx(args: CreateClaimRewardsCtxArgs) {
   const programId = args.programId || PROGRAM_ID;
 
-  const [nft] = getNftPda(args.stakingProject, args.nftMint, programId);
+  const [nft] = getNftPda(args.stakingPool, args.nftMint, programId);
   const [rewardVault] = getVaultPda(
-    args.stakingProject,
+    args.stakingPool,
     args.rewardMint,
     programId
   );
-  const [staker] = getStakerPda(args.stakingProject, args.wallet, programId);
+  const [staker] = getStakerPda(args.stakingPool, args.wallet, programId);
 
   const tokenAccount = splToken.getAssociatedTokenAddressSync(
     args.rewardMint,
@@ -49,7 +49,7 @@ export function createClaimRewardsCtx(args: CreateClaimRewardsCtxArgs) {
       {
         project: args.project,
         vault: VAULT,
-        stakingProject: args.stakingProject,
+        stakingPool: args.stakingPool,
         multipliers: args.multipliers || programId,
         nft,
         rewardMint: args.rewardMint,
@@ -70,17 +70,17 @@ export async function claimRewards({
   metaplex: mx,
   ...args
 }: ClaimRewardsArgs) {
-  const stakingProjectAccount = await StakingProject.fromAccountAddress(
+  const staking_poolAccount = await StakingPool.fromAccountAddress(
     mx.connection,
-    args.stakingProject
+    args.stakingPool
   );
   const multipliers = await getOrFetchMultipliers(mx.connection, args.project);
   const wallet = mx.identity();
   const ctx = createClaimRewardsCtx({
     project: args.project,
-    stakingProject: args.stakingProject,
+    stakingPool: args.stakingPool,
     nftMint: args.nftMint,
-    rewardMint: stakingProjectAccount.rewardMint,
+    rewardMint: staking_poolAccount.rewardMint,
     wallet: wallet.publicKey,
     multipliers: multipliers?.address,
     programId: args.programId,

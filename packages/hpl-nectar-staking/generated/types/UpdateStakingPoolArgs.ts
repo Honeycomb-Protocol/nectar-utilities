@@ -6,7 +6,7 @@
  */
 
 import * as beet from '@metaplex-foundation/beet'
-export type UpdateStakingProjectArgs = {
+export type UpdateStakingPoolArgs = {
   name: beet.COption<string>
   rewardsPerDuration: beet.COption<beet.bignum>
   rewardsDuration: beet.COption<beet.bignum>
@@ -22,8 +22,8 @@ export type UpdateStakingProjectArgs = {
  * @category userTypes
  * @category generated
  */
-export const updateStakingProjectArgsBeet =
-  new beet.FixableBeetArgsStruct<UpdateStakingProjectArgs>(
+export const updateStakingPoolArgsBeet =
+  new beet.FixableBeetArgsStruct<UpdateStakingPoolArgs>(
     [
       ['name', beet.coption(beet.utf8String)],
       ['rewardsPerDuration', beet.coption(beet.u64)],
@@ -35,5 +35,5 @@ export const updateStakingProjectArgsBeet =
       ['startTime', beet.coption(beet.i64)],
       ['endTime', beet.coption(beet.i64)],
     ],
-    'UpdateStakingProjectArgs'
+    'UpdateStakingPoolArgs'
   )

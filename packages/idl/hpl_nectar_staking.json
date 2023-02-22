@@ -3,7 +3,7 @@
   "name": "hpl_nectar_staking",
   "instructions": [
     {
-      "name": "createStakingProject",
+      "name": "createStakingPool",
       "accounts": [
         {
           "name": "key",
@@ -11,11 +11,11 @@
           "isSigner": false
         },
         {
-          "name": "stakingProject",
+          "name": "stakingPool",
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "StakingProject state account"
+            "StakingPool state account"
           ]
         },
         {
@@ -23,7 +23,7 @@
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "Reward mint address to be used for the staking_project"
+            "Reward mint address to be used for the staking_pool"
           ]
         },
         {
@@ -106,20 +106,20 @@
         {
           "name": "args",
           "type": {
-            "defined": "CreateStakingProjectArgs"
+            "defined": "CreateStakingPoolArgs"
           }
         }
       ]
     },
     {
-      "name": "updateStakingProject",
+      "name": "updateStakingPool",
       "accounts": [
         {
-          "name": "stakingProject",
+          "name": "stakingPool",
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "StakingProject state account"
+            "StakingPool state account"
           ]
         },
         {
@@ -128,7 +128,7 @@
           "isSigner": false,
           "isOptional": true,
           "docs": [
-            "Collection mint address to be used for the staking_project"
+            "Collection mint address to be used for the staking_pool"
           ]
         },
         {
@@ -137,7 +137,7 @@
           "isSigner": false,
           "isOptional": true,
           "docs": [
-            "Creator address to be used for the staking_project"
+            "Creator address to be used for the staking_pool"
           ]
         },
         {
@@ -193,7 +193,7 @@
         {
           "name": "args",
           "type": {
-            "defined": "UpdateStakingProjectArgs"
+            "defined": "UpdateStakingPoolArgs"
           }
         }
       ]
@@ -202,11 +202,11 @@
       "name": "initMultipliers",
       "accounts": [
         {
-          "name": "stakingProject",
+          "name": "stakingPool",
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "StakingProject state account"
+            "StakingPool state account"
           ]
         },
         {
@@ -271,11 +271,11 @@
       "name": "addMultiplier",
       "accounts": [
         {
-          "name": "stakingProject",
+          "name": "stakingPool",
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "StakingProject state account"
+            "StakingPool state account"
           ]
         },
         {
@@ -348,11 +348,11 @@
       "name": "initNft",
       "accounts": [
         {
-          "name": "stakingProject",
+          "name": "stakingPool",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "StakingProject state account"
+            "StakingPool state account"
           ]
         },
         {
@@ -418,11 +418,11 @@
       "name": "initStaker",
       "accounts": [
         {
-          "name": "stakingProject",
+          "name": "stakingPool",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "StakingProject state account"
+            "StakingPool state account"
           ]
         },
         {
@@ -466,11 +466,11 @@
       "name": "stake",
       "accounts": [
         {
-          "name": "stakingProject",
+          "name": "stakingPool",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "StakingProject state account"
+            "StakingPool state account"
           ]
         },
         {
@@ -621,11 +621,11 @@
       "name": "unstake",
       "accounts": [
         {
-          "name": "stakingProject",
+          "name": "stakingPool",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "StakingProject state account"
+            "StakingPool state account"
           ]
         },
         {
@@ -776,11 +776,11 @@
       "name": "fundRewards",
       "accounts": [
         {
-          "name": "stakingProject",
+          "name": "stakingPool",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "StakingProject state account"
+            "StakingPool state account"
           ]
         },
         {
@@ -853,11 +853,11 @@
       "name": "withdrawRewards",
       "accounts": [
         {
-          "name": "stakingProject",
+          "name": "stakingPool",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "StakingProject state account"
+            "StakingPool state account"
           ]
         },
         {
@@ -944,11 +944,11 @@
       "name": "claimRewards",
       "accounts": [
         {
-          "name": "stakingProject",
+          "name": "stakingPool",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "StakingProject state account"
+            "StakingPool state account"
           ]
         },
         {
@@ -1062,11 +1062,11 @@
           "isSigner": false
         },
         {
-          "name": "stakingProject",
+          "name": "stakingPool",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "StakingProject state account"
+            "StakingPool state account"
           ]
         },
         {
@@ -1131,7 +1131,7 @@
           "isMut": true,
           "isSigner": true,
           "docs": [
-            "The wallet that holds the authority over the staking_project"
+            "The wallet that holds the authority over the staking_pool"
           ]
         },
         {
@@ -1221,7 +1221,7 @@
     {
       "name": "Multipliers",
       "docs": [
-        "The staking_project multiplier state account"
+        "The staking_pool multiplier state account"
       ],
       "type": {
         "kind": "struct",
@@ -1231,9 +1231,9 @@
             "type": "u8"
           },
           {
-            "name": "stakingProject",
+            "name": "stakingPool",
             "docs": [
-              "The staking_project this multiplier is associated with"
+              "The staking_pool this multiplier is associated with"
             ],
             "type": "publicKey"
           },
@@ -1247,7 +1247,7 @@
           {
             "name": "durationMultipliers",
             "docs": [
-              "The duration multipliers for the staking_project"
+              "The duration multipliers for the staking_pool"
             ],
             "type": {
               "vec": {
@@ -1258,7 +1258,7 @@
           {
             "name": "countMultipliers",
             "docs": [
-              "The duration multipliers for the staking_project"
+              "The duration multipliers for the staking_pool"
             ],
             "type": {
               "vec": {
@@ -1269,7 +1269,7 @@
           {
             "name": "creatorMultipliers",
             "docs": [
-              "The duration multipliers for the staking_project"
+              "The duration multipliers for the staking_pool"
             ],
             "type": {
               "vec": {
@@ -1280,7 +1280,7 @@
           {
             "name": "collectionMultipliers",
             "docs": [
-              "The duration multipliers for the staking_project"
+              "The duration multipliers for the staking_pool"
             ],
             "type": {
               "vec": {
@@ -1304,9 +1304,9 @@
             "type": "u8"
           },
           {
-            "name": "stakingProject",
+            "name": "stakingPool",
             "docs": [
-              "The staking_project this NFT is staked in"
+              "The staking_pool this NFT is staked in"
             ],
             "type": "publicKey"
           },
@@ -1370,45 +1370,9 @@
       }
     },
     {
-      "name": "Staker",
+      "name": "StakingPool",
       "docs": [
-        "The staking_project multiplier state account"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "stakingProject",
-            "docs": [
-              "The staking_project this multiplier is associated with"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "wallet",
-            "docs": [
-              "The wallet that owns this staker account"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "totalStaked",
-            "docs": [
-              "The total amount of tokens staked"
-            ],
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "StakingProject",
-      "docs": [
-        "The NFT collection staking_project state account"
+        "The NFT collection staking_pool state account"
       ],
       "type": {
         "kind": "struct",
@@ -1455,7 +1419,7 @@
           {
             "name": "name",
             "docs": [
-              "name of the staking_project"
+              "name of the staking_pool"
             ],
             "type": "string"
           },
@@ -1542,16 +1506,52 @@
           {
             "name": "collections",
             "docs": [
-              "The collection mint addresses to be used for the staking_project"
+              "The collection mint addresses to be used for the staking_pool"
             ],
             "type": "bytes"
           },
           {
             "name": "creators",
             "docs": [
-              "The creator addresses to be used for the staking_project"
+              "The creator addresses to be used for the staking_pool"
             ],
             "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Staker",
+      "docs": [
+        "The staking_pool multiplier state account"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "stakingPool",
+            "docs": [
+              "The staking_pool this multiplier is associated with"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "wallet",
+            "docs": [
+              "The wallet that owns this staker account"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "totalStaked",
+            "docs": [
+              "The total amount of tokens staked"
+            ],
+            "type": "u64"
           }
         ]
       }
@@ -1605,7 +1605,7 @@
       }
     },
     {
-      "name": "CreateStakingProjectArgs",
+      "name": "CreateStakingPoolArgs",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1671,7 +1671,7 @@
       }
     },
     {
-      "name": "UpdateStakingProjectArgs",
+      "name": "UpdateStakingPoolArgs",
       "type": {
         "kind": "struct",
         "fields": [

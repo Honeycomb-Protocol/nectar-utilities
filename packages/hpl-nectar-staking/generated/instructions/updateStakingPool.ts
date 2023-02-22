@@ -8,38 +8,38 @@
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
 import {
-  UpdateStakingProjectArgs,
-  updateStakingProjectArgsBeet,
-} from '../types/UpdateStakingProjectArgs'
+  UpdateStakingPoolArgs,
+  updateStakingPoolArgsBeet,
+} from '../types/UpdateStakingPoolArgs'
 
 /**
  * @category Instructions
- * @category UpdateStakingProject
+ * @category UpdateStakingPool
  * @category generated
  */
-export type UpdateStakingProjectInstructionArgs = {
-  args: UpdateStakingProjectArgs
+export type UpdateStakingPoolInstructionArgs = {
+  args: UpdateStakingPoolArgs
 }
 /**
  * @category Instructions
- * @category UpdateStakingProject
+ * @category UpdateStakingPool
  * @category generated
  */
-export const updateStakingProjectStruct = new beet.FixableBeetArgsStruct<
-  UpdateStakingProjectInstructionArgs & {
+export const updateStakingPoolStruct = new beet.FixableBeetArgsStruct<
+  UpdateStakingPoolInstructionArgs & {
     instructionDiscriminator: number[] /* size: 8 */
   }
 >(
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['args', updateStakingProjectArgsBeet],
+    ['args', updateStakingPoolArgsBeet],
   ],
-  'UpdateStakingProjectInstructionArgs'
+  'UpdateStakingPoolInstructionArgs'
 )
 /**
- * Accounts required by the _updateStakingProject_ instruction
+ * Accounts required by the _updateStakingPool_ instruction
  *
- * @property [_writable_] stakingProject
+ * @property [_writable_] stakingPool
  * @property [] collection (optional)
  * @property [] creator (optional)
  * @property [_writable_, **signer**] authority
@@ -48,11 +48,11 @@ export const updateStakingProjectStruct = new beet.FixableBeetArgsStruct<
  * @property [] delegateAuthority (optional)
  * @property [_writable_] vault
  * @category Instructions
- * @category UpdateStakingProject
+ * @category UpdateStakingPool
  * @category generated
  */
-export type UpdateStakingProjectInstructionAccounts = {
-  stakingProject: web3.PublicKey
+export type UpdateStakingPoolInstructionAccounts = {
+  stakingPool: web3.PublicKey
   collection?: web3.PublicKey
   creator?: web3.PublicKey
   authority: web3.PublicKey
@@ -65,12 +65,12 @@ export type UpdateStakingProjectInstructionAccounts = {
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const updateStakingProjectInstructionDiscriminator = [
-  98, 36, 229, 93, 126, 107, 247, 114,
+export const updateStakingPoolInstructionDiscriminator = [
+  49, 122, 53, 40, 235, 159, 240, 59,
 ]
 
 /**
- * Creates a _UpdateStakingProject_ instruction.
+ * Creates a _UpdateStakingPool_ instruction.
  *
  * Optional accounts that are not provided will be omitted from the accounts
  * array passed with the instruction.
@@ -81,21 +81,21 @@ export const updateStakingProjectInstructionDiscriminator = [
  * @param args to provide as instruction data to the program
  *
  * @category Instructions
- * @category UpdateStakingProject
+ * @category UpdateStakingPool
  * @category generated
  */
-export function createUpdateStakingProjectInstruction(
-  accounts: UpdateStakingProjectInstructionAccounts,
-  args: UpdateStakingProjectInstructionArgs,
+export function createUpdateStakingPoolInstruction(
+  accounts: UpdateStakingPoolInstructionAccounts,
+  args: UpdateStakingPoolInstructionArgs,
   programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
 ) {
-  const [data] = updateStakingProjectStruct.serialize({
-    instructionDiscriminator: updateStakingProjectInstructionDiscriminator,
+  const [data] = updateStakingPoolStruct.serialize({
+    instructionDiscriminator: updateStakingPoolInstructionDiscriminator,
     ...args,
   })
   const keys: web3.AccountMeta[] = [
     {
-      pubkey: accounts.stakingProject,
+      pubkey: accounts.stakingPool,
       isWritable: true,
       isSigner: false,
     },

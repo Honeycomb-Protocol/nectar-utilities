@@ -22,7 +22,7 @@ export const initNftStruct = new beet.BeetArgsStruct<{
 /**
  * Accounts required by the _initNft_ instruction
  *
- * @property [] stakingProject
+ * @property [] stakingPool
  * @property [_writable_] nft
  * @property [_writable_] nftMint
  * @property [_writable_] nftMetadata
@@ -35,7 +35,7 @@ export const initNftStruct = new beet.BeetArgsStruct<{
  * @category generated
  */
 export type InitNftInstructionAccounts = {
-  stakingProject: web3.PublicKey
+  stakingPool: web3.PublicKey
   nft: web3.PublicKey
   nftMint: web3.PublicKey
   nftMetadata: web3.PublicKey
@@ -73,7 +73,7 @@ export function createInitNftInstruction(
   })
   const keys: web3.AccountMeta[] = [
     {
-      pubkey: accounts.stakingProject,
+      pubkey: accounts.stakingPool,
       isWritable: false,
       isSigner: false,
     },

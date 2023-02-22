@@ -8,9 +8,9 @@ use {
 /// Accounts used in initialize multiplier instruction
 #[derive(Accounts)]
 pub struct InitMultipliers<'info> {
-    /// StakingProject state account
+    /// StakingPool state account
     #[account(mut, has_one = project)]
-    pub staking_project: Account<'info, StakingProject>,
+    pub staking_pool: Account<'info, StakingPool>,
 
     /// Multiplier state account
     #[account(
@@ -18,7 +18,7 @@ pub struct InitMultipliers<'info> {
         space = Multipliers::LEN,
         seeds = [
             b"multipliers",
-            staking_project.key().as_ref()
+            staking_pool.key().as_ref()
         ],
         bump,
     )]
@@ -56,19 +56,19 @@ pub fn init_multipliers(ctx: Context<InitMultipliers>, args: InitMultipliersArgs
     multipliers.set_defaults();
     multipliers.bump = ctx.bumps["multipliers"];
     multipliers.decimals = args.decimals;
-    multipliers.staking_project = ctx.accounts.staking_project.key();
+    multipliers.staking_pool = ctx.accounts.staking_pool.key();
     Ok(())
 }
 
 /// Accounts used in add multiplier instruction
 #[derive(Accounts)]
 pub struct AddMultiplier<'info> {
-    /// StakingProject state account
+    /// StakingPool state account
     #[account(mut, has_one = project)]
-    pub staking_project: Account<'info, StakingProject>,
+    pub staking_pool: Account<'info, StakingPool>,
 
     /// Multiplier state account
-    #[account(mut, has_one = staking_project)]
+    #[account(mut, has_one = staking_pool)]
     pub multipliers: Account<'info, Multipliers>,
 
     /// The wallet that pays for the rent

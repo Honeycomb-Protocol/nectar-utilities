@@ -23,7 +23,7 @@ export const claimRewardsStruct = new beet.BeetArgsStruct<{
 /**
  * Accounts required by the _claimRewards_ instruction
  *
- * @property [] stakingProject
+ * @property [] stakingPool
  * @property [] multipliers (optional)
  * @property [_writable_] nft
  * @property [_writable_] rewardMint
@@ -39,7 +39,7 @@ export const claimRewardsStruct = new beet.BeetArgsStruct<{
  * @category generated
  */
 export type ClaimRewardsInstructionAccounts = {
-  stakingProject: web3.PublicKey
+  stakingPool: web3.PublicKey
   multipliers?: web3.PublicKey
   nft: web3.PublicKey
   rewardMint: web3.PublicKey
@@ -81,7 +81,7 @@ export function createClaimRewardsInstruction(
   })
   const keys: web3.AccountMeta[] = [
     {
-      pubkey: accounts.stakingProject,
+      pubkey: accounts.stakingPool,
       isWritable: false,
       isSigner: false,
     },

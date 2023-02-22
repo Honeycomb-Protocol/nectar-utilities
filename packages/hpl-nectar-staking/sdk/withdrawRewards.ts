@@ -2,7 +2,7 @@ import * as web3 from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
 import {
   createWithdrawRewardsInstruction,
-  StakingProject,
+  StakingPool,
   PROGRAM_ID,
 } from "../generated";
 import { Metaplex } from "@metaplex-foundation/js";
@@ -13,7 +13,7 @@ import { createCtx } from "../utils";
 type WithdrawRewardsArgs = {
   metaplex: Metaplex;
   project: web3.PublicKey;
-  stakingProject: web3.PublicKey;
+  stakingPool: web3.PublicKey;
   amount: number;
   delegateAuthority?: web3.PublicKey;
   programId?: web3.PublicKey;
@@ -21,7 +21,7 @@ type WithdrawRewardsArgs = {
 
 type CreateWithdrawRewardsCrx = {
   project: web3.PublicKey;
-  stakingProject: web3.PublicKey;
+  stakingPool: web3.PublicKey;
   rewardMint: web3.PublicKey;
   authority: web3.PublicKey;
   payer: web3.PublicKey;
@@ -33,7 +33,7 @@ type CreateWithdrawRewardsCrx = {
 export function createWithdrawRewardsCtx(args: CreateWithdrawRewardsCrx) {
   const programId = args.programId || PROGRAM_ID;
   const [rewardVault] = getVaultPda(
-    args.stakingProject,
+    args.stakingPool,
     args.rewardMint,
     programId
   );
@@ -48,7 +48,7 @@ export function createWithdrawRewardsCtx(args: CreateWithdrawRewardsCrx) {
       {
         project: args.project,
         vault: VAULT,
-        stakingProject: args.stakingProject,
+        stakingPool: args.stakingPool,
         rewardMint: args.rewardMint,
         rewardVault,
         tokenAccount,
@@ -70,16 +70,16 @@ export async function withdrawRewards({
   metaplex: mx,
   ...args
 }: WithdrawRewardsArgs) {
-  const stakingProjectAccount = await StakingProject.fromAccountAddress(
+  const staking_poolAccount = await StakingPool.fromAccountAddress(
     mx.connection,
     args.project
   );
 
   const wallet = mx.identity();
   const ctx = createWithdrawRewardsCtx({
-    project: stakingProjectAccount.project,
-    stakingProject: args.stakingProject,
-    rewardMint: stakingProjectAccount.rewardMint,
+    project: staking_poolAccount.project,
+    stakingPool: args.stakingPool,
+    rewardMint: staking_poolAccount.rewardMint,
     authority: wallet.publicKey,
     payer: wallet.publicKey,
     amount: args.amount,
