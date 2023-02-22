@@ -4,7 +4,7 @@ pub mod state;
 
 use {anchor_lang::prelude::*, instructions::*};
 
-declare_id!("8pyniLLXEHVUJKX2h5E9DrvwTsRmSR64ucUYBg8jQgPP");
+declare_id!("5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG");
 
 #[program]
 pub mod hpl_nectar_staking {
@@ -24,13 +24,13 @@ pub mod hpl_nectar_staking {
                     {
                         Some(delegate_authority.to_account_info())
                     } else {
-                        None
+                        Some(ctx.accounts.hive_control.to_account_info())
                     },
                     authority: ctx.accounts.authority.to_account_info(),
-                    vault: ctx.accounts.vault.to_account_info(),
                     payer: ctx.accounts.payer.to_account_info(),
                     rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
                     system_program: ctx.accounts.system_program.to_account_info(),
+                    vault: ctx.accounts.vault.to_account_info(),
                 },
             ),
             hpl_hive_control::instructions::AddRemoveServiceArgs {

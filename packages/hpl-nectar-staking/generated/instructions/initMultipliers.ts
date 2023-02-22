@@ -45,7 +45,7 @@ export const initMultipliersStruct = new beet.BeetArgsStruct<
  * @property [_writable_, **signer**] payer
  * @property [] project
  * @property [] delegateAuthority (optional)
- * @property [] vault
+ * @property [_writable_] vault
  * @category Instructions
  * @category InitMultipliers
  * @category generated
@@ -84,7 +84,7 @@ export const initMultipliersInstructionDiscriminator = [
 export function createInitMultipliersInstruction(
   accounts: InitMultipliersInstructionAccounts,
   args: InitMultipliersInstructionArgs,
-  programId = new web3.PublicKey('Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS')
+  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
 ) {
   const [data] = initMultipliersStruct.serialize({
     instructionDiscriminator: initMultipliersInstructionDiscriminator,
@@ -132,7 +132,7 @@ export function createInitMultipliersInstruction(
   }
   keys.push({
     pubkey: accounts.vault,
-    isWritable: false,
+    isWritable: true,
     isSigner: false,
   })
 

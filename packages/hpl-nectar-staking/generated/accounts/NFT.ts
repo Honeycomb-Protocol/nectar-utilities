@@ -107,7 +107,7 @@ export class NFT implements NFTArgs {
    */
   static gpaBuilder(
     programId: web3.PublicKey = new web3.PublicKey(
-      'Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS'
+      '5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG'
     )
   ) {
     return beetSolana.GpaBuilder.fromStruct(programId, nFTBeet)

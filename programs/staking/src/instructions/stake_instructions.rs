@@ -52,9 +52,10 @@ pub struct InitNFT<'info> {
     // HIVE CONTROL
     #[account()]
     pub project: Box<Account<'info, Project>>,
-    #[account()]
+    #[account(constraint = delegate_authority.authority == wallet.key())]
     pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
     /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
     pub vault: AccountInfo<'info>,
 }
 
@@ -81,11 +82,41 @@ pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
         return Err(ErrorCode::InvalidMetadata.into());
     }
 
-    let validation_out = hpl_utils::validate_collection_creator(
-        metadata,
-        &staking_project.collections,
-        &staking_project.creators,
-    );
+    let mut index: u8 = 0;
+    let collections = ctx
+        .accounts
+        .project
+        .collections
+        .iter()
+        .filter_map(|x| {
+            let key = if staking_project.collections.contains(&index) {
+                Some(*x)
+            } else {
+                None
+            };
+            index += 1;
+            key
+        })
+        .collect::<Vec<_>>();
+
+    index = 0;
+    let creators = ctx
+        .accounts
+        .project
+        .creators
+        .iter()
+        .filter_map(|x| {
+            let key = if staking_project.creators.contains(&index) {
+                Some(*x)
+            } else {
+                None
+            };
+            index += 1;
+            key
+        })
+        .collect::<Vec<_>>();
+
+    let validation_out = hpl_utils::validate_collection_creator(metadata, &collections, &creators);
 
     match validation_out {
         Ok(x) => {
@@ -200,6 +231,7 @@ pub struct Stake<'info> {
     #[account()]
     pub project: Box<Account<'info, Project>>,
     /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
     pub vault: AccountInfo<'info>,
 }
 
@@ -406,6 +438,7 @@ pub struct Unstake<'info> {
     #[account()]
     pub project: Box<Account<'info, Project>>,
     /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
     pub vault: AccountInfo<'info>,
 }
 

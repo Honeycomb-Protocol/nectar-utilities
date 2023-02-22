@@ -50,7 +50,7 @@ export function createCreateProjectCtx(
   const programId = args.programId || PROGRAM_ID;
 
   const key = web3.Keypair.generate().publicKey;
-  const [stakingProject] = getStakingProjectPda(key, programId);
+  const [stakingProject] = getStakingProjectPda(args.project, key, programId);
   const [rewardVault] = getVaultPda(stakingProject, args.rewardMint, programId);
 
   const instructions: web3.TransactionInstruction[] = [

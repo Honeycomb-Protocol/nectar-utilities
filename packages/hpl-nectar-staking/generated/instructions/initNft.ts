@@ -29,7 +29,7 @@ export const initNftStruct = new beet.BeetArgsStruct<{
  * @property [_writable_, **signer**] wallet
  * @property [] project
  * @property [] delegateAuthority (optional)
- * @property [] vault
+ * @property [_writable_] vault
  * @category Instructions
  * @category InitNft
  * @category generated
@@ -66,7 +66,7 @@ export const initNftInstructionDiscriminator = [
  */
 export function createInitNftInstruction(
   accounts: InitNftInstructionAccounts,
-  programId = new web3.PublicKey('Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS')
+  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
 ) {
   const [data] = initNftStruct.serialize({
     instructionDiscriminator: initNftInstructionDiscriminator,
@@ -118,7 +118,7 @@ export function createInitNftInstruction(
   }
   keys.push({
     pubkey: accounts.vault,
-    isWritable: false,
+    isWritable: true,
     isSigner: false,
   })
 

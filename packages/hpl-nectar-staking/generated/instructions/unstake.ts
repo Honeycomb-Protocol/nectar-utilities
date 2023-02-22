@@ -39,7 +39,7 @@ export const unstakeStruct = new beet.BeetArgsStruct<{
  * @property [] clock
  * @property [] sysvarInstructions
  * @property [] project
- * @property [] vault
+ * @property [_writable_] vault
  * @category Instructions
  * @category Unstake
  * @category generated
@@ -86,7 +86,7 @@ export const unstakeInstructionDiscriminator = [
  */
 export function createUnstakeInstruction(
   accounts: UnstakeInstructionAccounts,
-  programId = new web3.PublicKey('Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS')
+  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
 ) {
   const [data] = unstakeStruct.serialize({
     instructionDiscriminator: unstakeInstructionDiscriminator,
@@ -202,7 +202,7 @@ export function createUnstakeInstruction(
   })
   keys.push({
     pubkey: accounts.vault,
-    isWritable: false,
+    isWritable: true,
     isSigner: false,
   })
 

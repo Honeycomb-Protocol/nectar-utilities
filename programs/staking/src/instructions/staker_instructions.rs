@@ -1,7 +1,5 @@
 use {
-    crate::state::*,
-    anchor_lang::prelude::*,
-    hpl_hive_control::state::{Project},
+    crate::state::*, anchor_lang::prelude::*, hpl_hive_control::state::Project,
     hpl_utils::traits::Default,
 };
 
@@ -36,6 +34,7 @@ pub struct InitStaker<'info> {
     #[account()]
     pub project: Box<Account<'info, Project>>,
     /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
     pub vault: AccountInfo<'info>,
 }
 

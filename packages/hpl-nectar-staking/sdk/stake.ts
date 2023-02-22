@@ -22,6 +22,12 @@ import { createInitStakerCtx } from "./initStaker";
 import { createInitNFTCtx } from "./initNFT";
 import { VAULT } from "@honeycomb-protocol/hive-control";
 
+type StakeArgs = {
+  metaplex: Metaplex;
+  stakingProject: StakingProject;
+  nfts: AvailableNft[];
+};
+
 type CreateStakeCtxArgs = {
   metaplex: Metaplex;
   stakingProject: StakingProject;
@@ -163,17 +169,13 @@ export async function createStakeCtx({
   return createCtx(instructions, signers);
 }
 
-export async function stake(
-  metaplex: Metaplex,
-  stakingProject: StakingProject,
-  ...nfts: AvailableNft[]
-) {
-  const wallet = metaplex.identity();
+export async function stake({ metaplex: mx, ...args }: StakeArgs) {
+  const wallet = mx.identity();
   const txs = await Promise.all(
-    nfts.map((nft, i) =>
+    args.nfts.map((nft, i) =>
       createStakeCtx({
-        metaplex,
-        stakingProject,
+        metaplex: mx,
+        stakingProject: args.stakingProject,
         nft,
         isFirst: i == 0,
       })
@@ -182,7 +184,7 @@ export async function stake(
 
   if (!!!txs.length) return [];
 
-  const recentBlockhash = await metaplex.connection.getLatestBlockhash();
+  const recentBlockhash = await mx.connection.getLatestBlockhash();
   const txns: web3.Transaction[] = [];
   for (let tx of txs) {
     tx.tx.recentBlockhash = recentBlockhash.blockhash;
@@ -196,14 +198,12 @@ export async function stake(
 
   if (!firstTx) return [];
 
-  const firstResponse = await metaplex
-    .rpc()
-    .sendAndConfirmTransaction(firstTx, {
-      commitment: "processed",
-    });
+  const firstResponse = await mx.rpc().sendAndConfirmTransaction(firstTx, {
+    commitment: "processed",
+  });
   const responses = await Promise.all(
     signedTxs.map((t) =>
-      metaplex.rpc().sendAndConfirmTransaction(t, { commitment: "processed" })
+      mx.rpc().sendAndConfirmTransaction(t, { commitment: "processed" })
     )
   );
 

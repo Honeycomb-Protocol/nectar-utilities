@@ -35,6 +35,20 @@
           ]
         },
         {
+          "name": "project",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "HIVE CONTROL"
+          ]
+        },
+        {
+          "name": "delegateAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
           "name": "authority",
           "isMut": false,
           "isSigner": true,
@@ -51,11 +65,24 @@
           ]
         },
         {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "NATIVE SYSTEM PROGRAM"
+            "SYSTEM PROGRAM"
+          ]
+        },
+        {
+          "name": "rentSysvar",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "RENT SYSVAR"
           ]
         },
         {
@@ -67,33 +94,12 @@
           ]
         },
         {
-          "name": "rentSysvar",
+          "name": "hiveControl",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "NATIVE RENT SYSVAR"
+            "HIVE CONTROL PROGRAM"
           ]
-        },
-        {
-          "name": "project",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "delegateAuthority",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "vault",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "hiveControl",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": [
@@ -179,7 +185,7 @@
         },
         {
           "name": "vault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -248,7 +254,7 @@
         },
         {
           "name": "vault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -325,7 +331,7 @@
         },
         {
           "name": "vault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -402,7 +408,7 @@
         },
         {
           "name": "vault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -450,7 +456,7 @@
         },
         {
           "name": "vault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -605,7 +611,7 @@
         },
         {
           "name": "vault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -760,7 +766,7 @@
         },
         {
           "name": "vault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -832,7 +838,7 @@
         },
         {
           "name": "vault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -923,7 +929,7 @@
         },
         {
           "name": "vault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -1033,7 +1039,7 @@
         },
         {
           "name": "vault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -1197,7 +1203,7 @@
         },
         {
           "name": "vault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -1538,18 +1544,14 @@
             "docs": [
               "The collection mint addresses to be used for the staking_project"
             ],
-            "type": {
-              "vec": "publicKey"
-            }
+            "type": "bytes"
           },
           {
             "name": "creators",
             "docs": [
               "The creator addresses to be used for the staking_project"
             ],
-            "type": {
-              "vec": "publicKey"
-            }
+            "type": "bytes"
           }
         ]
       }
@@ -1855,7 +1857,7 @@
     }
   ],
   "metadata": {
-    "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
+    "address": "5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG",
     "origin": "anchor",
     "binaryVersion": "0.26.0",
     "libVersion": "0.26.0"

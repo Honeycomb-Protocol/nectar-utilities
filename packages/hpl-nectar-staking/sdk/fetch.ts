@@ -1,10 +1,11 @@
 import { Metadata, Metaplex } from "@metaplex-foundation/js";
 import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import web3 from "@solana/web3.js";
+import * as web3 from "@solana/web3.js";
 import { AvailableNft, StakedNft, TokenAccountInfo } from "../types";
 import { NFT, StakingProject, Staker } from "../generated";
 import { getStakerPda, getStakingProjectPda } from "../pdas";
+import { createProjectPda, Project } from "@honeycomb-protocol/hive-control";
 
 type FetchArgs = {
   connection: web3.Connection;
@@ -42,31 +43,41 @@ export const fetchStakedNfts = async ({
   ...args
 }: FetchStakedNftsArgs) => {
   const gpa = NFT.gpaBuilder();
-
   gpa.addFilter("stakingProject", args.stakingProjectAddress);
-  args.walletAddress && gpa.addFilter("staker", args.walletAddress);
+  if (args.walletAddress) {
+    const [staker] = getStakerPda(
+      args.stakingProjectAddress,
+      args.walletAddress
+    );
+    gpa.addFilter("staker", staker);
+  }
 
   const nfts = await gpa
     .run(mx.connection)
     .then((nfts) => nfts.map(({ account }) => NFT.fromAccountInfo(account)[0]));
 
-  //@ts-ignore
   const metaplexOut: StakedNft[] = await mx
     .nfts()
     .findAllByMintList({ mints: nfts.map((x) => x.mint) })
-    .then((metaplexNfts) =>
-      metaplexNfts.map((nft) => ({
-        ...nft,
-        //@ts-ignore
-        ...nfts.find((x) => x.mint.equals(nft.mintAddress || nft.mint.address)),
-      }))
-    );
+    .then((metaplexNfts) => {
+      console.log("metaplexNfts", metaplexNfts);
+      return (
+        metaplexNfts.filter((x) => x.model == "metadata") as Metadata[]
+      ).map(
+        (nft) =>
+          ({
+            ...nft,
+            ...nfts.find((x) => x.mint.equals(nft.mintAddress)),
+          } as StakedNft)
+      );
+    });
 
   return metaplexOut;
 };
 
 type FetchAvailableNfts = {
   metaplex: Metaplex;
+  project: Project;
   stakingProject: StakingProject;
   walletAddress?: web3.PublicKey;
   allowedMints?: web3.PublicKey[];
@@ -75,6 +86,10 @@ export const fetchAvailableNfts = async ({
   metaplex: mx,
   ...args
 }: FetchAvailableNfts) => {
+  const [projectAddress] = createProjectPda(args.project.key);
+  if (!args.stakingProject.project.equals(projectAddress))
+    throw new Error("StakingProject does not belong to the Project provided!");
+
   const ownedTokenAccounts: TokenAccountInfo[] = await mx.connection
     .getParsedTokenAccountsByOwner(
       args.walletAddress || mx.identity().publicKey,
@@ -86,7 +101,7 @@ export const fetchAvailableNfts = async ({
       x.value
         .map((x) => ({
           ...x.account.data.parsed.info,
-          tokenMint: new web3.PublicKey(x.account.data.parsed.info),
+          tokenMint: new web3.PublicKey(x.account.data.parsed.info.mint),
         }))
         .filter((x) => x.tokenAmount.uiAmount > 0)
     );
@@ -142,30 +157,43 @@ export const fetchAvailableNfts = async ({
     ];
   }
 
-  if (args.stakingProject.collections.length) {
-    filteredNfts = [
-      ...filteredNfts,
-      ...ownedNfts.filter(
-        (nft) =>
-          nft.collection &&
-          nft.collection.verified &&
-          args.stakingProject.collections.includes(nft.collection.address)
-      ),
-    ];
-  }
+  const validCollections = !!args.stakingProject.collections.length
+    ? args.project.collections.filter((_, i) =>
+        args.stakingProject.collections.includes(i)
+      )
+    : [];
+  const validCreators = !!args.stakingProject.creators
+    ? args.project.creators.filter((_, i) =>
+        args.stakingProject.creators.includes(i)
+      )
+    : [];
 
-  if (args.stakingProject.creators.length) {
-    filteredNfts = [
-      ...filteredNfts,
-      ...ownedNfts.filter((nft) =>
-        nft.creators.some(
-          (creator) =>
-            creator.verified &&
-            args.stakingProject.creators.includes(creator.address)
-        )
-      ),
-    ];
-  }
+  console.log(
+    "validCollections",
+    validCollections.map((x) => x.toString()),
+    "validCreators",
+    validCreators.map((x) => x.toString())
+  );
+
+  filteredNfts = [
+    ...filteredNfts,
+    ...ownedNfts.filter(
+      (nft) =>
+        (nft.collection &&
+          validCollections.length &&
+          nft.collection.verified &&
+          !!validCollections.find((x) => x.equals(nft.collection.address))) ||
+        (!!nft.creators.length &&
+          !!validCreators.length &&
+          nft.creators.some(
+            (creator) =>
+              creator.verified &&
+              validCreators.find((x) => x.equals(creator.address))
+          ))
+    ),
+  ];
+
+  console.log("filteredNfts", filteredNfts.length);
 
   filteredNfts = filteredNfts.filter(
     (nft, index, self) =>
@@ -175,9 +203,11 @@ export const fetchAvailableNfts = async ({
   return filteredNfts;
 };
 
-type FetchAllArgs = FetchStakedNftsArgs & { allowedMints?: web3.PublicKey[] };
+type FetchAllArgs = FetchStakerArgs &
+  FetchStakedNftsArgs & { project: Project; allowedMints?: web3.PublicKey[] };
 export const fetchAll = async ({
   metaplex: mx,
+  project,
   stakingProjectAddress,
   walletAddress,
   allowedMints,
@@ -203,6 +233,7 @@ export const fetchAll = async ({
     }),
     availableNfts: await fetchAvailableNfts({
       metaplex: mx,
+      project,
       stakingProject,
       allowedMints,
       walletAddress,

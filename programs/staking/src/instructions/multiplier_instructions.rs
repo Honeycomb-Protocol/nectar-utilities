@@ -38,9 +38,10 @@ pub struct InitMultipliers<'info> {
     // HIVE CONTROL
     #[account()]
     pub project: Box<Account<'info, Project>>,
-    #[account()]
+    #[account(has_one = authority)]
     pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
     /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
     pub vault: AccountInfo<'info>,
 }
 
@@ -87,9 +88,10 @@ pub struct AddMultiplier<'info> {
     // HIVE CONTROL
     #[account()]
     pub project: Box<Account<'info, Project>>,
-    #[account()]
+    #[account(has_one = authority)]
     pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
     /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
     pub vault: AccountInfo<'info>,
 }
 

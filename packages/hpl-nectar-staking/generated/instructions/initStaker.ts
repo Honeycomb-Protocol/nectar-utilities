@@ -26,7 +26,7 @@ export const initStakerStruct = new beet.BeetArgsStruct<{
  * @property [_writable_] staker
  * @property [_writable_, **signer**] wallet
  * @property [] project
- * @property [] vault
+ * @property [_writable_] vault
  * @category Instructions
  * @category InitStaker
  * @category generated
@@ -55,7 +55,7 @@ export const initStakerInstructionDiscriminator = [
  */
 export function createInitStakerInstruction(
   accounts: InitStakerInstructionAccounts,
-  programId = new web3.PublicKey('Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS')
+  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
 ) {
   const [data] = initStakerStruct.serialize({
     instructionDiscriminator: initStakerInstructionDiscriminator,
@@ -88,7 +88,7 @@ export function createInitStakerInstruction(
     },
     {
       pubkey: accounts.vault,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
   ]

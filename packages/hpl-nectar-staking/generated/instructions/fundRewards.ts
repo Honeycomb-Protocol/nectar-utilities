@@ -42,7 +42,7 @@ export const fundRewardsStruct = new beet.BeetArgsStruct<
  * @property [_writable_] tokenAccount
  * @property [_writable_, **signer**] wallet
  * @property [] project
- * @property [] vault
+ * @property [_writable_] vault
  * @category Instructions
  * @category FundRewards
  * @category generated
@@ -77,7 +77,7 @@ export const fundRewardsInstructionDiscriminator = [
 export function createFundRewardsInstruction(
   accounts: FundRewardsInstructionAccounts,
   args: FundRewardsInstructionArgs,
-  programId = new web3.PublicKey('Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS')
+  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
 ) {
   const [data] = fundRewardsStruct.serialize({
     instructionDiscriminator: fundRewardsInstructionDiscriminator,
@@ -126,7 +126,7 @@ export function createFundRewardsInstruction(
     },
     {
       pubkey: accounts.vault,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
   ]

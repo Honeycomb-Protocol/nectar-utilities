@@ -34,8 +34,8 @@ export type StakingProjectArgs = {
   totalStaked: beet.bignum
   startTime: beet.COption<beet.bignum>
   endTime: beet.COption<beet.bignum>
-  collections: web3.PublicKey[]
-  creators: web3.PublicKey[]
+  collections: Uint8Array
+  creators: Uint8Array
 }
 
 export const stakingProjectDiscriminator = [233, 46, 2, 127, 221, 160, 137, 203]
@@ -66,8 +66,8 @@ export class StakingProject implements StakingProjectArgs {
     readonly totalStaked: beet.bignum,
     readonly startTime: beet.COption<beet.bignum>,
     readonly endTime: beet.COption<beet.bignum>,
-    readonly collections: web3.PublicKey[],
-    readonly creators: web3.PublicKey[]
+    readonly collections: Uint8Array,
+    readonly creators: Uint8Array
   ) {}
 
   /**
@@ -138,7 +138,7 @@ export class StakingProject implements StakingProjectArgs {
    */
   static gpaBuilder(
     programId: web3.PublicKey = new web3.PublicKey(
-      'Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS'
+      '5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG'
     )
   ) {
     return beetSolana.GpaBuilder.fromStruct(programId, stakingProjectBeet)
@@ -287,8 +287,8 @@ export const stakingProjectBeet = new beet.FixableBeetStruct<
     ['totalStaked', beet.u64],
     ['startTime', beet.coption(beet.i64)],
     ['endTime', beet.coption(beet.i64)],
-    ['collections', beet.array(beetSolana.publicKey)],
-    ['creators', beet.array(beetSolana.publicKey)],
+    ['collections', beet.bytes],
+    ['creators', beet.bytes],
   ],
   StakingProject.fromArgs,
   'StakingProject'

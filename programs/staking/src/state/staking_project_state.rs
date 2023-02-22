@@ -51,10 +51,10 @@ pub struct StakingProject {
     pub end_time: Option<i64>,
 
     /// The collection mint addresses to be used for the staking_project
-    pub collections: Vec<Pubkey>,
+    pub collections: Vec<u8>,
 
     /// The creator addresses to be used for the staking_project
-    pub creators: Vec<Pubkey>,
+    pub creators: Vec<u8>,
 }
 impl Default for StakingProject {
     const LEN: usize = 8 + 268;

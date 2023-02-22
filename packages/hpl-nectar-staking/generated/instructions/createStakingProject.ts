@@ -44,12 +44,12 @@ export const createStakingProjectStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] stakingProject
  * @property [] rewardMint
  * @property [_writable_] rewardVault
+ * @property [_writable_] project
+ * @property [] delegateAuthority (optional)
  * @property [**signer**] authority
  * @property [_writable_, **signer**] payer
+ * @property [_writable_] vault
  * @property [] rentSysvar
- * @property [] project
- * @property [] delegateAuthority (optional)
- * @property [] vault
  * @property [] hiveControl
  * @category Instructions
  * @category CreateStakingProject
@@ -60,14 +60,14 @@ export type CreateStakingProjectInstructionAccounts = {
   stakingProject: web3.PublicKey
   rewardMint: web3.PublicKey
   rewardVault: web3.PublicKey
-  authority: web3.PublicKey
-  payer: web3.PublicKey
-  systemProgram?: web3.PublicKey
-  tokenProgram?: web3.PublicKey
-  rentSysvar: web3.PublicKey
   project: web3.PublicKey
   delegateAuthority?: web3.PublicKey
+  authority: web3.PublicKey
+  payer: web3.PublicKey
   vault: web3.PublicKey
+  systemProgram?: web3.PublicKey
+  rentSysvar: web3.PublicKey
+  tokenProgram?: web3.PublicKey
   hiveControl: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
@@ -94,7 +94,7 @@ export const createStakingProjectInstructionDiscriminator = [
 export function createCreateStakingProjectInstruction(
   accounts: CreateStakingProjectInstructionAccounts,
   args: CreateStakingProjectInstructionArgs,
-  programId = new web3.PublicKey('Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS')
+  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
 ) {
   const [data] = createStakingProjectStruct.serialize({
     instructionDiscriminator: createStakingProjectInstructionDiscriminator,
@@ -122,33 +122,8 @@ export function createCreateStakingProjectInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.authority,
-      isWritable: false,
-      isSigner: true,
-    },
-    {
-      pubkey: accounts.payer,
-      isWritable: true,
-      isSigner: true,
-    },
-    {
-      pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.tokenProgram ?? splToken.TOKEN_PROGRAM_ID,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.rentSysvar,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
       pubkey: accounts.project,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
   ]
@@ -161,7 +136,32 @@ export function createCreateStakingProjectInstruction(
     })
   }
   keys.push({
+    pubkey: accounts.authority,
+    isWritable: false,
+    isSigner: true,
+  })
+  keys.push({
+    pubkey: accounts.payer,
+    isWritable: true,
+    isSigner: true,
+  })
+  keys.push({
     pubkey: accounts.vault,
+    isWritable: true,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.rentSysvar,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.tokenProgram ?? splToken.TOKEN_PROGRAM_ID,
     isWritable: false,
     isSigner: false,
   })

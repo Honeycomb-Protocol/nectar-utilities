@@ -45,6 +45,13 @@ pub struct CreateStakingProject<'info> {
     )]
     pub reward_vault: Account<'info, TokenAccount>,
 
+    /// HIVE CONTROL
+    #[account(mut)]
+    pub project: Box<Account<'info, Project>>,
+
+    #[account(has_one = authority)]
+    pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
+
     /// The wallet that holds the authority over the assembler
     pub authority: Signer<'info>,
 
@@ -52,23 +59,21 @@ pub struct CreateStakingProject<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    /// NATIVE SYSTEM PROGRAM
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
+    pub vault: AccountInfo<'info>,
+
+    /// SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    /// RENT SYSVAR
+    pub rent_sysvar: Sysvar<'info, Rent>,
 
     /// SPL TOKEN PROGRAM
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
 
-    /// NATIVE RENT SYSVAR
-    pub rent_sysvar: Sysvar<'info, Rent>,
-
-    // HIVE CONTROL
-    #[account()]
-    pub project: Box<Account<'info, Project>>,
-    #[account()]
-    pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
-    /// CHECK: This is not dangerous because we don't read or write from this account
-    pub vault: AccountInfo<'info>,
+    /// HIVE CONTROL PROGRAM
     pub hive_control: Program<'info, HplHiveControl>,
 }
 
@@ -95,7 +100,7 @@ pub fn create_staking_project(
     staking_project.set_defaults();
 
     staking_project.bump = ctx.bumps["staking_project"];
-    staking_project.vault_bump = ctx.bumps["vault"];
+    staking_project.vault_bump = ctx.bumps["reward_vault"];
     staking_project.project = ctx.accounts.project.key();
     staking_project.key = ctx.accounts.key.key();
     staking_project.reward_mint = ctx.accounts.reward_mint.key();
@@ -145,9 +150,10 @@ pub struct UpdateStakingProject<'info> {
     // HIVE CONTROL
     #[account()]
     pub project: Box<Account<'info, Project>>,
-    #[account()]
+    #[account(has_one = authority)]
     pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
     /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
     pub vault: AccountInfo<'info>,
 }
 
@@ -209,6 +215,13 @@ pub fn update_staking_project(
     };
 
     if let Some(collection) = &ctx.accounts.collection {
+        let index = ctx
+            .accounts
+            .project
+            .collections
+            .iter()
+            .position(|x| x.eq(&collection.key()))
+            .unwrap();
         hpl_utils::reallocate(
             1,
             staking_project.to_account_info(),
@@ -216,10 +229,17 @@ pub fn update_staking_project(
             &ctx.accounts.rent,
             &ctx.accounts.system_program,
         )?;
-        staking_project.collections.push(collection.key());
+        staking_project.collections.push(index as u8);
     }
 
     if let Some(creator) = &ctx.accounts.creator {
+        let index = ctx
+            .accounts
+            .project
+            .creators
+            .iter()
+            .position(|x| x.eq(&creator.key()))
+            .unwrap();
         hpl_utils::reallocate(
             1,
             staking_project.to_account_info(),
@@ -227,7 +247,7 @@ pub fn update_staking_project(
             &ctx.accounts.rent,
             &ctx.accounts.system_program,
         )?;
-        staking_project.creators.push(creator.key());
+        staking_project.creators.push(index as u8);
     }
 
     Ok(())

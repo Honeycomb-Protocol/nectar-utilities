@@ -44,7 +44,7 @@ export const withdrawRewardsStruct = new beet.BeetArgsStruct<
  * @property [_writable_, **signer**] payer
  * @property [] project
  * @property [] delegateAuthority (optional)
- * @property [] vault
+ * @property [_writable_] vault
  * @category Instructions
  * @category WithdrawRewards
  * @category generated
@@ -86,7 +86,7 @@ export const withdrawRewardsInstructionDiscriminator = [
 export function createWithdrawRewardsInstruction(
   accounts: WithdrawRewardsInstructionAccounts,
   args: WithdrawRewardsInstructionArgs,
-  programId = new web3.PublicKey('Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS')
+  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
 ) {
   const [data] = withdrawRewardsStruct.serialize({
     instructionDiscriminator: withdrawRewardsInstructionDiscriminator,
@@ -149,7 +149,7 @@ export function createWithdrawRewardsInstruction(
   }
   keys.push({
     pubkey: accounts.vault,
-    isWritable: false,
+    isWritable: true,
     isSigner: false,
   })
 

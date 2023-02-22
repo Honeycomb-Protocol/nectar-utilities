@@ -46,7 +46,7 @@ export const addMultiplierStruct = new beet.FixableBeetArgsStruct<
  * @property [] rentSysvar
  * @property [] project
  * @property [] delegateAuthority (optional)
- * @property [] vault
+ * @property [_writable_] vault
  * @category Instructions
  * @category AddMultiplier
  * @category generated
@@ -86,7 +86,7 @@ export const addMultiplierInstructionDiscriminator = [
 export function createAddMultiplierInstruction(
   accounts: AddMultiplierInstructionAccounts,
   args: AddMultiplierInstructionArgs,
-  programId = new web3.PublicKey('Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS')
+  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
 ) {
   const [data] = addMultiplierStruct.serialize({
     instructionDiscriminator: addMultiplierInstructionDiscriminator,
@@ -139,7 +139,7 @@ export function createAddMultiplierInstruction(
   }
   keys.push({
     pubkey: accounts.vault,
-    isWritable: false,
+    isWritable: true,
     isSigner: false,
   })
 

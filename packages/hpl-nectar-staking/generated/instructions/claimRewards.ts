@@ -33,7 +33,7 @@ export const claimRewardsStruct = new beet.BeetArgsStruct<{
  * @property [_writable_, **signer**] wallet
  * @property [] clock
  * @property [] project
- * @property [] vault
+ * @property [_writable_] vault
  * @category Instructions
  * @category ClaimRewards
  * @category generated
@@ -74,7 +74,7 @@ export const claimRewardsInstructionDiscriminator = [
  */
 export function createClaimRewardsInstruction(
   accounts: ClaimRewardsInstructionAccounts,
-  programId = new web3.PublicKey('Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS')
+  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
 ) {
   const [data] = claimRewardsStruct.serialize({
     instructionDiscriminator: claimRewardsInstructionDiscriminator,
@@ -146,7 +146,7 @@ export function createClaimRewardsInstruction(
   })
   keys.push({
     pubkey: accounts.vault,
-    isWritable: false,
+    isWritable: true,
     isSigner: false,
   })
 

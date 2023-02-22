@@ -22,6 +22,22 @@ import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import { VAULT } from "@honeycomb-protocol/hive-control";
 import { createCtx } from "../utils";
 
+type UnstakeArgs = {
+  metaplex: Metaplex;
+  stakingProject: StakingProject;
+  nfts: StakedNft[];
+};
+
+type CreateUnstakeCtxArgs = {
+  metaplex: Metaplex;
+  stakingProject: StakingProject;
+  nft: StakedNft;
+  multipliers?: MultipliersArgs & {
+    address: web3.PublicKey;
+  };
+  programId?: web3.PublicKey;
+};
+
 type CreateUnstakeInstructionArgs = {
   project: web3.PublicKey;
   stakingProject: web3.PublicKey;
@@ -89,15 +105,6 @@ export function createUnstakeInstructionV2(args: CreateUnstakeInstructionArgs) {
   );
 }
 
-type CreateUnstakeCtxArgs = {
-  metaplex: Metaplex;
-  stakingProject: StakingProject;
-  nft: StakedNft;
-  multipliers?: MultipliersArgs & {
-    address: web3.PublicKey;
-  };
-  programId?: web3.PublicKey;
-};
 export function createUnstakeCtx({
   metaplex: mx,
   ...args
@@ -138,17 +145,13 @@ export function createUnstakeCtx({
   return createCtx(instructions, signers);
 }
 
-export async function unstake(
-  metaplex: Metaplex,
-  stakingProject: StakingProject,
-  ...nfts: StakedNft[]
-) {
-  const wallet = metaplex.identity();
+export async function unstake({ metaplex: mx, ...args }: UnstakeArgs) {
+  const wallet = mx.identity();
   const txs = await Promise.all(
-    nfts.map((nft, i) =>
+    args.nfts.map((nft, i) =>
       createUnstakeCtx({
-        metaplex,
-        stakingProject,
+        metaplex: mx,
+        stakingProject: args.stakingProject,
         nft,
       })
     )
@@ -156,7 +159,7 @@ export async function unstake(
 
   if (!!!txs.length) return [];
 
-  const recentBlockhash = await metaplex.connection.getLatestBlockhash();
+  const recentBlockhash = await mx.connection.getLatestBlockhash();
   const txns: web3.Transaction[] = [];
   for (let tx of txs) {
     tx.tx.recentBlockhash = recentBlockhash.blockhash;
@@ -170,14 +173,12 @@ export async function unstake(
 
   if (!firstTx) return;
 
-  const firstResponse = await metaplex
-    .rpc()
-    .sendAndConfirmTransaction(firstTx, {
-      commitment: "processed",
-    });
+  const firstResponse = await mx.rpc().sendAndConfirmTransaction(firstTx, {
+    commitment: "processed",
+  });
   const responses = await Promise.all(
     signedTxs.map((t) =>
-      metaplex.rpc().sendAndConfirmTransaction(t, { commitment: "processed" })
+      mx.rpc().sendAndConfirmTransaction(t, { commitment: "processed" })
     )
   );
 

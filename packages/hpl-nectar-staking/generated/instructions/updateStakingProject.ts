@@ -46,7 +46,7 @@ export const updateStakingProjectStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_, **signer**] payer
  * @property [] project
  * @property [] delegateAuthority (optional)
- * @property [] vault
+ * @property [_writable_] vault
  * @category Instructions
  * @category UpdateStakingProject
  * @category generated
@@ -87,7 +87,7 @@ export const updateStakingProjectInstructionDiscriminator = [
 export function createUpdateStakingProjectInstruction(
   accounts: UpdateStakingProjectInstructionAccounts,
   args: UpdateStakingProjectInstructionArgs,
-  programId = new web3.PublicKey('Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS')
+  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
 ) {
   const [data] = updateStakingProjectStruct.serialize({
     instructionDiscriminator: updateStakingProjectInstructionDiscriminator,
@@ -159,7 +159,7 @@ export function createUpdateStakingProjectInstruction(
   }
   keys.push({
     pubkey: accounts.vault,
-    isWritable: false,
+    isWritable: true,
     isSigner: false,
   })
 

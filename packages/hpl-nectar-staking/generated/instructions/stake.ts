@@ -39,7 +39,7 @@ export const stakeStruct = new beet.BeetArgsStruct<{
  * @property [] clock
  * @property [] sysvarInstructions
  * @property [] project
- * @property [] vault
+ * @property [_writable_] vault
  * @category Instructions
  * @category Stake
  * @category generated
@@ -86,7 +86,7 @@ export const stakeInstructionDiscriminator = [
  */
 export function createStakeInstruction(
   accounts: StakeInstructionAccounts,
-  programId = new web3.PublicKey('Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS')
+  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
 ) {
   const [data] = stakeStruct.serialize({
     instructionDiscriminator: stakeInstructionDiscriminator,
@@ -202,7 +202,7 @@ export function createStakeInstruction(
   })
   keys.push({
     pubkey: accounts.vault,
-    isWritable: false,
+    isWritable: true,
     isSigner: false,
   })
 

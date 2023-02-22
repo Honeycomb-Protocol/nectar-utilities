@@ -1,6 +1,6 @@
 const path = require("path");
 
-const programId = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+const programId = "5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG"
 const prefix = "hpl nectar"
 const programName = "staking"; // with spaces
 const programFullName = prefix + " " + programName;

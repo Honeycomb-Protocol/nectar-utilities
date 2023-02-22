@@ -62,16 +62,16 @@ export function createFundRewardsCtx(args: CreateFundRewardsCrxArgs) {
 }
 
 export async function fundRewards({ metaplex: mx, ...args }: FundRewardsArgs) {
-  const projectAccount = await StakingProject.fromAccountAddress(
+  const stakingProjectAccount = await StakingProject.fromAccountAddress(
     mx.connection,
-    args.project
+    args.stakingProject
   );
 
   const wallet = mx.identity();
   const ctx = createFundRewardsCtx({
     project: args.project,
     stakingProject: args.stakingProject,
-    rewardMint: projectAccount.rewardMint,
+    rewardMint: stakingProjectAccount.rewardMint,
     wallet: wallet.publicKey,
     amount: args.amount,
     programId: args.programId,

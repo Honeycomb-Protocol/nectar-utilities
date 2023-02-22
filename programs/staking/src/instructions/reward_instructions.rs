@@ -38,6 +38,7 @@ pub struct FundRewards<'info> {
     #[account()]
     pub project: Box<Account<'info, Project>>,
     /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
     pub vault: AccountInfo<'info>,
 }
 
@@ -93,18 +94,19 @@ pub struct WithdrawRewards<'info> {
     // HIVE CONTROL
     #[account()]
     pub project: Box<Account<'info, Project>>,
-    #[account()]
+    #[account(has_one = authority)]
     pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
     /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
     pub vault: AccountInfo<'info>,
 }
 
 /// Withdraw rewards
 pub fn withdraw_rewards(ctx: Context<WithdrawRewards>, amount: u64) -> Result<()> {
-    let staking_project_key = ctx.accounts.staking_project.key();
     let staking_project_seeds = &[
         b"staking_project".as_ref(),
-        staking_project_key.as_ref(),
+        ctx.accounts.staking_project.project.as_ref(),
+        ctx.accounts.staking_project.key.as_ref(),
         &[ctx.accounts.staking_project.bump],
     ];
     let staking_project_signer = &[&staking_project_seeds[..]];
@@ -172,6 +174,7 @@ pub struct ClaimRewards<'info> {
     #[account()]
     pub project: Box<Account<'info, Project>>,
     /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
     pub vault: AccountInfo<'info>,
 }
 
@@ -272,6 +275,7 @@ pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
 
     let staking_project_seeds = &[
         b"staking_project".as_ref(),
+        staking_project.project.as_ref(),
         staking_project.key.as_ref(),
         &[ctx.accounts.staking_project.bump],
     ];

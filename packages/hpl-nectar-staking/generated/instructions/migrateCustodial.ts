@@ -55,7 +55,7 @@ export const migrateCustodialStruct = new beet.BeetArgsStruct<
  * @property [] sysvarInstructions
  * @property [] project
  * @property [] delegateAuthority (optional)
- * @property [] vault
+ * @property [_writable_] vault
  * @category Instructions
  * @category MigrateCustodial
  * @category generated
@@ -107,7 +107,7 @@ export const migrateCustodialInstructionDiscriminator = [
 export function createMigrateCustodialInstruction(
   accounts: MigrateCustodialInstructionAccounts,
   args: MigrateCustodialInstructionArgs,
-  programId = new web3.PublicKey('Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS')
+  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
 ) {
   const [data] = migrateCustodialStruct.serialize({
     instructionDiscriminator: migrateCustodialInstructionDiscriminator,
@@ -227,7 +227,7 @@ export function createMigrateCustodialInstruction(
   }
   keys.push({
     pubkey: accounts.vault,
-    isWritable: false,
+    isWritable: true,
     isSigner: false,
   })
 
