@@ -1,18 +1,20 @@
 const { execSync } = require("child_process");
 const fs = require("fs");
-const version = require("../package.json").version;
 
 // write the version in cargo.toml of all programs
-const programs = fs.readdirSync("programs");
-programs.forEach((program) => {
-  const cargoTomlPath = `programs/${program}/Cargo.toml`;
+const packages = fs.readdirSync("packages");
+packages.forEach((package) => {
+  if(package === "idl") return;
+  const cargoTomlPath = `programs/${package}/Cargo.toml`;
   const cargoToml = fs.readFileSync(cargoTomlPath, "utf8");
+  
+  const version = require(`../packages/${package}/package.json`).version;
+  
   const newCargoToml = cargoToml.replace(
     /version = ".*"/,
     `version = "${version}"`
   );
   fs.writeFileSync(cargoTomlPath, newCargoToml);
 
-  const name = cargoToml.match(/name = "(.*)"/)[1];
-  execSync(`cargo update -p ${name}`);
+  execSync(`cargo update -p ${package}`);
 });

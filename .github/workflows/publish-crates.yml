@@ -1,0 +1,29 @@
+name: Publish Crates
+
+env:
+  ANCHOR_VERSION: ${{ vars.ANCHOR_VERSION }}
+  RUST_TOOLCHAIN: ${{ vars.RUST_TOOLCHAIN }}
+  SOLANA_VERSION: ${{ vars.SOLANA_VERSION }}
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  install-and-build-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/install-common-build-deps
+        with:
+          linux: false
+          anchor: false
+          solana: false
+
+      - uses: katyo/publish-crates@v2
+        with:
+          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - uses: ./.github/actions/cache-deps
