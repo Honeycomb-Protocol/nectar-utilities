@@ -6,7 +6,8 @@ console.log(process.env.NODE_AUTH_TOKEN)
 // write the version in cargo.toml of all programs
 const packages = fs.readdirSync("packages");
 packages.forEach((package) => {
-  execSync(`echo _auth=${process.env.NODE_AUTH_TOKEN} >> .npmrc && npm publish --access public`, {
+  if(package === "idl") return;
+  execSync(`echo _authToken=${process.env.NODE_AUTH_TOKEN} >> .npmrc && npm publish --access public`, {
     cwd: `dist/${package}`,
     stdio: 'inherit'
   });
