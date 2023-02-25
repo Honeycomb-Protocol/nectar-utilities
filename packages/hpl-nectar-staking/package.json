@@ -1,29 +1,11 @@
 {
   "name": "@honeycomb-protocol/nectar-staking",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": false,
-  "scripts": {
-    "prepare": "husky install",
-    "precommit": "node ./scripts/precommit.js && git add programs/**/Cargo.toml && git add Cargo.lock",
-    "build:program": "anchor build",
-    "build:sdk": "yarn solita && tsc",
-    "build": "yarn build:program & yarn build:sdk",
-    "deploy": "anchor deploy",
-    "build-deploy": "yarn build && yarn deploy",
-    "staking": "ts-node ./scripts/index.ts staking"
-  },
   "dependencies": {
     "@honeycomb-protocol/hive-control": "^0.0.21",
     "@metaplex-foundation/js": "^0.18.1",
     "@solana/spl-token": "^0.3.7",
     "@solana/web3.js": "^1.73.2"
-  },
-  "devDependencies": {
-    "@metaplex-foundation/solita": "^0.19.3",
-    "@types/bn.js": "^5.1.0",
-    "copyfiles": "^2.4.1",
-    "husky": "^8.0.3",
-    "prettier": "^2.6.2",
-    "typescript": "^4.3.5"
   }
 }
