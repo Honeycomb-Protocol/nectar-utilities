@@ -6,7 +6,7 @@
     "prepare": "husky install",
     "copyPackages": "copyfiles -u 1 packages/**/package.json dist/",
     "precommit": "yarn copyPackages && node ./scripts/precommit.js && git add programs/**/Cargo.toml && git add Cargo.lock",
-    "publish": "node ./scripts/publishall.js",
+    "publishall": "node ./scripts/publishall.js",
     "compile": "tsc",
     "build:program": "anchor build",
     "build:sdk": "yarn solita && yarn compile",
