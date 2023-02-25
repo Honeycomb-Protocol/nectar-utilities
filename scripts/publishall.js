@@ -6,7 +6,7 @@ console.log(process.env.NODE_AUTH_TOKEN)
 // write the version in cargo.toml of all programs
 const packages = fs.readdirSync("packages");
 packages.forEach((package) => {
-  execSync(`ln -s ../../.npmrc .npmrc && npm publish --access public`, {
+  execSync(`cp ../../.npmrc .npmrc && npm publish --access public`, {
     cwd: `dist/${package}`,
     stdio: 'inherit'
   });
