@@ -1,29 +1,18 @@
 import * as web3 from "@solana/web3.js";
 import {
   createAddMultiplierInstruction,
-  AddMultiplierArgs as AddStakingMultiplierArgs,
+  AddMultiplierArgs as AddMultiplierArgsChain,
   PROGRAM_ID,
 } from "../generated";
-import { Metaplex } from "@metaplex-foundation/js";
 import { getMultipliersPda } from "../pdas";
-import { VAULT } from "@honeycomb-protocol/hive-control";
-import { createCtx } from "../utils";
-
-type AddMultiplierArgs = {
-  metaplex: Metaplex;
-  project: web3.PublicKey;
-  stakingPool: web3.PublicKey;
-  args: AddStakingMultiplierArgs;
-  programId?: web3.PublicKey;
-  delegateAuthority?: web3.PublicKey;
-};
+import { Honeycomb, VAULT, createCtx } from "@honeycomb-protocol/hive-control";
 
 type CreateAddMultiplierCtxArgs = {
   project: web3.PublicKey;
   stakingPool: web3.PublicKey;
   authority: web3.PublicKey;
   payer: web3.PublicKey;
-  args: AddStakingMultiplierArgs;
+  args: AddMultiplierArgsChain;
   delegateAuthority?: web3.PublicKey;
   programId?: web3.PublicKey;
 };
@@ -53,25 +42,27 @@ export function createAddMultiplierCtx(args: CreateAddMultiplierCtxArgs) {
   return createCtx(instructions);
 }
 
-export async function addMultiplier(args: AddMultiplierArgs) {
-  const mx = args.metaplex;
-  const wallet = mx.identity();
+type AddMultiplierArgs = {
+  args: AddMultiplierArgsChain;
+  programId?: web3.PublicKey;
+};
+
+export async function addMultiplier(
+  honeycomb: Honeycomb,
+  args: AddMultiplierArgs
+) {
+  const wallet = honeycomb.identity();
   const ctx = createAddMultiplierCtx({
-    project: args.project,
-    stakingPool: args.stakingPool,
+    project: honeycomb.projectAddress,
+    stakingPool: honeycomb.staking().poolAddress,
     authority: wallet.publicKey,
     payer: wallet.publicKey,
     args: args.args,
-    delegateAuthority: args.delegateAuthority,
+    delegateAuthority: wallet.getDelegateAuthority().delegateAuthorityAddress,
     programId: args.programId,
   });
 
-  ctx.tx.recentBlockhash = await mx.connection
-    .getLatestBlockhash()
-    .then((x) => x.blockhash);
-  return {
-    response: await mx
-      .rpc()
-      .sendAndConfirmTransaction(ctx.tx, { skipPreflight: true }, ctx.signers),
-  };
+  return honeycomb
+    .rpc()
+    .sendAndConfirmTransaction(ctx, { skipPreflight: true });
 }

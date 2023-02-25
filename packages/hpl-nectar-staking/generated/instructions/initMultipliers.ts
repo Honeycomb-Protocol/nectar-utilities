@@ -84,7 +84,7 @@ export const initMultipliersInstructionDiscriminator = [
 export function createInitMultipliersInstruction(
   accounts: InitMultipliersInstructionAccounts,
   args: InitMultipliersInstructionArgs,
-  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
+  programId = new web3.PublicKey('9nVqFEhHT5UG1Nf3sLWhrHjBwJtwNL9FCvEwquZtQjxa')
 ) {
   const [data] = initMultipliersStruct.serialize({
     instructionDiscriminator: initMultipliersInstructionDiscriminator,

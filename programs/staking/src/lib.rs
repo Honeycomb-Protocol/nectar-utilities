@@ -4,7 +4,7 @@ pub mod state;
 
 use {anchor_lang::prelude::*, instructions::*};
 
-declare_id!("5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG");
+declare_id!("9nVqFEhHT5UG1Nf3sLWhrHjBwJtwNL9FCvEwquZtQjxa");
 
 #[program]
 pub mod hpl_nectar_staking {
@@ -150,7 +150,7 @@ pub mod hpl_nectar_staking {
 
     pub fn fund_rewards(ctx: Context<FundRewards>, amount: u64) -> Result<()> {
         hpl_hive_control::instructions::platform_gate(
-            hpl_hive_control::constants::ACTIONS.manage_staking_pool,
+            hpl_hive_control::constants::ACTIONS.public_low,
             &ctx.accounts.project,
             ctx.accounts.wallet.key(),
             ctx.accounts.wallet.to_account_info(),

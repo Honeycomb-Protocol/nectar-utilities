@@ -1,5 +1,5 @@
 export * from "./generated";
-export * from "./sdk";
+export * from "./operations";
 export * from "./pdas";
 export * from "./types";
-export * from "./utils";
+export * from "./NectarStaking";

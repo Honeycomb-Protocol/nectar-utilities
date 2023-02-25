@@ -88,6 +88,7 @@ export const getDependencies = (
   return {
     config,
     connection,
+    signer: keypair,
     deployments,
     mx,
     setDeployments: setDeploymentsLocal,

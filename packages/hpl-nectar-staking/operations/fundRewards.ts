@@ -1,22 +1,8 @@
 import * as web3 from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
-import {
-  createFundRewardsInstruction,
-  StakingPool,
-  PROGRAM_ID,
-} from "../generated";
-import { Metaplex } from "@metaplex-foundation/js";
+import { createFundRewardsInstruction, PROGRAM_ID } from "../generated";
 import { getVaultPda } from "../pdas";
-import { VAULT } from "@honeycomb-protocol/hive-control";
-import { createCtx } from "../utils";
-
-type FundRewardsArgs = {
-  metaplex: Metaplex;
-  project: web3.PublicKey;
-  stakingPool: web3.PublicKey;
-  amount: number;
-  programId?: web3.PublicKey;
-};
+import { VAULT, createCtx, Honeycomb } from "@honeycomb-protocol/hive-control";
 
 type CreateFundRewardsCrxArgs = {
   project: web3.PublicKey;
@@ -61,28 +47,23 @@ export function createFundRewardsCtx(args: CreateFundRewardsCrxArgs) {
   return createCtx(instructions);
 }
 
-export async function fundRewards({ metaplex: mx, ...args }: FundRewardsArgs) {
-  const staking_poolAccount = await StakingPool.fromAccountAddress(
-    mx.connection,
-    args.stakingPool
-  );
+type FundRewardsArgs = {
+  amount: number;
+  programId?: web3.PublicKey;
+};
 
-  const wallet = mx.identity();
+export async function fundRewards(honeycomb: Honeycomb, args: FundRewardsArgs) {
+  const wallet = honeycomb.identity();
   const ctx = createFundRewardsCtx({
-    project: args.project,
-    stakingPool: args.stakingPool,
-    rewardMint: staking_poolAccount.rewardMint,
+    project: honeycomb.projectAddress,
+    stakingPool: honeycomb.staking().poolAddress,
+    rewardMint: honeycomb.staking().rewardMint,
     wallet: wallet.publicKey,
     amount: args.amount,
     programId: args.programId,
   });
 
-  ctx.tx.recentBlockhash = await mx.connection
-    .getLatestBlockhash()
-    .then((x) => x.blockhash);
-  return {
-    response: await mx
-      .rpc()
-      .sendAndConfirmTransaction(ctx.tx, { skipPreflight: true }, ctx.signers),
-  };
+  return honeycomb
+    .rpc()
+    .sendAndConfirmTransaction(ctx, { skipPreflight: true });
 }

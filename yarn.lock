@@ -376,12 +376,13 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
-"@honeycomb-protocol/hive-control@^0.0.13":
-  version "0.0.13"
-  resolved "https://registry.yarnpkg.com/@honeycomb-protocol/hive-control/-/hive-control-0.0.13.tgz#b0f9e9d4d95d046f9a0c7214fc259f9756ce7a13"
-  integrity sha512-qJg7oWvpMX/P0hxaNxyvJR0fR67gNHNtQP/QEgd+bkeZUb4GRkEYczcT1KVUk2Nw9Td7/TqvjSJaUywIymt75g==
+"@honeycomb-protocol/hive-control@^0.0.21":
+  version "0.0.21"
+  resolved "https://registry.yarnpkg.com/@honeycomb-protocol/hive-control/-/hive-control-0.0.21.tgz#2dac0b774c0c740f472d7e8fd7c147c212eaf51e"
+  integrity sha512-du6RHmxxBMiP8uqwvm2oc0ojPXbQk+8RZ2rTBes4WLiC8rpNxERi8PWBQPMD2AEYTmWPtI3cWupquCYRxoqhXw==
   dependencies:
     "@metaplex-foundation/js" "^0.18.1"
+    tweetnacl "^1.0.3"
 
 "@metaplex-foundation/beet-solana@^0.3.0", "@metaplex-foundation/beet-solana@^0.3.1":
   version "0.3.1"

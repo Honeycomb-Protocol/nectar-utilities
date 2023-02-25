@@ -1,23 +1,8 @@
 import * as web3 from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
-import {
-  createWithdrawRewardsInstruction,
-  StakingPool,
-  PROGRAM_ID,
-} from "../generated";
-import { Metaplex } from "@metaplex-foundation/js";
+import { createWithdrawRewardsInstruction, PROGRAM_ID } from "../generated";
 import { getVaultPda } from "../pdas";
-import { VAULT } from "@honeycomb-protocol/hive-control";
-import { createCtx } from "../utils";
-
-type WithdrawRewardsArgs = {
-  metaplex: Metaplex;
-  project: web3.PublicKey;
-  stakingPool: web3.PublicKey;
-  amount: number;
-  delegateAuthority?: web3.PublicKey;
-  programId?: web3.PublicKey;
-};
+import { VAULT, createCtx, Honeycomb } from "@honeycomb-protocol/hive-control";
 
 type CreateWithdrawRewardsCrx = {
   project: web3.PublicKey;
@@ -66,33 +51,27 @@ export function createWithdrawRewardsCtx(args: CreateWithdrawRewardsCrx) {
   return createCtx(instructions);
 }
 
-export async function withdrawRewards({
-  metaplex: mx,
-  ...args
-}: WithdrawRewardsArgs) {
-  const staking_poolAccount = await StakingPool.fromAccountAddress(
-    mx.connection,
-    args.project
-  );
-
-  const wallet = mx.identity();
+type WithdrawRewardsArgs = {
+  amount: number;
+  programId?: web3.PublicKey;
+};
+export async function withdrawRewards(
+  honeycomb: Honeycomb,
+  args: WithdrawRewardsArgs
+) {
+  const wallet = honeycomb.identity();
   const ctx = createWithdrawRewardsCtx({
-    project: staking_poolAccount.project,
-    stakingPool: args.stakingPool,
-    rewardMint: staking_poolAccount.rewardMint,
+    project: honeycomb.projectAddress,
+    stakingPool: honeycomb.staking().poolAddress,
+    rewardMint: honeycomb.staking().rewardMint,
     authority: wallet.publicKey,
     payer: wallet.publicKey,
     amount: args.amount,
-    delegateAuthority: args.delegateAuthority,
+    delegateAuthority: wallet.getDelegateAuthority().delegateAuthorityAddress,
     programId: args.programId,
   });
 
-  ctx.tx.recentBlockhash = await mx.connection
-    .getLatestBlockhash()
-    .then((x) => x.blockhash);
-  return {
-    response: await mx
-      .rpc()
-      .sendAndConfirmTransaction(ctx.tx, { skipPreflight: true }, ctx.signers),
-  };
+  return honeycomb
+    .rpc()
+    .sendAndConfirmTransaction(ctx, { skipPreflight: true });
 }

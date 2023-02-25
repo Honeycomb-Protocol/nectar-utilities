@@ -86,7 +86,7 @@ export const addMultiplierInstructionDiscriminator = [
 export function createAddMultiplierInstruction(
   accounts: AddMultiplierInstructionAccounts,
   args: AddMultiplierInstructionArgs,
-  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
+  programId = new web3.PublicKey('9nVqFEhHT5UG1Nf3sLWhrHjBwJtwNL9FCvEwquZtQjxa')
 ) {
   const [data] = addMultiplierStruct.serialize({
     instructionDiscriminator: addMultiplierInstructionDiscriminator,

@@ -94,7 +94,7 @@ export const createStakingPoolInstructionDiscriminator = [
 export function createCreateStakingPoolInstruction(
   accounts: CreateStakingPoolInstructionAccounts,
   args: CreateStakingPoolInstructionArgs,
-  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
+  programId = new web3.PublicKey('9nVqFEhHT5UG1Nf3sLWhrHjBwJtwNL9FCvEwquZtQjxa')
 ) {
   const [data] = createStakingPoolStruct.serialize({
     instructionDiscriminator: createStakingPoolInstructionDiscriminator,

@@ -86,7 +86,7 @@ export const unstakeInstructionDiscriminator = [
  */
 export function createUnstakeInstruction(
   accounts: UnstakeInstructionAccounts,
-  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
+  programId = new web3.PublicKey('9nVqFEhHT5UG1Nf3sLWhrHjBwJtwNL9FCvEwquZtQjxa')
 ) {
   const [data] = unstakeStruct.serialize({
     instructionDiscriminator: unstakeInstructionDiscriminator,

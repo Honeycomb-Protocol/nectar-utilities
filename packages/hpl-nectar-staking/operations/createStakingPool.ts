@@ -5,30 +5,17 @@ import {
   AddMultiplierArgs,
   PROGRAM_ID,
 } from "../generated";
-import { Context } from "../types";
-import { Metaplex } from "@metaplex-foundation/js";
-import { createUpdateProjectCtx } from "./updateStakingPool";
+import { createUpdatePoolCtx } from "./updateStakingPool";
 import { createInitMultiplierCtx } from "./initMultipliers";
 import { createAddMultiplierCtx } from "./addMultiplier";
 import { getStakingPoolPda, getVaultPda } from "../pdas";
 import {
   VAULT,
   HIVECONTROL_PROGRAM_ID,
+  createCtx,
+  OperationCtx,
+  Honeycomb,
 } from "@honeycomb-protocol/hive-control";
-import { createCtx } from "../utils";
-
-type CreateProjectArgs = {
-  metaplex: Metaplex;
-  project: web3.PublicKey;
-  rewardMint: web3.PublicKey;
-  args: CreateStakingPoolArgs;
-  collections?: web3.PublicKey[];
-  creators?: web3.PublicKey[];
-  multipliers?: AddMultiplierArgs[];
-  multipliersDecimals?: number;
-  delegateAuthority?: web3.PublicKey;
-  programId?: web3.PublicKey;
-};
 
 type CreateCreateProjectCtxArgs = {
   project: web3.PublicKey;
@@ -46,7 +33,7 @@ type CreateCreateProjectCtxArgs = {
 
 export function createCreateProjectCtx(
   args: CreateCreateProjectCtxArgs
-): Context & { stakingPool: web3.PublicKey } {
+): OperationCtx & { stakingPool: web3.PublicKey } {
   const programId = args.programId || PROGRAM_ID;
 
   const key = web3.Keypair.generate().publicKey;
@@ -74,7 +61,7 @@ export function createCreateProjectCtx(
 
     ...(args.collections || []).flatMap(
       (collection) =>
-        createUpdateProjectCtx({
+        createUpdatePoolCtx({
           args: {
             name: null,
             rewardsPerDuration: null,
@@ -98,7 +85,7 @@ export function createCreateProjectCtx(
 
     ...(args.creators || []).flatMap(
       (creator) =>
-        createUpdateProjectCtx({
+        createUpdatePoolCtx({
           args: {
             name: null,
             rewardsPerDuration: null,
@@ -156,13 +143,22 @@ export function createCreateProjectCtx(
   };
 }
 
-export async function createStakingPool({
-  metaplex: mx,
-  ...args
-}: CreateProjectArgs) {
-  const wallet = mx.identity();
+type CreateProjectArgs = {
+  rewardMint: web3.PublicKey;
+  args: CreateStakingPoolArgs;
+  collections?: web3.PublicKey[];
+  creators?: web3.PublicKey[];
+  multipliers?: AddMultiplierArgs[];
+  multipliersDecimals?: number;
+  programId?: web3.PublicKey;
+};
+export async function createStakingPool(
+  honeycomb: Honeycomb,
+  args: CreateProjectArgs
+) {
+  const wallet = honeycomb.identity();
   const ctx = createCreateProjectCtx({
-    project: args.project,
+    project: honeycomb.projectAddress,
     rewardMint: args.rewardMint,
     authority: wallet.publicKey,
     payer: wallet.publicKey,
@@ -171,17 +167,14 @@ export async function createStakingPool({
     creators: args.creators || [],
     multipliers: args.multipliers || [],
     multipliersDecimals: args.multipliersDecimals || 9,
-    delegateAuthority: args.delegateAuthority,
+    delegateAuthority: wallet.getDelegateAuthority().delegateAuthorityAddress,
     programId: args.programId,
   });
 
-  ctx.tx.recentBlockhash = await mx.connection
-    .getLatestBlockhash()
-    .then((x) => x.blockhash);
   return {
-    response: await mx
+    poolAddress: ctx.stakingPool,
+    response: honeycomb
       .rpc()
-      .sendAndConfirmTransaction(ctx.tx, { skipPreflight: true }, ctx.signers),
-    stakingPool: ctx.stakingPool,
+      .sendAndConfirmTransaction(ctx, { skipPreflight: true }),
   };
 }

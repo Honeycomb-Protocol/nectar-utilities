@@ -66,7 +66,7 @@ export const initNftInstructionDiscriminator = [
  */
 export function createInitNftInstruction(
   accounts: InitNftInstructionAccounts,
-  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
+  programId = new web3.PublicKey('9nVqFEhHT5UG1Nf3sLWhrHjBwJtwNL9FCvEwquZtQjxa')
 ) {
   const [data] = initNftStruct.serialize({
     instructionDiscriminator: initNftInstructionDiscriminator,

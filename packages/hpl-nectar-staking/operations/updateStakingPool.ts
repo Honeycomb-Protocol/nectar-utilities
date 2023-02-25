@@ -4,22 +4,9 @@ import {
   createUpdateStakingPoolInstruction,
   PROGRAM_ID,
 } from "../generated";
-import { Metaplex } from "@metaplex-foundation/js";
-import { VAULT } from "@honeycomb-protocol/hive-control";
-import { createCtx } from "../utils";
+import { VAULT, createCtx, Honeycomb } from "@honeycomb-protocol/hive-control";
 
-type UpdateProjectArgs = {
-  metaplex: Metaplex;
-  project: web3.PublicKey;
-  stakingPool: web3.PublicKey;
-  args: UpdateStakingPoolArgs;
-  collection?: web3.PublicKey;
-  creator?: web3.PublicKey;
-  delegateAuthority?: web3.PublicKey;
-  programId?: web3.PublicKey;
-};
-
-type CreateUpdateProjectCtxArgs = {
+type CreateUpdatePoolCtxArgs = {
   project: web3.PublicKey;
   stakingPool: web3.PublicKey;
   authority: web3.PublicKey;
@@ -30,8 +17,7 @@ type CreateUpdateProjectCtxArgs = {
   delegateAuthority?: web3.PublicKey;
   programId?: web3.PublicKey;
 };
-
-export function createUpdateProjectCtx(args: CreateUpdateProjectCtxArgs) {
+export function createUpdatePoolCtx(args: CreateUpdatePoolCtxArgs) {
   const programId = args.programId || PROGRAM_ID;
 
   const instructions: web3.TransactionInstruction[] = [
@@ -56,29 +42,30 @@ export function createUpdateProjectCtx(args: CreateUpdateProjectCtxArgs) {
   return createCtx(instructions);
 }
 
-export async function updateStakingPool({
-  metaplex: mx,
-  ...args
-}: UpdateProjectArgs) {
-  const wallet = mx.identity();
-  const ctx = createUpdateProjectCtx({
-    project: args.project,
-    stakingPool: args.stakingPool,
+type UpdatePoolArgs = {
+  args: UpdateStakingPoolArgs;
+  collection?: web3.PublicKey;
+  creator?: web3.PublicKey;
+  programId?: web3.PublicKey;
+};
+export async function updateStakingPool(
+  honeycomb: Honeycomb,
+  args: UpdatePoolArgs
+) {
+  const wallet = honeycomb.identity();
+  const ctx = createUpdatePoolCtx({
+    project: honeycomb.projectAddress,
+    stakingPool: honeycomb.staking().poolAddress,
     authority: wallet.publicKey,
     payer: wallet.publicKey,
     args: args.args,
     collection: args.collection,
     creator: args.creator,
-    delegateAuthority: args.delegateAuthority,
+    delegateAuthority: wallet.getDelegateAuthority().delegateAuthorityAddress,
     programId: args.programId,
   });
 
-  ctx.tx.recentBlockhash = await mx.connection
-    .getLatestBlockhash()
-    .then((x) => x.blockhash);
-  return {
-    response: await mx
-      .rpc()
-      .sendAndConfirmTransaction(ctx.tx, { skipPreflight: true }, ctx.signers),
-  };
+  return honeycomb
+    .rpc()
+    .sendAndConfirmTransaction(ctx, { skipPreflight: true });
 }

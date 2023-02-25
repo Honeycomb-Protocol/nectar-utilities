@@ -8,4 +8,5 @@ export * from "./stake";
 export * from "./unstake";
 export * from "./fundRewards";
 export * from "./claimRewards";
+export * from "./withdrawRewards";
 export * from "./fetch";

@@ -8,7 +8,6 @@ import {
   PROGRAM_ID,
 } from "../generated";
 import { StakedNft } from "../types";
-import { Metaplex, Mint } from "@metaplex-foundation/js";
 import {
   getMetadataAccount_,
   getDepositPda,
@@ -19,24 +18,7 @@ import {
 } from "../pdas";
 import { createClaimRewardsCtx } from "./claimRewards";
 import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
-import { VAULT } from "@honeycomb-protocol/hive-control";
-import { createCtx } from "../utils";
-
-type UnstakeArgs = {
-  metaplex: Metaplex;
-  stakingPool: StakingPool;
-  nfts: StakedNft[];
-};
-
-type CreateUnstakeCtxArgs = {
-  metaplex: Metaplex;
-  stakingPool: StakingPool;
-  nft: StakedNft;
-  multipliers?: MultipliersArgs & {
-    address: web3.PublicKey;
-  };
-  programId?: web3.PublicKey;
-};
+import { VAULT, createCtx, Honeycomb } from "@honeycomb-protocol/hive-control";
 
 type CreateUnstakeInstructionArgs = {
   project: web3.PublicKey;
@@ -105,38 +87,41 @@ export function createUnstakeInstructionV2(args: CreateUnstakeInstructionArgs) {
   );
 }
 
-export function createUnstakeCtx({
-  metaplex: mx,
-  ...args
-}: CreateUnstakeCtxArgs) {
+type CreateUnstakeCtxArgs = {
+  nft: StakedNft;
+  multipliers?: MultipliersArgs & {
+    address: web3.PublicKey;
+  };
+  isFirst?: boolean;
+  programId?: web3.PublicKey;
+};
+export async function createUnstakeCtx(
+  honeycomb: Honeycomb,
+  args: CreateUnstakeCtxArgs
+) {
   const instructions: web3.TransactionInstruction[] = [];
   const signers: web3.Signer[] = [];
 
-  const wallet = mx.identity();
-  const [staking_poolAddress] = getStakingPoolPda(
-    args.stakingPool.project,
-    args.stakingPool.key,
-    args.programId
-  );
-
-  const claimCtx = createClaimRewardsCtx({
-    project: args.stakingPool.project,
-    stakingPool: staking_poolAddress,
-    nftMint: args.nft.mintAddress,
-    rewardMint: args.stakingPool.rewardMint,
-    wallet: wallet.publicKey,
+  const claimCtx = await createClaimRewardsCtx({
+    wallet: honeycomb.identity().publicKey,
+    connection: honeycomb.connection,
+    project: honeycomb.projectAddress,
+    stakingPool: honeycomb.staking().pool(),
+    nft: args.nft,
     multipliers: args.multipliers?.address,
+    isFirst: args.isFirst,
     programId: args.programId,
   });
+
   instructions.push(...claimCtx.tx.instructions);
   signers.push(...claimCtx.signers);
 
   const unstakeIx = createUnstakeInstructionV2({
-    project: args.stakingPool.project,
-    stakingPool: staking_poolAddress,
+    project: honeycomb.projectAddress,
+    stakingPool: honeycomb.staking().poolAddress,
     nftMint: args.nft.mintAddress,
-    wallet: wallet.publicKey,
-    lockType: args.stakingPool.lockType,
+    wallet: honeycomb.identity().publicKey,
+    lockType: honeycomb.staking().lockType,
     tokenStandard: args.nft.tokenStandard,
     programId: args.programId,
   });
@@ -145,42 +130,39 @@ export function createUnstakeCtx({
   return createCtx(instructions, signers);
 }
 
-export async function unstake({ metaplex: mx, ...args }: UnstakeArgs) {
-  const wallet = mx.identity();
-  const txs = await Promise.all(
+type UnstakeArgs = {
+  nfts: StakedNft[];
+  programId?: web3.PublicKey;
+};
+export async function unstake(honeycomb: Honeycomb, args: UnstakeArgs) {
+  const wallet = honeycomb.identity();
+  const connection = honeycomb.rpc().connection;
+  const ctxs = await Promise.all(
     args.nfts.map((nft, i) =>
-      createUnstakeCtx({
-        metaplex: mx,
-        stakingPool: args.stakingPool,
+      createUnstakeCtx(honeycomb, {
         nft,
+        isFirst: i === 0,
+        programId: args.programId,
       })
     )
   );
 
-  if (!!!txs.length) return [];
+  const prepared = await honeycomb.rpc().prepareTransactions(ctxs);
+  const preparedCtxs = prepared.ctxs;
 
-  const recentBlockhash = await mx.connection.getLatestBlockhash();
-  const txns: web3.Transaction[] = [];
-  for (let tx of txs) {
-    tx.tx.recentBlockhash = recentBlockhash.blockhash;
-    tx.tx.feePayer = wallet.publicKey;
-    tx.signers.length && tx.tx.partialSign(...tx.signers);
-    txns.push(tx.tx);
-  }
-  const signedTxs = await wallet.signAllTransactions(txns);
+  const firstTxResponse = await honeycomb
+    .rpc()
+    .sendAndConfirmTransaction(preparedCtxs.shift(), {
+      commitment: "processed",
+      skipPreflight: true,
+    });
 
-  const firstTx = signedTxs.shift();
+  const responses = await honeycomb
+    .rpc()
+    .sendAndConfirmTransactionsInBatches(preparedCtxs, {
+      commitment: "processed",
+      skipPreflight: true,
+    });
 
-  if (!firstTx) return;
-
-  const firstResponse = await mx.rpc().sendAndConfirmTransaction(firstTx, {
-    commitment: "processed",
-  });
-  const responses = await Promise.all(
-    signedTxs.map((t) =>
-      mx.rpc().sendAndConfirmTransaction(t, { commitment: "processed" })
-    )
-  );
-
-  return [firstResponse, ...responses];
+  return [firstTxResponse, ...responses];
 }

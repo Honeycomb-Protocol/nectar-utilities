@@ -55,7 +55,7 @@ export const initStakerInstructionDiscriminator = [
  */
 export function createInitStakerInstruction(
   accounts: InitStakerInstructionAccounts,
-  programId = new web3.PublicKey('5CLnmLaVPfKKZUFZyLoXaVgwCDNZ43bt3ssNRiLxUnPG')
+  programId = new web3.PublicKey('9nVqFEhHT5UG1Nf3sLWhrHjBwJtwNL9FCvEwquZtQjxa')
 ) {
   const [data] = initStakerStruct.serialize({
     instructionDiscriminator: initStakerInstructionDiscriminator,

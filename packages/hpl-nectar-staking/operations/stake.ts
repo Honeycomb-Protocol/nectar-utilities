@@ -6,8 +6,7 @@ import {
   PROGRAM_ID,
   StakingPool,
 } from "../generated";
-import { AvailableNft, Context } from "../types";
-import { Metaplex } from "@metaplex-foundation/js";
+import { AvailableNft } from "../types";
 import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import {
   getMetadataAccount_,
@@ -17,24 +16,9 @@ import {
   getStakingPoolPda,
   METADATA_PROGRAM_ID,
 } from "../pdas";
-import { createCtx, getOrFetchNft, getOrFetchStaker } from "../utils";
 import { createInitStakerCtx } from "./initStaker";
 import { createInitNFTCtx } from "./initNFT";
-import { VAULT } from "@honeycomb-protocol/hive-control";
-
-type StakeArgs = {
-  metaplex: Metaplex;
-  stakingPool: StakingPool;
-  nfts: AvailableNft[];
-};
-
-type CreateStakeCtxArgs = {
-  metaplex: Metaplex;
-  stakingPool: StakingPool;
-  nft: AvailableNft;
-  isFirst?: boolean;
-  programId?: web3.PublicKey;
-};
+import { VAULT, createCtx, Honeycomb } from "@honeycomb-protocol/hive-control";
 
 type CreateStakeTransactionArgs = {
   project: web3.PublicKey;
@@ -103,51 +87,25 @@ export function createStakeInstructionV2(args: CreateStakeTransactionArgs) {
   );
 }
 
-export async function createStakeCtx({
-  metaplex: mx,
-  ...args
-}: CreateStakeCtxArgs) {
+type CreateStakeCtxArgs = {
+  nft: AvailableNft;
+  isFirst?: boolean;
+  programId?: web3.PublicKey;
+};
+export async function createStakeCtx(
+  honeycomb: Honeycomb,
+  args: CreateStakeCtxArgs
+) {
   const instructions: web3.TransactionInstruction[] = [];
   const signers: web3.Signer[] = [];
 
-  const wallet = mx.identity();
-  const [staking_poolAddress] = getStakingPoolPda(
-    args.stakingPool.project,
-    args.stakingPool.key,
-    args.programId
-  );
-
-  if (args.isFirst) {
-    const staker = await getOrFetchStaker(
-      mx.connection,
-      wallet.publicKey,
-      staking_poolAddress,
-      args.programId
-    );
-    if (!staker) {
-      const initStakerCtx = createInitStakerCtx({
-        project: args.stakingPool.project,
-        stakingPool: staking_poolAddress,
-        wallet: wallet.publicKey,
-        programId: args.programId,
-      });
-      instructions.push(...initStakerCtx.tx.instructions);
-      signers.push(...initStakerCtx.signers);
-    }
-  }
-
-  const nft = await getOrFetchNft(
-    mx.connection,
-    args.nft.tokenMint,
-    staking_poolAddress,
-    args.programId
-  );
+  const nft = await honeycomb.staking().fetch().nft(args.nft.tokenMint).catch();
   if (!nft) {
     const initNftCtx = createInitNFTCtx({
-      project: args.stakingPool.project,
-      stakingPool: staking_poolAddress,
+      project: honeycomb.projectAddress,
+      stakingPool: honeycomb.staking().poolAddress,
       nftMint: args.nft.tokenMint,
-      wallet: wallet.publicKey,
+      wallet: honeycomb.identity().publicKey,
       programId: args.programId,
     });
     instructions.push(...initNftCtx.tx.instructions);
@@ -156,11 +114,11 @@ export async function createStakeCtx({
 
   instructions.push(
     createStakeInstructionV2({
-      project: args.stakingPool.project,
-      stakingPool: staking_poolAddress,
+      project: honeycomb.projectAddress,
+      stakingPool: honeycomb.staking().poolAddress,
       nftMint: args.nft.tokenMint,
-      wallet: wallet.publicKey,
-      lockType: args.stakingPool.lockType,
+      wallet: honeycomb.identity().publicKey,
+      lockType: honeycomb.staking().lockType,
       tokenStandard: args.nft.tokenStandard,
       programId: args.programId,
     })
@@ -169,43 +127,52 @@ export async function createStakeCtx({
   return createCtx(instructions, signers);
 }
 
-export async function stake({ metaplex: mx, ...args }: StakeArgs) {
-  const wallet = mx.identity();
-  const txs = await Promise.all(
+type StakeArgs = {
+  nfts: AvailableNft[];
+  programId?: web3.PublicKey;
+};
+export async function stake(honeycomb: Honeycomb, args: StakeArgs) {
+  const wallet = honeycomb.identity();
+
+  const ctxs = await Promise.all(
     args.nfts.map((nft, i) =>
-      createStakeCtx({
-        metaplex: mx,
-        stakingPool: args.stakingPool,
+      createStakeCtx(honeycomb, {
         nft,
         isFirst: i == 0,
+        programId: args.programId,
       })
     )
   );
 
-  if (!!!txs.length) return [];
-
-  const recentBlockhash = await mx.connection.getLatestBlockhash();
-  const txns: web3.Transaction[] = [];
-  for (let tx of txs) {
-    tx.tx.recentBlockhash = recentBlockhash.blockhash;
-    tx.tx.feePayer = wallet.publicKey;
-    tx.signers.length && tx.tx.partialSign(...tx.signers);
-    txns.push(tx.tx);
+  try {
+    await honeycomb.staking().fetch().staker();
+  } catch {
+    ctxs.unshift(
+      createInitStakerCtx({
+        project: honeycomb.projectAddress,
+        stakingPool: honeycomb.staking().poolAddress,
+        wallet: wallet.publicKey,
+        programId: args.programId,
+      })
+    );
   }
-  const signedTxs = await wallet.signAllTransactions(txns);
 
-  const firstTx = signedTxs.shift();
+  const prepared = await honeycomb.rpc().prepareTransactions(ctxs);
+  const preparedCtxs = prepared.ctxs;
 
-  if (!firstTx) return [];
+  const firstTxResponse = await honeycomb
+    .rpc()
+    .sendAndConfirmTransaction(preparedCtxs.shift(), {
+      commitment: "processed",
+      skipPreflight: true,
+    });
 
-  const firstResponse = await mx.rpc().sendAndConfirmTransaction(firstTx, {
-    commitment: "processed",
-  });
-  const responses = await Promise.all(
-    signedTxs.map((t) =>
-      mx.rpc().sendAndConfirmTransaction(t, { commitment: "processed" })
-    )
-  );
+  const responses = await honeycomb
+    .rpc()
+    .sendAndConfirmTransactionsInBatches(preparedCtxs, {
+      commitment: "processed",
+      skipPreflight: true,
+    });
 
-  return [firstResponse, ...responses];
+  return [firstTxResponse, ...responses];
 }

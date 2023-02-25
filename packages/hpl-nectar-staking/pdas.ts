@@ -50,34 +50,34 @@ export const getStakingPoolPda = (
 };
 
 export const getVaultPda = (
-  project: web3.PublicKey,
+  pool: web3.PublicKey,
   rewardMint: web3.PublicKey,
   programId: web3.PublicKey = PROGRAM_ID
 ) => {
   return web3.PublicKey.findProgramAddressSync(
-    [Buffer.from("vault"), project.toBuffer(), rewardMint.toBuffer()],
+    [Buffer.from("vault"), pool.toBuffer(), rewardMint.toBuffer()],
     programId
   );
 };
 
 export const getStakerPda = (
-  project: web3.PublicKey,
+  pool: web3.PublicKey,
   wallet: web3.PublicKey,
   programId: web3.PublicKey = PROGRAM_ID
 ) => {
   return web3.PublicKey.findProgramAddressSync(
-    [Buffer.from("staker"), wallet.toBuffer(), project.toBuffer()],
+    [Buffer.from("staker"), wallet.toBuffer(), pool.toBuffer()],
     programId
   );
 };
 
 export const getNftPda = (
-  project: web3.PublicKey,
+  pool: web3.PublicKey,
   mint: web3.PublicKey,
   programId: web3.PublicKey = PROGRAM_ID
 ) => {
   return web3.PublicKey.findProgramAddressSync(
-    [Buffer.from("nft"), mint.toBuffer(), project.toBuffer()],
+    [Buffer.from("nft"), mint.toBuffer(), pool.toBuffer()],
     programId
   );
 };
@@ -93,10 +93,10 @@ export const getDepositPda = (
 };
 
 export const getMultipliersPda = (
-  project: web3.PublicKey,
+  pool: web3.PublicKey,
   programId = PROGRAM_ID
 ) =>
   web3.PublicKey.findProgramAddressSync(
-    [Buffer.from("multipliers"), project.toBuffer()],
+    [Buffer.from("multipliers"), pool.toBuffer()],
     programId
   );
