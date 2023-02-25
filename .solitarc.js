@@ -12,5 +12,5 @@ module.exports = {
   idlDir: path.join(__dirname, "packages", "idl"),
   sdkDir: path.join(__dirname, "packages", programFullName.replaceAll(" ", "-"), "generated"),
   binaryInstallDir: path.join(__dirname, ".crates"),
-  programDir: path.join(__dirname, "programs", programName.replaceAll(" ", "-")),
+  programDir: path.join(__dirname, "programs", programFullName.replaceAll(" ", "-")),
 };
