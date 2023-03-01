@@ -6,8 +6,10 @@ import {
   CreateStakingPoolArgs,
   LockType,
   Multipliers,
+  MultipliersArgs,
   NFT,
   PROGRAM_ID,
+  Staker,
   StakingPool,
   UpdateStakingPoolArgs,
 } from "./generated";
@@ -50,6 +52,10 @@ type UpdatePoolArgs = {
   creator?: web3.PublicKey;
 };
 
+type StakingMultipliers = MultipliersArgs & {
+  address: web3.PublicKey;
+};
+
 export class NectarStaking implements Module {
   readonly programId: web3.PublicKey = PROGRAM_ID;
   private _honeycomb: Honeycomb;
@@ -71,6 +77,11 @@ export class NectarStaking implements Module {
   readonly endTime: beet.COption<beet.bignum>;
   readonly collections: Uint8Array;
   readonly creators: Uint8Array;
+
+  private _multipliers: StakingMultipliers | null = null;
+  private _staker: Staker | null = null;
+  private _availableNfts: AvailableNft[] | null = null;
+  private _stakedNfts: StakedNft[] | null = null;
 
   constructor(
     readonly poolAddress: web3.PublicKey,
@@ -127,6 +138,67 @@ export class NectarStaking implements Module {
     return this._fetch;
   }
 
+  public multipliers() {
+    if (this._multipliers) {
+      return this._multipliers;
+    }
+    return this._fetch.multipliers().then((multipliers) => {
+      this._multipliers = multipliers;
+      return multipliers;
+    });
+  }
+
+  public staker() {
+    if (this._staker) {
+      return this._staker;
+    }
+    return this._fetch.staker().then((staker) => {
+      this._staker = staker;
+      return staker;
+    });
+  }
+
+  public availableNfts() {
+    if (this._availableNfts) {
+      return this._availableNfts;
+    }
+    return this._fetch.availableNfts().then((nfts) => {
+      this._availableNfts = nfts;
+      return nfts;
+    });
+  }
+
+  public stakedNfts() {
+    if (this._stakedNfts) {
+      return this._stakedNfts;
+    }
+    return this._fetch.stakedNfts().then((nfts) => {
+      this._stakedNfts = nfts;
+      return nfts;
+    });
+  }
+
+  public reloadData() {
+    return Promise.all([
+      this._fetch.multipliers().then((multipliers) => {
+        this._multipliers = multipliers;
+        return multipliers;
+      }),
+      this._fetch.staker().then((staker) => {
+        this._staker = staker;
+        return staker;
+      }),
+      this._fetch.availableNfts().then((nfts) => {
+        this._availableNfts = nfts;
+        return nfts;
+      }),
+      this._fetch.stakedNfts().then((nfts) => {
+        this._stakedNfts = nfts;
+        return nfts;
+      }),
+    ]);
+  }
+
   public updatePool(args: UpdatePoolArgs) {
     return updateStakingPool(this._honeycomb, {
       programId: this.programId,
@@ -172,21 +244,21 @@ export class NectarStaking implements Module {
     return stake(this._honeycomb, {
       nfts,
       programId: this.programId,
-    });
+    }).then((res) => this.reloadData().then(() => res));
   }
 
   public claim(...nfts: StakedNft[]) {
     return claimRewards(this._honeycomb, {
       nfts,
       programId: this.programId,
-    });
+    }).then((res) => this.reloadData().then(() => res));
   }
 
   public unstake(...nfts: StakedNft[]) {
     return unstake(this._honeycomb, {
       nfts,
       programId: this.programId,
-    });
+    }).then((res) => this.reloadData().then(() => res));
   }
 
   public install(honeycomb: Honeycomb): Honeycomb {
@@ -207,10 +279,13 @@ export class NectarStakingFetch {
     return Multipliers.fromAccountAddress(
       this.nectarStaking.honeycomb().connection,
       multipliersAddress
-    ).then((multipliers) => ({
-      ...multipliers,
-      address: multipliersAddress,
-    }));
+    ).then(
+      (multipliers) =>
+        ({
+          ...multipliers,
+          address: multipliersAddress,
+        } as StakingMultipliers)
+    );
   }
 
   public nft(mint: web3.PublicKey) {
