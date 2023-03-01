@@ -3,7 +3,6 @@
   "version": "0.0.14",
   "private": false,
   "dependencies": {
-    "@honeycomb-protocol/hive-control": "^0.0.21",
     "@metaplex-foundation/js": "^0.18.1",
     "@solana/spl-token": "^0.3.7",
     "@solana/web3.js": "^1.73.2"
