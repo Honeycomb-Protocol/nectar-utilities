@@ -2,7 +2,8 @@ import * as web3 from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
 import { createWithdrawRewardsInstruction, PROGRAM_ID } from "../generated";
 import { getVaultPda } from "../pdas";
-import { VAULT, createCtx, Honeycomb } from "@honeycomb-protocol/hive-control";
+import { VAULT, createCtx } from "@honeycomb-protocol/hive-control";
+import { NectarStaking } from "../NectarStaking";
 
 type CreateWithdrawRewardsCrx = {
   project: web3.PublicKey;
@@ -56,14 +57,14 @@ type WithdrawRewardsArgs = {
   programId?: web3.PublicKey;
 };
 export async function withdrawRewards(
-  honeycomb: Honeycomb,
+  staking: NectarStaking,
   args: WithdrawRewardsArgs
 ) {
-  const wallet = honeycomb.identity();
+  const wallet = staking.honeycomb().identity();
   const ctx = createWithdrawRewardsCtx({
-    project: honeycomb.projectAddress,
-    stakingPool: honeycomb.staking().poolAddress,
-    rewardMint: honeycomb.staking().rewardMint,
+    project: staking.pool().project,
+    stakingPool: staking.poolAddress,
+    rewardMint: staking.rewardMint,
     authority: wallet.publicKey,
     payer: wallet.publicKey,
     amount: args.amount,
@@ -71,7 +72,8 @@ export async function withdrawRewards(
     programId: args.programId,
   });
 
-  return honeycomb
+  return staking
+    .honeycomb()
     .rpc()
     .sendAndConfirmTransaction(ctx, { skipPreflight: true });
 }

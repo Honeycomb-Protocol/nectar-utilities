@@ -2,7 +2,8 @@ import * as web3 from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
 import { createFundRewardsInstruction, PROGRAM_ID } from "../generated";
 import { getVaultPda } from "../pdas";
-import { VAULT, createCtx, Honeycomb } from "@honeycomb-protocol/hive-control";
+import { VAULT, createCtx } from "@honeycomb-protocol/hive-control";
+import { NectarStaking } from "../NectarStaking";
 
 type CreateFundRewardsCrxArgs = {
   project: web3.PublicKey;
@@ -52,18 +53,22 @@ type FundRewardsArgs = {
   programId?: web3.PublicKey;
 };
 
-export async function fundRewards(honeycomb: Honeycomb, args: FundRewardsArgs) {
-  const wallet = honeycomb.identity();
+export async function fundRewards(
+  staking: NectarStaking,
+  args: FundRewardsArgs
+) {
+  const wallet = staking.honeycomb().identity();
   const ctx = createFundRewardsCtx({
-    project: honeycomb.projectAddress,
-    stakingPool: honeycomb.staking().poolAddress,
-    rewardMint: honeycomb.staking().rewardMint,
+    project: staking.pool().project,
+    stakingPool: staking.poolAddress,
+    rewardMint: staking.rewardMint,
     wallet: wallet.publicKey,
     amount: args.amount,
     programId: args.programId,
   });
 
-  return honeycomb
+  return staking
+    .honeycomb()
     .rpc()
     .sendAndConfirmTransaction(ctx, { skipPreflight: true });
 }

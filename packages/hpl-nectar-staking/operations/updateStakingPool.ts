@@ -4,7 +4,8 @@ import {
   createUpdateStakingPoolInstruction,
   PROGRAM_ID,
 } from "../generated";
-import { VAULT, createCtx, Honeycomb } from "@honeycomb-protocol/hive-control";
+import { VAULT, createCtx } from "@honeycomb-protocol/hive-control";
+import { NectarStaking } from "../NectarStaking";
 
 type CreateUpdatePoolCtxArgs = {
   project: web3.PublicKey;
@@ -49,13 +50,13 @@ type UpdatePoolArgs = {
   programId?: web3.PublicKey;
 };
 export async function updateStakingPool(
-  honeycomb: Honeycomb,
+  staking: NectarStaking,
   args: UpdatePoolArgs
 ) {
-  const wallet = honeycomb.identity();
+  const wallet = staking.honeycomb().identity();
   const ctx = createUpdatePoolCtx({
-    project: honeycomb.projectAddress,
-    stakingPool: honeycomb.staking().poolAddress,
+    project: staking.pool().project,
+    stakingPool: staking.poolAddress,
     authority: wallet.publicKey,
     payer: wallet.publicKey,
     args: args.args,
@@ -65,7 +66,8 @@ export async function updateStakingPool(
     programId: args.programId,
   });
 
-  return honeycomb
+  return staking
+    .honeycomb()
     .rpc()
     .sendAndConfirmTransaction(ctx, { skipPreflight: true });
 }

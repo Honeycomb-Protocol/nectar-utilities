@@ -33,7 +33,8 @@ import { getMultipliersPda, getNftPda, getStakerPda } from "./pdas";
 
 declare module "@honeycomb-protocol/hive-control" {
   interface Honeycomb {
-    staking(): NectarStaking;
+    _stakings: { [key: string]: NectarStaking };
+    staking(key?: string | web3.PublicKey): NectarStaking;
   }
 }
 
@@ -200,28 +201,28 @@ export class NectarStaking implements Module {
   }
 
   public updatePool(args: UpdatePoolArgs) {
-    return updateStakingPool(this._honeycomb, {
+    return updateStakingPool(this, {
       programId: this.programId,
       ...args,
     });
   }
 
   public addMultiplier(args: AddMultiplierArgs) {
-    return addMultiplier(this._honeycomb, {
+    return addMultiplier(this, {
       args,
       programId: this.programId,
     });
   }
 
   public fundRewards(amount: number) {
-    return fundRewards(this._honeycomb, {
+    return fundRewards(this, {
       amount,
       programId: this.programId,
     });
   }
 
   public withdrawRewards(amount: number) {
-    return withdrawRewards(this._honeycomb, {
+    return withdrawRewards(this, {
       amount,
       programId: this.programId,
     });
@@ -262,7 +263,21 @@ export class NectarStaking implements Module {
   }
 
   public install(honeycomb: Honeycomb): Honeycomb {
-    honeycomb.staking = () => this;
+    if (!honeycomb._stakings) {
+      honeycomb._stakings = {};
+    }
+    honeycomb._stakings[this.poolAddress.toString()] = this;
+
+    honeycomb.staking = (key?: string | web3.PublicKey) => {
+      if (key) {
+        return honeycomb._stakings[
+          key instanceof web3.PublicKey ? key.toString() : key
+        ];
+      } else {
+        return this;
+      }
+    };
+
     this._honeycomb = honeycomb;
     return honeycomb;
   }
