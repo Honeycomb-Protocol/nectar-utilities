@@ -59,7 +59,7 @@ export async function addMultiplier(
     authority: wallet.publicKey,
     payer: wallet.publicKey,
     args: args.args,
-    delegateAuthority: wallet.getDelegateAuthority().delegateAuthorityAddress,
+    delegateAuthority: wallet.delegateAuthority().address,
     programId: args.programId,
   });
 

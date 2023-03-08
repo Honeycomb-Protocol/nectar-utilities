@@ -68,7 +68,7 @@ export async function withdrawRewards(
     authority: wallet.publicKey,
     payer: wallet.publicKey,
     amount: args.amount,
-    delegateAuthority: wallet.getDelegateAuthority().delegateAuthorityAddress,
+    delegateAuthority: wallet.delegateAuthority().address,
     programId: args.programId,
   });
 

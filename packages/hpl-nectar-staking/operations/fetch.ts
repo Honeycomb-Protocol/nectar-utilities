@@ -125,14 +125,16 @@ export const fetchAvailableNfts = async (
   }
 
   const validCollections = !!honeycomb.staking().collections.length
-    ? honeycomb.collections.filter((_, i) =>
-        honeycomb.staking().collections.includes(i)
-      )
+    ? honeycomb
+        .project()
+        .collections.filter((_, i) =>
+          honeycomb.staking().collections.includes(i)
+        )
     : [];
   const validCreators = !!honeycomb.staking().creators
-    ? honeycomb.creators.filter((_, i) =>
-        honeycomb.staking().creators.includes(i)
-      )
+    ? honeycomb
+        .project()
+        .creators.filter((_, i) => honeycomb.staking().creators.includes(i))
     : [];
 
   filteredNfts = [

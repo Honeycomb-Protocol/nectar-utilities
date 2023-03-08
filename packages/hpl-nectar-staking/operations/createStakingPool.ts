@@ -158,7 +158,7 @@ export async function createStakingPool(
 ) {
   const wallet = honeycomb.identity();
   const ctx = createCreateProjectCtx({
-    project: honeycomb.projectAddress,
+    project: honeycomb.project().projectAddress,
     rewardMint: args.rewardMint,
     authority: wallet.publicKey,
     payer: wallet.publicKey,
@@ -167,7 +167,7 @@ export async function createStakingPool(
     creators: args.creators || [],
     multipliers: args.multipliers || [],
     multipliersDecimals: args.multipliersDecimals || 9,
-    delegateAuthority: wallet.getDelegateAuthority().delegateAuthorityAddress,
+    delegateAuthority: wallet.delegateAuthority().address,
     programId: args.programId,
   });
 

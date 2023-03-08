@@ -44,11 +44,11 @@ type InitNFTArgs = {
 export async function initNft(honeycomb: Honeycomb, args: InitNFTArgs) {
   const wallet = honeycomb.identity();
   const ctx = createInitNFTCtx({
-    project: honeycomb.projectAddress,
+    project: honeycomb.project().projectAddress,
     stakingPool: honeycomb.staking().poolAddress,
     nftMint: args.nftMint,
     wallet: wallet.publicKey,
-    delegateAuthority: wallet.getDelegateAuthority().delegateAuthorityAddress,
+    delegateAuthority: wallet.delegateAuthority().address,
     programId: args.programId,
   });
 

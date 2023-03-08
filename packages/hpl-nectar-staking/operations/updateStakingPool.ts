@@ -62,7 +62,7 @@ export async function updateStakingPool(
     args: args.args,
     collection: args.collection,
     creator: args.creator,
-    delegateAuthority: wallet.getDelegateAuthority().delegateAuthorityAddress,
+    delegateAuthority: wallet.delegateAuthority().address,
     programId: args.programId,
   });
 

@@ -1,11 +1,6 @@
 import * as web3 from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
-import {
-  createStakeInstruction,
-  LockType,
-  PROGRAM_ID,
-  StakingPool,
-} from "../generated";
+import { createStakeInstruction, LockType, PROGRAM_ID } from "../generated";
 import { AvailableNft } from "../types";
 import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import {
@@ -13,7 +8,6 @@ import {
   getDepositPda,
   getNftPda,
   getStakerPda,
-  getStakingPoolPda,
   METADATA_PROGRAM_ID,
 } from "../pdas";
 import { createInitStakerCtx } from "./initStaker";
@@ -102,7 +96,7 @@ export async function createStakeCtx(
   const nft = await honeycomb.staking().fetch().nft(args.nft.tokenMint).catch();
   if (!nft) {
     const initNftCtx = createInitNFTCtx({
-      project: honeycomb.projectAddress,
+      project: honeycomb.project().projectAddress,
       stakingPool: honeycomb.staking().poolAddress,
       nftMint: args.nft.tokenMint,
       wallet: honeycomb.identity().publicKey,
@@ -114,7 +108,7 @@ export async function createStakeCtx(
 
   instructions.push(
     createStakeInstructionV2({
-      project: honeycomb.projectAddress,
+      project: honeycomb.project().projectAddress,
       stakingPool: honeycomb.staking().poolAddress,
       nftMint: args.nft.tokenMint,
       wallet: honeycomb.identity().publicKey,
@@ -149,7 +143,7 @@ export async function stake(honeycomb: Honeycomb, args: StakeArgs) {
   } catch {
     ctxs.unshift(
       createInitStakerCtx({
-        project: honeycomb.projectAddress,
+        project: honeycomb.project().projectAddress,
         stakingPool: honeycomb.staking().poolAddress,
         wallet: wallet.publicKey,
         programId: args.programId,
@@ -157,8 +151,7 @@ export async function stake(honeycomb: Honeycomb, args: StakeArgs) {
     );
   }
 
-  const prepared = await honeycomb.rpc().prepareTransactions(ctxs);
-  const preparedCtxs = prepared.ctxs;
+  const preparedCtxs = await honeycomb.rpc().prepareTransactions(ctxs);
 
   const firstTxResponse = await honeycomb
     .rpc()

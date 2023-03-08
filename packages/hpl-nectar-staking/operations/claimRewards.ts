@@ -136,7 +136,7 @@ export async function claimRewards(
     args.nfts.map((nft, i) =>
       createClaimRewardsCtx({
         connection: honeycomb.connection,
-        project: honeycomb.projectAddress,
+        project: honeycomb.project().projectAddress,
         stakingPool: honeycomb.staking().pool(),
         nft,
         wallet: wallet.publicKey,
@@ -147,8 +147,7 @@ export async function claimRewards(
     )
   );
 
-  const prepared = await honeycomb.rpc().prepareTransactions(ctxs);
-  const preparedCtxs = prepared.ctxs;
+  const preparedCtxs = await honeycomb.rpc().prepareTransactions(ctxs);
 
   const firstTxResponse = await honeycomb
     .rpc()

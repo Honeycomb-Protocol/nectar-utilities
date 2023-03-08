@@ -37,7 +37,7 @@ type InitStakerArgs = {
 export async function initStaker(honeycomb: Honeycomb, args: InitStakerArgs) {
   const wallet = honeycomb.identity();
   const ctx = createInitStakerCtx({
-    project: honeycomb.projectAddress,
+    project: honeycomb.project().projectAddress,
     stakingPool: honeycomb.staking().poolAddress,
     wallet: wallet.publicKey,
     programId: args.programId,

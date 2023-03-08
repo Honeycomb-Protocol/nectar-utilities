@@ -2,7 +2,6 @@ import * as web3 from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
 import {
   createUnstakeInstruction,
-  StakingPool,
   LockType,
   MultipliersArgs,
   PROGRAM_ID,
@@ -13,7 +12,6 @@ import {
   getDepositPda,
   getNftPda,
   getStakerPda,
-  getStakingPoolPda,
   METADATA_PROGRAM_ID,
 } from "../pdas";
 import { createClaimRewardsCtx } from "./claimRewards";
@@ -105,7 +103,7 @@ export async function createUnstakeCtx(
   const claimCtx = await createClaimRewardsCtx({
     wallet: honeycomb.identity().publicKey,
     connection: honeycomb.connection,
-    project: honeycomb.projectAddress,
+    project: honeycomb.project().projectAddress,
     stakingPool: honeycomb.staking().pool(),
     nft: args.nft,
     multipliers: args.multipliers?.address,
@@ -117,7 +115,7 @@ export async function createUnstakeCtx(
   signers.push(...claimCtx.signers);
 
   const unstakeIx = createUnstakeInstructionV2({
-    project: honeycomb.projectAddress,
+    project: honeycomb.project().projectAddress,
     stakingPool: honeycomb.staking().poolAddress,
     nftMint: args.nft.mintAddress,
     wallet: honeycomb.identity().publicKey,
@@ -135,8 +133,6 @@ type UnstakeArgs = {
   programId?: web3.PublicKey;
 };
 export async function unstake(honeycomb: Honeycomb, args: UnstakeArgs) {
-  const wallet = honeycomb.identity();
-  const connection = honeycomb.rpc().connection;
   const ctxs = await Promise.all(
     args.nfts.map((nft, i) =>
       createUnstakeCtx(honeycomb, {
@@ -147,8 +143,7 @@ export async function unstake(honeycomb: Honeycomb, args: UnstakeArgs) {
     )
   );
 
-  const prepared = await honeycomb.rpc().prepareTransactions(ctxs);
-  const preparedCtxs = prepared.ctxs;
+  const preparedCtxs = await honeycomb.rpc().prepareTransactions(ctxs);
 
   const firstTxResponse = await honeycomb
     .rpc()
