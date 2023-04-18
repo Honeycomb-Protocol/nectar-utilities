@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1",
+  "version": "0.0.16",
   "name": "hpl_nectar_staking",
   "instructions": [
     {
@@ -1857,7 +1857,7 @@
     }
   ],
   "metadata": {
-    "address": "9nVqFEhHT5UG1Nf3sLWhrHjBwJtwNL9FCvEwquZtQjxa",
+    "address": "STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L",
     "origin": "anchor",
     "binaryVersion": "0.26.0",
     "libVersion": "0.26.0"

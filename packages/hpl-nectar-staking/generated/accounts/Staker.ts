@@ -89,7 +89,7 @@ export class Staker implements StakerArgs {
    */
   static gpaBuilder(
     programId: web3.PublicKey = new web3.PublicKey(
-      '9nVqFEhHT5UG1Nf3sLWhrHjBwJtwNL9FCvEwquZtQjxa'
+      'STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L'
     )
   ) {
     return beetSolana.GpaBuilder.fromStruct(programId, stakerBeet)
