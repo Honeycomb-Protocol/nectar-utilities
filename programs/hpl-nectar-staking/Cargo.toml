@@ -22,4 +22,4 @@ anchor-lang = "0.26.0"
 anchor-spl = "0.26.0"
 mpl-token-metadata = { version="1.8.0", features = [ "no-entrypoint" ] }
 hpl-utils = "0.1.2"
-hpl-hive-control = { version="0.0.14", features = ["cpi"] }
+hpl-hive-control = { version="0.0.35", features = ["cpi"] }
