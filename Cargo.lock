@@ -844,9 +844,9 @@ dependencies = [
 
 [[package]]
 name = "hpl-utils"
-version = "0.1.0"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b52429ab72dc9c4645388dec8b52e1b0cfa1086cb4c947881cb2fadb542231e"
+checksum = "5d3e7f4827c2d9f8296aea0e100f3f151fff06fa74c2abad77bfcac88f61a2f8"
 dependencies = [
  "anchor-lang",
  "mpl-token-metadata",
@@ -1079,9 +1079,9 @@ dependencies = [
 
 [[package]]
 name = "mpl-token-metadata"
-version = "1.8.3"
+version = "1.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6678bb3110abc45bb32e81f80ede7420ce9069d0feb872e7423779bf9a20d1f0"
+checksum = "410acbbc7d543108cc4d93f98290da008716c801f04a923cd83de2ec86244c1f"
 dependencies = [
  "arrayref",
  "borsh",

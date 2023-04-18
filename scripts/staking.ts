@@ -15,6 +15,7 @@ import {
 } from "../packages/hpl-nectar-staking";
 import {
   Honeycomb,
+  HoneycombProject,
   identityModule,
   Project,
 } from "@honeycomb-protocol/hive-control";
@@ -27,9 +28,12 @@ export default async function (
   const { connection, mx, signer, deployments, setDeployments } =
     getDependencies(network, "staking");
 
-  const honeycomb = await Honeycomb.fromAddress(
-    connection,
-    new web3.PublicKey("HEHH65goNqxcWpxDpgPqKwernLawqbQJ7L9aocNkm2YT")
+  const honeycomb = new Honeycomb(connection);
+  honeycomb.use(
+    await HoneycombProject.fromAddress(
+      honeycomb.connection,
+      new web3.PublicKey("HEHH65goNqxcWpxDpgPqKwernLawqbQJ7L9aocNkm2YT")
+    )
   );
   honeycomb.use(identityModule(signer));
   await honeycomb.identity().loadDelegateAuthority();

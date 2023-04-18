@@ -57,9 +57,8 @@ type StakingMultipliers = MultipliersArgs & {
   address: web3.PublicKey;
 };
 
-export class NectarStaking implements Module {
+export class NectarStaking extends Module {
   readonly programId: web3.PublicKey = PROGRAM_ID;
-  private _honeycomb: Honeycomb;
   private _fetch: NectarStakingFetch;
 
   readonly rewardMint: web3.PublicKey;
@@ -88,6 +87,7 @@ export class NectarStaking implements Module {
     readonly poolAddress: web3.PublicKey,
     private _pool: StakingPool
   ) {
+    super()
     this.rewardMint = _pool.rewardMint;
     this.vault = _pool.vault;
     this.lockType = _pool.lockType;
