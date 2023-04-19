@@ -9,5 +9,6 @@ yarn-error.log
 package-lock.json
 .crates
 dist
+keys
 *key.json
 deployments.json

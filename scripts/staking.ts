@@ -1,23 +1,14 @@
 import * as web3 from "@solana/web3.js";
 import { getDependencies } from "./utils";
 import {
-  claimRewards,
-  createStakingPool,
-  fetchAvailableNfts,
-  fetchStakedNfts,
-  fundRewards,
   LockType,
   NectarStaking,
   nectarStakingModule,
-  stake,
-  StakingPool,
-  unstake,
 } from "../packages/hpl-nectar-staking";
 import {
   Honeycomb,
   HoneycombProject,
   identityModule,
-  Project,
 } from "@honeycomb-protocol/hive-control";
 
 export default async function (
@@ -25,31 +16,34 @@ export default async function (
   network: "mainnet" | "devnet" = "devnet",
   ...args: string[]
 ) {
-  const { connection, mx, signer, deployments, setDeployments } =
-    getDependencies(network, "staking");
+  const { connection, signer, deployments, setDeployments } = getDependencies(
+    network,
+    "staking"
+  );
 
   const honeycomb = new Honeycomb(connection);
   honeycomb.use(
     await HoneycombProject.fromAddress(
       honeycomb.connection,
-      new web3.PublicKey("HEHH65goNqxcWpxDpgPqKwernLawqbQJ7L9aocNkm2YT")
+      new web3.PublicKey("7CKTHsJ3EZqChNf3XGt9ytdZXvSzDFWmrQJL3BCe4Ppw")
     )
   );
   honeycomb.use(identityModule(signer));
-  await honeycomb.identity().loadDelegateAuthority();
+  // await honeycomb.identity().loadDelegateAuthority();
 
   if (action == "create-pool") {
+    console.log("Project", honeycomb.project().address.toString());
     const nectarStaking = await NectarStaking.new(honeycomb, {
       args: {
-        name: "Test",
-        rewardsPerDuration: 1000000000,
-        rewardsDuration: 1,
-        maxRewardsDuration: 20,
-        minStakeDuration: 60 * 1,
-        cooldownDuration: 60 * 2,
+        name: "Sol Patrol",
+        rewardsPerDuration: 50 * 1000000000,
+        rewardsDuration: 24 * 3600,
+        maxRewardsDuration: null,
+        minStakeDuration: null,
+        cooldownDuration: null,
         resetStakeDuration: false,
-        startTime: Date.now() * 1000,
-        endTime: Date.now() * 1000 + 3600 * 24,
+        startTime: Date.now(),
+        endTime: null,
         lockType: LockType.Freeze,
       },
       rewardMint: new web3.PublicKey(args[0]),
@@ -57,17 +51,52 @@ export default async function (
       multipliers: [
         {
           multiplierType: {
-            __kind: "StakeDuration",
-            minDuration: 60 * 2,
+            __kind: "NFTCount",
+            minCount: 3,
           },
-          value: 10000,
+          value: 1400,
         },
         {
           multiplierType: {
             __kind: "NFTCount",
-            minCount: 1,
+            minCount: 5,
           },
-          value: 100000,
+          value: 1800,
+        },
+        {
+          multiplierType: {
+            __kind: "NFTCount",
+            minCount: 10,
+          },
+          value: 2200,
+        },
+        {
+          multiplierType: {
+            __kind: "NFTCount",
+            minCount: 15,
+          },
+          value: 2400,
+        },
+        {
+          multiplierType: {
+            __kind: "NFTCount",
+            minCount: 25,
+          },
+          value: 2600,
+        },
+        {
+          multiplierType: {
+            __kind: "NFTCount",
+            minCount: 50,
+          },
+          value: 2800,
+        },
+        {
+          multiplierType: {
+            __kind: "NFTCount",
+            minCount: 100,
+          },
+          value: 3000,
         },
       ],
       multipliersDecimals: 3,
