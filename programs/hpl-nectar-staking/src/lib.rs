@@ -4,7 +4,7 @@ pub mod state;
 
 use {anchor_lang::prelude::*, instructions::*};
 
-declare_id!("9nVqFEhHT5UG1Nf3sLWhrHjBwJtwNL9FCvEwquZtQjxa");
+declare_id!("STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L");
 
 #[program]
 pub mod hpl_nectar_staking {
@@ -48,8 +48,9 @@ pub mod hpl_nectar_staking {
         ctx: Context<UpdateStakingPool>,
         args: UpdateStakingPoolArgs,
     ) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate(
+        hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.manage_staking_pool,
+            None,
             &ctx.accounts.project,
             ctx.accounts.authority.key(),
             ctx.accounts.payer.to_account_info(),
@@ -65,8 +66,9 @@ pub mod hpl_nectar_staking {
         ctx: Context<InitMultipliers>,
         args: InitMultipliersArgs,
     ) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate(
+        hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.manage_staking_pool,
+            None,
             &ctx.accounts.project,
             ctx.accounts.authority.key(),
             ctx.accounts.payer.to_account_info(),
@@ -79,8 +81,9 @@ pub mod hpl_nectar_staking {
     }
 
     pub fn add_multiplier(ctx: Context<AddMultiplier>, args: AddMultiplierArgs) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate(
+        hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.manage_staking_pool,
+            None,
             &ctx.accounts.project,
             ctx.accounts.authority.key(),
             ctx.accounts.payer.to_account_info(),
@@ -93,8 +96,9 @@ pub mod hpl_nectar_staking {
     }
 
     pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate(
+        hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.public_low,
+            None,
             &ctx.accounts.project,
             ctx.accounts.wallet.key(),
             ctx.accounts.wallet.to_account_info(),
@@ -107,8 +111,9 @@ pub mod hpl_nectar_staking {
     }
 
     pub fn init_staker(ctx: Context<InitStaker>) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate(
+        hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.public_low,
+            None,
             &ctx.accounts.project,
             ctx.accounts.wallet.key(),
             ctx.accounts.wallet.to_account_info(),
@@ -121,8 +126,9 @@ pub mod hpl_nectar_staking {
     }
 
     pub fn stake(ctx: Context<Stake>) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate(
+        hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.public_low,
+            None,
             &ctx.accounts.project,
             ctx.accounts.wallet.key(),
             ctx.accounts.wallet.to_account_info(),
@@ -135,8 +141,9 @@ pub mod hpl_nectar_staking {
     }
 
     pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate(
+        hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.public_low,
+            None,
             &ctx.accounts.project,
             ctx.accounts.wallet.key(),
             ctx.accounts.wallet.to_account_info(),
@@ -149,8 +156,9 @@ pub mod hpl_nectar_staking {
     }
 
     pub fn fund_rewards(ctx: Context<FundRewards>, amount: u64) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate(
+        hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.public_low,
+            None,
             &ctx.accounts.project,
             ctx.accounts.wallet.key(),
             ctx.accounts.wallet.to_account_info(),
@@ -163,8 +171,9 @@ pub mod hpl_nectar_staking {
     }
 
     pub fn withdraw_rewards(ctx: Context<WithdrawRewards>, amount: u64) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate(
+        hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.withdraw_staking_pool_rewards,
+            None,
             &ctx.accounts.project,
             ctx.accounts.authority.key(),
             ctx.accounts.payer.to_account_info(),
@@ -177,8 +186,9 @@ pub mod hpl_nectar_staking {
     }
 
     pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate(
+        hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.public_high,
+            None,
             &ctx.accounts.project,
             ctx.accounts.wallet.key(),
             ctx.accounts.wallet.to_account_info(),
@@ -191,8 +201,9 @@ pub mod hpl_nectar_staking {
     }
 
     pub fn migrate_custodial(ctx: Context<MigrateCustodial>, args: MigrateArgs) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate(
+        hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.manage_staking_pool,
+            None,
             &ctx.accounts.project,
             ctx.accounts.authority.key(),
             ctx.accounts.payer.to_account_info(),

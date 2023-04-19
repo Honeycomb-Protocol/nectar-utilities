@@ -3,7 +3,7 @@ import staking from "./staking";
 function main() {
   const args = process.argv.slice(2);
   const action = args[1];
-  const network = "devnet";
+  const network = "mainnet";
 
   switch (args[0]) {
     case "staking":

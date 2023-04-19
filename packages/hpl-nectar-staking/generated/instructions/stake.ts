@@ -86,7 +86,7 @@ export const stakeInstructionDiscriminator = [
  */
 export function createStakeInstruction(
   accounts: StakeInstructionAccounts,
-  programId = new web3.PublicKey('9nVqFEhHT5UG1Nf3sLWhrHjBwJtwNL9FCvEwquZtQjxa')
+  programId = new web3.PublicKey('STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L')
 ) {
   const [data] = stakeStruct.serialize({
     instructionDiscriminator: stakeInstructionDiscriminator,

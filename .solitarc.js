@@ -1,16 +1,40 @@
 const path = require("path");
 
-const programId = "9nVqFEhHT5UG1Nf3sLWhrHjBwJtwNL9FCvEwquZtQjxa"
-const prefix = "hpl nectar"
-const programName = "staking"; // with spaces
-const programFullName = prefix + " " + programName;
+const configs = {
+  "nectar-staking": {
+    idlGenerator: "anchor",
+    programName: "hpl_nectar_staking",
+    programId: "STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L",
+    idlDir: path.join(__dirname, "packages", "idl"),
+    sdkDir: path.join(__dirname, "packages", "hpl-nectar-staking", "generated"),
+    binaryInstallDir: path.join(__dirname, ".crates"),
+    programDir: path.join(__dirname, "programs", "hpl-nectar-staking"),
+    removeExistingIdl: false,
+    idlHook: (idl) => {
+      idl.types = idl.types.filter(
+        (type) => type.name !== "ActionType" && type.name !== "PlatformGateArgs"
+      );
 
-module.exports = {
-  idlGenerator: "anchor",
-  programName: programFullName.replaceAll(" ", "_"),
-  programId,
-  idlDir: path.join(__dirname, "packages", "idl"),
-  sdkDir: path.join(__dirname, "packages", programFullName.replaceAll(" ", "-"), "generated"),
-  binaryInstallDir: path.join(__dirname, ".crates"),
-  programDir: path.join(__dirname, "programs", programFullName.replaceAll(" ", "-")),
+      idl.accounts = idl.accounts.map(account => {
+        
+        account.type.fields = account.type.fields.map(field => {
+          if(field.type.defined?.includes("HashMap")) {
+            field.type = { hashMap: [ 'string', { defined: field.type.defined.split(",")[1].slice(0, -1) }] }
+          }
+
+          return field
+        })
+
+        return account;
+      })
+      return idl;
+    },
+  },
 };
+
+const defaultProgram = Object.keys(configs)[0];
+const activeConfig =
+  configs[process.env.SOLITA_HPL_PROGRAM || defaultProgram] ||
+  configs[defaultProgram];
+
+module.exports = activeConfig;

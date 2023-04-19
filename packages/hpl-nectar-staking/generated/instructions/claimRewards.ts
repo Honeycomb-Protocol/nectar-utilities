@@ -74,7 +74,7 @@ export const claimRewardsInstructionDiscriminator = [
  */
 export function createClaimRewardsInstruction(
   accounts: ClaimRewardsInstructionAccounts,
-  programId = new web3.PublicKey('9nVqFEhHT5UG1Nf3sLWhrHjBwJtwNL9FCvEwquZtQjxa')
+  programId = new web3.PublicKey('STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L')
 ) {
   const [data] = claimRewardsStruct.serialize({
     instructionDiscriminator: claimRewardsInstructionDiscriminator,
