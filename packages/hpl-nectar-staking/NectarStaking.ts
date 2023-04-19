@@ -87,7 +87,7 @@ export class NectarStaking extends Module {
     readonly poolAddress: web3.PublicKey,
     private _pool: StakingPool
   ) {
-    super()
+    super();
     this.rewardMint = _pool.rewardMint;
     this.vault = _pool.vault;
     this.lockType = _pool.lockType;
@@ -161,7 +161,7 @@ export class NectarStaking extends Module {
 
   public availableNfts() {
     if (this._availableNfts) {
-      return this._availableNfts;
+      return Promise.resolve(this._availableNfts);
     }
     return this._fetch.availableNfts().then((nfts) => {
       this._availableNfts = nfts;
@@ -171,7 +171,7 @@ export class NectarStaking extends Module {
 
   public stakedNfts() {
     if (this._stakedNfts) {
-      return this._stakedNfts;
+      return Promise.resolve(this._stakedNfts);
     }
     return this._fetch.stakedNfts().then((nfts) => {
       this._stakedNfts = nfts;

@@ -1,6 +1,10 @@
 import * as web3 from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
-import { createStakeInstruction, LockType, PROGRAM_ID } from "../generated";
+import {
+  createStakeInstruction as createStakeInstructionGenerated,
+  LockType,
+  PROGRAM_ID,
+} from "../generated";
 import { AvailableNft } from "../types";
 import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import {
@@ -24,7 +28,7 @@ type CreateStakeTransactionArgs = {
   programId?: web3.PublicKey;
 };
 
-export function createStakeInstructionV2(args: CreateStakeTransactionArgs) {
+export function createStakeInstruction(args: CreateStakeTransactionArgs) {
   const programId = args.programId || PROGRAM_ID;
 
   const [nft] = getNftPda(args.stakingPool, args.nftMint);
@@ -57,7 +61,7 @@ export function createStakeInstructionV2(args: CreateStakeTransactionArgs) {
     }
   }
 
-  return createStakeInstruction(
+  return createStakeInstructionGenerated(
     {
       project: args.project,
       vault: VAULT,
@@ -107,7 +111,7 @@ export async function createStakeCtx(
   }
 
   instructions.push(
-    createStakeInstructionV2({
+    createStakeInstruction({
       project: honeycomb.project().projectAddress,
       stakingPool: honeycomb.staking().poolAddress,
       nftMint: args.nft.tokenMint,
