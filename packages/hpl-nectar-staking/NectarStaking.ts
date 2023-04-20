@@ -1,10 +1,8 @@
 import * as web3 from "@solana/web3.js";
-import * as beet from "@metaplex-foundation/beet";
 import { Honeycomb, Module } from "@honeycomb-protocol/hive-control";
 import {
   AddMultiplierArgs,
   CreateStakingPoolArgs,
-  LockType,
   Multipliers,
   MultipliersArgs,
   NFT,
@@ -18,6 +16,7 @@ import {
   claimRewards,
   createStakingPool,
   fetchAvailableNfts,
+  fetchRewards,
   fetchStakedNfts,
   fetchStaker,
   fundRewards,
@@ -61,23 +60,6 @@ export class NectarStaking extends Module {
   readonly programId: web3.PublicKey = PROGRAM_ID;
   private _fetch: NectarStakingFetch;
 
-  readonly rewardMint: web3.PublicKey;
-  readonly vault: web3.PublicKey;
-  readonly lockType: LockType;
-  readonly name: string;
-  readonly rewardsPerDuration: beet.bignum;
-  readonly rewardsDuration: beet.bignum;
-  readonly maxRewardsDuration: beet.COption<beet.bignum>;
-  readonly minStakeDuration: beet.COption<beet.bignum>;
-  readonly cooldownDuration: beet.COption<beet.bignum>;
-  readonly resetStakeDuration: boolean;
-  readonly allowedMints: boolean;
-  readonly totalStaked: beet.bignum;
-  readonly startTime: beet.COption<beet.bignum>;
-  readonly endTime: beet.COption<beet.bignum>;
-  readonly collections: Uint8Array;
-  readonly creators: Uint8Array;
-
   private _multipliers: StakingMultipliers | null = null;
   private _staker: Staker | null = null;
   private _availableNfts: AvailableNft[] | null = null;
@@ -88,23 +70,6 @@ export class NectarStaking extends Module {
     private _pool: StakingPool
   ) {
     super();
-    this.rewardMint = _pool.rewardMint;
-    this.vault = _pool.vault;
-    this.lockType = _pool.lockType;
-    this.name = _pool.name;
-    this.rewardsPerDuration = _pool.rewardsPerDuration;
-    this.rewardsDuration = _pool.rewardsDuration;
-    this.maxRewardsDuration = _pool.maxRewardsDuration;
-    this.minStakeDuration = _pool.minStakeDuration;
-    this.cooldownDuration = _pool.cooldownDuration;
-    this.resetStakeDuration = _pool.resetStakeDuration;
-    this.allowedMints = _pool.allowedMints;
-    this.totalStaked = _pool.totalStaked;
-    this.startTime = _pool.startTime;
-    this.endTime = _pool.endTime;
-    this.collections = _pool.collections;
-    this.creators = _pool.creators;
-
     this._fetch = new NectarStakingFetch(this);
   }
 
@@ -139,9 +104,73 @@ export class NectarStaking extends Module {
     return this._fetch;
   }
 
+  public get rewardMint() {
+    return this._pool.rewardMint;
+  }
+
+  public get vault() {
+    return this._pool.vault;
+  }
+
+  public get lockType() {
+    return this._pool.lockType;
+  }
+
+  public get name() {
+    return this._pool.name;
+  }
+
+  public get rewardsPerDuration() {
+    return this._pool.rewardsPerDuration;
+  }
+
+  public get rewardsDuration() {
+    return this._pool.rewardsDuration;
+  }
+
+  public get maxRewardsDuration() {
+    return this._pool.maxRewardsDuration;
+  }
+
+  public get minStakeDuration() {
+    return this._pool.minStakeDuration;
+  }
+
+  public get cooldownDuration() {
+    return this._pool.cooldownDuration;
+  }
+
+  public get resetStakeDuration() {
+    return this._pool.resetStakeDuration;
+  }
+
+  public get allowedMints() {
+    return this._pool.allowedMints;
+  }
+
+  public get totalStaked() {
+    return this._pool.totalStaked;
+  }
+
+  public get startTime() {
+    return this._pool.startTime;
+  }
+
+  public get endTime() {
+    return this._pool.endTime;
+  }
+
+  public get collections() {
+    return this._pool.collections;
+  }
+
+  public get creators() {
+    return this._pool.creators;
+  }
+
   public multipliers() {
     if (this._multipliers) {
-      return this._multipliers;
+      return Promise.resolve(this._multipliers);
     }
     return this._fetch.multipliers().then((multipliers) => {
       this._multipliers = multipliers;
@@ -151,7 +180,7 @@ export class NectarStaking extends Module {
 
   public staker() {
     if (this._staker) {
-      return this._staker;
+      return Promise.resolve(this._staker);
     }
     return this._fetch.staker().then((staker) => {
       this._staker = staker;
@@ -357,6 +386,17 @@ export class NectarStakingFetch {
         walletAddress || this.nectarStaking.honeycomb().identity().publicKey,
       programId: this.nectarStaking.programId,
     });
+  }
+
+  public rewards(...stakedNfts: StakedNft[]) {
+    return Promise.all(
+      stakedNfts.map(async (nft) =>
+        fetchRewards(this.nectarStaking, {
+          staker: await this.nectarStaking.staker(),
+          nft,
+        })
+      )
+    );
   }
 }
 

@@ -186,7 +186,7 @@ pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
     let mut seconds_elapsed: u64 =
         u64::try_from(ctx.accounts.clock.unix_timestamp - nft.last_claim).unwrap();
 
-    if seconds_elapsed < staking_pool.rewards_per_duration {
+    if seconds_elapsed < staking_pool.rewards_duration {
         return Err(ErrorCode::RewardsNotAvailable.into());
     }
 

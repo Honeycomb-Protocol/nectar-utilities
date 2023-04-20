@@ -6,28 +6,29 @@ import { AvailableNft, StakedNft, TokenAccountInfo } from "../types";
 import { NFT, Staker } from "../generated";
 import { getStakerPda } from "../pdas";
 import { Honeycomb } from "@honeycomb-protocol/hive-control";
+import { NectarStaking } from "../NectarStaking";
 
 type FetchStakerArgs = {
   walletAddress?: web3.PublicKey;
   programId?: web3.PublicKey;
 };
-export const fetchStaker = (honeycomb: Honeycomb, args: FetchStakerArgs) => {
+export function fetchStaker(honeycomb: Honeycomb, args: FetchStakerArgs) {
   const [staker] = getStakerPda(
     honeycomb.staking().poolAddress,
     args?.walletAddress || honeycomb.identity().publicKey,
     args?.programId
   );
   return Staker.fromAccountAddress(honeycomb.connection, staker);
-};
+}
 
 type FetchStakedNftsArgs = {
   walletAddress?: web3.PublicKey;
   programId?: web3.PublicKey;
 };
-export const fetchStakedNfts = async (
+export async function fetchStakedNfts(
   honeycomb: Honeycomb,
   args?: FetchStakedNftsArgs
-) => {
+) {
   const nfts = await honeycomb
     .staking()
     .fetch()
@@ -49,17 +50,17 @@ export const fetchStakedNfts = async (
     });
 
   return metaplexOut;
-};
+}
 
 type FetchAvailableNfts = {
   walletAddress?: web3.PublicKey;
   allowedMints?: web3.PublicKey[];
   programId?: web3.PublicKey;
 };
-export const fetchAvailableNfts = async (
+export async function fetchAvailableNfts(
   honeycomb: Honeycomb,
   args?: FetchAvailableNfts
-) => {
+) {
   const ownedTokenAccounts: TokenAccountInfo[] = await honeycomb.connection
     .getParsedTokenAccountsByOwner(
       args?.walletAddress || honeycomb.identity().publicKey,
@@ -161,4 +162,98 @@ export const fetchAvailableNfts = async (
   );
 
   return filteredNfts;
+}
+
+type FetchRewardsArgs = {
+  staker: Staker;
+  nft: StakedNft;
+  till?: Date;
 };
+export async function fetchRewards(
+  staking: NectarStaking,
+  args: FetchRewardsArgs
+) {
+  const end: number = (args.till.getTime() || Date.now()) / 1000;
+  let secondsElapsed = end - Number(args.nft.lastClaim);
+
+  if (secondsElapsed < Number(staking.rewardsDuration)) {
+    return 0;
+  }
+
+  const maxRewardsDuration =
+    staking.maxRewardsDuration && Number(staking.maxRewardsDuration);
+  if (maxRewardsDuration && maxRewardsDuration < secondsElapsed) {
+    secondsElapsed = maxRewardsDuration;
+  }
+
+  const rewardsPerSecond =
+    Number(staking.rewardsPerDuration) / Number(staking.rewardsDuration);
+  let rewardsAmount = rewardsPerSecond * secondsElapsed;
+
+  let multipliersDecimals = 1;
+  let totalMultipliers = multipliersDecimals;
+
+  const multipliers = await staking.multipliers();
+  if (multipliers) {
+    multipliersDecimals = 10 ** multipliers.decimals;
+    totalMultipliers = multipliersDecimals;
+
+    let durationMultiplier = multipliersDecimals;
+    for (const multiplier of multipliers.durationMultipliers) {
+      if (
+        multiplier.multiplierType.__kind === "StakeDuration" &&
+        secondsElapsed < Number(multiplier.multiplierType.minDuration)
+      ) {
+        durationMultiplier = Number(multiplier.value);
+      } else {
+        break;
+      }
+    }
+    durationMultiplier -= multipliersDecimals;
+    totalMultipliers += durationMultiplier;
+
+    let countMultiplier = multipliersDecimals;
+    for (const multiplier of multipliers.countMultipliers) {
+      if (
+        multiplier.multiplierType.__kind === "NFTCount" &&
+        Number(multiplier.multiplierType.minCount) <=
+          Number(args.staker.totalStaked)
+      ) {
+        countMultiplier = Number(multiplier.value);
+      } else {
+        break;
+      }
+    }
+    countMultiplier -= multipliersDecimals;
+    totalMultipliers += countMultiplier;
+
+    let creatorMultiplier = multipliersDecimals;
+    for (const multiplier of multipliers.creatorMultipliers) {
+      if (
+        multiplier.multiplierType.__kind === "Creator" &&
+        args.nft.creator === multiplier.multiplierType.creator
+      ) {
+        creatorMultiplier = Number(multiplier.value);
+        break;
+      }
+    }
+    creatorMultiplier -= multipliersDecimals;
+    totalMultipliers += creatorMultiplier;
+
+    let collectionMultiplier = multipliersDecimals;
+    for (const multiplier of multipliers.collectionMultipliers) {
+      if (
+        multiplier.multiplierType.__kind === "Collection" &&
+        args.nft.collection === multiplier.multiplierType.collection
+      ) {
+        collectionMultiplier = Number(multiplier.value);
+        break;
+      }
+    }
+    collectionMultiplier -= multipliersDecimals;
+    totalMultipliers += collectionMultiplier;
+  }
+
+  rewardsAmount = (rewardsAmount * totalMultipliers) / multipliersDecimals;
+  return rewardsAmount;
+}
