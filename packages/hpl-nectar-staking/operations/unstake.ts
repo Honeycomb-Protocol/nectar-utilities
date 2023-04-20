@@ -28,7 +28,7 @@ type CreateUnstakeInstructionArgs = {
   programId?: web3.PublicKey;
 };
 
-export function createUnstakeInstructionV2(args: CreateUnstakeInstructionArgs) {
+function createUnstakeInstructionV2(args: CreateUnstakeInstructionArgs) {
   const programId = args.programId || PROGRAM_ID;
 
   const [nft] = getNftPda(args.stakingPool, args.nftMint);
