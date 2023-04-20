@@ -25,7 +25,7 @@ type CreateClaimRewardsInstructionArgs = {
   programId?: web3.PublicKey;
 };
 
-export function createClaimRewardsInstructionV2(
+function createClaimRewardsInstructionV2(
   args: CreateClaimRewardsInstructionArgs
 ) {
   const programId = args.programId || PROGRAM_ID;

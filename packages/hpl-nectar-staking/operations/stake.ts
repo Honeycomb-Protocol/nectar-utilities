@@ -28,7 +28,7 @@ type CreateStakeTransactionArgs = {
   programId?: web3.PublicKey;
 };
 
-export function createStakeInstruction(args: CreateStakeTransactionArgs) {
+function createStakeInstruction(args: CreateStakeTransactionArgs) {
   const programId = args.programId || PROGRAM_ID;
 
   const [nft] = getNftPda(args.stakingPool, args.nftMint);
