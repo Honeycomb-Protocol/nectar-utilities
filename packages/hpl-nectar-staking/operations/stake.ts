@@ -97,8 +97,14 @@ export async function createStakeCtx(
   const instructions: web3.TransactionInstruction[] = [];
   const signers: web3.Signer[] = [];
 
-  const nft = await honeycomb.staking().fetch().nft(args.nft.tokenMint).catch();
-  if (!nft) {
+  try {
+    const nft = await honeycomb
+      .staking()
+      .fetch()
+      .nft(args.nft.tokenMint)
+      .catch();
+    if (!nft) throw new Error("NFT not initialized");
+  } catch {
     const initNftCtx = createInitNFTCtx({
       project: honeycomb.project().projectAddress,
       stakingPool: honeycomb.staking().poolAddress,
