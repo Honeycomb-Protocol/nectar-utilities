@@ -161,6 +161,24 @@ export async function fetchAvailableNfts(
       self.findIndex((t) => t.address.equals(nft.address)) === index
   );
 
+  // filteredNfts = await Promise.all(
+  //   filteredNfts.map(async (nft) => {
+  //     const newNft = { ...nft };
+  //     if (!newNft.jsonLoaded) {
+  //       if (!newNft.json) {
+  //         newNft.json = await fetch(newNft.uri, {
+  //           method: "GET",
+  //           redirect: "follow",
+  //         })
+  //           .then((x) => x.json())
+  //           .catch();
+  //       }
+  //       newNft.jsonLoaded = !!newNft.json;
+  //     }
+  //     return newNft;
+  //   })
+  // );
+
   return filteredNfts;
 }
 

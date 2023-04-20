@@ -113,6 +113,15 @@ export default async function (
     );
 
     switch (action) {
+      case "fetch":
+        const availableNftsa = await honeycomb
+          .staking()
+          .fetch()
+          .availableNfts(
+            new web3.PublicKey("8sN1LJDUhTgJJZ7zkq3WGjgd7MjwHJaBMGD6zF7DNEEi")
+          );
+        console.log("Available NFTs:", availableNftsa);
+        break;
       case "stake":
         const availableNfts = await honeycomb.staking().fetch().availableNfts();
         const stakeResponses = await honeycomb
