@@ -86,31 +86,58 @@ export async function fetchAvailableNfts(
 
   const mx = new Metaplex(honeycomb.connection);
 
-  const ownedNfts = await mx
-    .nfts()
-    .findAllByMintList({
-      mints: ownedTokenAccounts.map((x) => x.tokenMint),
-    })
-    .then((nfts) =>
-      (nfts.filter((x) => x?.model == "metadata") as Metadata[])
-        .map((x) => {
-          return {
-            ...x,
-            ...ownedTokenAccounts.find(
-              (y) => y.tokenMint.toString() === x.mintAddress.toString()
-            ),
-          } as AvailableNft;
-        })
-        .filter((x) => {
-          if (
-            x.tokenStandard &&
-            x.tokenStandard === TokenStandard.ProgrammableNonFungible
-          ) {
-            return true;
-          }
-          return x.state !== "frozen";
-        })
-    );
+  const nftsByMintList = (
+    (
+      await mx.nfts().findAllByMintList({
+        mints: ownedTokenAccounts.map((x) => x.tokenMint),
+      })
+    ).filter((x) => x?.model == "metadata") as Metadata[]
+  ).map((x) => {
+    return {
+      ...x,
+      ...ownedTokenAccounts.find(
+        (y) => y.tokenMint.toString() === x.mintAddress.toString()
+      ),
+    } as AvailableNft;
+  });
+
+  console.log("NFTS By Mint List", nftsByMintList.length, nftsByMintList);
+
+  const ownedNfts = nftsByMintList.filter((x) => {
+    if (
+      x.tokenStandard &&
+      x.tokenStandard === TokenStandard.ProgrammableNonFungible
+    ) {
+      return true;
+    }
+    return x.state !== "frozen";
+  });
+
+  // const ownedNfts = await mx
+  //   .nfts()
+  //   .findAllByMintList({
+  //     mints: ownedTokenAccounts.map((x) => x.tokenMint),
+  //   })
+  //   .then((nfts) =>
+  //     (nfts.filter((x) => x?.model == "metadata") as Metadata[])
+  //       .map((x) => {
+  //         return {
+  //           ...x,
+  //           ...ownedTokenAccounts.find(
+  //             (y) => y.tokenMint.toString() === x.mintAddress.toString()
+  //           ),
+  //         } as AvailableNft;
+  //       })
+  //       .filter((x) => {
+  //         if (
+  //           x.tokenStandard &&
+  //           x.tokenStandard === TokenStandard.ProgrammableNonFungible
+  //         ) {
+  //           return true;
+  //         }
+  //         return x.state !== "frozen";
+  //       })
+  //   );
 
   console.log("Owned NFTs by mx", ownedNfts.length, ownedNfts);
 
