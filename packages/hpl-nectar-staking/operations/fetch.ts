@@ -61,11 +61,6 @@ export async function fetchAvailableNfts(
   honeycomb: Honeycomb,
   args?: FetchAvailableNfts
 ) {
-  console.log(
-    "Wallet",
-    (args?.walletAddress || honeycomb.identity().publicKey).toString()
-  );
-
   const ownedTokenAccounts: TokenAccountInfo[] = await honeycomb.connection
     .getParsedTokenAccountsByOwner(
       args?.walletAddress || honeycomb.identity().publicKey,
@@ -82,65 +77,33 @@ export async function fetchAvailableNfts(
         .filter((x) => x.tokenAmount.uiAmount > 0)
     );
 
-  console.log("Owned Tokens", ownedTokenAccounts.length, ownedTokenAccounts);
-
   const mx = new Metaplex(honeycomb.connection);
-
-  const nftsByMintList = (
-    (
-      await mx.nfts().findAllByMintList({
-        mints: ownedTokenAccounts.map((x) => x.tokenMint),
-      })
-    ).filter((x) => x?.model == "metadata") as Metadata[]
-  ).map((x) => {
-    return {
-      ...x,
-      ...ownedTokenAccounts.find(
-        (y) => y.tokenMint.toString() === x.mintAddress.toString()
-      ),
-    } as AvailableNft;
-  });
-
-  console.log("NFTS By Mint List", nftsByMintList.length, nftsByMintList);
-
-  const ownedNfts = nftsByMintList.filter((x) => {
-    if (
-      x.tokenStandard &&
-      (x.tokenStandard === TokenStandard.ProgrammableNonFungible ||
-        (x.tokenStandard as number) === 4)
-    ) {
-      return true;
-    }
-    return x.state !== "frozen";
-  });
-
-  // const ownedNfts = await mx
-  //   .nfts()
-  //   .findAllByMintList({
-  //     mints: ownedTokenAccounts.map((x) => x.tokenMint),
-  //   })
-  //   .then((nfts) =>
-  //     (nfts.filter((x) => x?.model == "metadata") as Metadata[])
-  //       .map((x) => {
-  //         return {
-  //           ...x,
-  //           ...ownedTokenAccounts.find(
-  //             (y) => y.tokenMint.toString() === x.mintAddress.toString()
-  //           ),
-  //         } as AvailableNft;
-  //       })
-  //       .filter((x) => {
-  //         if (
-  //           x.tokenStandard &&
-  //           x.tokenStandard === TokenStandard.ProgrammableNonFungible
-  //         ) {
-  //           return true;
-  //         }
-  //         return x.state !== "frozen";
-  //       })
-  //   );
-
-  console.log("Owned NFTs by mx", ownedNfts.length, ownedNfts);
+  const ownedNfts = await mx
+    .nfts()
+    .findAllByMintList({
+      mints: ownedTokenAccounts.map((x) => x.tokenMint),
+    })
+    .then((nfts) =>
+      (nfts.filter((x) => x?.model == "metadata") as Metadata[])
+        .map((x) => {
+          return {
+            ...x,
+            ...ownedTokenAccounts.find(
+              (y) => y.tokenMint.toString() === x.mintAddress.toString()
+            ),
+          } as AvailableNft;
+        })
+        .filter((x) => {
+          if (
+            x.tokenStandard &&
+            (x.tokenStandard === TokenStandard.ProgrammableNonFungible ||
+              (x.tokenStandard as number) === 4)
+          ) {
+            return true;
+          }
+          return x.state !== "frozen";
+        })
+    );
 
   let filteredNfts: AvailableNft[] = [];
   if (honeycomb.staking().allowedMints) {
@@ -161,12 +124,6 @@ export async function fetchAvailableNfts(
       ),
     ];
   }
-
-  console.log(
-    "Filtered NFTs after allowedMints",
-    filteredNfts.length,
-    filteredNfts
-  );
 
   const validCollections = !!honeycomb.staking().collections.length
     ? honeycomb
@@ -199,21 +156,9 @@ export async function fetchAvailableNfts(
     ),
   ];
 
-  console.log(
-    "Filtered NFTs after collections and creators",
-    filteredNfts.length,
-    filteredNfts
-  );
-
   filteredNfts = filteredNfts.filter(
     (nft, index, self) =>
       self.findIndex((t) => t.address.equals(nft.address)) === index
-  );
-
-  console.log(
-    "Filtered NFTs after duplicates",
-    filteredNfts.length,
-    filteredNfts
   );
 
   // filteredNfts = await Promise.all(
