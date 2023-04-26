@@ -1,6 +1,6 @@
 {
   "name": "@honeycomb-protocol/nectar-staking",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "private": false,
   "dependencies": {
     "@honeycomb-protocol/hive-control": "^0.0.92",
