@@ -77,6 +77,8 @@ export async function fetchAvailableNfts(
         .filter((x) => x.tokenAmount.uiAmount > 0)
     );
 
+  console.log("Owned Tokens", ownedTokenAccounts.length, ownedTokenAccounts);
+
   const mx = new Metaplex(honeycomb.connection);
 
   const ownedNfts = await mx
@@ -105,6 +107,8 @@ export async function fetchAvailableNfts(
         })
     );
 
+  console.log("Owned NFTs by mx", ownedNfts.length, ownedNfts);
+
   let filteredNfts: AvailableNft[] = [];
   if (honeycomb.staking().allowedMints) {
     const allowedMints: web3.PublicKey[] =
@@ -124,6 +128,12 @@ export async function fetchAvailableNfts(
       ),
     ];
   }
+
+  console.log(
+    "Filtered NFTs after allowedMints",
+    filteredNfts.length,
+    filteredNfts
+  );
 
   const validCollections = !!honeycomb.staking().collections.length
     ? honeycomb
@@ -156,9 +166,21 @@ export async function fetchAvailableNfts(
     ),
   ];
 
+  console.log(
+    "Filtered NFTs after collections and creators",
+    filteredNfts.length,
+    filteredNfts
+  );
+
   filteredNfts = filteredNfts.filter(
     (nft, index, self) =>
       self.findIndex((t) => t.address.equals(nft.address)) === index
+  );
+
+  console.log(
+    "Filtered NFTs after duplicates",
+    filteredNfts.length,
+    filteredNfts
   );
 
   // filteredNfts = await Promise.all(
