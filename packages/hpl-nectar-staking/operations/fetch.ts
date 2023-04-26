@@ -61,6 +61,11 @@ export async function fetchAvailableNfts(
   honeycomb: Honeycomb,
   args?: FetchAvailableNfts
 ) {
+  console.log(
+    "Wallet",
+    (args?.walletAddress || honeycomb.identity().publicKey).toString()
+  );
+
   const ownedTokenAccounts: TokenAccountInfo[] = await honeycomb.connection
     .getParsedTokenAccountsByOwner(
       args?.walletAddress || honeycomb.identity().publicKey,
