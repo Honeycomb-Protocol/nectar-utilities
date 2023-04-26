@@ -106,7 +106,8 @@ export async function fetchAvailableNfts(
   const ownedNfts = nftsByMintList.filter((x) => {
     if (
       x.tokenStandard &&
-      x.tokenStandard === TokenStandard.ProgrammableNonFungible
+      (x.tokenStandard === TokenStandard.ProgrammableNonFungible ||
+        (x.tokenStandard as number) === 4)
     ) {
       return true;
     }
