@@ -40,6 +40,8 @@ export const stakeStruct = new beet.BeetArgsStruct<{
  * @property [] sysvarInstructions
  * @property [] project
  * @property [_writable_] vault
+ * @property [] authorizationRulesProgram (optional)
+ * @property [] authorizationRules (optional)
  * @category Instructions
  * @category Stake
  * @category generated
@@ -64,6 +66,8 @@ export type StakeInstructionAccounts = {
   sysvarInstructions: web3.PublicKey
   project: web3.PublicKey
   vault: web3.PublicKey
+  authorizationRulesProgram?: web3.PublicKey
+  authorizationRules?: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -205,6 +209,39 @@ export function createStakeInstruction(
     isWritable: true,
     isSigner: false,
   })
+  if (accounts.authorizationRulesProgram != null) {
+    if (
+      accounts.nftTokenRecord == null ||
+      accounts.depositAccount == null ||
+      accounts.depositTokenRecord == null
+    ) {
+      throw new Error(
+        "When providing 'authorizationRulesProgram' then 'accounts.nftTokenRecord', 'accounts.depositAccount', 'accounts.depositTokenRecord' need(s) to be provided as well."
+      )
+    }
+    keys.push({
+      pubkey: accounts.authorizationRulesProgram,
+      isWritable: false,
+      isSigner: false,
+    })
+  }
+  if (accounts.authorizationRules != null) {
+    if (
+      accounts.nftTokenRecord == null ||
+      accounts.depositAccount == null ||
+      accounts.depositTokenRecord == null ||
+      accounts.authorizationRulesProgram == null
+    ) {
+      throw new Error(
+        "When providing 'authorizationRules' then 'accounts.nftTokenRecord', 'accounts.depositAccount', 'accounts.depositTokenRecord', 'accounts.authorizationRulesProgram' need(s) to be provided as well."
+      )
+    }
+    keys.push({
+      pubkey: accounts.authorizationRules,
+      isWritable: false,
+      isSigner: false,
+    })
+  }
 
   if (accounts.anchorRemainingAccounts != null) {
     for (const acc of accounts.anchorRemainingAccounts) {

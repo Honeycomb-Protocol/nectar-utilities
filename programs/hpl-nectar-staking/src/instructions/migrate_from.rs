@@ -209,6 +209,8 @@ pub fn migrate_custodial(ctx: Context<MigrateCustodial>, args: MigrateArgs) -> R
                     ctx.accounts.associated_token_program.to_account_info(),
                     ctx.accounts.sysvar_instructions.to_account_info(),
                     None,
+                    None,
+                    None,
                 )?;
             } else {
                 return Err(ErrorCode::DepositAccountNotProvided.into());

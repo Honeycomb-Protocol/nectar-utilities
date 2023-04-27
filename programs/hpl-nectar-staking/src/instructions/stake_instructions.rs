@@ -179,7 +179,7 @@ pub struct Stake<'info> {
 
     /// Staker state account
     #[account(mut, has_one = staking_pool, has_one = wallet)]
-    pub staker: Account<'info, Staker>,
+    pub staker: Box<Account<'info, Staker>>,
 
     /// The account that will hold the nft sent on expedition
     #[account(
@@ -233,6 +233,12 @@ pub struct Stake<'info> {
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(mut)]
     pub vault: AccountInfo<'info>,
+
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub authorization_rules_program: Option<AccountInfo<'info>>,
+
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub authorization_rules: Option<AccountInfo<'info>>,
 }
 
 /// Stake NFT
@@ -301,6 +307,8 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
                 ctx.accounts.system_program.to_account_info(),
                 ctx.accounts.sysvar_instructions.to_account_info(),
                 ctx.accounts.token_program.to_account_info(),
+                ctx.accounts.authorization_rules_program.clone(),
+                ctx.accounts.authorization_rules.clone(),
                 None,
             )?;
 
@@ -316,6 +324,8 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
                 ctx.accounts.system_program.to_account_info(),
                 ctx.accounts.sysvar_instructions.to_account_info(),
                 ctx.accounts.token_program.to_account_info(),
+                ctx.accounts.authorization_rules_program.clone(),
+                ctx.accounts.authorization_rules.clone(),
                 Some(staker_signer),
             )?;
         }
@@ -338,6 +348,8 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
                     ctx.accounts.token_program.to_account_info(),
                     ctx.accounts.associated_token_program.to_account_info(),
                     ctx.accounts.sysvar_instructions.to_account_info(),
+                    ctx.accounts.authorization_rules_program.clone(),
+                    ctx.accounts.authorization_rules.clone(),
                     Some(staker_signer),
                 )?;
             } else {
@@ -440,6 +452,12 @@ pub struct Unstake<'info> {
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(mut)]
     pub vault: AccountInfo<'info>,
+
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub authorization_rules_program: Option<AccountInfo<'info>>,
+
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub authorization_rules: Option<AccountInfo<'info>>,
 }
 
 /// Unstake NFT
@@ -509,6 +527,8 @@ pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
                 ctx.accounts.system_program.to_account_info(),
                 ctx.accounts.sysvar_instructions.to_account_info(),
                 ctx.accounts.token_program.to_account_info(),
+                ctx.accounts.authorization_rules_program.clone(),
+                ctx.accounts.authorization_rules.clone(),
                 Some(staker_signer),
             )?;
 
@@ -526,6 +546,8 @@ pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
                 ctx.accounts.system_program.to_account_info(),
                 ctx.accounts.sysvar_instructions.to_account_info(),
                 ctx.accounts.token_program.to_account_info(),
+                ctx.accounts.authorization_rules_program.clone(),
+                ctx.accounts.authorization_rules.clone(),
                 Some(staker_signer),
             )?;
         }
@@ -548,6 +570,8 @@ pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
                     ctx.accounts.token_program.to_account_info(),
                     ctx.accounts.associated_token_program.to_account_info(),
                     ctx.accounts.sysvar_instructions.to_account_info(),
+                    ctx.accounts.authorization_rules_program.clone(),
+                    ctx.accounts.authorization_rules.clone(),
                     Some(staker_signer),
                 )?;
 

@@ -1,5 +1,5 @@
 {
-  "version": "0.0.16",
+  "version": "0.0.26",
   "name": "hpl_nectar_staking",
   "instructions": [
     {
@@ -613,6 +613,18 @@
           "name": "vault",
           "isMut": true,
           "isSigner": false
+        },
+        {
+          "name": "authorizationRulesProgram",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "authorizationRules",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
         }
       ],
       "args": []
@@ -768,6 +780,18 @@
           "name": "vault",
           "isMut": true,
           "isSigner": false
+        },
+        {
+          "name": "authorizationRulesProgram",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "authorizationRules",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
         }
       ],
       "args": []

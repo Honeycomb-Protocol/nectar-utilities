@@ -17,12 +17,14 @@ import {
 import { createClaimRewardsCtx } from "./claimRewards";
 import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import { VAULT, createCtx, Honeycomb } from "@honeycomb-protocol/hive-control";
+import { PROGRAM_ID as AUTHORIZATION_PROGRAM_ID } from "@metaplex-foundation/mpl-token-auth-rules";
 
 type CreateUnstakeInstructionArgs = {
   project: web3.PublicKey;
   stakingPool: web3.PublicKey;
   nftMint: web3.PublicKey;
   wallet: web3.PublicKey;
+  authRuleSet?: web3.PublicKey;
   lockType?: LockType; // default: LockType.Freeze,
   tokenStandard?: TokenStandard; // deafult: TokenStandard.NonFungible,
   programId?: web3.PublicKey;
@@ -80,6 +82,10 @@ function createUnstakeInstructionV2(args: CreateUnstakeInstructionArgs) {
       tokenMetadataProgram: METADATA_PROGRAM_ID,
       clock: web3.SYSVAR_CLOCK_PUBKEY,
       sysvarInstructions: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+      authorizationRulesProgram: args.authRuleSet
+        ? AUTHORIZATION_PROGRAM_ID
+        : programId,
+      authorizationRules: args.authRuleSet || programId,
     },
     programId
   );
@@ -90,6 +96,7 @@ type CreateUnstakeCtxArgs = {
   multipliers?: MultipliersArgs & {
     address: web3.PublicKey;
   };
+  authRuleSet?: web3.PublicKey;
   isFirst?: boolean;
   programId?: web3.PublicKey;
 };
@@ -119,6 +126,7 @@ export async function createUnstakeCtx(
     stakingPool: honeycomb.staking().poolAddress,
     nftMint: args.nft.mintAddress,
     wallet: honeycomb.identity().publicKey,
+    authRuleSet: args.authRuleSet,
     lockType: honeycomb.staking().lockType,
     tokenStandard: args.nft.tokenStandard,
     programId: args.programId,

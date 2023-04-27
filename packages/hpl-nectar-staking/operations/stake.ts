@@ -17,12 +17,14 @@ import {
 import { createInitStakerCtx } from "./initStaker";
 import { createInitNFTCtx } from "./initNFT";
 import { VAULT, createCtx, Honeycomb } from "@honeycomb-protocol/hive-control";
+import { PROGRAM_ID as AUTHORIZATION_PROGRAM_ID } from "@metaplex-foundation/mpl-token-auth-rules";
 
 type CreateStakeTransactionArgs = {
   project: web3.PublicKey;
   stakingPool: web3.PublicKey;
   nftMint: web3.PublicKey;
   wallet: web3.PublicKey;
+  authRuleSet?: web3.PublicKey;
   lockType?: LockType; // default: LockType.Freeze,
   tokenStandard?: TokenStandard; // default: TokenStandard.NonFungible,
   programId?: web3.PublicKey;
@@ -80,6 +82,10 @@ function createStakeInstruction(args: CreateStakeTransactionArgs) {
       tokenMetadataProgram: METADATA_PROGRAM_ID,
       clock: web3.SYSVAR_CLOCK_PUBKEY,
       sysvarInstructions: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+      authorizationRulesProgram: args.authRuleSet
+        ? AUTHORIZATION_PROGRAM_ID
+        : programId,
+      authorizationRules: args.authRuleSet || programId,
     },
     programId
   );
@@ -87,6 +93,7 @@ function createStakeInstruction(args: CreateStakeTransactionArgs) {
 
 type CreateStakeCtxArgs = {
   nft: AvailableNft;
+  authRuleSet?: web3.PublicKey;
   isFirst?: boolean;
   programId?: web3.PublicKey;
 };
@@ -122,6 +129,7 @@ export async function createStakeCtx(
       stakingPool: honeycomb.staking().poolAddress,
       nftMint: args.nft.tokenMint,
       wallet: honeycomb.identity().publicKey,
+      authRuleSet: args.authRuleSet,
       lockType: honeycomb.staking().lockType,
       tokenStandard: args.nft.tokenStandard,
       programId: args.programId,
