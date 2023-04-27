@@ -358,6 +358,7 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
         }
     }
 
+    nft.last_claim = ctx.accounts.clock.unix_timestamp;
     nft.last_staked_at = ctx.accounts.clock.unix_timestamp;
     nft.staker = staker.key();
     if staking_pool.reset_stake_duration {

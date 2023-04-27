@@ -113,7 +113,7 @@ export default async function (
     );
 
     switch (action) {
-      case "fetch":
+      case "available":
         const availableNftsa = await honeycomb
           .staking()
           .fetch()
@@ -121,6 +121,20 @@ export default async function (
             new web3.PublicKey("8sN1LJDUhTgJJZ7zkq3WGjgd7MjwHJaBMGD6zF7DNEEi")
           );
         console.log("Available NFTs:", availableNftsa);
+        break;
+      case "staked":
+        const [stakedNft] = await honeycomb
+          .staking()
+          .fetch()
+          .stakedNfts(
+            new web3.PublicKey("8sN1LJDUhTgJJZ7zkq3WGjgd7MjwHJaBMGD6zF7DNEEi")
+          );
+        console.log(
+          "Staked Last Claim:",
+          stakedNft.lastClaim.toString(),
+          new Date(Number(stakedNft.lastClaim.toString()) * 1000),
+          await honeycomb.staking().fetch().rewards(stakedNft)
+        );
         break;
       case "stake":
         const availableNfts = await honeycomb.staking().fetch().availableNfts();

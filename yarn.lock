@@ -409,10 +409,10 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
-"@honeycomb-protocol/hive-control@^0.0.92":
-  version "0.0.92"
-  resolved "https://registry.yarnpkg.com/@honeycomb-protocol/hive-control/-/hive-control-0.0.92.tgz#0d5f39bc0e6c3f99b07b2ea514bc85bb441fdf09"
-  integrity sha512-UAzXF4fD5YirKXP1bRC73cKIypTkhFQFwR2A88r4AEOHZ4d6DOK7/kKecXh6ACrWbzIqCPY1RchgTXklmcbVDw==
+"@honeycomb-protocol/hive-control@^0.0.96":
+  version "0.0.96"
+  resolved "https://registry.yarnpkg.com/@honeycomb-protocol/hive-control/-/hive-control-0.0.96.tgz#22648b473480f3e0cfd7f0979b6f6832b3baef41"
+  integrity sha512-+V1pCwCxo0zSLAnU1nTq4BB5I8R/rguh1WHnO05dcwfV8fu7Xb9HfUYGkG2c6gmn00xHPrUTaJyqtI5eEuofEA==
   dependencies:
     "@bundlr-network/client" "^0.10.5"
     "@identity.com/sol-did-client" "^3.3.0"
