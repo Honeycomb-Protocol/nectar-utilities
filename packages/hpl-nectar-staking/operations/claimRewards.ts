@@ -90,7 +90,7 @@ export async function createClaimRewardsCtx({
       args.wallet
     );
     try {
-      splToken.getAccount(connection, rewardTokenAccount);
+      await splToken.getAccount(connection, rewardTokenAccount);
     } catch {
       instructions.push(
         splToken.createAssociatedTokenAccountInstruction(
