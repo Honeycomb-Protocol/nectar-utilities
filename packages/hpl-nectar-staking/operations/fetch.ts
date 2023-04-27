@@ -191,7 +191,7 @@ export async function fetchRewards(
   staking: NectarStaking,
   args: FetchRewardsArgs
 ) {
-  const end: number = (args.till.getTime() || Date.now()) / 1000;
+  const end: number = (args.till?.getTime() || Date.now()) / 1000;
   let secondsElapsed = end - Number(args.nft.lastClaim);
 
   if (secondsElapsed < Number(staking.rewardsDuration)) {
