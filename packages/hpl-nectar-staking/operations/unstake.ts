@@ -96,7 +96,6 @@ type CreateUnstakeCtxArgs = {
   multipliers?: MultipliersArgs & {
     address: web3.PublicKey;
   };
-  authRuleSet?: web3.PublicKey;
   isFirst?: boolean;
   programId?: web3.PublicKey;
 };
@@ -126,7 +125,7 @@ export async function createUnstakeCtx(
     stakingPool: honeycomb.staking().poolAddress,
     nftMint: args.nft.mintAddress,
     wallet: honeycomb.identity().publicKey,
-    authRuleSet: args.authRuleSet,
+    authRuleSet: args.nft.programmableConfig?.ruleSet,
     lockType: honeycomb.staking().lockType,
     tokenStandard: args.nft.tokenStandard,
     programId: args.programId,

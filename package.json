@@ -21,6 +21,7 @@
     "@metaplex-foundation/js": "^0.18.1",
     "@metaplex-foundation/mpl-token-auth-rules": "^1.2.0",
     "@metaplex-foundation/mpl-token-metadata": "^2.10.0",
+    "@msgpack/msgpack": "^3.0.0-beta2",
     "@solana/spl-token": "^0.3.7",
     "@solana/web3.js": "^1.73.2"
   },

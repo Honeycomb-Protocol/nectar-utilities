@@ -93,7 +93,6 @@ function createStakeInstruction(args: CreateStakeTransactionArgs) {
 
 type CreateStakeCtxArgs = {
   nft: AvailableNft;
-  authRuleSet?: web3.PublicKey;
   isFirst?: boolean;
   programId?: web3.PublicKey;
 };
@@ -129,7 +128,7 @@ export async function createStakeCtx(
       stakingPool: honeycomb.staking().poolAddress,
       nftMint: args.nft.tokenMint,
       wallet: honeycomb.identity().publicKey,
-      authRuleSet: args.authRuleSet,
+      authRuleSet: args.nft.programmableConfig?.ruleSet,
       lockType: honeycomb.staking().lockType,
       tokenStandard: args.nft.tokenStandard,
       programId: args.programId,
