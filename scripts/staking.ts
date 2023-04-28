@@ -120,7 +120,7 @@ export default async function (
           .availableNfts(
             new web3.PublicKey("8sN1LJDUhTgJJZ7zkq3WGjgd7MjwHJaBMGD6zF7DNEEi")
           );
-        console.log("Available NFTs:", availableNftsa);
+        console.log("Available NFTs:", availableNftsa.length);
         break;
       case "staked":
         const [stakedNft] = await honeycomb

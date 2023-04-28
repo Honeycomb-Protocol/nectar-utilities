@@ -1,10 +1,10 @@
 import { Metadata, Metaplex } from "@metaplex-foundation/js";
-import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TokenStandard, TokenRecord, TokenState } from "@metaplex-foundation/mpl-token-metadata";
+import { TOKEN_PROGRAM_ID, getAssociatedTokenAddressSync } from "@solana/spl-token";
 import * as web3 from "@solana/web3.js";
 import { AvailableNft, StakedNft, TokenAccountInfo } from "../types";
 import { NFT, Staker } from "../generated";
-import { getStakerPda } from "../pdas";
+import { getMetadataAccount_, getStakerPda } from "../pdas";
 import { Honeycomb } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
 
@@ -42,10 +42,10 @@ export async function fetchStakedNfts(
         metaplexNfts.filter((x) => x.model == "metadata") as Metadata[]
       ).map(
         (nft) =>
-          ({
-            ...nft,
-            ...nfts.find((x) => x.mint.equals(nft.mintAddress)),
-          } as StakedNft)
+        ({
+          ...nft,
+          ...nfts.find((x) => x.mint.equals(nft.mintAddress)),
+        } as StakedNft)
       );
     });
 
@@ -61,9 +61,10 @@ export async function fetchAvailableNfts(
   honeycomb: Honeycomb,
   args?: FetchAvailableNfts
 ) {
+  const wallet = args?.walletAddress || honeycomb.identity().publicKey;
   const ownedTokenAccounts: TokenAccountInfo[] = await honeycomb.connection
     .getParsedTokenAccountsByOwner(
-      args?.walletAddress || honeycomb.identity().publicKey,
+      wallet,
       {
         programId: TOKEN_PROGRAM_ID,
       }
@@ -78,7 +79,7 @@ export async function fetchAvailableNfts(
     );
 
   const mx = new Metaplex(honeycomb.connection);
-  const ownedNfts = await mx
+  let ownedNfts = await mx
     .nfts()
     .findAllByMintList({
       mints: ownedTokenAccounts.map((x) => x.tokenMint),
@@ -93,19 +94,30 @@ export async function fetchAvailableNfts(
             ),
           } as AvailableNft;
         })
-        .filter((x) => {
-          if (
-            x.tokenStandard &&
-            (x.tokenStandard === TokenStandard.ProgrammableNonFungible ||
-              (x.tokenStandard as number) === 4)
-          ) {
-            return true;
-          }
-          return x.state !== "frozen";
-        })
     );
 
+  ownedNfts = await Promise.all(
+    ownedNfts.map(async (nft) => {
+      if (nft.tokenStandard === TokenStandard.ProgrammableNonFungible) {
+        const tokenAccount = getAssociatedTokenAddressSync(nft.mintAddress, wallet)
+        const [tokenRecord] = getMetadataAccount_(nft.mintAddress, { __kind: "token_record", tokenAccount })
+        nft.tokenRecord = await TokenRecord.fromAccountAddress(honeycomb.connection, tokenRecord)
+      }
+      return nft;
+    })
+  )
+
+  ownedNfts = ownedNfts.filter((x) => {
+    if (
+      x.tokenStandard && x.tokenStandard === TokenStandard.ProgrammableNonFungible
+    ) {
+      return x.tokenRecord && x.tokenRecord.state === TokenState.Unlocked;
+    }
+    return x.state !== "frozen";
+  })
+
   let filteredNfts: AvailableNft[] = [];
+
   if (honeycomb.staking().allowedMints) {
     const allowedMints: web3.PublicKey[] =
       args?.allowedMints ||
@@ -127,15 +139,15 @@ export async function fetchAvailableNfts(
 
   const validCollections = !!honeycomb.staking().collections.length
     ? honeycomb
-        .project()
-        .collections.filter((_, i) =>
-          honeycomb.staking().collections.includes(i)
-        )
+      .project()
+      .collections.filter((_, i) =>
+        honeycomb.staking().collections.includes(i)
+      )
     : [];
   const validCreators = !!honeycomb.staking().creators
     ? honeycomb
-        .project()
-        .creators.filter((_, i) => honeycomb.staking().creators.includes(i))
+      .project()
+      .creators.filter((_, i) => honeycomb.staking().creators.includes(i))
     : [];
 
   filteredNfts = [
@@ -235,7 +247,7 @@ export async function fetchRewards(
       if (
         multiplier.multiplierType.__kind === "NFTCount" &&
         Number(multiplier.multiplierType.minCount) <=
-          Number(args.staker.totalStaked)
+        Number(args.staker.totalStaked)
       ) {
         countMultiplier = Number(multiplier.value);
       } else {
