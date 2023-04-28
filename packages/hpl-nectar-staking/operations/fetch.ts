@@ -207,7 +207,7 @@ export async function fetchRewards(
   let secondsElapsed = end - Number(args.nft.lastClaim);
 
   if (secondsElapsed < Number(staking.rewardsDuration)) {
-    return 0;
+    return { rewards: 0, multipliers: 0 };
   }
 
   const maxRewardsDuration =
@@ -285,5 +285,5 @@ export async function fetchRewards(
   }
 
   rewardsAmount = (rewardsAmount * totalMultipliers) / multipliersDecimals;
-  return rewardsAmount;
+  return { rewards: rewardsAmount, multipliers: totalMultipliers };
 }
