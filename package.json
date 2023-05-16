@@ -23,7 +23,8 @@
     "@metaplex-foundation/mpl-token-metadata": "^2.10.0",
     "@msgpack/msgpack": "^3.0.0-beta2",
     "@solana/spl-token": "^0.3.7",
-    "@solana/web3.js": "^1.73.2"
+    "@solana/web3.js": "^1.73.2",
+    "dotenv": "^16.0.3"
   },
   "devDependencies": {
     "@metaplex-foundation/solita": "^0.19.3",

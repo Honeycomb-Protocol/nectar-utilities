@@ -113,6 +113,9 @@ export default async function (
     );
 
     switch (action) {
+      case "vault":
+        console.log("Vault:", await honeycomb.staking().vault.toString());
+        break;
       case "available":
         const availableNftsa = await honeycomb
           .staking()
