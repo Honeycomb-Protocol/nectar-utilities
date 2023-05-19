@@ -7,16 +7,33 @@
 
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
+import {
+  UpdateMissionPoolArgs,
+  updateMissionPoolArgsBeet,
+} from '../types/UpdateMissionPoolArgs'
 
 /**
  * @category Instructions
  * @category UpdateMissionPool
  * @category generated
  */
-export const updateMissionPoolStruct = new beet.BeetArgsStruct<{
-  instructionDiscriminator: number[] /* size: 8 */
-}>(
-  [['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]],
+export type UpdateMissionPoolInstructionArgs = {
+  args: UpdateMissionPoolArgs
+}
+/**
+ * @category Instructions
+ * @category UpdateMissionPool
+ * @category generated
+ */
+export const updateMissionPoolStruct = new beet.FixableBeetArgsStruct<
+  UpdateMissionPoolInstructionArgs & {
+    instructionDiscriminator: number[] /* size: 8 */
+  }
+>(
+  [
+    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
+    ['args', updateMissionPoolArgsBeet],
+  ],
   'UpdateMissionPoolInstructionArgs'
 )
 /**
@@ -61,16 +78,20 @@ export const updateMissionPoolInstructionDiscriminator = [
  * Otherwise an Error is raised.
  *
  * @param accounts that will be accessed while the instruction is processed
+ * @param args to provide as instruction data to the program
+ *
  * @category Instructions
  * @category UpdateMissionPool
  * @category generated
  */
 export function createUpdateMissionPoolInstruction(
   accounts: UpdateMissionPoolInstructionAccounts,
+  args: UpdateMissionPoolInstructionArgs,
   programId = new web3.PublicKey('CW2fmed6FRSwoQMBcUDkvbUUHNQXMDgW4zk9Kwn56RRr')
 ) {
   const [data] = updateMissionPoolStruct.serialize({
     instructionDiscriminator: updateMissionPoolInstructionDiscriminator,
+    ...args,
   })
   const keys: web3.AccountMeta[] = [
     {

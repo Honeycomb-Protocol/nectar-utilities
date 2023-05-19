@@ -3,6 +3,7 @@ use anchor_lang::prelude::*;
 pub mod errors;
 pub mod instructions;
 pub mod state;
+pub mod utils;
 
 declare_id!("CW2fmed6FRSwoQMBcUDkvbUUHNQXMDgW4zk9Kwn56RRr");
 
@@ -46,7 +47,10 @@ pub mod hpl_nectar_missions {
         instructions::create_mission_pool(ctx, args)
     }
 
-    pub fn update_mission_pool(ctx: Context<UpdateMissionPool>) -> Result<()> {
+    pub fn update_mission_pool(
+        ctx: Context<UpdateMissionPool>,
+        args: UpdateMissionPoolArgs,
+    ) -> Result<()> {
         hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.manage_mission_pool,
             None,
@@ -57,7 +61,7 @@ pub mod hpl_nectar_missions {
             &ctx.accounts.delegate_authority,
             ctx.accounts.system_program.to_account_info(),
         )?;
-        instructions::update_mission_pool(ctx)
+        instructions::update_mission_pool(ctx, args)
     }
 
     pub fn create_mission(ctx: Context<CreateMission>, args: CreateMissionArgs) -> Result<()> {
@@ -74,7 +78,7 @@ pub mod hpl_nectar_missions {
         instructions::create_mission(ctx, args)
     }
 
-    pub fn participate(ctx: Context<Participate>) -> Result<()> {
+    pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<()> {
         hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.public_high,
             None,
@@ -86,7 +90,7 @@ pub mod hpl_nectar_missions {
             ctx.accounts.system_program.to_account_info(),
         )?;
 
-        instructions::participate(ctx)
+        instructions::participate(ctx, args)
     }
 
     pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {

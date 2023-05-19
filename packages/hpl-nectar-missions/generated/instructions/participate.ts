@@ -7,16 +7,30 @@
 
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
+import { ParticipateArgs, participateArgsBeet } from '../types/ParticipateArgs'
 
 /**
  * @category Instructions
  * @category Participate
  * @category generated
  */
-export const participateStruct = new beet.BeetArgsStruct<{
-  instructionDiscriminator: number[] /* size: 8 */
-}>(
-  [['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]],
+export type ParticipateInstructionArgs = {
+  args: ParticipateArgs
+}
+/**
+ * @category Instructions
+ * @category Participate
+ * @category generated
+ */
+export const participateStruct = new beet.FixableBeetArgsStruct<
+  ParticipateInstructionArgs & {
+    instructionDiscriminator: number[] /* size: 8 */
+  }
+>(
+  [
+    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
+    ['args', participateArgsBeet],
+  ],
   'ParticipateInstructionArgs'
 )
 /**
@@ -24,13 +38,14 @@ export const participateStruct = new beet.BeetArgsStruct<{
  *
  * @property [] project
  * @property [] stakingPool
- * @property [] missionPool
+ * @property [_writable_] missionPool
  * @property [] mission
  * @property [] nft
  * @property [] staker
  * @property [_writable_] participation
  * @property [_writable_, **signer**] wallet
  * @property [_writable_] vault
+ * @property [] rentSysvar
  * @property [] clock
  * @category Instructions
  * @category Participate
@@ -47,6 +62,7 @@ export type ParticipateInstructionAccounts = {
   wallet: web3.PublicKey
   vault: web3.PublicKey
   systemProgram?: web3.PublicKey
+  rentSysvar: web3.PublicKey
   clock: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
@@ -59,16 +75,20 @@ export const participateInstructionDiscriminator = [
  * Creates a _Participate_ instruction.
  *
  * @param accounts that will be accessed while the instruction is processed
+ * @param args to provide as instruction data to the program
+ *
  * @category Instructions
  * @category Participate
  * @category generated
  */
 export function createParticipateInstruction(
   accounts: ParticipateInstructionAccounts,
+  args: ParticipateInstructionArgs,
   programId = new web3.PublicKey('CW2fmed6FRSwoQMBcUDkvbUUHNQXMDgW4zk9Kwn56RRr')
 ) {
   const [data] = participateStruct.serialize({
     instructionDiscriminator: participateInstructionDiscriminator,
+    ...args,
   })
   const keys: web3.AccountMeta[] = [
     {
@@ -83,7 +103,7 @@ export function createParticipateInstruction(
     },
     {
       pubkey: accounts.missionPool,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {
@@ -118,6 +138,11 @@ export function createParticipateInstruction(
     },
     {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.rentSysvar,
       isWritable: false,
       isSigner: false,
     },

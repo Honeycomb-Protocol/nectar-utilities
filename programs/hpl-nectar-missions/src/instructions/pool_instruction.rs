@@ -46,17 +46,14 @@ pub struct CreateMissionPool<'info> {
 
     /// SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
-
-    /// RENT SYSVAR
     pub rent_sysvar: Sysvar<'info, Rent>,
-
-    /// HIVE CONTROL PROGRAM
     pub hive_control: Program<'info, HplHiveControl>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct CreateMissionPoolArgs {
     pub name: String,
+    pub factions_merkle_root: [u8; 32],
 }
 
 /// Create a new mission_pool
@@ -70,6 +67,7 @@ pub fn create_mission_pool(
     mission_pool.bump = ctx.bumps["mission_pool"];
     mission_pool.project = ctx.accounts.project.key();
     mission_pool.name = args.name;
+    mission_pool.factions_merkle_root = args.factions_merkle_root;
 
     Ok(())
 }
@@ -109,10 +107,20 @@ pub struct UpdateMissionPool<'info> {
     #[account(mut)]
     pub vault: AccountInfo<'info>,
 }
-
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+pub struct UpdateMissionPoolArgs {
+    pub factions_merkle_root: Option<[u8; 32]>,
+}
 /// Update a mission_pool
-pub fn update_mission_pool(ctx: Context<UpdateMissionPool>) -> Result<()> {
+pub fn update_mission_pool(
+    ctx: Context<UpdateMissionPool>,
+    args: UpdateMissionPoolArgs,
+) -> Result<()> {
     let mission_pool = &mut ctx.accounts.mission_pool;
+
+    mission_pool.factions_merkle_root = args
+        .factions_merkle_root
+        .unwrap_or(mission_pool.factions_merkle_root);
 
     if let Some(collection) = &ctx.accounts.collection {
         let index = ctx

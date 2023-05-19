@@ -5,6 +5,9 @@ pub enum ErrorCode {
     #[msg("Opertaion overflowed")]
     Overflow,
 
+    #[msg("Merkle proof provided is not valid")]
+    InvalidProof,
+
     #[msg("The NFT provided is not recognized by the mission pool")]
     NftNotRecognized,
 

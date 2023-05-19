@@ -1,5 +1,7 @@
 export * from './CreateMissionArgs'
 export * from './CreateMissionPoolArgs'
 export * from './EarnedReward'
+export * from './ParticipateArgs'
 export * from './Reward'
 export * from './RewardType'
+export * from './UpdateMissionPoolArgs'

@@ -1,5 +1,5 @@
 use {
-    crate::{errors::ErrorCode, state::*},
+    crate::{errors::ErrorCode, state::*, utils::RANDOMIZER},
     anchor_lang::prelude::*,
     anchor_spl::token::{self, Mint, Token, TokenAccount},
     hpl_currency_manager::{
@@ -23,7 +23,7 @@ pub struct Participate<'info> {
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// MissionPool account
-    #[account(has_one = project)]
+    #[account(mut, has_one = project)]
     pub mission_pool: Box<Account<'info, MissionPool>>,
 
     /// Mission state account
@@ -58,11 +58,18 @@ pub struct Participate<'info> {
     #[account(mut)]
     pub vault: AccountInfo<'info>,
     pub system_program: Program<'info, System>,
+    pub rent_sysvar: Sysvar<'info, Rent>,
     pub clock: Sysvar<'info, Clock>,
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+pub struct ParticipateArgs {
+    pub faction: String,
+    pub merkle_proof: Vec<[u8; 32]>,
+}
+
 /// participate in a mission
-pub fn participate(ctx: Context<Participate>) -> Result<()> {
+pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<()> {
     let participation = &mut ctx.accounts.participation;
     participation.set_defaults();
     participation.bump = ctx.bumps["participation"];
@@ -71,24 +78,47 @@ pub fn participate(ctx: Context<Participate>) -> Result<()> {
     participation.nft = ctx.accounts.nft.key();
     participation.end_time = ctx.accounts.mission.duration + ctx.accounts.clock.unix_timestamp;
 
-    // reaalocate here
+    let node = hpl_utils::merkle_tree::create_node(&[
+        &[0x00],
+        args.faction.as_bytes(),
+        ctx.accounts.nft.mint.as_ref(),
+    ]);
+    if !hpl_utils::merkle_tree::verify_merkle(
+        args.merkle_proof,
+        ctx.accounts.mission_pool.factions_merkle_root,
+        node.0,
+    ) {
+        return Err(ErrorCode::InvalidProof.into());
+    }
 
-    participation.rewards = ctx
+    let rewards = ctx
         .accounts
         .mission
         .rewards
         .iter()
-        .map(|reward| {
-            let len = (reward.max - reward.min) + 1;
-            let random = ctx.accounts.clock.slot % len;
-
-            EarnedReward {
-                amount: reward.min + random,
-                reward_type: reward.reward_type.clone(),
-                collected: false,
-            }
+        .map(|reward| EarnedReward {
+            amount: RANDOMIZER.get_random_between(
+                ctx.accounts.mission_pool.randomizer_round as usize,
+                ctx.accounts.clock.slot,
+                reward.min,
+                reward.max,
+            ),
+            reward_type: reward.reward_type.clone(),
+            collected: false,
         })
         .collect::<Vec<_>>();
+
+    ctx.accounts.mission_pool.increase_randomizer_round();
+
+    hpl_utils::reallocate(
+        (Reward::LEN * rewards.len()) as isize,
+        participation.to_account_info(),
+        ctx.accounts.wallet.to_account_info(),
+        &ctx.accounts.rent_sysvar,
+        &ctx.accounts.system_program,
+    )?;
+
+    participation.rewards = rewards;
 
     if ctx.accounts.nft.last_staked_at < ctx.accounts.nft.last_unstaked_at {
         return Err(ErrorCode::NotStaked.into());

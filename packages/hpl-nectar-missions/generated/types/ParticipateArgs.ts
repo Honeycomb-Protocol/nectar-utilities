@@ -6,20 +6,20 @@
  */
 
 import * as beet from '@metaplex-foundation/beet'
-export type CreateMissionPoolArgs = {
-  name: string
-  factionsMerkleRoot: number[] /* size: 32 */
+export type ParticipateArgs = {
+  faction: string
+  merkleProof: number[] /* size: 32 */[]
 }
 
 /**
  * @category userTypes
  * @category generated
  */
-export const createMissionPoolArgsBeet =
-  new beet.FixableBeetArgsStruct<CreateMissionPoolArgs>(
+export const participateArgsBeet =
+  new beet.FixableBeetArgsStruct<ParticipateArgs>(
     [
-      ['name', beet.utf8String],
-      ['factionsMerkleRoot', beet.uniformFixedSizeArray(beet.u8, 32)],
+      ['faction', beet.utf8String],
+      ['merkleProof', beet.array(beet.uniformFixedSizeArray(beet.u8, 32))],
     ],
-    'CreateMissionPoolArgs'
+    'ParticipateArgs'
   )

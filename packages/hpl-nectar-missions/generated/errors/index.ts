@@ -32,13 +32,33 @@ createErrorFromCodeLookup.set(0x1770, () => new OverflowError())
 createErrorFromNameLookup.set('Overflow', () => new OverflowError())
 
 /**
+ * InvalidProof: 'Merkle proof provided is not valid'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class InvalidProofError extends Error {
+  readonly code: number = 0x1771
+  readonly name: string = 'InvalidProof'
+  constructor() {
+    super('Merkle proof provided is not valid')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, InvalidProofError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1771, () => new InvalidProofError())
+createErrorFromNameLookup.set('InvalidProof', () => new InvalidProofError())
+
+/**
  * NftNotRecognized: 'The NFT provided is not recognized by the mission pool'
  *
  * @category Errors
  * @category generated
  */
 export class NftNotRecognizedError extends Error {
-  readonly code: number = 0x1771
+  readonly code: number = 0x1772
   readonly name: string = 'NftNotRecognized'
   constructor() {
     super('The NFT provided is not recognized by the mission pool')
@@ -48,7 +68,7 @@ export class NftNotRecognizedError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1771, () => new NftNotRecognizedError())
+createErrorFromCodeLookup.set(0x1772, () => new NftNotRecognizedError())
 createErrorFromNameLookup.set(
   'NftNotRecognized',
   () => new NftNotRecognizedError()
@@ -61,7 +81,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class NotImplementedError extends Error {
-  readonly code: number = 0x1772
+  readonly code: number = 0x1773
   readonly name: string = 'NotImplemented'
   constructor() {
     super('Not implemented yet')
@@ -71,7 +91,7 @@ export class NotImplementedError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1772, () => new NotImplementedError())
+createErrorFromCodeLookup.set(0x1773, () => new NotImplementedError())
 createErrorFromNameLookup.set('NotImplemented', () => new NotImplementedError())
 
 /**
@@ -81,7 +101,7 @@ createErrorFromNameLookup.set('NotImplemented', () => new NotImplementedError())
  * @category generated
  */
 export class NotStakedError extends Error {
-  readonly code: number = 0x1773
+  readonly code: number = 0x1774
   readonly name: string = 'NotStaked'
   constructor() {
     super('NFT is not staked')
@@ -91,7 +111,7 @@ export class NotStakedError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1773, () => new NotStakedError())
+createErrorFromCodeLookup.set(0x1774, () => new NotStakedError())
 createErrorFromNameLookup.set('NotStaked', () => new NotStakedError())
 
 /**
@@ -101,7 +121,7 @@ createErrorFromNameLookup.set('NotStaked', () => new NotStakedError())
  * @category generated
  */
 export class NotEndedError extends Error {
-  readonly code: number = 0x1774
+  readonly code: number = 0x1775
   readonly name: string = 'NotEnded'
   constructor() {
     super('Participation is not ended yet')
@@ -111,7 +131,7 @@ export class NotEndedError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1774, () => new NotEndedError())
+createErrorFromCodeLookup.set(0x1775, () => new NotEndedError())
 createErrorFromNameLookup.set('NotEnded', () => new NotEndedError())
 
 /**
@@ -121,7 +141,7 @@ createErrorFromNameLookup.set('NotEnded', () => new NotEndedError())
  * @category generated
  */
 export class RewardNotAvailableError extends Error {
-  readonly code: number = 0x1775
+  readonly code: number = 0x1776
   readonly name: string = 'RewardNotAvailable'
   constructor() {
     super('Reward is either collected or not available')
@@ -131,7 +151,7 @@ export class RewardNotAvailableError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1775, () => new RewardNotAvailableError())
+createErrorFromCodeLookup.set(0x1776, () => new RewardNotAvailableError())
 createErrorFromNameLookup.set(
   'RewardNotAvailable',
   () => new RewardNotAvailableError()
@@ -144,7 +164,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class HolderAccountsNotProvidedError extends Error {
-  readonly code: number = 0x1776
+  readonly code: number = 0x1777
   readonly name: string = 'HolderAccountsNotProvided'
   constructor() {
     super('Mint, Holder account or token account not provided')
@@ -155,7 +175,7 @@ export class HolderAccountsNotProvidedError extends Error {
 }
 
 createErrorFromCodeLookup.set(
-  0x1776,
+  0x1777,
   () => new HolderAccountsNotProvidedError()
 )
 createErrorFromNameLookup.set(
@@ -170,7 +190,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class RewardsNotCollectedError extends Error {
-  readonly code: number = 0x1777
+  readonly code: number = 0x1778
   readonly name: string = 'RewardsNotCollected'
   constructor() {
     super('All rewards are not yet collected for this participaton')
@@ -180,7 +200,7 @@ export class RewardsNotCollectedError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1777, () => new RewardsNotCollectedError())
+createErrorFromCodeLookup.set(0x1778, () => new RewardsNotCollectedError())
 createErrorFromNameLookup.set(
   'RewardsNotCollected',
   () => new RewardsNotCollectedError()

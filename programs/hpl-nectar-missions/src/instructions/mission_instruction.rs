@@ -65,7 +65,7 @@ pub fn create_mission(ctx: Context<CreateMission>, args: CreateMissionArgs) -> R
     mission.duration = args.duration;
 
     hpl_utils::reallocate(
-        (RewardType::LEN * args.rewards.len()) as isize,
+        (Reward::LEN * args.rewards.len()) as isize,
         mission.to_account_info(),
         ctx.accounts.payer.to_account_info(),
         &ctx.accounts.rent_sysvar,

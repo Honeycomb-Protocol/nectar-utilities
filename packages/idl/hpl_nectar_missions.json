@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.0.1",
   "name": "hpl_nectar_missions",
   "instructions": [
     {
@@ -59,18 +59,12 @@
         {
           "name": "rentSysvar",
           "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "RENT SYSVAR"
-          ]
+          "isSigner": false
         },
         {
           "name": "hiveControl",
           "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HIVE CONTROL PROGRAM"
-          ]
+          "isSigner": false
         }
       ],
       "args": [
@@ -157,7 +151,14 @@
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": "UpdateMissionPoolArgs"
+          }
+        }
+      ]
     },
     {
       "name": "createMission",
@@ -257,7 +258,7 @@
         },
         {
           "name": "missionPool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "docs": [
             "MissionPool account"
@@ -311,12 +312,24 @@
           "isSigner": false
         },
         {
+          "name": "rentSysvar",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "clock",
           "isMut": false,
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": "ParticipateArgs"
+          }
+        }
+      ]
     },
     {
       "name": "collectRewards",
@@ -598,6 +611,19 @@
             "type": "string"
           },
           {
+            "name": "factionsMerkleRoot",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "randomizerRound",
+            "type": "u8"
+          },
+          {
             "name": "collections",
             "type": "bytes"
           },
@@ -646,6 +672,29 @@
       }
     },
     {
+      "name": "ParticipateArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "faction",
+            "type": "string"
+          },
+          {
+            "name": "merkleProof",
+            "type": {
+              "vec": {
+                "array": [
+                  "u8",
+                  32
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "CreateMissionPoolArgs",
       "type": {
         "kind": "struct",
@@ -653,6 +702,34 @@
           {
             "name": "name",
             "type": "string"
+          },
+          {
+            "name": "factionsMerkleRoot",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateMissionPoolArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "factionsMerkleRoot",
+            "type": {
+              "option": {
+                "array": [
+                  "u8",
+                  32
+                ]
+              }
+            }
           }
         ]
       }
@@ -730,36 +807,41 @@
     },
     {
       "code": 6001,
+      "name": "InvalidProof",
+      "msg": "Merkle proof provided is not valid"
+    },
+    {
+      "code": 6002,
       "name": "NftNotRecognized",
       "msg": "The NFT provided is not recognized by the mission pool"
     },
     {
-      "code": 6002,
+      "code": 6003,
       "name": "NotImplemented",
       "msg": "Not implemented yet"
     },
     {
-      "code": 6003,
+      "code": 6004,
       "name": "NotStaked",
       "msg": "NFT is not staked"
     },
     {
-      "code": 6004,
+      "code": 6005,
       "name": "NotEnded",
       "msg": "Participation is not ended yet"
     },
     {
-      "code": 6005,
+      "code": 6006,
       "name": "RewardNotAvailable",
       "msg": "Reward is either collected or not available"
     },
     {
-      "code": 6006,
+      "code": 6007,
       "name": "HolderAccountsNotProvided",
       "msg": "Mint, Holder account or token account not provided"
     },
     {
-      "code": 6007,
+      "code": 6008,
       "name": "RewardsNotCollected",
       "msg": "All rewards are not yet collected for this participaton"
     }

@@ -32,12 +32,12 @@ pub struct Reward {
     pub max: u64,
     pub reward_type: RewardType,
 }
+impl Reward {
+    pub const LEN: usize = 8 + 56;
+}
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
 pub enum RewardType {
     Xp,
     Currency { address: Pubkey },
-}
-impl RewardType {
-    pub const LEN: usize = 1 + 33;
 }

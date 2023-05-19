@@ -18,6 +18,8 @@ export type MissionPoolArgs = {
   bump: number
   project: web3.PublicKey
   name: string
+  factionsMerkleRoot: number[] /* size: 32 */
+  randomizerRound: number
   collections: Uint8Array
   creators: Uint8Array
 }
@@ -35,6 +37,8 @@ export class MissionPool implements MissionPoolArgs {
     readonly bump: number,
     readonly project: web3.PublicKey,
     readonly name: string,
+    readonly factionsMerkleRoot: number[] /* size: 32 */,
+    readonly randomizerRound: number,
     readonly collections: Uint8Array,
     readonly creators: Uint8Array
   ) {}
@@ -47,6 +51,8 @@ export class MissionPool implements MissionPoolArgs {
       args.bump,
       args.project,
       args.name,
+      args.factionsMerkleRoot,
+      args.randomizerRound,
       args.collections,
       args.creators
     )
@@ -160,6 +166,8 @@ export class MissionPool implements MissionPoolArgs {
       bump: this.bump,
       project: this.project.toBase58(),
       name: this.name,
+      factionsMerkleRoot: this.factionsMerkleRoot,
+      randomizerRound: this.randomizerRound,
       collections: this.collections,
       creators: this.creators,
     }
@@ -181,6 +189,8 @@ export const missionPoolBeet = new beet.FixableBeetStruct<
     ['bump', beet.u8],
     ['project', beetSolana.publicKey],
     ['name', beet.utf8String],
+    ['factionsMerkleRoot', beet.uniformFixedSizeArray(beet.u8, 32)],
+    ['randomizerRound', beet.u8],
     ['collections', beet.bytes],
     ['creators', beet.bytes],
   ],
