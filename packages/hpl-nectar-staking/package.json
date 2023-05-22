@@ -3,12 +3,14 @@
   "version": "0.0.34",
   "private": false,
   "dependencies": {
-    "@honeycomb-protocol/hive-control": "^0.0.97",
     "@metaplex-foundation/js": "^0.18.1",
     "@metaplex-foundation/mpl-token-auth-rules": "^1.2.0",
     "@metaplex-foundation/mpl-token-metadata": "^2.10.0",
-    "@msgpack/msgpack": "^3.0.0-beta2",
+    "@msgpack/msgpack": "^3.0.0-beta2"
+  },
+  "peerDependencies": {
     "@solana/spl-token": "^0.3.7",
-    "@solana/web3.js": "^1.73.2"
+    "@solana/web3.js": "^1.76.0",
+    "@honeycomb-protocol/hive-control": "^0.0.99"
   }
 }

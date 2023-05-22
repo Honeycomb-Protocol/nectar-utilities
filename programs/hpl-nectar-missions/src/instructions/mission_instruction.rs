@@ -17,7 +17,16 @@ pub struct CreateMission<'info> {
     pub mission_pool: Box<Account<'info, MissionPool>>,
 
     /// Mission state account
-    #[account()]
+    #[account(
+        init, payer = payer,
+        space = Mission::LEN,
+        seeds = [
+          b"mission".as_ref(),
+          mission_pool.key().as_ref(),
+          args.name.as_bytes(),
+        ],
+        bump
+      )]
     pub mission: Box<Account<'info, Mission>>,
 
     /// [Option] Project delegate authority
@@ -46,7 +55,7 @@ pub struct CreateMission<'info> {
 pub struct CreateMissionArgs {
     pub name: String,
     pub min_xp: u64,
-    pub cost: u64,
+    pub cost: Currency,
     /// The duration of the mission in seconds
     pub duration: i64,
     pub rewards: Vec<Reward>,

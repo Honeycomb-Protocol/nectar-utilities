@@ -17,7 +17,8 @@
     "staking": "ts-node ./scripts/index.ts staking"
   },
   "dependencies": {
-    "@honeycomb-protocol/hive-control": "^0.0.97",
+    "@honeycomb-protocol/currency-manager": "^0.0.4",
+    "@honeycomb-protocol/hive-control": "0.0.98",
     "@metaplex-foundation/js": "^0.18.1",
     "@metaplex-foundation/mpl-token-auth-rules": "^1.2.0",
     "@metaplex-foundation/mpl-token-metadata": "^2.10.0",

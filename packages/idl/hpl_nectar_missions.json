@@ -178,7 +178,7 @@
         },
         {
           "name": "mission",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "docs": [
             "Mission state account"
@@ -523,7 +523,9 @@
           },
           {
             "name": "cost",
-            "type": "u64"
+            "type": {
+              "defined": "Currency"
+            }
           },
           {
             "name": "duration",
@@ -651,7 +653,9 @@
           },
           {
             "name": "cost",
-            "type": "u64"
+            "type": {
+              "defined": "Currency"
+            }
           },
           {
             "name": "duration",
@@ -730,6 +734,22 @@
                 ]
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Currency",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "address",
+            "type": "publicKey"
           }
         ]
       }

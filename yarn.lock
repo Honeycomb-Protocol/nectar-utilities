@@ -409,10 +409,15 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
-"@honeycomb-protocol/hive-control@^0.0.97":
-  version "0.0.97"
-  resolved "https://registry.yarnpkg.com/@honeycomb-protocol/hive-control/-/hive-control-0.0.97.tgz#dc607ce833e36dcc0f115c50617b73e97350cd53"
-  integrity sha512-0WtU2JX77VaIfS0HzWQOYF09cSOLUgKjjCnROt0nIRzlnYOv9YnCQ6HzwcuwivqHIzHmSGAeWl28qRfY0p+t4w==
+"@honeycomb-protocol/currency-manager@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@honeycomb-protocol/currency-manager/-/currency-manager-0.0.4.tgz#78a61b2d79cdf91ea179705d6938831987451a0b"
+  integrity sha512-Rdml3VPFJ34NZ8jABjYwhGBFp0zAVUewRwOtZlPKQtvabcIiPw1sLELP1w6R8G4UKEkCzH/82pbNgW+LWWGZgg==
+
+"@honeycomb-protocol/hive-control@0.0.98":
+  version "0.0.98"
+  resolved "https://registry.yarnpkg.com/@honeycomb-protocol/hive-control/-/hive-control-0.0.98.tgz#f4bcf2a42f295cee1d4489304552e20f6ad3e4d5"
+  integrity sha512-8RLOn2MnOg1Jr6hv1meBUB6rgv3pTYPimHt3+RARkJ5NHoQw3uVequSo8dR/hFGs7m8udlhyS78gv5iUOeM8Cw==
   dependencies:
     "@bundlr-network/client" "^0.10.5"
     "@identity.com/sol-did-client" "^3.3.0"

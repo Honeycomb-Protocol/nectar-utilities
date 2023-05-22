@@ -41,7 +41,7 @@ export const createMissionStruct = new beet.FixableBeetArgsStruct<
  *
  * @property [] project
  * @property [] missionPool
- * @property [] mission
+ * @property [_writable_] mission
  * @property [] delegateAuthority (optional)
  * @property [**signer**] authority
  * @property [_writable_, **signer**] payer
@@ -105,7 +105,7 @@ export function createCreateMissionInstruction(
     },
     {
       pubkey: accounts.mission,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
   ]

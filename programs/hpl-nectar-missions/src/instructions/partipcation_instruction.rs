@@ -44,7 +44,6 @@ pub struct Participate<'info> {
       space = Participation::LEN,
       seeds = [
         b"participation".as_ref(),
-        mission_pool.key().as_ref(),
         nft.key().as_ref()
       ],
       bump

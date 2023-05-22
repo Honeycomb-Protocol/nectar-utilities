@@ -104,6 +104,10 @@ export class NectarStaking extends Module {
     return this._fetch;
   }
 
+  public get address() {
+    return this.poolAddress;
+  }
+
   public get rewardMint() {
     return this._pool.rewardMint;
   }

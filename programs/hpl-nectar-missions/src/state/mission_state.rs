@@ -7,7 +7,7 @@ pub struct Mission {
     pub mission_pool: Pubkey,
     pub name: String,
     pub min_xp: u64,
-    pub cost: u64,
+    pub cost: Currency,
     /// The duration of the mission in seconds
     pub duration: i64,
     pub rewards: Vec<Reward>,
@@ -20,10 +20,19 @@ impl Default for Mission {
         self.mission_pool = Pubkey::default();
         self.name = String::default();
         self.min_xp = 0;
-        self.cost = 0;
+        self.cost = Currency {
+            amount: 0,
+            address: Pubkey::default(),
+        };
         self.duration = 0;
         self.rewards = vec![];
     }
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+pub struct Currency {
+    pub amount: u64,
+    pub address: Pubkey,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
