@@ -1,8 +1,11 @@
 [package]
 name = "hpl-nectar-missions"
 version = "0.0.1"
-description = "Created with Anchor"
+description = "Honeycomb protocol library nectar utilities missions program"
+author = ['Sultan Nadeem <sultanndilaram@gmail.com>']
 edition = "2021"
+license = "MIT"
+
 
 [lib]
 crate-type = ["cdylib", "lib"]
