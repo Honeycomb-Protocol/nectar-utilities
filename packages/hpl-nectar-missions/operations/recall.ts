@@ -36,21 +36,31 @@ export function createCollectRewardsCtx(
 ): OperationCtx {
   const programId = args.programId || PROGRAM_ID;
 
-  const { holderAccount: vaultHolderAccount, tokenAccount: vaultTokenAccount } =
-    holderAccountPdas(
+  let vaultHolderAccount: PublicKey | undefined = undefined,
+    vaultTokenAccount: PublicKey | undefined = undefined,
+    holderAccount: PublicKey | undefined = undefined,
+    tokenAccount: PublicKey | undefined = undefined;
+  if (args.currency) {
+    const vault = holderAccountPdas(
       args.missionPool,
       args.mint,
       args.currencyType,
       TOKEN_PROGRAM_ID,
       programId
     );
-  const { holderAccount, tokenAccount } = holderAccountPdas(
-    args.wallet,
-    args.mint,
-    args.currencyType,
-    TOKEN_PROGRAM_ID,
-    programId
-  );
+    vaultHolderAccount = vault.holderAccount;
+    vaultTokenAccount = vault.tokenAccount;
+
+    const user = holderAccountPdas(
+      args.wallet,
+      args.mint,
+      args.currencyType,
+      TOKEN_PROGRAM_ID,
+      programId
+    );
+    holderAccount = user.holderAccount;
+    tokenAccount = user.tokenAccount;
+  }
 
   const instructions = [
     createCollectRewardsInstruction(
@@ -62,10 +72,10 @@ export function createCollectRewardsCtx(
         nft: args.nft,
         currency: args.currency || programId,
         mint: args.mint || programId,
-        vaultHolderAccount: !!args.currency ? vaultHolderAccount : programId,
-        vaultTokenAccount: !!args.currency ? vaultTokenAccount : programId,
-        holderAccount: !!args.currency ? holderAccount : programId,
-        tokenAccount: !!args.currency ? tokenAccount : programId,
+        vaultHolderAccount: vaultHolderAccount || programId,
+        vaultTokenAccount: vaultTokenAccount || programId,
+        holderAccount: holderAccount || programId,
+        tokenAccount: tokenAccount || programId,
         wallet: args.wallet,
         vault: VAULT,
         currencyManagerProgram: CURRENCY_MANAGER_PROGRAM_ID,
@@ -122,20 +132,20 @@ export async function recall(
   const ctxs = args.participations.flatMap((participation) => [
     ...participation.rewards
       .filter((r) => !r.collected)
-      .map((reward) =>
-        createCollectRewardsCtx({
+      .map((reward) => {
+        return createCollectRewardsCtx({
           project: participation.mission().pool().project().address,
           missionPool: participation.mission().pool().address,
           mission: participation.mission().address,
           participation: participation.address,
           nft: participation.nftAddress,
           currency: reward.isCurrency() && reward.currency().address,
-          currencyType: reward.isCurrency() && reward.currency().currencyType, 
+          currencyType: reward.isCurrency() && reward.currency().currencyType,
           mint: reward.isCurrency() && reward.currency().mint,
           wallet: honeycomb.identity().publicKey,
           programId: args.programId,
-        })
-      ),
+        });
+      }),
     createRecallCtx({
       project: participation.mission().pool().project().address,
       stakingPool: participation.nft.stakingPool,

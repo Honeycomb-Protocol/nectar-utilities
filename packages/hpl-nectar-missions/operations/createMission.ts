@@ -66,7 +66,7 @@ export async function createMission(
 ): Promise<ConfirmedContext & { mission: PublicKey }> {
   const ctx = createCreateMissionCtx({
     args: args.args,
-    project: args.project || honeycomb.project().address,
+    project: args.project || honeycomb.missions().project().address,
     missionPool: args.missionPool || honeycomb.missions().address,
     delegateAuthority: honeycomb.identity().delegateAuthority().address,
     authority: honeycomb.identity().publicKey,

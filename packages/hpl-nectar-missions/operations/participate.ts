@@ -17,7 +17,7 @@ import {
 } from "../generated";
 import { participationPda } from "../utils";
 import { NectarMission } from "../NectarMissions";
-import { StakedNft, getNftPda } from "packages/hpl-nectar-staking";
+import { StakedNft, getNftPda } from "../../../packages/hpl-nectar-staking";
 
 type CreateParticipateCtxArgs = {
   args: ParticipateArgsSolita;
@@ -63,9 +63,8 @@ export function createParticipateCtx(
 }
 
 type ParticipateArgs = {
-  args: ParticipateArgsSolita;
   mission: NectarMission;
-  nfts: StakedNft[];
+  nfts: (StakedNft & ParticipateArgsSolita)[];
   programId?: PublicKey;
 };
 export async function participate(
@@ -74,11 +73,14 @@ export async function participate(
 ): Promise<ConfirmedContext[]> {
   const ctxs = args.nfts.map((nft) =>
     createParticipateCtx({
-      args: args.args,
+      args: {
+        faction: nft.faction,
+        merkleProof: nft.merkleProof,
+      },
       project: args.mission.pool().project().address,
       stakingPool: nft.stakingPool,
       missionPool: args.mission.pool().address,
-      mission: honeycomb.missions().address,
+      mission: args.mission.address,
       nft: getNftPda(nft.stakingPool, nft.mint)[0],
       staker: nft.staker,
       wallet: honeycomb.identity().publicKey,

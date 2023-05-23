@@ -23,6 +23,6 @@ export const missionPda = (
 
 export const participationPda = (nft: PublicKey, programId = PROGRAM_ID) =>
   PublicKey.findProgramAddressSync(
-    [Buffer.from("participaiton"), nft.toBuffer()],
+    [Buffer.from("participation"), nft.toBuffer()],
     programId
   );
