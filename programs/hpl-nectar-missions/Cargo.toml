@@ -1,6 +1,6 @@
 [package]
 name = "hpl-nectar-missions"
-version = "0.1.0"
+version = "0.0.1"
 description = "Created with Anchor"
 edition = "2021"
 
@@ -16,7 +16,9 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = "0.27.0"
+anchor-lang = "0.26.0"
+anchor-spl = "0.26.0"
 hpl-utils = "0.1.6"
-hpl-hive-control = { version="0.0.92", features = ["cpi"] }
+hpl-hive-control = { version="0.0.99", features = ["cpi"] }
+hpl-currency-manager = { version="0.0.2", features = ["cpi"] }
 hpl-nectar-staking = { path="../hpl-nectar-staking", features = ["cpi"] }

@@ -82,13 +82,13 @@ export class NectarStaking extends Module {
   }
 
   static async new(honeycomb: Honeycomb, args: NewStakingPoolArgs) {
-    const { poolAddress } = await createStakingPool(honeycomb, {
+    const { poolId } = await createStakingPool(honeycomb, {
       programId: PROGRAM_ID,
       ...args,
     });
     return await NectarStaking.fromAddress(
       new web3.Connection(honeycomb.connection.rpcEndpoint, "processed"),
-      poolAddress
+      poolId
     );
   }
 
@@ -102,6 +102,10 @@ export class NectarStaking extends Module {
 
   public fetch() {
     return this._fetch;
+  }
+
+  public get address() {
+    return this.poolAddress;
   }
 
   public get rewardMint() {
@@ -210,22 +214,34 @@ export class NectarStaking extends Module {
 
   public reloadData() {
     return Promise.all([
-      this._fetch.multipliers().then((multipliers) => {
-        this._multipliers = multipliers;
-        return multipliers;
-      }),
-      this._fetch.staker().then((staker) => {
-        this._staker = staker;
-        return staker;
-      }),
-      this._fetch.availableNfts().then((nfts) => {
-        this._availableNfts = nfts;
-        return nfts;
-      }),
-      this._fetch.stakedNfts().then((nfts) => {
-        this._stakedNfts = nfts;
-        return nfts;
-      }),
+      this._fetch
+        .multipliers()
+        .then((multipliers) => {
+          this._multipliers = multipliers;
+          return multipliers;
+        })
+        .catch((e) => console.error(e)),
+      this._fetch
+        .staker()
+        .then((staker) => {
+          this._staker = staker;
+          return staker;
+        })
+        .catch((e) => console.error(e)),
+      this._fetch
+        .availableNfts()
+        .then((nfts) => {
+          this._availableNfts = nfts;
+          return nfts;
+        })
+        .catch((e) => console.error(e)),
+      this._fetch
+        .stakedNfts()
+        .then((nfts) => {
+          this._stakedNfts = nfts;
+          return nfts;
+        })
+        .catch((e) => console.error(e)),
     ]);
   }
 

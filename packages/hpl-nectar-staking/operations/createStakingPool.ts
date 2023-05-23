@@ -172,9 +172,7 @@ export async function createStakingPool(
   });
 
   return {
-    poolAddress: ctx.stakingPool,
-    response: honeycomb
-      .rpc()
-      .sendAndConfirmTransaction(ctx, { skipPreflight: true }),
+    ...(await honeycomb.rpc().sendAndConfirmTransaction(ctx)),
+    poolId: ctx.stakingPool,
   };
 }
