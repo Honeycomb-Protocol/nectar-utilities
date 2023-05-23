@@ -9,7 +9,7 @@
     "pre-push": "echo LFG",
     "publish-all": "node ./scripts/publishall.js",
     "compile": "tsc",
-    "post-compile": "yarn copy-packages",
+    "postcompile": "yarn copy-packages",
     "build:program": "anchor build",
     "build:sdk": "yarn solita && yarn compile",
     "build": "yarn build:program & yarn build:sdk",
