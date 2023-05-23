@@ -21,4 +21,4 @@ anchor-spl = "0.26.0"
 hpl-utils = "0.1.6"
 hpl-hive-control = { version="0.0.99", features = ["cpi"] }
 hpl-currency-manager = { version="0.0.2", features = ["cpi"] }
-hpl-nectar-staking = { path="../hpl-nectar-staking", features = ["cpi"] }
+hpl-nectar-staking = { version="0.0.35", path="../hpl-nectar-staking", features = ["cpi"] }
