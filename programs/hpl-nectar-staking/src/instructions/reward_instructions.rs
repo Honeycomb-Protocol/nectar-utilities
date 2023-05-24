@@ -1,80 +1,38 @@
 use {
     crate::{errors::ErrorCode, state::*},
     anchor_lang::prelude::*,
-    anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer},
+    anchor_spl::token::{Mint, Token, TokenAccount},
+    hpl_currency_manager::{
+        cpi::{accounts::TransferCurrency, transfer_currency},
+        program::HplCurrencyManager,
+        state::{Currency, HolderAccount},
+    },
     hpl_hive_control::state::{DelegateAuthority, Project},
 };
-
-/// Accounts used in fund rewards instruction
-#[derive(Accounts)]
-pub struct FundRewards<'info> {
-    /// StakingPool state account
-    #[account(has_one = project)]
-    pub staking_pool: Account<'info, StakingPool>,
-
-    /// Mint address of the reward token
-    #[account(mut, constraint = reward_mint.key() == staking_pool.reward_mint)]
-    pub reward_mint: Account<'info, Mint>,
-
-    /// Reward Vault
-    #[account(mut, constraint = reward_vault.key() == staking_pool.vault)]
-    pub reward_vault: Account<'info, TokenAccount>,
-
-    /// Payee token account
-    #[account(mut, constraint = token_account.mint == reward_mint.key() && token_account.owner == wallet.key())]
-    pub token_account: Account<'info, TokenAccount>,
-
-    /// The wallet that pays for the rent
-    #[account(mut)]
-    pub wallet: Signer<'info>,
-
-    /// NATIVE SYSTEM PROGRAM
-    pub system_program: Program<'info, System>,
-
-    /// NATIVE TOKEN PROGRAM
-    pub token_program: Program<'info, Token>,
-
-    // HIVE CONTROL
-    #[account()]
-    pub project: Box<Account<'info, Project>>,
-    /// CHECK: This is not dangerous because we don't read or write from this account
-    #[account(mut)]
-    pub vault: AccountInfo<'info>,
-}
-
-/// Fund rewards
-pub fn fund_rewards(ctx: Context<FundRewards>, amount: u64) -> Result<()> {
-    token::transfer(
-        CpiContext::new(
-            ctx.accounts.token_program.to_account_info(),
-            Transfer {
-                from: ctx.accounts.token_account.to_account_info(),
-                to: ctx.accounts.reward_vault.to_account_info(),
-                authority: ctx.accounts.wallet.to_account_info(),
-            },
-        ),
-        amount,
-    )?;
-    Ok(())
-}
 
 /// Accounts used in withdraw rewards instruction
 #[derive(Accounts)]
 pub struct WithdrawRewards<'info> {
     /// StakingPool state account
-    #[account(has_one = project)]
+    #[account(has_one = project, has_one = currency)]
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
-    /// Mint address of the reward token
-    #[account(mut, constraint = reward_mint.key() == staking_pool.reward_mint)]
-    pub reward_mint: Box<Account<'info, Mint>>,
+    #[account(has_one = mint)]
+    pub currency: Box<Account<'info, Currency>>,
 
-    /// Reward Vault
-    #[account(mut, constraint = reward_vault.key() == staking_pool.vault)]
-    pub reward_vault: Account<'info, TokenAccount>,
+    #[account()]
+    pub mint: Box<Account<'info, Mint>>,
 
-    /// Payee token account
-    #[account(mut, constraint = token_account.mint == reward_mint.key())]
+    #[account(has_one = currency, constraint = vault_holder_account.token_account == vault_token_account.key() && vault_holder_account.owner == staking_pool.key())]
+    pub vault_holder_account: Box<Account<'info, HolderAccount>>,
+
+    #[account(mut)]
+    pub vault_token_account: Box<Account<'info, TokenAccount>>,
+
+    #[account(has_one = currency, has_one = token_account)]
+    pub holder_account: Account<'info, HolderAccount>,
+
+    #[account(mut)]
     pub token_account: Account<'info, TokenAccount>,
 
     /// The wallet that holds authority for this action
@@ -99,6 +57,7 @@ pub struct WithdrawRewards<'info> {
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(mut)]
     pub vault: AccountInfo<'info>,
+    pub currency_manager_program: Program<'info, HplCurrencyManager>,
 }
 
 /// Withdraw rewards
@@ -110,14 +69,18 @@ pub fn withdraw_rewards(ctx: Context<WithdrawRewards>, amount: u64) -> Result<()
         &[ctx.accounts.staking_pool.bump],
     ];
     let pool_signer = &[&pool_seeds[..]];
-
-    token::transfer(
+    transfer_currency(
         CpiContext::new_with_signer(
-            ctx.accounts.token_program.to_account_info(),
-            Transfer {
-                from: ctx.accounts.reward_vault.to_account_info(),
-                to: ctx.accounts.token_account.to_account_info(),
-                authority: ctx.accounts.staking_pool.to_account_info(),
+            ctx.accounts.currency_manager_program.to_account_info(),
+            TransferCurrency {
+                currency: ctx.accounts.currency.to_account_info(),
+                mint: ctx.accounts.mint.to_account_info(),
+                sender_holder_account: ctx.accounts.vault_holder_account.to_account_info(),
+                sender_token_account: ctx.accounts.vault_token_account.to_account_info(),
+                receiver_holder_account: ctx.accounts.holder_account.to_account_info(),
+                receiver_token_account: ctx.accounts.token_account.to_account_info(),
+                owner: ctx.accounts.staking_pool.to_account_info(),
+                token_program: ctx.accounts.token_program.to_account_info(),
             },
             pool_signer,
         ),
@@ -130,7 +93,7 @@ pub fn withdraw_rewards(ctx: Context<WithdrawRewards>, amount: u64) -> Result<()
 #[derive(Accounts)]
 pub struct ClaimRewards<'info> {
     /// StakingPool state account
-    #[account(has_one = project)]
+    #[account(has_one = project, has_one = currency)]
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// Multpliers state account
@@ -141,16 +104,22 @@ pub struct ClaimRewards<'info> {
     #[account(mut, has_one = staking_pool, has_one = staker)]
     pub nft: Box<Account<'info, NFT>>,
 
-    /// Mint address of the reward token
-    #[account(mut, constraint = reward_mint.key() == staking_pool.reward_mint)]
-    pub reward_mint: Box<Account<'info, Mint>>,
+    #[account(has_one = mint)]
+    pub currency: Box<Account<'info, Currency>>,
 
-    /// Reward Vault
-    #[account(mut, constraint = reward_vault.key() == staking_pool.vault)]
-    pub reward_vault: Box<Account<'info, TokenAccount>>,
+    #[account()]
+    pub mint: Box<Account<'info, Mint>>,
 
-    /// Payee token account
-    #[account(mut, constraint = token_account.mint == reward_mint.key() && token_account.owner == wallet.key())]
+    #[account(has_one = currency, constraint = vault_holder_account.token_account == vault_token_account.key() && vault_holder_account.owner == staking_pool.key())]
+    pub vault_holder_account: Box<Account<'info, HolderAccount>>,
+
+    #[account(mut)]
+    pub vault_token_account: Box<Account<'info, TokenAccount>>,
+
+    #[account(has_one = currency, has_one = token_account, constraint = holder_account.owner == wallet.key())]
+    pub holder_account: Account<'info, HolderAccount>,
+
+    #[account(mut)]
     pub token_account: Account<'info, TokenAccount>,
 
     /// Staker state account
@@ -176,6 +145,7 @@ pub struct ClaimRewards<'info> {
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(mut)]
     pub vault: AccountInfo<'info>,
+    pub currency_manager_program: Program<'info, HplCurrencyManager>,
 }
 
 /// Claim rewards
@@ -280,13 +250,18 @@ pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
     ];
     let pool_signer = &[&pool_seeds[..]];
 
-    token::transfer(
+    transfer_currency(
         CpiContext::new_with_signer(
-            ctx.accounts.token_program.to_account_info(),
-            Transfer {
-                from: ctx.accounts.reward_vault.to_account_info(),
-                to: ctx.accounts.token_account.to_account_info(),
-                authority: staking_pool.to_account_info(),
+            ctx.accounts.currency_manager_program.to_account_info(),
+            TransferCurrency {
+                currency: ctx.accounts.currency.to_account_info(),
+                mint: ctx.accounts.mint.to_account_info(),
+                sender_holder_account: ctx.accounts.vault_holder_account.to_account_info(),
+                sender_token_account: ctx.accounts.vault_token_account.to_account_info(),
+                receiver_holder_account: ctx.accounts.holder_account.to_account_info(),
+                receiver_token_account: ctx.accounts.token_account.to_account_info(),
+                owner: ctx.accounts.staking_pool.to_account_info(),
+                token_program: ctx.accounts.token_program.to_account_info(),
             },
             pool_signer,
         ),

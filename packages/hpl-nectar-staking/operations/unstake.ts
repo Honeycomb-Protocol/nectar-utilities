@@ -110,7 +110,7 @@ export async function createUnstakeCtx(
     wallet: honeycomb.identity().publicKey,
     connection: honeycomb.connection,
     project: honeycomb.project().projectAddress,
-    stakingPool: honeycomb.staking().pool(),
+    stakingPool: honeycomb.staking(),
     nft: args.nft,
     multipliers: args.multipliers?.address,
     isFirst: args.isFirst,

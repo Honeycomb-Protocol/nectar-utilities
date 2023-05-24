@@ -189,16 +189,16 @@ pub struct CollectRewards<'info> {
     pub nft: Box<Account<'info, NFT>>,
 
     #[account(has_one = mint)]
-    pub currency: Option<Account<'info, Currency>>,
+    pub currency: Option<Box<Account<'info, Currency>>>,
 
     #[account()]
-    pub mint: Option<Account<'info, Mint>>,
+    pub mint: Option<Box<Account<'info, Mint>>>,
 
     #[account(has_one = currency, constraint = vault_token_account.is_some() && vault_holder_account.token_account == vault_token_account.clone().unwrap().key() && vault_holder_account.owner == mission_pool.key())]
-    pub vault_holder_account: Option<Account<'info, HolderAccount>>,
+    pub vault_holder_account: Option<Box<Account<'info, HolderAccount>>>,
 
     #[account()]
-    pub vault_token_account: Option<Account<'info, TokenAccount>>,
+    pub vault_token_account: Option<Box<Account<'info, TokenAccount>>>,
 
     #[account(has_one = currency, has_one = token_account, constraint = holder_account.owner == wallet.key())]
     pub holder_account: Option<Account<'info, HolderAccount>>,

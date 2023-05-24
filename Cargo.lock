@@ -1013,6 +1013,7 @@ version = "0.0.35"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
+ "hpl-currency-manager",
  "hpl-hive-control 0.0.99",
  "hpl-utils",
  "mpl-token-metadata",

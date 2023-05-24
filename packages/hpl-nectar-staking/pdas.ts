@@ -49,17 +49,6 @@ export const getStakingPoolPda = (
   );
 };
 
-export const getVaultPda = (
-  pool: web3.PublicKey,
-  rewardMint: web3.PublicKey,
-  programId: web3.PublicKey = PROGRAM_ID
-) => {
-  return web3.PublicKey.findProgramAddressSync(
-    [Buffer.from("vault"), pool.toBuffer(), rewardMint.toBuffer()],
-    programId
-  );
-};
-
 export const getStakerPda = (
   pool: web3.PublicKey,
   wallet: web3.PublicKey,

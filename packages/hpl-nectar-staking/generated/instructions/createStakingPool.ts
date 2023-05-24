@@ -42,8 +42,7 @@ export const createStakingPoolStruct = new beet.FixableBeetArgsStruct<
  *
  * @property [] key
  * @property [_writable_] stakingPool
- * @property [] rewardMint
- * @property [_writable_] rewardVault
+ * @property [] currency
  * @property [_writable_] project
  * @property [] delegateAuthority (optional)
  * @property [**signer**] authority
@@ -58,8 +57,7 @@ export const createStakingPoolStruct = new beet.FixableBeetArgsStruct<
 export type CreateStakingPoolInstructionAccounts = {
   key: web3.PublicKey
   stakingPool: web3.PublicKey
-  rewardMint: web3.PublicKey
-  rewardVault: web3.PublicKey
+  currency: web3.PublicKey
   project: web3.PublicKey
   delegateAuthority?: web3.PublicKey
   authority: web3.PublicKey
@@ -112,13 +110,8 @@ export function createCreateStakingPoolInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.rewardMint,
+      pubkey: accounts.currency,
       isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.rewardVault,
-      isWritable: true,
       isSigner: false,
     },
     {

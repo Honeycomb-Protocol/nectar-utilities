@@ -26,14 +26,18 @@ export const claimRewardsStruct = new beet.BeetArgsStruct<{
  * @property [] stakingPool
  * @property [] multipliers (optional)
  * @property [_writable_] nft
- * @property [_writable_] rewardMint
- * @property [_writable_] rewardVault
+ * @property [] currency
+ * @property [] mint
+ * @property [] vaultHolderAccount
+ * @property [_writable_] vaultTokenAccount
+ * @property [] holderAccount
  * @property [_writable_] tokenAccount
  * @property [_writable_] staker
  * @property [_writable_, **signer**] wallet
  * @property [] clock
  * @property [] project
  * @property [_writable_] vault
+ * @property [] currencyManagerProgram
  * @category Instructions
  * @category ClaimRewards
  * @category generated
@@ -42,8 +46,11 @@ export type ClaimRewardsInstructionAccounts = {
   stakingPool: web3.PublicKey
   multipliers?: web3.PublicKey
   nft: web3.PublicKey
-  rewardMint: web3.PublicKey
-  rewardVault: web3.PublicKey
+  currency: web3.PublicKey
+  mint: web3.PublicKey
+  vaultHolderAccount: web3.PublicKey
+  vaultTokenAccount: web3.PublicKey
+  holderAccount: web3.PublicKey
   tokenAccount: web3.PublicKey
   staker: web3.PublicKey
   wallet: web3.PublicKey
@@ -52,6 +59,7 @@ export type ClaimRewardsInstructionAccounts = {
   clock: web3.PublicKey
   project: web3.PublicKey
   vault: web3.PublicKey
+  currencyManagerProgram: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -100,13 +108,28 @@ export function createClaimRewardsInstruction(
     isSigner: false,
   })
   keys.push({
-    pubkey: accounts.rewardMint,
+    pubkey: accounts.currency,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.mint,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.vaultHolderAccount,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.vaultTokenAccount,
     isWritable: true,
     isSigner: false,
   })
   keys.push({
-    pubkey: accounts.rewardVault,
-    isWritable: true,
+    pubkey: accounts.holderAccount,
+    isWritable: false,
     isSigner: false,
   })
   keys.push({
@@ -147,6 +170,11 @@ export function createClaimRewardsInstruction(
   keys.push({
     pubkey: accounts.vault,
     isWritable: true,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.currencyManagerProgram,
+    isWritable: false,
     isSigner: false,
   })
 

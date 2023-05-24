@@ -3,7 +3,7 @@ import { Metaplex, Nft, walletAdapterIdentity } from "@metaplex-foundation/js";
 import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import { Honeycomb, HoneycombProject } from "@honeycomb-protocol/hive-control";
 import {
-  CurrencyType,
+  PermissionedCurrencyKind,
   HplCurrency,
 } from "@honeycomb-protocol/currency-manager";
 import { MerkleTree, NectarMissions } from "../packages/hpl-nectar-missions";
@@ -12,7 +12,7 @@ import { prepare } from "./prepare";
 jest.setTimeout(200000);
 
 describe("Nectar Missions", () => {
-  const totalNfts = 2;
+  const totalNfts = 10;
 
   let honeycomb: Honeycomb;
   let metaplex: Metaplex;
@@ -100,7 +100,7 @@ describe("Nectar Missions", () => {
       await HplCurrency.new(honeycomb, {
         name: "COIN",
         symbol: "CTC",
-        currencyType: CurrencyType.NonCustodial,
+        kind: PermissionedCurrencyKind.NonCustodial,
         decimals: 9,
         uri: "https://arweave.net/QPC6FYdUn-3V8ytFNuoCS85S2tHAuiDblh6u3CIZLsw",
       })
@@ -123,9 +123,7 @@ describe("Nectar Missions", () => {
           endTime: null,
           lockType: LockType.Freeze,
         },
-        rewardMint: new web3.PublicKey(
-          "DYMs37sUJz65KmYa31Wzj2TKcTe5M5rhvdkKgcKWiEAs"
-        ),
+        currency: honeycomb.currency().address,
         collections: [collection.mint.address],
         multipliersDecimals: 3,
       })
@@ -185,6 +183,10 @@ describe("Nectar Missions", () => {
           ),
         }))
       );
+  });
+
+  it("Recall and unstake", async () => {
+    const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     const participations = await honeycomb.missions().fetch().participations();
 
     expect(participations.length).toBe(2);
@@ -196,5 +198,7 @@ describe("Nectar Missions", () => {
       .missions()
       .mission("QuickPost")
       .recall(...participations);
+
+    await honeycomb.staking().unstake(...stakedNfts);
   });
 });

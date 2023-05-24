@@ -155,21 +155,6 @@ pub mod hpl_nectar_staking {
         instructions::unstake(ctx)
     }
 
-    pub fn fund_rewards(ctx: Context<FundRewards>, amount: u64) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate_fn(
-            hpl_hive_control::constants::ACTIONS.public_low,
-            None,
-            &ctx.accounts.project,
-            ctx.accounts.wallet.key(),
-            ctx.accounts.wallet.to_account_info(),
-            ctx.accounts.vault.to_account_info(),
-            &None,
-            ctx.accounts.system_program.to_account_info(),
-        )?;
-
-        instructions::fund_rewards(ctx, amount)
-    }
-
     pub fn withdraw_rewards(ctx: Context<WithdrawRewards>, amount: u64) -> Result<()> {
         hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.withdraw_staking_pool_rewards,

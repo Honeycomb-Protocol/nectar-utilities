@@ -9,7 +9,7 @@ pub struct StakingPool {
     pub key: Pubkey,
 
     /// The mint of the token distributed to stakers
-    pub reward_mint: Pubkey,
+    pub currency: Pubkey,
 
     /// The account owning tokens distributed to stakers
     pub vault: Pubkey,
@@ -64,7 +64,7 @@ impl Default for StakingPool {
         self.vault_bump = 0;
         self.project = Pubkey::default();
         self.key = Pubkey::default();
-        self.reward_mint = Pubkey::default();
+        self.currency = Pubkey::default();
         self.vault = Pubkey::default();
         self.lock_type = LockType::Freeze;
         self.name = "".to_string();

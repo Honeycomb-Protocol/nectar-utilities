@@ -8,7 +8,7 @@ import {
 } from "@honeycomb-protocol/hive-control";
 import {
   PROGRAM_ID as CURRENCY_MANAGER_PROGRAM_ID,
-  CurrencyType,
+  CurrencyKind,
   holderAccountPdas,
 } from "@honeycomb-protocol/currency-manager";
 import {
@@ -26,7 +26,7 @@ type CreateCollectRewardsCtxArgs = {
   participation: PublicKey;
   nft: PublicKey;
   currency?: PublicKey;
-  currencyType?: CurrencyType;
+  currencyKind?: CurrencyKind;
   mint?: PublicKey;
   wallet: PublicKey;
   programId?: PublicKey;
@@ -44,7 +44,7 @@ export function createCollectRewardsCtx(
     const vault = holderAccountPdas(
       args.missionPool,
       args.mint,
-      args.currencyType,
+      args.currencyKind,
       TOKEN_PROGRAM_ID,
       programId
     );
@@ -54,7 +54,7 @@ export function createCollectRewardsCtx(
     const user = holderAccountPdas(
       args.wallet,
       args.mint,
-      args.currencyType,
+      args.currencyKind,
       TOKEN_PROGRAM_ID,
       programId
     );
@@ -140,7 +140,7 @@ export async function recall(
           participation: participation.address,
           nft: participation.nftAddress,
           currency: reward.isCurrency() && reward.currency().address,
-          currencyType: reward.isCurrency() && reward.currency().currencyType,
+          currencyKind: reward.isCurrency() && reward.currency().kind,
           mint: reward.isCurrency() && reward.currency().mint,
           wallet: honeycomb.identity().publicKey,
           programId: args.programId,

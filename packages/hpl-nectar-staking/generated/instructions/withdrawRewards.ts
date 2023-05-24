@@ -37,22 +37,29 @@ export const withdrawRewardsStruct = new beet.BeetArgsStruct<
  * Accounts required by the _withdrawRewards_ instruction
  *
  * @property [] stakingPool
- * @property [_writable_] rewardMint
- * @property [_writable_] rewardVault
+ * @property [] currency
+ * @property [] mint
+ * @property [] vaultHolderAccount
+ * @property [_writable_] vaultTokenAccount
+ * @property [] holderAccount
  * @property [_writable_] tokenAccount
  * @property [**signer**] authority
  * @property [_writable_, **signer**] payer
  * @property [] project
  * @property [] delegateAuthority (optional)
  * @property [_writable_] vault
+ * @property [] currencyManagerProgram
  * @category Instructions
  * @category WithdrawRewards
  * @category generated
  */
 export type WithdrawRewardsInstructionAccounts = {
   stakingPool: web3.PublicKey
-  rewardMint: web3.PublicKey
-  rewardVault: web3.PublicKey
+  currency: web3.PublicKey
+  mint: web3.PublicKey
+  vaultHolderAccount: web3.PublicKey
+  vaultTokenAccount: web3.PublicKey
+  holderAccount: web3.PublicKey
   tokenAccount: web3.PublicKey
   authority: web3.PublicKey
   payer: web3.PublicKey
@@ -61,6 +68,7 @@ export type WithdrawRewardsInstructionAccounts = {
   project: web3.PublicKey
   delegateAuthority?: web3.PublicKey
   vault: web3.PublicKey
+  currencyManagerProgram: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -99,13 +107,28 @@ export function createWithdrawRewardsInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.rewardMint,
+      pubkey: accounts.currency,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.mint,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.vaultHolderAccount,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.vaultTokenAccount,
       isWritable: true,
       isSigner: false,
     },
     {
-      pubkey: accounts.rewardVault,
-      isWritable: true,
+      pubkey: accounts.holderAccount,
+      isWritable: false,
       isSigner: false,
     },
     {
@@ -150,6 +173,11 @@ export function createWithdrawRewardsInstruction(
   keys.push({
     pubkey: accounts.vault,
     isWritable: true,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.currencyManagerProgram,
+    isWritable: false,
     isSigner: false,
   })
 

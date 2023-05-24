@@ -1,25 +1,24 @@
 import * as web3 from "@solana/web3.js";
-import * as splToken from "@solana/spl-token";
-import {
-  createClaimRewardsInstruction,
-  StakingPool,
-  PROGRAM_ID,
-} from "../generated";
+import { createClaimRewardsInstruction, PROGRAM_ID } from "../generated";
 import { Honeycomb, createCtx } from "@honeycomb-protocol/hive-control";
 import {
-  getNftPda,
-  getStakerPda,
-  getStakingPoolPda,
-  getVaultPda,
-} from "../pdas";
+  PROGRAM_ID as HPL_CURRENCY_MANAGER_PROGRAM_ID,
+  CurrencyKind,
+  holderAccountPdas,
+  createCreateHolderAccountCtx,
+} from "@honeycomb-protocol/currency-manager";
+import { getNftPda, getStakerPda } from "../pdas";
 import { VAULT } from "@honeycomb-protocol/hive-control";
 import { StakedNft } from "../types";
+import { NectarStaking } from "../NectarStaking";
 
 type CreateClaimRewardsInstructionArgs = {
   project: web3.PublicKey;
   stakingPool: web3.PublicKey;
   nftMint: web3.PublicKey;
-  rewardMint: web3.PublicKey;
+  currency: web3.PublicKey;
+  currencyKind: CurrencyKind;
+  currencyMint: web3.PublicKey;
   wallet: web3.PublicKey;
   multipliers?: web3.PublicKey;
   programId?: web3.PublicKey;
@@ -31,16 +30,15 @@ function createClaimRewardsInstructionV2(
   const programId = args.programId || PROGRAM_ID;
 
   const [nft] = getNftPda(args.stakingPool, args.nftMint, programId);
-  const [rewardVault] = getVaultPda(
-    args.stakingPool,
-    args.rewardMint,
-    programId
-  );
   const [staker] = getStakerPda(args.stakingPool, args.wallet, programId);
 
-  const tokenAccount = splToken.getAssociatedTokenAddressSync(
-    args.rewardMint,
-    args.wallet
+  const { holderAccount: vaultHolderAccount, tokenAccount: vaultTokenAccount } =
+    holderAccountPdas(args.stakingPool, args.currencyMint, args.currencyKind);
+
+  const { holderAccount, tokenAccount } = holderAccountPdas(
+    args.wallet,
+    args.currencyMint,
+    args.currencyKind
   );
 
   return createClaimRewardsInstruction(
@@ -50,12 +48,16 @@ function createClaimRewardsInstructionV2(
       stakingPool: args.stakingPool,
       multipliers: args.multipliers || programId,
       nft,
-      rewardMint: args.rewardMint,
-      rewardVault,
+      currency: args.currency,
+      mint: args.currencyMint,
+      vaultHolderAccount,
+      vaultTokenAccount,
+      holderAccount,
       tokenAccount,
       staker,
       wallet: args.wallet,
       clock: web3.SYSVAR_CLOCK_PUBKEY,
+      currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
     },
     programId
   );
@@ -64,7 +66,7 @@ function createClaimRewardsInstructionV2(
 type CreateClaimRewardsCtxArgs = {
   connection: web3.Connection;
   project: web3.PublicKey;
-  stakingPool: StakingPool;
+  stakingPool: NectarStaking;
   nft: StakedNft;
   wallet: web3.PublicKey;
   multipliers?: web3.PublicKey;
@@ -78,27 +80,18 @@ export async function createClaimRewardsCtx({
 }: CreateClaimRewardsCtxArgs) {
   const instructions: web3.TransactionInstruction[] = [];
 
-  const [stakingPoolAddress] = getStakingPoolPda(
-    args.stakingPool.project,
-    args.stakingPool.key,
-    args.programId
-  );
-
   if (args.isFirst) {
-    const rewardTokenAccount = splToken.getAssociatedTokenAddressSync(
-      args.stakingPool.rewardMint,
-      args.wallet
-    );
     try {
-      await splToken.getAccount(connection, rewardTokenAccount);
+      await args.stakingPool.currency().fetch().holderAccount(args.wallet);
     } catch {
       instructions.push(
-        splToken.createAssociatedTokenAccountInstruction(
-          args.wallet,
-          rewardTokenAccount,
-          args.wallet,
-          args.stakingPool.rewardMint
-        )
+        ...createCreateHolderAccountCtx({
+          currency: args.stakingPool.currency().address,
+          currencyKind: args.stakingPool.currency().kind,
+          mint: args.stakingPool.currency().mint,
+          owner: args.wallet,
+          payer: args.wallet,
+        }).tx.instructions
       );
     }
   }
@@ -106,9 +99,11 @@ export async function createClaimRewardsCtx({
   instructions.push(
     createClaimRewardsInstructionV2({
       project: args.project,
-      stakingPool: stakingPoolAddress,
+      stakingPool: args.stakingPool.currency().address,
       nftMint: args.nft.mintAddress,
-      rewardMint: args.stakingPool.rewardMint,
+      currency: args.stakingPool.currency().address,
+      currencyKind: args.stakingPool.currency().kind,
+      currencyMint: args.stakingPool.currency().mint,
       wallet: args.wallet,
       multipliers: args.multipliers,
       programId: args.programId,
@@ -119,6 +114,7 @@ export async function createClaimRewardsCtx({
 }
 
 type ClaimRewardsArgs = {
+  staking?: NectarStaking;
   nfts: StakedNft[];
   programId?: web3.PublicKey;
 };
@@ -136,8 +132,8 @@ export async function claimRewards(
     args.nfts.map((nft, i) =>
       createClaimRewardsCtx({
         connection: honeycomb.connection,
-        project: honeycomb.project().projectAddress,
-        stakingPool: honeycomb.staking().pool(),
+        project: (args.staking || honeycomb.staking()).project().address,
+        stakingPool: args.staking || honeycomb.staking(),
         nft,
         wallet: wallet.publicKey,
         multipliers: multipliers?.address,

@@ -19,7 +19,6 @@ import {
   fetchRewards,
   fetchStakedNfts,
   fetchStaker,
-  fundRewards,
   initNft,
   initStaker,
   stake,
@@ -39,7 +38,7 @@ declare module "@honeycomb-protocol/hive-control" {
 
 type NewStakingPoolArgs = {
   args: CreateStakingPoolArgs;
-  rewardMint: web3.PublicKey;
+  currency: web3.PublicKey;
   collections?: web3.PublicKey[];
   creators?: web3.PublicKey[];
   multipliers?: AddMultiplierArgs[];
@@ -108,10 +107,6 @@ export class NectarStaking extends Module {
     return this.poolAddress;
   }
 
-  public get rewardMint() {
-    return this._pool.rewardMint;
-  }
-
   public get vault() {
     return this._pool.vault;
   }
@@ -170,6 +165,14 @@ export class NectarStaking extends Module {
 
   public get creators() {
     return this._pool.creators;
+  }
+
+  public project() {
+    return this._honeycomb.project(this._pool.project);
+  }
+
+  public currency() {
+    return this._honeycomb.currency(this._pool.currency);
   }
 
   public multipliers() {
@@ -255,13 +258,6 @@ export class NectarStaking extends Module {
   public addMultiplier(args: AddMultiplierArgs) {
     return addMultiplier(this, {
       args,
-      programId: this.programId,
-    });
-  }
-
-  public fundRewards(amount: number) {
-    return fundRewards(this, {
-      amount,
       programId: this.programId,
     });
   }

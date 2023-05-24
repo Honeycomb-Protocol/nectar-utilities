@@ -20,7 +20,7 @@ export type StakingPoolArgs = {
   vaultBump: number
   project: web3.PublicKey
   key: web3.PublicKey
-  rewardMint: web3.PublicKey
+  currency: web3.PublicKey
   vault: web3.PublicKey
   lockType: LockType
   name: string
@@ -52,7 +52,7 @@ export class StakingPool implements StakingPoolArgs {
     readonly vaultBump: number,
     readonly project: web3.PublicKey,
     readonly key: web3.PublicKey,
-    readonly rewardMint: web3.PublicKey,
+    readonly currency: web3.PublicKey,
     readonly vault: web3.PublicKey,
     readonly lockType: LockType,
     readonly name: string,
@@ -79,7 +79,7 @@ export class StakingPool implements StakingPoolArgs {
       args.vaultBump,
       args.project,
       args.key,
-      args.rewardMint,
+      args.currency,
       args.vault,
       args.lockType,
       args.name,
@@ -207,7 +207,7 @@ export class StakingPool implements StakingPoolArgs {
       vaultBump: this.vaultBump,
       project: this.project.toBase58(),
       key: this.key.toBase58(),
-      rewardMint: this.rewardMint.toBase58(),
+      currency: this.currency.toBase58(),
       vault: this.vault.toBase58(),
       lockType: 'LockType.' + LockType[this.lockType],
       name: this.name,
@@ -273,7 +273,7 @@ export const stakingPoolBeet = new beet.FixableBeetStruct<
     ['vaultBump', beet.u8],
     ['project', beetSolana.publicKey],
     ['key', beetSolana.publicKey],
-    ['rewardMint', beetSolana.publicKey],
+    ['currency', beetSolana.publicKey],
     ['vault', beetSolana.publicKey],
     ['lockType', lockTypeBeet],
     ['name', beet.utf8String],

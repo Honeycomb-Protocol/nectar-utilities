@@ -8,7 +8,7 @@ import {
 import { createUpdatePoolCtx } from "./updateStakingPool";
 import { createInitMultiplierCtx } from "./initMultipliers";
 import { createAddMultiplierCtx } from "./addMultiplier";
-import { getStakingPoolPda, getVaultPda } from "../pdas";
+import { getStakingPoolPda } from "../pdas";
 import {
   VAULT,
   HIVECONTROL_PROGRAM_ID,
@@ -19,7 +19,7 @@ import {
 
 type CreateCreateProjectCtxArgs = {
   project: web3.PublicKey;
-  rewardMint: web3.PublicKey;
+  currency: web3.PublicKey;
   authority: web3.PublicKey;
   payer: web3.PublicKey;
   args: CreateStakingPoolArgs;
@@ -38,7 +38,6 @@ export function createCreateProjectCtx(
 
   const key = web3.Keypair.generate().publicKey;
   const [stakingPool] = getStakingPoolPda(args.project, key, programId);
-  const [rewardVault] = getVaultPda(stakingPool, args.rewardMint, programId);
 
   const instructions: web3.TransactionInstruction[] = [
     createCreateStakingPoolInstruction(
@@ -47,8 +46,7 @@ export function createCreateProjectCtx(
         vault: VAULT,
         key,
         stakingPool,
-        rewardMint: args.rewardMint,
-        rewardVault,
+        currency: args.currency,
         delegateAuthority: args.delegateAuthority || programId,
         authority: args.authority,
         payer: args.payer,
@@ -144,7 +142,8 @@ export function createCreateProjectCtx(
 }
 
 type CreateProjectArgs = {
-  rewardMint: web3.PublicKey;
+  project?: web3.PublicKey;
+  currency: web3.PublicKey;
   args: CreateStakingPoolArgs;
   collections?: web3.PublicKey[];
   creators?: web3.PublicKey[];
@@ -158,11 +157,11 @@ export async function createStakingPool(
 ) {
   const wallet = honeycomb.identity();
   const ctx = createCreateProjectCtx({
-    project: honeycomb.project().projectAddress,
-    rewardMint: args.rewardMint,
+    args: args.args,
+    project: args.project || honeycomb.project().projectAddress,
+    currency: args.currency,
     authority: wallet.publicKey,
     payer: wallet.publicKey,
-    args: args.args,
     collections: args.collections || [],
     creators: args.creators || [],
     multipliers: args.multipliers || [],
@@ -172,7 +171,9 @@ export async function createStakingPool(
   });
 
   return {
-    ...(await honeycomb.rpc().sendAndConfirmTransaction(ctx)),
+    ...(await honeycomb
+      .rpc()
+      .sendAndConfirmTransaction(ctx, { skipPreflight: true })),
     poolId: ctx.stakingPool,
   };
 }

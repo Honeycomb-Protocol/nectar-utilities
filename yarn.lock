@@ -706,10 +706,10 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
-"@honeycomb-protocol/currency-manager@^0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@honeycomb-protocol/currency-manager/-/currency-manager-0.0.4.tgz#78a61b2d79cdf91ea179705d6938831987451a0b"
-  integrity sha512-Rdml3VPFJ34NZ8jABjYwhGBFp0zAVUewRwOtZlPKQtvabcIiPw1sLELP1w6R8G4UKEkCzH/82pbNgW+LWWGZgg==
+"@honeycomb-protocol/currency-manager@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@honeycomb-protocol/currency-manager/-/currency-manager-0.0.5.tgz#2606673421098ec4b00403dfe8d28ecde1362743"
+  integrity sha512-u90Itnkn+T07de476/eCYEjBI+ksByAOJXU4FjrU8zR8UxPqG9FGDymKL+8BEgvkPgylvhBy+UiS3138DBJT9Q==
 
 "@honeycomb-protocol/hive-control@0.0.98":
   version "0.0.98"

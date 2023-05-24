@@ -1,7 +1,8 @@
 use {
     crate::state::*,
     anchor_lang::prelude::*,
-    anchor_spl::token::{self, Mint, Token, TokenAccount},
+    anchor_spl::token::{self, Mint, Token},
+    hpl_currency_manager::state::Currency,
     hpl_hive_control::{
         program::HplHiveControl,
         state::{DelegateAuthority, Project},
@@ -28,22 +29,8 @@ pub struct CreateStakingPool<'info> {
     )]
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
-    /// Reward mint address to be used for the staking_pool
-    pub reward_mint: Box<Account<'info, Mint>>,
-
-    /// Reward token account used as vault
-    #[account(
-      init, payer = payer,
-      seeds = [
-        b"vault",
-        staking_pool.key().as_ref(),
-        reward_mint.key().as_ref()
-      ],
-      bump,
-      token::mint = reward_mint,
-      token::authority = staking_pool
-    )]
-    pub reward_vault: Account<'info, TokenAccount>,
+    /// Currency to be used for the staking_pool
+    pub currency: Box<Account<'info, Currency>>,
 
     /// HIVE CONTROL
     #[account(mut)]
@@ -103,8 +90,7 @@ pub fn create_staking_pool(
     staking_pool.vault_bump = ctx.bumps["reward_vault"];
     staking_pool.project = ctx.accounts.project.key();
     staking_pool.key = ctx.accounts.key.key();
-    staking_pool.reward_mint = ctx.accounts.reward_mint.key();
-    staking_pool.vault = ctx.accounts.reward_vault.key();
+    staking_pool.currency = ctx.accounts.currency.key();
     staking_pool.name = args.name;
     staking_pool.lock_type = args.lock_type.unwrap_or(LockType::Freeze);
     staking_pool.rewards_per_duration = args.rewards_per_duration;

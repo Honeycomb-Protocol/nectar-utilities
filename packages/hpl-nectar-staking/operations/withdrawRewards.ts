@@ -1,14 +1,20 @@
 import * as web3 from "@solana/web3.js";
-import * as splToken from "@solana/spl-token";
 import { createWithdrawRewardsInstruction, PROGRAM_ID } from "../generated";
-import { getVaultPda } from "../pdas";
 import { VAULT, createCtx } from "@honeycomb-protocol/hive-control";
+import {
+  PROGRAM_ID as HPL_CURRENCY_MANAGER_PROGRAM_ID,
+  CurrencyKind,
+  holderAccountPdas,
+} from "@honeycomb-protocol/currency-manager";
 import { NectarStaking } from "../NectarStaking";
 
 type CreateWithdrawRewardsCrx = {
   project: web3.PublicKey;
   stakingPool: web3.PublicKey;
-  rewardMint: web3.PublicKey;
+  currency: web3.PublicKey;
+  currencyKind: CurrencyKind;
+  mint: web3.PublicKey;
+  receiverWallet: web3.PublicKey;
   authority: web3.PublicKey;
   payer: web3.PublicKey;
   amount: number;
@@ -18,15 +24,13 @@ type CreateWithdrawRewardsCrx = {
 
 export function createWithdrawRewardsCtx(args: CreateWithdrawRewardsCrx) {
   const programId = args.programId || PROGRAM_ID;
-  const [rewardVault] = getVaultPda(
-    args.stakingPool,
-    args.rewardMint,
-    programId
-  );
 
-  const tokenAccount = splToken.getAssociatedTokenAddressSync(
-    args.rewardMint,
-    args.authority
+  const { holderAccount: vaultHolderAccount, tokenAccount: vaultTokenAccount } =
+    holderAccountPdas(args.stakingPool, args.mint, args.currencyKind);
+  const { holderAccount, tokenAccount } = holderAccountPdas(
+    args.receiverWallet,
+    args.mint,
+    args.currencyKind
   );
 
   const instructions: web3.TransactionInstruction[] = [
@@ -35,12 +39,16 @@ export function createWithdrawRewardsCtx(args: CreateWithdrawRewardsCrx) {
         project: args.project,
         vault: VAULT,
         stakingPool: args.stakingPool,
-        rewardMint: args.rewardMint,
-        rewardVault,
+        currency: args.currency,
+        mint: args.mint,
+        vaultHolderAccount,
+        vaultTokenAccount,
+        holderAccount,
         tokenAccount,
         delegateAuthority: args.delegateAuthority || programId,
         authority: args.authority,
         payer: args.payer,
+        currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
       },
       {
         amount: args.amount,
@@ -54,6 +62,7 @@ export function createWithdrawRewardsCtx(args: CreateWithdrawRewardsCrx) {
 
 type WithdrawRewardsArgs = {
   amount: number;
+  receiverWallet?: web3.PublicKey;
   programId?: web3.PublicKey;
 };
 export async function withdrawRewards(
@@ -64,7 +73,10 @@ export async function withdrawRewards(
   const ctx = createWithdrawRewardsCtx({
     project: staking.pool().project,
     stakingPool: staking.poolAddress,
-    rewardMint: staking.rewardMint,
+    currency: staking.currency().address,
+    currencyKind: staking.currency().kind,
+    mint: staking.currency().mint,
+    receiverWallet: args.receiverWallet || wallet.publicKey,
     authority: wallet.publicKey,
     payer: wallet.publicKey,
     amount: args.amount,
