@@ -4,7 +4,7 @@ use {anchor_lang::prelude::*, hpl_utils::traits::*};
 #[account]
 pub struct StakingPool {
     pub bump: u8,
-    pub vault_bump: u8,
+    pub temp_place_holder_1: u8,
     pub project: Pubkey,
     pub key: Pubkey,
 
@@ -12,7 +12,7 @@ pub struct StakingPool {
     pub currency: Pubkey,
 
     /// The account owning tokens distributed to stakers
-    pub vault: Pubkey,
+    pub temp_place_holder_2: Pubkey,
 
     /// Lock type { Freeze, Custody }
     pub lock_type: LockType,
@@ -61,11 +61,11 @@ impl Default for StakingPool {
 
     fn set_defaults(&mut self) {
         self.bump = 0;
-        self.vault_bump = 0;
+        self.temp_place_holder_1 = 0;
         self.project = Pubkey::default();
         self.key = Pubkey::default();
         self.currency = Pubkey::default();
-        self.vault = Pubkey::default();
+        self.temp_place_holder_2 = Pubkey::default();
         self.lock_type = LockType::Freeze;
         self.name = "".to_string();
         self.rewards_per_duration = 0;

@@ -1,5 +1,5 @@
 {
-  "version": "0.0.35",
+  "version": "0.0.36",
   "name": "hpl_nectar_staking",
   "instructions": [
     {
@@ -1343,7 +1343,7 @@
             "type": "u8"
           },
           {
-            "name": "vaultBump",
+            "name": "tempPlaceHolder1",
             "type": "u8"
           },
           {
@@ -1362,7 +1362,7 @@
             "type": "publicKey"
           },
           {
-            "name": "vault",
+            "name": "tempPlaceHolder2",
             "docs": [
               "The account owning tokens distributed to stakers"
             ],

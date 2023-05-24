@@ -107,10 +107,6 @@ export class NectarStaking extends Module {
     return this.poolAddress;
   }
 
-  public get vault() {
-    return this._pool.vault;
-  }
-
   public get lockType() {
     return this._pool.lockType;
   }
@@ -173,6 +169,10 @@ export class NectarStaking extends Module {
 
   public currency() {
     return this._honeycomb.currency(this._pool.currency);
+  }
+
+  public vault() {
+    return this.currency().holderAccount(this.address);
   }
 
   public multipliers() {

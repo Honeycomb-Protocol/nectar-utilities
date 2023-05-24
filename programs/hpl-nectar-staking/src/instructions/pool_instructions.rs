@@ -87,7 +87,6 @@ pub fn create_staking_pool(
     staking_pool.set_defaults();
 
     staking_pool.bump = ctx.bumps["staking_pool"];
-    staking_pool.vault_bump = ctx.bumps["reward_vault"];
     staking_pool.project = ctx.accounts.project.key();
     staking_pool.key = ctx.accounts.key.key();
     staking_pool.currency = ctx.accounts.currency.key();

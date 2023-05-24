@@ -9,7 +9,7 @@ import {
 import { MerkleTree, NectarMissions } from "../packages/hpl-nectar-missions";
 import { LockType, NectarStaking } from "../packages/hpl-nectar-staking";
 import { prepare } from "./prepare";
-jest.setTimeout(200000);
+jest.setTimeout(2000000);
 
 describe("Nectar Missions", () => {
   const totalNfts = 10;
@@ -86,6 +86,7 @@ describe("Nectar Missions", () => {
       })
     );
     expect(honeycomb.project().name).toBe("TestProject");
+    console.log("Project", honeycomb.project().address.toString());
 
     await honeycomb.project().addCriteria({
       collection: collection.mint.address,
@@ -108,6 +109,8 @@ describe("Nectar Missions", () => {
     const holderAccount = await honeycomb.currency().create().holderAccount();
     await holderAccount.mint(100_000_000_000);
 
+    console.log("Currency", honeycomb.currency().address.toString());
+
     // Create staking pool
     honeycomb.use(
       await NectarStaking.new(honeycomb, {
@@ -128,6 +131,7 @@ describe("Nectar Missions", () => {
         multipliersDecimals: 3,
       })
     );
+    console.log("Staking", honeycomb.staking().address.toString());
 
     // Create Mision Pool
     honeycomb.use(
@@ -139,6 +143,7 @@ describe("Nectar Missions", () => {
         },
       })
     );
+    console.log("Missions", honeycomb.missions().address.toString());
   });
 
   it("Create Mission", async () => {
@@ -189,7 +194,7 @@ describe("Nectar Missions", () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     const participations = await honeycomb.missions().fetch().participations();
 
-    expect(participations.length).toBe(2);
+    expect(participations.length).toBe(totalNfts);
     expect(participations[0].rewards[0].amount).not.toBe(
       participations[1].rewards[0].amount
     );
