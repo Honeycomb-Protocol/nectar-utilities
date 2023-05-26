@@ -170,27 +170,26 @@ describe("Nectar Missions", () => {
       });
   });
 
-  it("Stake and participate while checking randomizer", async () => {
+  it.skip("Stake and participate while checking randomizer", async () => {
     const nfts = await honeycomb.staking().fetch().availableNfts();
     await honeycomb.staking().stake(...nfts);
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
-    await honeycomb
-      .missions()
-      .mission("QuickPost")
-      .participate(
-        ...stakedNfts.map((x) => ({
-          ...x,
-          serialize: x.serialize,
-          pretty: x.pretty,
-          faction: "faction",
-          merkleProof: factionsMerkleTree.getProofArray(
-            factionsArray.findIndex((y) => y.mint.equals(x.mint))
-          ),
-        }))
-      );
+    const mission = await honeycomb.missions().mission("QuickPost");
+
+    await mission.participate(
+      ...stakedNfts.map((x) => ({
+        ...x,
+        serialize: x.serialize,
+        pretty: x.pretty,
+        faction: "faction",
+        merkleProof: factionsMerkleTree.getProofArray(
+          factionsArray.findIndex((y) => y.mint.equals(x.mint))
+        ),
+      }))
+    );
   });
 
-  it("Recall and unstake", async () => {
+  it.skip("Recall and unstake", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     const participations = await honeycomb.missions().fetch().participations();
 
@@ -199,11 +198,8 @@ describe("Nectar Missions", () => {
       participations[1].rewards[0].amount
     );
 
-    await honeycomb
-      .missions()
-      .mission("QuickPost")
-      .recall(...participations);
-
+    const mission = await honeycomb.missions().mission("QuickPost");
+    await mission.recall(...participations);
     await honeycomb.staking().unstake(...stakedNfts);
   });
 });

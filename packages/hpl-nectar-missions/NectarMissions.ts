@@ -17,7 +17,9 @@ import {
   participate,
   recall,
 } from "./operations";
-import { missionPda } from "./utils";
+import { missionPda, removeDuplicateFromArrayOf } from "./utils";
+
+type ItemOrArray<T = any> = T | T[];
 
 type NewMissionPoolArgs = {
   args: CreateMissionPoolArgs & {
@@ -38,6 +40,8 @@ export class NectarMissions extends Module {
   private _fetch: NectarMissionsFetch;
   private _create: NectarMissionsCreate;
   private _missions: { [name: string]: NectarMission } = {};
+  private _participations: { [wallet: string]: NectarMissionParticipation[] } =
+    {};
 
   constructor(readonly address: web3.PublicKey, private _pool: MissionPool) {
     super();
@@ -77,14 +81,35 @@ export class NectarMissions extends Module {
     return this._pool.name;
   }
 
-  public mission(name: string): NectarMission;
-  public mission(address: web3.PublicKey): NectarMission;
+  public project() {
+    return this._honeycomb.project(this._pool.project);
+  }
+
+  public mission(name: string): Promise<NectarMission>;
+  public mission(address: web3.PublicKey): Promise<NectarMission>;
   public mission(nameOrAddress: string | web3.PublicKey) {
-    return typeof nameOrAddress === "string"
-      ? this._missions[nameOrAddress]
-      : Object.values(this._missions).find((m) =>
-          m.address.equals(nameOrAddress)
-        );
+    if (typeof nameOrAddress === "string") {
+      if (this._missions[nameOrAddress])
+        return Promise.resolve(this._missions[nameOrAddress]);
+      return this.fetch().mission(nameOrAddress);
+    } else {
+      const mission = Object.values(this._missions).find((m) =>
+        m.address.equals(nameOrAddress)
+      );
+      if (mission) return Promise.resolve(mission);
+      return this.fetch().mission(nameOrAddress);
+    }
+  }
+
+  public participations(wallet: web3.PublicKey) {
+    const participations = this._participations[wallet.toString()];
+    if (participations) return Promise.resolve(participations);
+    return this.fetch()
+      .participations(wallet)
+      .then((p) => {
+        this._participations[wallet.toString()] = p;
+        return p;
+      });
   }
 
   public loadMissions() {
@@ -98,13 +123,34 @@ export class NectarMissions extends Module {
   }
 
   public register(mission: NectarMission): NectarMissions;
-  public register(mission: NectarMission) {
-    this._missions[mission.name] = mission;
-    return this;
-  }
+  public register(participations: NectarMissionParticipation[]): NectarMissions;
+  public register(
+    arg: ItemOrArray<NectarMission> | ItemOrArray<NectarMissionParticipation>
+  ) {
+    if (Array.isArray(arg)) {
+      arg.map((x) => this.register(x));
+    } else {
+      if (arg instanceof NectarMission) {
+        this._missions[arg.name] = arg;
+      } else if (arg instanceof NectarMissionParticipation) {
+        if (!this._participations[arg.wallet.toString()])
+          this._participations[arg.wallet.toString()] = [];
+        this._participations[arg.wallet.toString()] = [
+          ...this._participations[arg.wallet.toString()],
+          arg,
+        ];
 
-  public project() {
-    return this._honeycomb.project(this._pool.project);
+        this._participations[arg.wallet.toString()] =
+          removeDuplicateFromArrayOf<NectarMissionParticipation>(
+            this._participations[arg.wallet.toString()],
+            (x) => x.address.toString()
+          );
+      } else {
+        throw new Error("Unrecognized item");
+      }
+    }
+
+    return this;
   }
 
   public install(honeycomb: Honeycomb): Honeycomb {
@@ -149,6 +195,11 @@ class NectarMissionsFetch {
             }
           })
           .filter((x) => !!x)
+
+          .map((m) => {
+            this._missions.register(m);
+            return m;
+          })
       );
   }
 
@@ -199,7 +250,7 @@ class NectarMissionsFetch {
                   )
                 );
               return new NectarMissionParticipation(
-                this._missions.mission(participation.mission),
+                await this._missions.mission(participation.mission),
                 p.pubkey,
                 participation,
                 stakedNft
@@ -210,7 +261,11 @@ class NectarMissionsFetch {
           })
         )
       )
-      .then((x) => x.filter((y) => !!y));
+      .then((x) => x.filter((y) => !!y))
+      .then((x) => {
+        this._missions.register(x);
+        return x;
+      });
   }
 }
 
