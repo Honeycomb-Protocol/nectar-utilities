@@ -1,6 +1,6 @@
 {
   "name": "@honeycomb-protocol/nectar-missions",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "private": false,
   "peerDependencies": {
     "@solana/spl-token": "^0.3.7",

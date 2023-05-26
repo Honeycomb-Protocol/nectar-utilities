@@ -157,6 +157,13 @@ export class NectarMissions extends Module {
     return this;
   }
 
+  public recall(...participations: NectarMissionParticipation[]) {
+    return recall(this.honeycomb(), {
+      participations,
+      programId: PROGRAM_ID,
+    });
+  }
+
   public install(honeycomb: Honeycomb): Honeycomb {
     if (!honeycomb._missions) {
       honeycomb._missions = {};
@@ -439,7 +446,7 @@ export class ParticipationCurrencyRewards extends ParticipationReward {
   }
 }
 
-export const nectarMissionnsModule = (
+export const nectarMissionsModule = (
   honeycomb: Honeycomb,
   args: web3.PublicKey | NewMissionPoolArgs
 ) =>

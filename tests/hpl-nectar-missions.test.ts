@@ -96,6 +96,8 @@ describe("Nectar Missions", () => {
       collection.mint.address.toString()
     );
 
+    console.log("Collection", collection.mint.address.toString());
+
     // Create InGameCurrency
     honeycomb.use(
       await HplCurrency.new(honeycomb, {
