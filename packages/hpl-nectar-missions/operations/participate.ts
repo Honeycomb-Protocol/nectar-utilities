@@ -17,7 +17,7 @@ import {
 } from "../generated";
 import { participationPda } from "../utils";
 import { NectarMission } from "../NectarMissions";
-import { StakedNft, getNftPda } from "../../../packages/hpl-nectar-staking";
+import { StakedNft, getNftPda } from "@honeycomb-protocol/nectar-staking";
 
 type CreateParticipateCtxArgs = {
   args: ParticipateArgsSolita;

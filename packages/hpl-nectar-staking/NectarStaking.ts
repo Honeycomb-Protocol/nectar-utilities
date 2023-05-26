@@ -35,6 +35,7 @@ import { getMultipliersPda, getNftPda, getStakerPda } from "./pdas";
 
 declare module "@honeycomb-protocol/hive-control" {
   interface Honeycomb {
+    //@ts-ignore
     _stakings: { [key: string]: NectarStaking };
     staking(key?: string | web3.PublicKey): NectarStaking;
   }
@@ -311,8 +312,10 @@ export class NectarStaking extends Module {
     if (!honeycomb._stakings) {
       honeycomb._stakings = {};
     }
+    //@ts-ignore
     honeycomb._stakings[this.poolAddress.toString()] = this;
 
+    //@ts-ignore
     honeycomb.staking = (key?: string | web3.PublicKey) => {
       if (key) {
         return honeycomb._stakings[

@@ -14,7 +14,7 @@ import {
   HoneycombProject,
   Module,
 } from "@honeycomb-protocol/hive-control";
-import { StakedNft, getNftPda } from "../../packages/hpl-nectar-staking";
+import { StakedNft, getNftPda } from "@honeycomb-protocol/nectar-staking";
 import {
   createMission,
   createMissionPool,

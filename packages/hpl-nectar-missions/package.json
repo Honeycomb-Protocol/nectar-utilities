@@ -1,11 +1,12 @@
 {
   "name": "@honeycomb-protocol/nectar-missions",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "private": false,
   "peerDependencies": {
-    "@solana/spl-token": "^0.3.7",
-    "@solana/web3.js": "^1.76.0",
+    "@honeycomb-protocol/currency-manager": "^0.0.6",
     "@honeycomb-protocol/hive-control": "^0.0.99",
-    "@honeycomb-protocol/currency-manager": "^0.0.6"
+    "@honeycomb-protocol/nectar-staking": "^0.0.40",
+    "@solana/spl-token": "^0.3.7",
+    "@solana/web3.js": "^1.76.0"
   }
 }
