@@ -1,5 +1,9 @@
 import * as web3 from "@solana/web3.js";
-import { Honeycomb, Module } from "@honeycomb-protocol/hive-control";
+import {
+  Honeycomb,
+  HoneycombProject,
+  Module,
+} from "@honeycomb-protocol/hive-control";
 import {
   AddMultiplierArgs,
   CreateStakingPoolArgs,
@@ -420,5 +424,24 @@ export const nectarStakingModule = (
     ? NectarStaking.fromAddress(honeycomb.connection, args)
     : NectarStaking.new(honeycomb, args);
 
-// const project = new Honeycomb();
-// project.use(await nectarStakingModule(project.metaplex, web3.PublicKey.default))
+export const findProjectStakingPools = (project: HoneycombProject) =>
+  StakingPool.gpaBuilder()
+    .addFilter("project", project.address)
+    .run(project.honeycomb().connection)
+    .then((currencies) =>
+      currencies.map((c) => {
+        try {
+          project
+            .honeycomb()
+            .use(
+              new NectarStaking(
+                c.pubkey,
+                StakingPool.fromAccountInfo(c.account)[0]
+              )
+            );
+        } catch {
+          return null;
+        }
+      })
+    )
+    .then((_) => project.honeycomb());

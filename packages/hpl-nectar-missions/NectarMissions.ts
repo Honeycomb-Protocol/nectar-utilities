@@ -9,7 +9,11 @@ import {
   ParticipateArgs,
   Participation,
 } from "./generated";
-import { Honeycomb, Module } from "@honeycomb-protocol/hive-control";
+import {
+  Honeycomb,
+  HoneycombProject,
+  Module,
+} from "@honeycomb-protocol/hive-control";
 import { StakedNft, getNftPda } from "../../packages/hpl-nectar-staking";
 import {
   createMission,
@@ -434,3 +438,33 @@ export class ParticipationCurrencyRewards extends ParticipationReward {
     else throw new Error("Reward is not a currency");
   }
 }
+
+export const nectarMissionnsModule = (
+  honeycomb: Honeycomb,
+  args: web3.PublicKey | NewMissionPoolArgs
+) =>
+  args instanceof web3.PublicKey
+    ? NectarMissions.fromAddress(honeycomb.connection, args)
+    : NectarMissions.new(honeycomb, args);
+
+export const findProjectMissionPools = (project: HoneycombProject) =>
+  MissionPool.gpaBuilder()
+    .addFilter("project", project.address)
+    .run(project.honeycomb().connection)
+    .then((currencies) =>
+      currencies.map((c) => {
+        try {
+          project
+            .honeycomb()
+            .use(
+              new NectarMissions(
+                c.pubkey,
+                MissionPool.fromAccountInfo(c.account)[0]
+              )
+            );
+        } catch {
+          return null;
+        }
+      })
+    )
+    .then((_) => project.honeycomb());
