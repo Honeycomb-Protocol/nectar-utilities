@@ -8,6 +8,7 @@ import {
   PROGRAM_ID,
   ParticipateArgs,
   Participation,
+  Reward,
 } from "./generated";
 import {
   Honeycomb,
@@ -322,7 +323,7 @@ export class NectarMission {
   }
 
   public get rewards() {
-    return this._mission.rewards;
+    return this._mission.rewards.map((r) => new MissionReward(this, r));
   }
 
   public participate(...nfts: (StakedNft & ParticipateArgs)[]) {
@@ -404,15 +405,42 @@ export class NectarMissionParticipation {
   }
 }
 
+export class MissionReward {
+  constructor(protected _mission: NectarMission, protected _reward: Reward) {}
+
+  public get min() {
+    return this._reward.min;
+  }
+
+  public get max() {
+    return this._reward.max;
+  }
+
+  public isCurrency(): this is ParticipationCurrencyRewards {
+    return this._reward.rewardType.__kind === "Currency";
+  }
+}
+
+export class MissionCurrencyRewards extends MissionReward {
+  constructor(_mission: NectarMission, _reward: Reward) {
+    super(_mission, _reward);
+  }
+
+  public currency() {
+    if (this._reward.rewardType.__kind === "Currency")
+      return this._mission
+        .pool()
+        .honeycomb()
+        .currency(this._reward.rewardType.address);
+    else throw new Error("Reward is not a currency");
+  }
+}
+
 export class ParticipationReward {
   constructor(
     protected _participation: NectarMissionParticipation,
     protected _reward: EarnedReward
   ) {}
-
-  public participation() {
-    return this._participation;
-  }
 
   public get amount() {
     return this._reward.amount;
@@ -430,9 +458,9 @@ export class ParticipationReward {
 export class ParticipationCurrencyRewards extends ParticipationReward {
   constructor(
     _participation: NectarMissionParticipation,
-    _rewards: EarnedReward[]
+    _reward: EarnedReward
   ) {
-    super(_participation, _rewards[0]);
+    super(_participation, _reward);
   }
 
   public currency() {
