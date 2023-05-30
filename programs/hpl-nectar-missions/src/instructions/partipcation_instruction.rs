@@ -7,7 +7,7 @@ use {
         program::HplCurrencyManager,
         state::{Currency, HolderAccount},
     },
-    hpl_hive_control::state::Project,
+    hpl_hive_control::state::{Profile, ProfileData, ProfileIdentity, Project},
     hpl_nectar_staking::state::{Staker, StakingPool, NFT},
     hpl_utils::traits::Default,
 };
@@ -170,7 +170,14 @@ pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<(
 #[derive(Accounts)]
 pub struct CollectRewards<'info> {
     #[account()]
-    pub project: Box<Account<'info, Project>>,
+    pub project: Account<'info, Project>,
+
+    #[account(
+        constraint = (profile.project == mission_pool.project) && (
+          profile.identity == ProfileIdentity::Wallet { key: wallet.key() }
+        )
+      )]
+    pub profile: Option<Account<'info, Profile>>,
 
     /// MissionPool account
     #[account(has_one = project)]
@@ -197,14 +204,14 @@ pub struct CollectRewards<'info> {
     #[account(has_one = currency, constraint = vault_token_account.is_some() && vault_holder_account.token_account == vault_token_account.clone().unwrap().key() && vault_holder_account.owner == mission_pool.key())]
     pub vault_holder_account: Option<Box<Account<'info, HolderAccount>>>,
 
-    #[account()]
+    #[account(mut)]
     pub vault_token_account: Option<Box<Account<'info, TokenAccount>>>,
 
     #[account(has_one = currency, has_one = token_account, constraint = holder_account.owner == wallet.key())]
-    pub holder_account: Option<Account<'info, HolderAccount>>,
+    pub holder_account: Option<Box<Account<'info, HolderAccount>>>,
 
-    #[account()]
-    pub token_account: Option<Account<'info, TokenAccount>>,
+    #[account(mut)]
+    pub token_account: Option<Box<Account<'info, TokenAccount>>>,
 
     #[account(mut)]
     pub wallet: Signer<'info>,
@@ -304,7 +311,36 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                 reward.amount,
             )
         }
-        RewardType::Xp => Err(ErrorCode::NotImplemented.into()),
+        RewardType::Xp => {
+            if ctx.accounts.profile.is_none() {
+                return Err(ErrorCode::NotImplemented.into());
+            }
+
+            let profile = &mut ctx.accounts.profile.clone().unwrap();
+
+            let default_xp = ProfileData::SingleValue {
+                value: "0".to_string(),
+            };
+            let current_xp = profile.data.get("XP").unwrap_or(&default_xp);
+
+            let profile = ctx.accounts.profile.as_mut().unwrap();
+            profile.data.insert(
+                "XP".to_string(),
+                match current_xp {
+                    ProfileData::SingleValue { value } => {
+                        let current_amount = value.parse::<u64>().unwrap();
+                        ProfileData::SingleValue {
+                            value: (current_amount + reward.amount).to_string(),
+                        }
+                    }
+                    _ => ProfileData::SingleValue {
+                        value: reward.amount.to_string(),
+                    },
+                },
+            );
+
+            Ok(())
+        }
     }
 }
 

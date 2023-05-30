@@ -28,4 +28,7 @@ pub enum ErrorCode {
 
     #[msg("All rewards are not yet collected for this participaton")]
     RewardsNotCollected,
+
+    #[msg("Profile account not provided")]
+    ProfileNotProvided,
 }

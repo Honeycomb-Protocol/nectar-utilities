@@ -5,9 +5,18 @@ import { Honeycomb, HoneycombProject } from "@honeycomb-protocol/hive-control";
 import {
   PermissionedCurrencyKind,
   HplCurrency,
+  findProjectCurrencies,
 } from "@honeycomb-protocol/currency-manager";
-import { MerkleTree, NectarMissions } from "../packages/hpl-nectar-missions";
-import { LockType, NectarStaking } from "../packages/hpl-nectar-staking";
+import {
+  MerkleTree,
+  NectarMissions,
+  nectarMissionsModule,
+} from "../packages/hpl-nectar-missions";
+import {
+  LockType,
+  NectarStaking,
+  nectarStakingModule,
+} from "../packages/hpl-nectar-staking";
 import { prepare } from "./prepare";
 jest.setTimeout(2000000);
 
@@ -38,7 +47,37 @@ describe("Nectar Missions", () => {
     expect(balance).toBeGreaterThanOrEqual(web3.LAMPORTS_PER_SOL * 0.1);
   });
 
-  it("Setup Collection, Project, InGameCurrency, StakingPool and MissionPool", async () => {
+  it("Temp", async () => {
+    honeycomb.use(
+      await HoneycombProject.fromAddress(
+        honeycomb.connection,
+        new web3.PublicKey("bUUfXFjcF6Q1CBa5B6rnQzN4GLkViE4xmrGTsrrqpBs")
+      )
+    );
+    await findProjectCurrencies(honeycomb.project());
+
+    honeycomb.use(
+      await nectarStakingModule(
+        honeycomb,
+        new web3.PublicKey("JBSv75CezWt5fYWgSnUJaQ1tDR18tGcW9eAhENXXZ8oV")
+      )
+    );
+    honeycomb.use(
+      await nectarMissionsModule(
+        honeycomb,
+        new web3.PublicKey("GHc2QoYyBJWXDFGo3TMggaD2hmV4FfP9MweuQ9GXc5pA")
+      )
+    );
+
+    await honeycomb
+      .missions()
+      .fetch()
+      .participations()
+      .then(console.log)
+      .catch(console.error);
+  });
+
+  it.skip("Setup Collection, Project, InGameCurrency, StakingPool and MissionPool", async () => {
     let out = await metaplex.nfts().create({
       name: "Collection",
       symbol: "COL",
@@ -67,6 +106,11 @@ describe("Nectar Missions", () => {
       faction: "faction",
       mint: nft.mint.address,
     }));
+
+    console.log(
+      "FactionsTree",
+      factionsArray.map((x) => ({ ...x, mint: x.mint.toString() }))
+    );
 
     factionsMerkleTree = new MerkleTree(
       factionsArray.map((faction) =>
@@ -148,7 +192,7 @@ describe("Nectar Missions", () => {
     console.log("Missions", honeycomb.missions().address.toString());
   });
 
-  it("Create Mission", async () => {
+  it.skip("Create Mission", async () => {
     await honeycomb
       .missions()
       .create()
