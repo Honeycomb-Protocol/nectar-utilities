@@ -179,53 +179,39 @@ pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<(
 #[derive(Accounts)]
 pub struct CollectRewards<'info> {
     #[account()]
-    pub project: Account<'info, Project>,
+    pub project: Box<Account<'info, Project>>,
+    #[account(has_one = project)]
+    pub mission_pool: Box<Account<'info, MissionPool>>,
+    #[account(has_one = mission_pool)]
+    pub mission: Box<Account<'info, Mission>>,
+    #[account(has_one = wallet, has_one = nft, has_one = mission)]
+    pub participation: Box<Account<'info, Participation>>,
+    #[account()]
+    pub nft: Box<Account<'info, NFT>>,
 
     #[account(
         constraint = (profile.project == mission_pool.project) && (
           profile.identity == ProfileIdentity::Wallet { key: wallet.key() }
         )
       )]
-    pub profile: Option<Account<'info, Profile>>,
-
-    /// MissionPool account
-    #[account(has_one = project)]
-    pub mission_pool: Box<Account<'info, MissionPool>>,
-
-    /// Mission account
-    #[account(has_one = mission_pool)]
-    pub mission: Box<Account<'info, Mission>>,
-
-    /// Participation state account
-    #[account(has_one = wallet, has_one = nft, has_one = mission)]
-    pub participation: Box<Account<'info, Participation>>,
-
-    /// NFT state account
-    #[account()]
-    pub nft: Box<Account<'info, NFT>>,
+    pub profile: Option<Box<Account<'info, Profile>>>,
 
     #[account(has_one = mint)]
     pub currency: Option<Box<Account<'info, Currency>>>,
-
     #[account()]
     pub mint: Option<Box<Account<'info, Mint>>>,
-
     #[account(has_one = currency, constraint = vault_token_account.is_some() && vault_holder_account.token_account == vault_token_account.clone().unwrap().key() && vault_holder_account.owner == mission_pool.key())]
     pub vault_holder_account: Option<Box<Account<'info, HolderAccount>>>,
-
     #[account(mut)]
     pub vault_token_account: Option<Box<Account<'info, TokenAccount>>>,
-
     #[account(has_one = currency, has_one = token_account, constraint = holder_account.owner == wallet.key())]
     pub holder_account: Option<Box<Account<'info, HolderAccount>>>,
-
     #[account(mut)]
     pub token_account: Option<Box<Account<'info, TokenAccount>>>,
 
     #[account(mut)]
     pub wallet: Signer<'info>,
-
-    /// CHECK: This is not dangerous because we don't read or write from this account
+    /// CHECK: This is just used to collect platform fee
     #[account(mut)]
     pub vault: AccountInfo<'info>,
     pub system_program: Program<'info, System>,

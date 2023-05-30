@@ -39,10 +39,10 @@ const createConfig = (name, programId) => {
 
 const configs = {
   "nectar-staking": createConfig("nectar-staking", "STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L"),
-  "nectar-missions": createConfig("nectar-missions", "CW2fmed6FRSwoQMBcUDkvbUUHNQXMDgW4zk9Kwn56RRr"),
+  "nectar-missions": createConfig("nectar-missions", "D7QpSyaRcv8GiH3jZiwgd4EQWsFbK3BWQTBFWCzRs9eu"),
 };
 
-const defaultProgram = "nectar-staking" || Object.keys(configs)[0];
+const defaultProgram = "nectar-missions" || Object.keys(configs)[0];
 const activeConfig =
   configs[process.env.SOLITA_HPL_PROGRAM || defaultProgram] ||
   configs[defaultProgram];

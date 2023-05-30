@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1",
+  "version": "0.0.8",
   "name": "hpl_nectar_missions",
   "instructions": [
     {
@@ -342,34 +342,28 @@
         {
           "name": "missionPool",
           "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "MissionPool account"
-          ]
+          "isSigner": false
         },
         {
           "name": "mission",
           "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "Mission account"
-          ]
+          "isSigner": false
         },
         {
           "name": "participation",
           "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "Participation state account"
-          ]
+          "isSigner": false
         },
         {
           "name": "nft",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "profile",
+          "isMut": false,
           "isSigner": false,
-          "docs": [
-            "NFT state account"
-          ]
+          "isOptional": true
         },
         {
           "name": "currency",
@@ -391,7 +385,7 @@
         },
         {
           "name": "vaultTokenAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "isOptional": true
         },
@@ -403,7 +397,7 @@
         },
         {
           "name": "tokenAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "isOptional": true
         },
@@ -423,12 +417,32 @@
           "isSigner": false
         },
         {
+          "name": "hiveControlProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "currencyManagerProgram",
           "isMut": false,
           "isSigner": false
         },
         {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "compressionProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rentSysvar",
           "isMut": false,
           "isSigner": false
         },
@@ -864,10 +878,20 @@
       "code": 6008,
       "name": "RewardsNotCollected",
       "msg": "All rewards are not yet collected for this participaton"
+    },
+    {
+      "code": 6009,
+      "name": "ProfileNotProvided",
+      "msg": "Profile account not provided"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidProfileData",
+      "msg": "Invalid Profile data"
     }
   ],
   "metadata": {
-    "address": "CW2fmed6FRSwoQMBcUDkvbUUHNQXMDgW4zk9Kwn56RRr",
+    "address": "D7QpSyaRcv8GiH3jZiwgd4EQWsFbK3BWQTBFWCzRs9eu",
     "origin": "anchor",
     "binaryVersion": "0.26.0",
     "libVersion": "0.26.0"

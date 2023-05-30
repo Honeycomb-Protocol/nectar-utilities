@@ -1,10 +1,17 @@
-import { PublicKey, SYSVAR_CLOCK_PUBKEY } from "@solana/web3.js";
+import {
+  PublicKey,
+  SYSVAR_CLOCK_PUBKEY,
+  SYSVAR_RENT_PUBKEY,
+} from "@solana/web3.js";
 import {
   ConfirmedContext,
+  HIVECONTROL_PROGRAM_ID,
   Honeycomb,
   OperationCtx,
   VAULT,
+  createCreateProfileCtx,
   createCtx,
+  getProfilePda,
 } from "@honeycomb-protocol/hive-control";
 import {
   PROGRAM_ID as CURRENCY_MANAGER_PROGRAM_ID,
@@ -18,6 +25,10 @@ import {
 } from "../generated";
 import { NectarMissionParticipation } from "../NectarMissions";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import {
+  SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+  SPL_NOOP_PROGRAM_ID,
+} from "@solana/spl-account-compression";
 
 type CreateCollectRewardsCtxArgs = {
   project: PublicKey;
@@ -25,6 +36,7 @@ type CreateCollectRewardsCtxArgs = {
   mission: PublicKey;
   participation: PublicKey;
   nft: PublicKey;
+  profile?: PublicKey;
   currency?: PublicKey;
   currencyKind?: CurrencyKind;
   mint?: PublicKey;
@@ -70,6 +82,7 @@ export function createCollectRewardsCtx(
         mission: args.mission,
         participation: args.participation,
         nft: args.nft,
+        profile: args.profile || programId,
         currency: args.currency || programId,
         mint: args.mint || programId,
         vaultHolderAccount: vaultHolderAccount || programId,
@@ -78,7 +91,11 @@ export function createCollectRewardsCtx(
         tokenAccount: tokenAccount || programId,
         wallet: args.wallet,
         vault: VAULT,
+        hiveControlProgram: HIVECONTROL_PROGRAM_ID,
         currencyManagerProgram: CURRENCY_MANAGER_PROGRAM_ID,
+        compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+        logWrapper: SPL_NOOP_PROGRAM_ID,
+        rentSysvar: SYSVAR_RENT_PUBKEY,
         tokenProgram: TOKEN_PROGRAM_ID,
         clock: SYSVAR_CLOCK_PUBKEY,
       },
@@ -89,7 +106,7 @@ export function createCollectRewardsCtx(
   return createCtx(instructions);
 }
 
-type CreateRecallCtxArgs = {
+type CreatePartialRecallCtxArgs = {
   project: PublicKey;
   stakingPool: PublicKey;
   missionPool: PublicKey;
@@ -100,7 +117,9 @@ type CreateRecallCtxArgs = {
   wallet: PublicKey;
   programId?: PublicKey;
 };
-export function createRecallCtx(args: CreateRecallCtxArgs): OperationCtx {
+export function createPartialRecallCtx(
+  args: CreatePartialRecallCtxArgs
+): OperationCtx {
   const programId = args.programId || PROGRAM_ID;
 
   const instructions = [
@@ -121,6 +140,89 @@ export function createRecallCtx(args: CreateRecallCtxArgs): OperationCtx {
   return createCtx(instructions);
 }
 
+type CreateRecallCtxArgs = {
+  participation: NectarMissionParticipation;
+  wallet: PublicKey;
+  isFirst?: boolean;
+  programId?: PublicKey;
+};
+export async function createRecallCtxs(args: CreateRecallCtxArgs) {
+  const ctxs: OperationCtx[] = [];
+
+  if (
+    !!args.participation.rewards.find((r) => !r.isCurrency()) &&
+    args.isFirst !== false
+  ) {
+    try {
+      await args.participation
+        .mission()
+        .pool()
+        .honeycomb()
+        .identity()
+        .profile(
+          args.participation.mission().pool().project().address,
+          args.participation.wallet
+        );
+    } catch {
+      ctxs.push(
+        createCreateProfileCtx({
+          project: args.participation.mission().pool().project().address,
+          identity: { __kind: "Wallet", key: args.participation.wallet },
+          user: (
+            await args.participation
+              .mission()
+              .pool()
+              .honeycomb()
+              .identity()
+              .user()
+          ).address,
+          wallet: args.wallet,
+          programId: args.programId,
+        })
+      );
+    }
+  }
+
+  ctxs.push(
+    ...args.participation.rewards
+      .filter((r) => !r.collected)
+      .map((reward) => {
+        return createCollectRewardsCtx({
+          project: args.participation.mission().pool().project().address,
+          missionPool: args.participation.mission().pool().address,
+          mission: args.participation.mission().address,
+          participation: args.participation.address,
+          nft: args.participation.nftAddress,
+          profile:
+            !reward.isCurrency() &&
+            getProfilePda(
+              args.participation.mission().pool().project().address,
+              args.participation.wallet
+            )[0],
+          currency: reward.isCurrency() && reward.currency().address,
+          currencyKind: reward.isCurrency() && reward.currency().kind,
+          mint: reward.isCurrency() && reward.currency().mint,
+          wallet: args.wallet,
+          programId: args.programId,
+        });
+      }),
+
+    createPartialRecallCtx({
+      project: args.participation.mission().pool().project().address,
+      stakingPool: args.participation.nft.stakingPool,
+      missionPool: args.participation.mission().pool().address,
+      mission: args.participation.mission().address,
+      nft: args.participation.nftAddress,
+      staker: args.participation.nft.staker,
+      participation: args.participation.address,
+      wallet: args.wallet,
+      programId: args.programId,
+    })
+  );
+
+  return ctxs;
+}
+
 type RecallArgs = {
   participations: NectarMissionParticipation[];
   programId?: PublicKey;
@@ -129,37 +231,18 @@ export async function recall(
   honeycomb: Honeycomb,
   args: RecallArgs
 ): Promise<ConfirmedContext[]> {
-  const ctxs = args.participations.flatMap((participation) => [
-    ...participation.rewards
-      .filter((r) => !r.collected)
-      .map((reward) => {
-        return createCollectRewardsCtx({
-          project: participation.mission().pool().project().address,
-          missionPool: participation.mission().pool().address,
-          mission: participation.mission().address,
-          participation: participation.address,
-          nft: participation.nftAddress,
-          currency: reward.isCurrency() && reward.currency().address,
-          currencyKind: reward.isCurrency() && reward.currency().kind,
-          mint: reward.isCurrency() && reward.currency().mint,
-          wallet: honeycomb.identity().publicKey,
-          programId: args.programId,
-        });
-      }),
-    createRecallCtx({
-      project: participation.mission().pool().project().address,
-      stakingPool: participation.nft.stakingPool,
-      missionPool: participation.mission().pool().address,
-      mission: participation.mission().address,
-      nft: participation.nftAddress,
-      staker: participation.nft.staker,
-      participation: participation.address,
-      wallet: honeycomb.identity().publicKey,
-      programId: args.programId,
-    }),
-  ]);
+  const ctxs = await Promise.all(
+    args.participations.map((participation, i) =>
+      createRecallCtxs({
+        participation,
+        wallet: honeycomb.identity().publicKey,
+        isFirst: i === 0,
+        programId: args.programId,
+      })
+    )
+  );
 
-  return honeycomb.rpc().sendAndConfirmTransactionsInBatches(ctxs, {
+  return honeycomb.rpc().sendAndConfirmTransactionsInBatches(ctxs.flat(), {
     commitment: "processed",
     skipPreflight: true,
   });

@@ -207,6 +207,52 @@ createErrorFromNameLookup.set(
 )
 
 /**
+ * ProfileNotProvided: 'Profile account not provided'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class ProfileNotProvidedError extends Error {
+  readonly code: number = 0x1779
+  readonly name: string = 'ProfileNotProvided'
+  constructor() {
+    super('Profile account not provided')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, ProfileNotProvidedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1779, () => new ProfileNotProvidedError())
+createErrorFromNameLookup.set(
+  'ProfileNotProvided',
+  () => new ProfileNotProvidedError()
+)
+
+/**
+ * InvalidProfileData: 'Invalid Profile data'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class InvalidProfileDataError extends Error {
+  readonly code: number = 0x177a
+  readonly name: string = 'InvalidProfileData'
+  constructor() {
+    super('Invalid Profile data')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, InvalidProfileDataError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x177a, () => new InvalidProfileDataError())
+createErrorFromNameLookup.set(
+  'InvalidProfileData',
+  () => new InvalidProfileDataError()
+)
+
+/**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
  * @category generated

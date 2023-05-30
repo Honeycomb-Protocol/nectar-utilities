@@ -28,15 +28,20 @@ export const collectRewardsStruct = new beet.BeetArgsStruct<{
  * @property [] mission
  * @property [] participation
  * @property [] nft
+ * @property [] profile (optional)
  * @property [] currency (optional)
  * @property [] mint (optional)
  * @property [] vaultHolderAccount (optional)
- * @property [] vaultTokenAccount (optional)
+ * @property [_writable_] vaultTokenAccount (optional)
  * @property [] holderAccount (optional)
- * @property [] tokenAccount (optional)
+ * @property [_writable_] tokenAccount (optional)
  * @property [_writable_, **signer**] wallet
  * @property [_writable_] vault
+ * @property [] hiveControlProgram
  * @property [] currencyManagerProgram
+ * @property [] logWrapper
+ * @property [] compressionProgram
+ * @property [] rentSysvar
  * @property [] clock
  * @category Instructions
  * @category CollectRewards
@@ -48,6 +53,7 @@ export type CollectRewardsInstructionAccounts = {
   mission: web3.PublicKey
   participation: web3.PublicKey
   nft: web3.PublicKey
+  profile?: web3.PublicKey
   currency?: web3.PublicKey
   mint?: web3.PublicKey
   vaultHolderAccount?: web3.PublicKey
@@ -57,8 +63,12 @@ export type CollectRewardsInstructionAccounts = {
   wallet: web3.PublicKey
   vault: web3.PublicKey
   systemProgram?: web3.PublicKey
+  hiveControlProgram: web3.PublicKey
   currencyManagerProgram: web3.PublicKey
+  logWrapper: web3.PublicKey
+  compressionProgram: web3.PublicKey
   tokenProgram?: web3.PublicKey
+  rentSysvar: web3.PublicKey
   clock: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
@@ -82,7 +92,7 @@ export const collectRewardsInstructionDiscriminator = [
  */
 export function createCollectRewardsInstruction(
   accounts: CollectRewardsInstructionAccounts,
-  programId = new web3.PublicKey('CW2fmed6FRSwoQMBcUDkvbUUHNQXMDgW4zk9Kwn56RRr')
+  programId = new web3.PublicKey('D7QpSyaRcv8GiH3jZiwgd4EQWsFbK3BWQTBFWCzRs9eu')
 ) {
   const [data] = collectRewardsStruct.serialize({
     instructionDiscriminator: collectRewardsInstructionDiscriminator,
@@ -115,7 +125,19 @@ export function createCollectRewardsInstruction(
     },
   ]
 
+  if (accounts.profile != null) {
+    keys.push({
+      pubkey: accounts.profile,
+      isWritable: false,
+      isSigner: false,
+    })
+  }
   if (accounts.currency != null) {
+    if (accounts.profile == null) {
+      throw new Error(
+        "When providing 'currency' then 'accounts.profile' need(s) to be provided as well."
+      )
+    }
     keys.push({
       pubkey: accounts.currency,
       isWritable: false,
@@ -123,9 +145,9 @@ export function createCollectRewardsInstruction(
     })
   }
   if (accounts.mint != null) {
-    if (accounts.currency == null) {
+    if (accounts.profile == null || accounts.currency == null) {
       throw new Error(
-        "When providing 'mint' then 'accounts.currency' need(s) to be provided as well."
+        "When providing 'mint' then 'accounts.profile', 'accounts.currency' need(s) to be provided as well."
       )
     }
     keys.push({
@@ -135,9 +157,13 @@ export function createCollectRewardsInstruction(
     })
   }
   if (accounts.vaultHolderAccount != null) {
-    if (accounts.currency == null || accounts.mint == null) {
+    if (
+      accounts.profile == null ||
+      accounts.currency == null ||
+      accounts.mint == null
+    ) {
       throw new Error(
-        "When providing 'vaultHolderAccount' then 'accounts.currency', 'accounts.mint' need(s) to be provided as well."
+        "When providing 'vaultHolderAccount' then 'accounts.profile', 'accounts.currency', 'accounts.mint' need(s) to be provided as well."
       )
     }
     keys.push({
@@ -148,29 +174,31 @@ export function createCollectRewardsInstruction(
   }
   if (accounts.vaultTokenAccount != null) {
     if (
+      accounts.profile == null ||
       accounts.currency == null ||
       accounts.mint == null ||
       accounts.vaultHolderAccount == null
     ) {
       throw new Error(
-        "When providing 'vaultTokenAccount' then 'accounts.currency', 'accounts.mint', 'accounts.vaultHolderAccount' need(s) to be provided as well."
+        "When providing 'vaultTokenAccount' then 'accounts.profile', 'accounts.currency', 'accounts.mint', 'accounts.vaultHolderAccount' need(s) to be provided as well."
       )
     }
     keys.push({
       pubkey: accounts.vaultTokenAccount,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     })
   }
   if (accounts.holderAccount != null) {
     if (
+      accounts.profile == null ||
       accounts.currency == null ||
       accounts.mint == null ||
       accounts.vaultHolderAccount == null ||
       accounts.vaultTokenAccount == null
     ) {
       throw new Error(
-        "When providing 'holderAccount' then 'accounts.currency', 'accounts.mint', 'accounts.vaultHolderAccount', 'accounts.vaultTokenAccount' need(s) to be provided as well."
+        "When providing 'holderAccount' then 'accounts.profile', 'accounts.currency', 'accounts.mint', 'accounts.vaultHolderAccount', 'accounts.vaultTokenAccount' need(s) to be provided as well."
       )
     }
     keys.push({
@@ -181,6 +209,7 @@ export function createCollectRewardsInstruction(
   }
   if (accounts.tokenAccount != null) {
     if (
+      accounts.profile == null ||
       accounts.currency == null ||
       accounts.mint == null ||
       accounts.vaultHolderAccount == null ||
@@ -188,12 +217,12 @@ export function createCollectRewardsInstruction(
       accounts.holderAccount == null
     ) {
       throw new Error(
-        "When providing 'tokenAccount' then 'accounts.currency', 'accounts.mint', 'accounts.vaultHolderAccount', 'accounts.vaultTokenAccount', 'accounts.holderAccount' need(s) to be provided as well."
+        "When providing 'tokenAccount' then 'accounts.profile', 'accounts.currency', 'accounts.mint', 'accounts.vaultHolderAccount', 'accounts.vaultTokenAccount', 'accounts.holderAccount' need(s) to be provided as well."
       )
     }
     keys.push({
       pubkey: accounts.tokenAccount,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     })
   }
@@ -213,12 +242,32 @@ export function createCollectRewardsInstruction(
     isSigner: false,
   })
   keys.push({
+    pubkey: accounts.hiveControlProgram,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
     pubkey: accounts.currencyManagerProgram,
     isWritable: false,
     isSigner: false,
   })
   keys.push({
+    pubkey: accounts.logWrapper,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.compressionProgram,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
     pubkey: accounts.tokenProgram ?? splToken.TOKEN_PROGRAM_ID,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.rentSysvar,
     isWritable: false,
     isSigner: false,
   })
