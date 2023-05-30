@@ -1005,6 +1005,7 @@ dependencies = [
  "hpl-hive-control 0.0.99",
  "hpl-nectar-staking",
  "hpl-utils",
+ "spl-account-compression",
 ]
 
 [[package]]

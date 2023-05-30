@@ -7,9 +7,18 @@ use {
         program::HplCurrencyManager,
         state::{Currency, HolderAccount},
     },
-    hpl_hive_control::state::{Profile, ProfileData, ProfileIdentity, Project},
+    hpl_hive_control::{
+        cpi::{accounts::ManageProfileData, add_profile_data, modify_profile_data},
+        instructions::{
+            AddProfileDataArgs, AddProfileDataArgsValue, ModifyProfileDataArgs,
+            ModifyProfileDataArgsValue,
+        },
+        program::HplHiveControl,
+        state::{Profile, ProfileData, ProfileIdentity, Project},
+    },
     hpl_nectar_staking::state::{Staker, StakingPool, NFT},
     hpl_utils::traits::Default,
+    spl_account_compression::{program::SplAccountCompression, Noop},
 };
 
 /// Accounts used in participate instruction
@@ -220,9 +229,13 @@ pub struct CollectRewards<'info> {
     #[account(mut)]
     pub vault: AccountInfo<'info>,
     pub system_program: Program<'info, System>,
+    pub hive_control_program: Program<'info, HplHiveControl>,
     pub currency_manager_program: Program<'info, HplCurrencyManager>,
+    pub log_wrapper: Program<'info, Noop>,
+    pub compression_program: Program<'info, SplAccountCompression>,
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
+    pub rent_sysvar: Sysvar<'info, Rent>,
     pub clock: Sysvar<'info, Clock>,
 }
 
@@ -313,33 +326,72 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
         }
         RewardType::Xp => {
             if ctx.accounts.profile.is_none() {
-                return Err(ErrorCode::NotImplemented.into());
+                return Err(ErrorCode::ProfileNotProvided.into());
             }
 
-            let profile = &mut ctx.accounts.profile.clone().unwrap();
+            let profile = ctx.accounts.profile.clone().unwrap();
+            let current_xp = profile.data.get("XP");
 
-            let default_xp = ProfileData::SingleValue {
-                value: "0".to_string(),
-            };
-            let current_xp = profile.data.get("XP").unwrap_or(&default_xp);
-
-            let profile = ctx.accounts.profile.as_mut().unwrap();
-            profile.data.insert(
-                "XP".to_string(),
-                match current_xp {
+            if current_xp.is_none() {
+                add_profile_data(
+                    CpiContext::new(
+                        ctx.accounts.hive_control_program.to_account_info(),
+                        ManageProfileData {
+                            project: ctx.accounts.project.to_account_info(),
+                            profile: profile.to_account_info(),
+                            merkle_tree: None,
+                            delegate_authority: None,
+                            authority: ctx.accounts.wallet.to_account_info(),
+                            payer: ctx.accounts.wallet.to_account_info(),
+                            rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
+                            system_program: ctx.accounts.system_program.to_account_info(),
+                            log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+                            compression_program: ctx.accounts.compression_program.to_account_info(),
+                            vault: ctx.accounts.vault.to_account_info(),
+                        },
+                    ),
+                    AddProfileDataArgs {
+                        label: String::from("XP"),
+                        value: Some(AddProfileDataArgsValue::SingleValue {
+                            value: String::from("0"),
+                        }),
+                    },
+                )
+            } else {
+                match current_xp.unwrap() {
                     ProfileData::SingleValue { value } => {
                         let current_amount = value.parse::<u64>().unwrap();
-                        ProfileData::SingleValue {
-                            value: (current_amount + reward.amount).to_string(),
-                        }
+                        modify_profile_data(
+                            CpiContext::new(
+                                ctx.accounts.hive_control_program.to_account_info(),
+                                ManageProfileData {
+                                    project: ctx.accounts.project.to_account_info(),
+                                    profile: profile.to_account_info(),
+                                    merkle_tree: None,
+                                    delegate_authority: None,
+                                    authority: ctx.accounts.wallet.to_account_info(),
+                                    payer: ctx.accounts.wallet.to_account_info(),
+                                    rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
+                                    system_program: ctx.accounts.system_program.to_account_info(),
+                                    log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+                                    compression_program: ctx
+                                        .accounts
+                                        .compression_program
+                                        .to_account_info(),
+                                    vault: ctx.accounts.vault.to_account_info(),
+                                },
+                            ),
+                            ModifyProfileDataArgs {
+                                label: String::from("XP"),
+                                value: ModifyProfileDataArgsValue::SingleValue {
+                                    value: (current_amount + reward.amount).to_string(),
+                                },
+                            },
+                        )
                     }
-                    _ => ProfileData::SingleValue {
-                        value: reward.amount.to_string(),
-                    },
-                },
-            );
-
-            Ok(())
+                    _ => Err(ErrorCode::InvalidProfileData.into()),
+                }
+            }
         }
     }
 }

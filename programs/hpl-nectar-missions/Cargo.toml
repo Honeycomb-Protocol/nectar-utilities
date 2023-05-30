@@ -25,3 +25,4 @@ hpl-utils = "0.1.6"
 hpl-hive-control = { version="0.0.99", features = ["cpi"] }
 hpl-currency-manager = { version="0.0.2", features = ["cpi"] }
 hpl-nectar-staking = { version="0.0.42", path="../hpl-nectar-staking", features = ["cpi"] }
+spl-account-compression = { version="0.1.8", features=["cpi"] }

@@ -31,4 +31,7 @@ pub enum ErrorCode {
 
     #[msg("Profile account not provided")]
     ProfileNotProvided,
+
+    #[msg("Invalid Profile data")]
+    InvalidProfileData,
 }
