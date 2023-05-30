@@ -90,6 +90,13 @@ export class NectarMissions extends Module {
     return this._honeycomb.project(this._pool.project);
   }
 
+  public async missions(reFetch: boolean = false) {
+    if (Object.keys(this._missions).length === 0 || reFetch) {
+      await this.fetch().missions();
+    }
+    return Object.values(this._missions);
+  }
+
   public mission(name: string): Promise<NectarMission>;
   public mission(address: web3.PublicKey): Promise<NectarMission>;
   public mission(nameOrAddress: string | web3.PublicKey) {
@@ -207,7 +214,6 @@ class NectarMissionsFetch {
             }
           })
           .filter((x) => !!x)
-
           .map((m) => {
             this._missions.register(m);
             return m;
