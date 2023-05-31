@@ -401,8 +401,15 @@ export class NectarMissionParticipation {
   }
 
   public get rewards() {
-    return this._participation.rewards.map(
-      (r) => new ParticipationReward(this, r)
+    return this._participation.rewards.map((r) =>
+      (() => {
+        switch (r.rewardType.__kind) {
+          case "Currency":
+            return new ParticipationCurrencyRewards(this, r);
+          default:
+            return new ParticipationReward(this, r);
+        }
+      })()
     );
   }
 
