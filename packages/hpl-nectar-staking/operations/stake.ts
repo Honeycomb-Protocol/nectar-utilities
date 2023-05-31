@@ -142,7 +142,11 @@ type StakeArgs = {
   nfts: AvailableNft[];
   programId?: web3.PublicKey;
 };
-export async function stake(honeycomb: Honeycomb, args: StakeArgs) {
+export async function stake(
+  honeycomb: Honeycomb,
+  args: StakeArgs,
+  confirmOptions?: web3.ConfirmOptions
+) {
   const wallet = honeycomb.identity();
 
   const ctxs = await Promise.all(
@@ -174,14 +178,14 @@ export async function stake(honeycomb: Honeycomb, args: StakeArgs) {
     .rpc()
     .sendAndConfirmTransaction(preparedCtxs.shift(), {
       commitment: "processed",
-      skipPreflight: true,
+      ...confirmOptions,
     });
 
   const responses = await honeycomb
     .rpc()
     .sendAndConfirmTransactionsInBatches(preparedCtxs, {
       commitment: "processed",
-      skipPreflight: true,
+      ...confirmOptions,
     });
 
   return [firstTxResponse, ...responses];

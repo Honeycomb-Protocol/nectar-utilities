@@ -41,7 +41,11 @@ type InitNFTArgs = {
   programId?: web3.PublicKey;
 };
 
-export async function initNft(honeycomb: Honeycomb, args: InitNFTArgs) {
+export async function initNft(
+  honeycomb: Honeycomb,
+  args: InitNFTArgs,
+  confirmOptions?: web3.ConfirmOptions
+) {
   const wallet = honeycomb.identity();
   const ctx = createInitNFTCtx({
     project: honeycomb.project().projectAddress,
@@ -52,7 +56,5 @@ export async function initNft(honeycomb: Honeycomb, args: InitNFTArgs) {
     programId: args.programId,
   });
 
-  return honeycomb
-    .rpc()
-    .sendAndConfirmTransaction(ctx, { skipPreflight: true });
+  return honeycomb.rpc().sendAndConfirmTransaction(ctx, confirmOptions);
 }

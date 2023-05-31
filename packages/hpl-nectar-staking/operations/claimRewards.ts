@@ -120,7 +120,8 @@ type ClaimRewardsArgs = {
 };
 export async function claimRewards(
   honeycomb: Honeycomb,
-  args: ClaimRewardsArgs
+  args: ClaimRewardsArgs,
+  confirmOptions?: web3.ConfirmOptions
 ) {
   const wallet = honeycomb.identity();
   const multipliers = await honeycomb
@@ -149,14 +150,14 @@ export async function claimRewards(
     .rpc()
     .sendAndConfirmTransaction(preparedCtxs.shift(), {
       commitment: "processed",
-      skipPreflight: true,
+      ...confirmOptions,
     });
 
   const responses = await honeycomb
     .rpc()
     .sendAndConfirmTransactionsInBatches(preparedCtxs, {
       commitment: "processed",
-      skipPreflight: true,
+      ...confirmOptions,
     });
 
   return [firstTxResponse, ...responses];

@@ -51,7 +51,8 @@ type UpdatePoolArgs = {
 };
 export async function updateStakingPool(
   staking: NectarStaking,
-  args: UpdatePoolArgs
+  args: UpdatePoolArgs,
+  confirmOptions?: web3.ConfirmOptions
 ) {
   const wallet = staking.honeycomb().identity();
   const ctx = createUpdatePoolCtx({
@@ -69,5 +70,5 @@ export async function updateStakingPool(
   return staking
     .honeycomb()
     .rpc()
-    .sendAndConfirmTransaction(ctx, { skipPreflight: true });
+    .sendAndConfirmTransaction(ctx, confirmOptions);
 }

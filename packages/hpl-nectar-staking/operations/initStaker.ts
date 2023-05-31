@@ -34,7 +34,11 @@ type InitStakerArgs = {
   programId?: web3.PublicKey;
 };
 
-export async function initStaker(honeycomb: Honeycomb, args: InitStakerArgs) {
+export async function initStaker(
+  honeycomb: Honeycomb,
+  args: InitStakerArgs,
+  confirmOptions?: web3.ConfirmOptions
+) {
   const wallet = honeycomb.identity();
   const ctx = createInitStakerCtx({
     project: honeycomb.project().projectAddress,
@@ -43,7 +47,5 @@ export async function initStaker(honeycomb: Honeycomb, args: InitStakerArgs) {
     programId: args.programId,
   });
 
-  return honeycomb
-    .rpc()
-    .sendAndConfirmTransaction(ctx, { skipPreflight: true });
+  return honeycomb.rpc().sendAndConfirmTransaction(ctx, confirmOptions);
 }

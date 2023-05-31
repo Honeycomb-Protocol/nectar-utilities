@@ -85,11 +85,19 @@ export class NectarStaking extends Module {
     return new NectarStaking(poolAddress, pool);
   }
 
-  static async new(honeycomb: Honeycomb, args: NewStakingPoolArgs) {
-    const { poolId } = await createStakingPool(honeycomb, {
-      programId: PROGRAM_ID,
-      ...args,
-    });
+  static async new(
+    honeycomb: Honeycomb,
+    args: NewStakingPoolArgs,
+    confirmOptions?: web3.ConfirmOptions
+  ) {
+    const { poolId } = await createStakingPool(
+      honeycomb,
+      {
+        programId: PROGRAM_ID,
+        ...args,
+      },
+      confirmOptions
+    );
     return await NectarStaking.fromAddress(
       new web3.Connection(honeycomb.connection.rpcEndpoint, "processed"),
       poolId
@@ -253,59 +261,97 @@ export class NectarStaking extends Module {
     ]);
   }
 
-  public updatePool(args: UpdatePoolArgs) {
-    return updateStakingPool(this, {
-      programId: this.programId,
-      ...args,
-    });
+  public updatePool(
+    args: UpdatePoolArgs,
+    confirmOptions?: web3.ConfirmOptions
+  ) {
+    return updateStakingPool(
+      this,
+      {
+        programId: this.programId,
+        ...args,
+      },
+      confirmOptions
+    );
   }
 
-  public addMultiplier(args: AddMultiplierArgs) {
-    return addMultiplier(this, {
-      args,
-      programId: this.programId,
-    });
+  public addMultiplier(
+    args: AddMultiplierArgs,
+    confirmOptions?: web3.ConfirmOptions
+  ) {
+    return addMultiplier(
+      this,
+      {
+        args,
+        programId: this.programId,
+      },
+      confirmOptions
+    );
   }
 
-  public withdrawRewards(amount: number) {
-    return withdrawRewards(this, {
-      amount,
-      programId: this.programId,
-    });
+  public withdrawRewards(amount: number, confirmOptions?: web3.ConfirmOptions) {
+    return withdrawRewards(
+      this,
+      {
+        amount,
+        programId: this.programId,
+      },
+      confirmOptions
+    );
   }
 
-  public initStaker() {
-    return initStaker(this._honeycomb, {
-      programId: this.programId,
-    });
+  public initStaker(confirmOptions?: web3.ConfirmOptions) {
+    return initStaker(
+      this._honeycomb,
+      {
+        programId: this.programId,
+      },
+      confirmOptions
+    );
   }
 
-  public initNft(mint: web3.PublicKey) {
-    return initNft(this._honeycomb, {
-      nftMint: mint,
-      programId: this.programId,
-    });
+  public initNft(mint: web3.PublicKey, confirmOptions?: web3.ConfirmOptions) {
+    return initNft(
+      this._honeycomb,
+      {
+        nftMint: mint,
+        programId: this.programId,
+      },
+      confirmOptions
+    );
   }
 
-  public stake(...nfts: AvailableNft[]) {
-    return stake(this._honeycomb, {
-      nfts,
-      programId: this.programId,
-    }).then((res) => this.reloadData().then(() => res));
+  public stake(nfts: AvailableNft[], confirmOptions?: web3.ConfirmOptions) {
+    return stake(
+      this._honeycomb,
+      {
+        nfts,
+        programId: this.programId,
+      },
+      confirmOptions
+    ).then((res) => this.reloadData().then(() => res));
   }
 
-  public claim(...nfts: StakedNft[]) {
-    return claimRewards(this._honeycomb, {
-      nfts,
-      programId: this.programId,
-    }).then((res) => this.reloadData().then(() => res));
+  public claim(nfts: StakedNft[], confirmOptions?: web3.ConfirmOptions) {
+    return claimRewards(
+      this._honeycomb,
+      {
+        nfts,
+        programId: this.programId,
+      },
+      confirmOptions
+    ).then((res) => this.reloadData().then(() => res));
   }
 
-  public unstake(...nfts: StakedNft[]) {
-    return unstake(this._honeycomb, {
-      nfts,
-      programId: this.programId,
-    }).then((res) => this.reloadData().then(() => res));
+  public unstake(nfts: StakedNft[], confirmOptions?: web3.ConfirmOptions) {
+    return unstake(
+      this._honeycomb,
+      {
+        nfts,
+        programId: this.programId,
+      },
+      confirmOptions
+    ).then((res) => this.reloadData().then(() => res));
   }
 
   public install(honeycomb: Honeycomb): Honeycomb {

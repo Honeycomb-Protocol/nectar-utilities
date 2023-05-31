@@ -153,7 +153,8 @@ type CreateProjectArgs = {
 };
 export async function createStakingPool(
   honeycomb: Honeycomb,
-  args: CreateProjectArgs
+  args: CreateProjectArgs,
+  confirmOptions?: web3.ConfirmOptions
 ) {
   const wallet = honeycomb.identity();
   const ctx = createCreateProjectCtx({
@@ -171,9 +172,7 @@ export async function createStakingPool(
   });
 
   return {
-    ...(await honeycomb
-      .rpc()
-      .sendAndConfirmTransaction(ctx, { skipPreflight: true })),
+    ...(await honeycomb.rpc().sendAndConfirmTransaction(ctx, confirmOptions)),
     poolId: ctx.stakingPool,
   };
 }

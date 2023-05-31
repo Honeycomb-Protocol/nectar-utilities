@@ -67,7 +67,8 @@ type WithdrawRewardsArgs = {
 };
 export async function withdrawRewards(
   staking: NectarStaking,
-  args: WithdrawRewardsArgs
+  args: WithdrawRewardsArgs,
+  confirmOptions?: web3.ConfirmOptions
 ) {
   const wallet = staking.honeycomb().identity();
   const ctx = createWithdrawRewardsCtx({
@@ -87,5 +88,5 @@ export async function withdrawRewards(
   return staking
     .honeycomb()
     .rpc()
-    .sendAndConfirmTransaction(ctx, { skipPreflight: true });
+    .sendAndConfirmTransaction(ctx, confirmOptions);
 }

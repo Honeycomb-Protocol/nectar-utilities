@@ -50,7 +50,8 @@ type AddMultiplierArgs = {
 
 export async function addMultiplier(
   staking: NectarStaking,
-  args: AddMultiplierArgs
+  args: AddMultiplierArgs,
+  confirmOptions?: web3.ConfirmOptions
 ) {
   const wallet = staking.honeycomb().identity();
   const ctx = createAddMultiplierCtx({
@@ -66,5 +67,5 @@ export async function addMultiplier(
   return staking
     .honeycomb()
     .rpc()
-    .sendAndConfirmTransaction(ctx, { skipPreflight: true });
+    .sendAndConfirmTransaction(ctx, confirmOptions);
 }

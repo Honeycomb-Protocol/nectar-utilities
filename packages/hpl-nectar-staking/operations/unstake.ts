@@ -139,7 +139,11 @@ type UnstakeArgs = {
   nfts: StakedNft[];
   programId?: web3.PublicKey;
 };
-export async function unstake(honeycomb: Honeycomb, args: UnstakeArgs) {
+export async function unstake(
+  honeycomb: Honeycomb,
+  args: UnstakeArgs,
+  confirmOptions?: web3.ConfirmOptions
+) {
   const ctxs = await Promise.all(
     args.nfts.map((nft, i) =>
       createUnstakeCtx(honeycomb, {
@@ -156,14 +160,14 @@ export async function unstake(honeycomb: Honeycomb, args: UnstakeArgs) {
     .rpc()
     .sendAndConfirmTransaction(preparedCtxs.shift(), {
       commitment: "processed",
-      skipPreflight: true,
+      ...confirmOptions,
     });
 
   const responses = await honeycomb
     .rpc()
     .sendAndConfirmTransactionsInBatches(preparedCtxs, {
       commitment: "processed",
-      skipPreflight: true,
+      ...confirmOptions,
     });
 
   return [firstTxResponse, ...responses];

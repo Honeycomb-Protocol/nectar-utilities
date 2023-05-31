@@ -47,7 +47,8 @@ type InitMultipliersArgs = {
 
 export async function initMultipliers(
   honeycomb: Honeycomb,
-  args: InitMultipliersArgs
+  args: InitMultipliersArgs,
+  confirmOptions?: web3.ConfirmOptions
 ) {
   const wallet = honeycomb.identity();
   const ctx = createInitMultiplierCtx({
@@ -60,7 +61,5 @@ export async function initMultipliers(
     programId: args.programId,
   });
 
-  return honeycomb
-    .rpc()
-    .sendAndConfirmTransaction(ctx, { skipPreflight: true });
+  return honeycomb.rpc().sendAndConfirmTransaction(ctx, confirmOptions);
 }
