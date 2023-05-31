@@ -99,7 +99,7 @@ export async function createClaimRewardsCtx({
   instructions.push(
     createClaimRewardsInstructionV2({
       project: args.project,
-      stakingPool: args.stakingPool.currency().address,
+      stakingPool: args.stakingPool.address,
       nftMint: args.nft.mintAddress,
       currency: args.stakingPool.currency().address,
       currencyKind: args.stakingPool.currency().kind,
