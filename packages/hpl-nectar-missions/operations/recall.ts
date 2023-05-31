@@ -142,6 +142,7 @@ export function createPartialRecallCtx(
 type CreateRecallCtxArgs = {
   participation: NectarMissionParticipation;
   wallet: PublicKey;
+  user: PublicKey;
   isFirst?: boolean;
   programId?: PublicKey;
 };
@@ -160,13 +161,13 @@ export async function createRecallCtxs(args: CreateRecallCtxArgs) {
         .identity()
         .profile(
           args.participation.mission().pool().project().address,
-          args.participation.wallet
+          args.wallet
         );
     } catch {
       ctxs.push(
         createCreateProfileCtx({
           project: args.participation.mission().pool().project().address,
-          identity: { __kind: "Wallet", key: args.participation.wallet },
+          identity: { __kind: "Wallet", key: args.wallet },
           user: (
             await args.participation
               .mission()
@@ -197,7 +198,8 @@ export async function createRecallCtxs(args: CreateRecallCtxArgs) {
               !reward.isCurrency() &&
               getProfilePda(
                 args.participation.mission().pool().project().address,
-                args.participation.wallet
+                args.user,
+                { __kind: "Wallet", key: args.wallet }
               )[0],
             currency: reward.isCurrency() && reward.currency().address,
             currencyKind: reward.isCurrency() && reward.currency().kind,
@@ -232,11 +234,13 @@ export async function recall(
   honeycomb: Honeycomb,
   args: RecallArgs
 ): Promise<ConfirmedContext[]> {
+  const user = await honeycomb.identity().user();
   const ctxs = await Promise.all(
     args.participations.map((participation, i) =>
       createRecallCtxs({
         participation,
         wallet: honeycomb.identity().publicKey,
+        user: user.address,
         isFirst: i === 0,
         programId: args.programId,
       })
