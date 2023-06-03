@@ -100,7 +100,11 @@ export async function createStakeCtx(
   honeycomb: Honeycomb,
   args: CreateStakeCtxArgs
 ) {
-  const instructions: web3.TransactionInstruction[] = [];
+  const instructions: web3.TransactionInstruction[] = [
+    web3.ComputeBudgetProgram.setComputeUnitLimit({
+      units: 300_000,
+    }),
+  ];
   const signers: web3.Signer[] = [];
 
   try {
