@@ -184,12 +184,13 @@ pub struct CollectRewards<'info> {
     pub mission_pool: Box<Account<'info, MissionPool>>,
     #[account(has_one = mission_pool)]
     pub mission: Box<Account<'info, Mission>>,
-    #[account(has_one = wallet, has_one = nft, has_one = mission)]
+    #[account(mut, has_one = wallet, has_one = nft, has_one = mission)]
     pub participation: Box<Account<'info, Participation>>,
     #[account()]
     pub nft: Box<Account<'info, NFT>>,
 
     #[account(
+        mut,
         constraint = (profile.project == mission_pool.project) && (
           profile.identity == ProfileIdentity::Wallet { key: wallet.key() }
         )
@@ -235,23 +236,29 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
         return Err(ErrorCode::NotEnded.into());
     }
 
-    let reward = ctx.accounts.participation.rewards.iter().find(|reward| {
-        if ctx.accounts.currency.is_some() {
-            reward.reward_type
-                == RewardType::Currency {
-                    address: ctx.accounts.currency.as_ref().unwrap().key(),
-                }
-                && !reward.collected
-        } else {
-            reward.reward_type == RewardType::Xp && !reward.collected
-        }
-    });
+    let reward = ctx
+        .accounts
+        .participation
+        .rewards
+        .iter_mut()
+        .find(|reward| {
+            if ctx.accounts.currency.is_some() {
+                reward.reward_type
+                    == RewardType::Currency {
+                        address: ctx.accounts.currency.as_ref().unwrap().key(),
+                    }
+                    && !reward.collected
+            } else {
+                reward.reward_type == RewardType::Xp && !reward.collected
+            }
+        });
 
     if reward.is_none() {
         return Err(ErrorCode::RewardNotAvailable.into());
     }
 
     let reward = reward.unwrap();
+    reward.collected = true;
 
     match reward.reward_type {
         RewardType::Currency { address: _ } => {
@@ -368,7 +375,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                                 },
                             ),
                             ModifyProfileDataArgs {
-                                label: String::from("XP"),
+                                label: String::from("nectar_missions_xp"),
                                 value: ModifyProfileDataArgsValue::SingleValue {
                                     value: (current_amount + reward.amount).to_string(),
                                 },

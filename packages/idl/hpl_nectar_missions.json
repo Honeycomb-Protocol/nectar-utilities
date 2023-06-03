@@ -1,5 +1,5 @@
 {
-  "version": "0.0.10",
+  "version": "0.0.14",
   "name": "hpl_nectar_missions",
   "instructions": [
     {
@@ -351,7 +351,7 @@
         },
         {
           "name": "participation",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -361,7 +361,7 @@
         },
         {
           "name": "profile",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "isOptional": true
         },

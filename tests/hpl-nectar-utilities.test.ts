@@ -80,7 +80,14 @@ describe("Nectar Utilities", () => {
       await HoneycombProject.new(honeycomb, {
         name: "TestProject",
         expectedMintAddresses: nfts.length,
-        profileDataConfigs: [],
+        profileDataConfigs: [
+          {
+            label: "XP",
+            dataType: {
+              __kind: "SingleValue",
+            },
+          },
+        ],
       })
     );
     await honeycomb.project().addCriteria({
@@ -178,6 +185,32 @@ describe("Nectar Utilities", () => {
           },
         ],
       });
+  });
+
+  it("Fetch or Create user/profile", async () => {
+    await honeycomb
+      .identity()
+      .user()
+      .catch((_) =>
+        honeycomb.identity().create().user({
+          username: "MissionTest4",
+          name: "MissionTest",
+          bio: "This account is used for testing",
+          pfp: "https://ottxzxktsovtp7hzlcgxu7ti42ukppp5pzavhy6rkj7v4neiblyq.arweave.net/dOd83VOTqzf8-ViNen5o5qinvf1-QVPj0VJ_XjSICvE?ext=png",
+        })
+      );
+
+    // const profile = await honeycomb
+    //   .identity()
+    //   .profile(honeycomb.project().address, honeycomb.identity().publicKey)
+    //   .catch((_) =>
+    //     honeycomb
+    //       .identity()
+    //       .create()
+    //       .profile(honeycomb.project().address, honeycomb.identity().publicKey)
+    //   );
+
+    // console.log("User", user.address.toString(), profile.address.toString());
   });
 
   it("Stake NFTs", async () => {

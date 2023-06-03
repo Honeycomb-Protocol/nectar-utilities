@@ -17,6 +17,7 @@ import {
 import {
   PROGRAM_ID as CURRENCY_MANAGER_PROGRAM_ID,
   CurrencyKind,
+  createCreateHolderAccountCtx,
   holderAccountPdas,
 } from "@honeycomb-protocol/currency-manager";
 import {
@@ -177,38 +178,59 @@ export async function createRecallCtxs(args: CreateRecallCtxArgs) {
               .user()
           ).address,
           wallet: args.wallet,
-          programId: args.programId,
         })
       );
     }
   }
 
+  const ctxs2: OperationCtx[] = [];
+
+  for (let i = 0; i < args.participation.rewards.length; i++) {
+    const reward = args.participation.rewards[i];
+    if (reward.collected) continue;
+
+    if (reward.isCurrency()) {
+      try {
+        await reward.currency().fetch().holderAccount(args.wallet);
+      } catch {
+        ctxs2.push(
+          createCreateHolderAccountCtx({
+            currency: reward.currency().address,
+            currencyKind: reward.currency().kind,
+            mint: reward.currency().mint,
+            owner: args.wallet,
+            payer: args.wallet,
+          })
+        );
+      }
+    }
+
+    ctxs2.push(
+      createCollectRewardsCtx({
+        project: args.participation.mission().pool().project().address,
+        missionPool: args.participation.mission().pool().address,
+        mission: args.participation.mission().address,
+        participation: args.participation.address,
+        nft: args.participation.nftAddress,
+        profile:
+          !reward.isCurrency() &&
+          getProfilePda(
+            args.participation.mission().pool().project().address,
+            args.user,
+            { __kind: "Wallet", key: args.wallet }
+          )[0],
+        currency: reward.isCurrency() && reward.currency().address,
+        currencyKind: reward.isCurrency() && reward.currency().kind,
+        mint: reward.isCurrency() && reward.currency().mint,
+        wallet: args.wallet,
+        programId: args.programId,
+      })
+    );
+  }
+
   ctxs.push(
     mergeOpertionCtxs(
-      ...args.participation.rewards
-        .filter((r) => !r.collected)
-        .map((reward) => {
-          return createCollectRewardsCtx({
-            project: args.participation.mission().pool().project().address,
-            missionPool: args.participation.mission().pool().address,
-            mission: args.participation.mission().address,
-            participation: args.participation.address,
-            nft: args.participation.nftAddress,
-            profile:
-              !reward.isCurrency() &&
-              getProfilePda(
-                args.participation.mission().pool().project().address,
-                args.user,
-                { __kind: "Wallet", key: args.wallet }
-              )[0],
-            currency: reward.isCurrency() && reward.currency().address,
-            currencyKind: reward.isCurrency() && reward.currency().kind,
-            mint: reward.isCurrency() && reward.currency().mint,
-            wallet: args.wallet,
-            programId: args.programId,
-          });
-        }),
-
+      ...ctxs2,
       createPartialRecallCtx({
         project: args.participation.mission().pool().project().address,
         stakingPool: args.participation.nft.stakingPool,
