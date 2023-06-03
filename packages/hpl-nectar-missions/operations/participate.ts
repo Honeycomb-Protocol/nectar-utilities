@@ -90,6 +90,5 @@ export async function participate(
 
   return honeycomb.rpc().sendAndConfirmTransactionsInBatches(ctxs, {
     commitment: "processed",
-    skipPreflight: true,
   });
 }

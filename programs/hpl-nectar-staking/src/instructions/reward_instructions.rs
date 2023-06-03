@@ -107,7 +107,7 @@ pub struct ClaimRewards<'info> {
     #[account(has_one = mint)]
     pub currency: Box<Account<'info, Currency>>,
 
-    #[account()]
+    #[account(mut)]
     pub mint: Box<Account<'info, Mint>>,
 
     #[account(has_one = currency, constraint = vault_holder_account.token_account == vault_token_account.key() && vault_holder_account.owner == staking_pool.key())]

@@ -1,5 +1,5 @@
 {
-  "version": "0.0.42",
+  "version": "0.0.48",
   "name": "hpl_nectar_staking",
   "instructions": [
     {
@@ -925,7 +925,7 @@
         },
         {
           "name": "mint",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {

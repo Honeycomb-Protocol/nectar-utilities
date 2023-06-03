@@ -23,7 +23,7 @@ describe("Nectar Utilities", () => {
   let factionsMerkleTree: MerkleTree;
   let mainVault: HplHolderAccount;
 
-  beforeAll(async () => {
+  it("Prepare and Setup", async () => {
     honeycomb = await prepare();
     const balance = await honeycomb
       .rpc()
@@ -69,6 +69,11 @@ describe("Nectar Utilities", () => {
       faction: "faction",
       mint: nft.mint.address,
     }));
+    factionsMerkleTree = new MerkleTree(
+      factionsArray.map(({ faction, mint }) =>
+        Buffer.from([...Buffer.from(faction), ...mint.toBuffer()])
+      )
+    );
 
     console.log(
       "FactionsTree",
@@ -82,7 +87,7 @@ describe("Nectar Utilities", () => {
         expectedMintAddresses: nfts.length,
         profileDataConfigs: [
           {
-            label: "XP",
+            label: "nectar_missions_xp",
             dataType: {
               __kind: "SingleValue",
             },
@@ -134,7 +139,7 @@ describe("Nectar Utilities", () => {
       .currency()
       .create()
       .holderAccount(honeycomb.staking().address);
-    await mainVault.transfer(10_000, stakingVault);
+    await mainVault.transfer(10_000_000_000_000, stakingVault);
   });
 
   it("Create Mission Pool", async () => {
@@ -152,7 +157,12 @@ describe("Nectar Utilities", () => {
       .currency()
       .create()
       .holderAccount(honeycomb.missions().address);
-    await mainVault.transfer(10_000, missionsVault);
+    await mainVault.transfer(10_000_000_000_000, missionsVault);
+    console.log(
+      "Missions",
+      honeycomb.missions().address.toString(),
+      mainVault.tokenAccount.toString()
+    );
   });
 
   it("Create Mission", async () => {
@@ -193,22 +203,22 @@ describe("Nectar Utilities", () => {
       .user()
       .catch((_) =>
         honeycomb.identity().create().user({
-          username: "MissionTest4",
+          username: "MissionTest7",
           name: "MissionTest",
           bio: "This account is used for testing",
           pfp: "https://ottxzxktsovtp7hzlcgxu7ti42ukppp5pzavhy6rkj7v4neiblyq.arweave.net/dOd83VOTqzf8-ViNen5o5qinvf1-QVPj0VJ_XjSICvE?ext=png",
         })
       );
 
-    // const profile = await honeycomb
-    //   .identity()
-    //   .profile(honeycomb.project().address, honeycomb.identity().publicKey)
-    //   .catch((_) =>
-    //     honeycomb
-    //       .identity()
-    //       .create()
-    //       .profile(honeycomb.project().address, honeycomb.identity().publicKey)
-    //   );
+    await honeycomb
+      .identity()
+      .profile(honeycomb.project().address, honeycomb.identity().publicKey)
+      .catch((_) =>
+        honeycomb
+          .identity()
+          .create()
+          .profile(honeycomb.project().address, honeycomb.identity().publicKey)
+      );
 
     // console.log("User", user.address.toString(), profile.address.toString());
   });
@@ -216,9 +226,7 @@ describe("Nectar Utilities", () => {
   it("Stake NFTs", async () => {
     const availableNfts = await honeycomb.staking().fetch().availableNfts();
     expect(availableNfts.length).toBe(totalNfts);
-    await honeycomb.staking().stake(availableNfts, {
-      skipPreflight: true,
-    });
+    await honeycomb.staking().stake(availableNfts);
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     expect(stakedNfts.length).toBe(totalNfts);
   });

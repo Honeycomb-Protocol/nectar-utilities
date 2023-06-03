@@ -323,7 +323,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
             }
 
             let profile = ctx.accounts.profile.clone().unwrap();
-            let current_xp = profile.data.get("XP");
+            let current_xp = profile.data.get("nectar_missions_xp");
 
             if current_xp.is_none() {
                 add_profile_data(
@@ -344,7 +344,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                         },
                     ),
                     AddProfileDataArgs {
-                        label: String::from("XP"),
+                        label: String::from("nectar_missions_xp"),
                         value: Some(AddProfileDataArgsValue::SingleValue {
                             value: String::from("0"),
                         }),

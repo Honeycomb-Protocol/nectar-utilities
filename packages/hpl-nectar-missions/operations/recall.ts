@@ -271,6 +271,5 @@ export async function recall(
 
   return honeycomb.rpc().sendAndConfirmTransactionsInBatches(ctxs.flat(), {
     commitment: "processed",
-    skipPreflight: true,
   });
 }

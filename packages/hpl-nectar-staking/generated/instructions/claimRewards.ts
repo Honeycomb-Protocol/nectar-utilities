@@ -27,7 +27,7 @@ export const claimRewardsStruct = new beet.BeetArgsStruct<{
  * @property [] multipliers (optional)
  * @property [_writable_] nft
  * @property [] currency
- * @property [] mint
+ * @property [_writable_] mint
  * @property [] vaultHolderAccount
  * @property [_writable_] vaultTokenAccount
  * @property [] holderAccount
@@ -114,7 +114,7 @@ export function createClaimRewardsInstruction(
   })
   keys.push({
     pubkey: accounts.mint,
-    isWritable: false,
+    isWritable: true,
     isSigner: false,
   })
   keys.push({
