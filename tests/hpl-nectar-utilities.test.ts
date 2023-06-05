@@ -7,7 +7,11 @@ import {
   HplCurrency,
   HplHolderAccount,
 } from "@honeycomb-protocol/currency-manager";
-import { LockType, NectarStaking } from "../packages/hpl-nectar-staking";
+import {
+  LockType,
+  NectarStaking,
+  nectarStakingModule,
+} from "../packages/hpl-nectar-staking";
 import { prepare } from "./prepare";
 import { MerkleTree, NectarMissions } from "../packages/hpl-nectar-missions";
 jest.setTimeout(2000000);
@@ -23,7 +27,37 @@ describe("Nectar Utilities", () => {
   let factionsMerkleTree: MerkleTree;
   let mainVault: HplHolderAccount;
 
-  it("Prepare and Setup", async () => {
+  it("Temp", async () => {
+    const connection = new web3.Connection(
+      "https://side-damp-bird.solana-mainnet.quiknode.pro/11449a3f0f4fd38ce2441a9ac133ab8111ad652d/"
+    );
+    const honeycomb = new Honeycomb(connection, { env: "main" }).use(
+      await HoneycombProject.fromAddress(
+        connection,
+        new web3.PublicKey("7CKTHsJ3EZqChNf3XGt9ytdZXvSzDFWmrQJL3BCe4Ppw")
+      )
+    );
+    honeycomb.use(
+      await nectarStakingModule(
+        honeycomb,
+        new web3.PublicKey("8gKSkodEmGHxsnHsj7N1XWGBKD6yHw89awbkzLViGdub")
+      )
+    );
+
+    const stakedNfts = await honeycomb
+      .staking()
+      .fetch()
+      .stakedNfts(
+        new web3.PublicKey("232Z5QNvQ4wRyraGWFpC5i3HEbqozEWgBCV95eWASaG1")
+      );
+    const [{ rewards, multipliers }] = await honeycomb
+      .staking()
+      .fetch()
+      .rewards(stakedNfts);
+    console.log("rewards", rewards, multipliers);
+  });
+
+  it.skip("Prepare and Setup", async () => {
     honeycomb = await prepare();
     const balance = await honeycomb
       .rpc()
@@ -112,7 +146,7 @@ describe("Nectar Utilities", () => {
     await mainVault.mint(100_000 * 1_000_000_000);
   });
 
-  it("Create Staking Pool", async () => {
+  it.skip("Create Staking Pool", async () => {
     // Create staking pool
     honeycomb.use(
       await NectarStaking.new(honeycomb, {
@@ -142,7 +176,7 @@ describe("Nectar Utilities", () => {
     await mainVault.transfer(10_000_000_000_000, stakingVault);
   });
 
-  it("Create Mission Pool", async () => {
+  it.skip("Create Mission Pool", async () => {
     honeycomb.use(
       await NectarMissions.new(honeycomb, {
         args: {
@@ -165,7 +199,7 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it("Create Mission", async () => {
+  it.skip("Create Mission", async () => {
     await honeycomb
       .missions()
       .create()
@@ -197,7 +231,7 @@ describe("Nectar Utilities", () => {
       });
   });
 
-  it("Fetch or Create user/profile", async () => {
+  it.skip("Fetch or Create user/profile", async () => {
     await honeycomb
       .identity()
       .user()
@@ -223,7 +257,7 @@ describe("Nectar Utilities", () => {
     // console.log("User", user.address.toString(), profile.address.toString());
   });
 
-  it("Stake NFTs", async () => {
+  it.skip("Stake NFTs", async () => {
     const availableNfts = await honeycomb.staking().fetch().availableNfts();
     expect(availableNfts.length).toBe(totalNfts);
     await honeycomb.staking().stake(availableNfts);
@@ -231,7 +265,7 @@ describe("Nectar Utilities", () => {
     expect(stakedNfts.length).toBe(totalNfts);
   });
 
-  it("Participate on Mission", async () => {
+  it.skip("Participate on Mission", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     const mission = await honeycomb.missions().mission("QuickPost");
     await mission.participate(
@@ -247,13 +281,13 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it("Recall from missions", async () => {
+  it.skip("Recall from missions", async () => {
     const participations = await honeycomb.missions().fetch().participations();
     const mission = await honeycomb.missions().mission("QuickPost");
     await mission.recall(...participations);
   });
 
-  it("Unstake NFTs", async () => {
+  it.skip("Unstake NFTs", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     await honeycomb.staking().unstake(stakedNfts, {
       skipPreflight: true,

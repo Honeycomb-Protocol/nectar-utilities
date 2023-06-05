@@ -22,7 +22,6 @@ import {
   fetchAvailableNfts,
   fetchRewards,
   fetchStakedNfts,
-  fetchStaker,
   initNft,
   initStaker,
   stake,
@@ -65,7 +64,7 @@ export class NectarStaking extends Module {
   private _fetch: NectarStakingFetch;
 
   private _multipliers: StakingMultipliers | null = null;
-  private _staker: Staker | null = null;
+  private _stakers: { [wallet: string]: Staker } = {};
   private _availableNfts: AvailableNft[] | null = null;
   private _stakedNfts: StakedNft[] | null = null;
 
@@ -198,14 +197,21 @@ export class NectarStaking extends Module {
     });
   }
 
-  public staker() {
-    if (this._staker) {
-      return Promise.resolve(this._staker);
+  public async staker(
+    args?: { wallet: web3.PublicKey } | { address: web3.PublicKey },
+    reFetch = false
+  ) {
+    let address: web3.PublicKey;
+    if (!args) args = { wallet: this.honeycomb().identity().publicKey };
+    if ("wallet" in args) {
+      address = getStakerPda(this.address, args.wallet, this.programId)[0];
+    } else {
+      address = args.address;
     }
-    return this._fetch.staker().then((staker) => {
-      this._staker = staker;
-      return staker;
-    });
+    if (!this._stakers[address.toString()] || reFetch) {
+      this._stakers[address.toString()] = await this.fetch().staker(args);
+    }
+    return this._stakers[address.toString()];
   }
 
   public availableNfts() {
@@ -237,13 +243,7 @@ export class NectarStaking extends Module {
           return multipliers;
         })
         .catch((e) => console.error(e)),
-      this._fetch
-        .staker()
-        .then((staker) => {
-          this._staker = staker;
-          return staker;
-        })
-        .catch((e) => console.error(e)),
+      this.staker(undefined, true).catch((e) => console.error(e)),
       this._fetch
         .availableNfts()
         .then((nfts) => {
@@ -429,12 +429,23 @@ export class NectarStakingFetch {
       );
   }
 
-  public staker(walletAddress?: web3.PublicKey) {
-    return fetchStaker(this.nectarStaking.honeycomb(), {
-      walletAddress:
-        walletAddress || this.nectarStaking.honeycomb().identity().publicKey,
-      programId: this.nectarStaking.programId,
-    });
+  public staker(
+    args: { wallet: web3.PublicKey } | { address: web3.PublicKey }
+  ) {
+    let address: web3.PublicKey;
+    if ("wallet" in args) {
+      address = getStakerPda(
+        this.nectarStaking.poolAddress,
+        args.wallet,
+        this.nectarStaking.programId
+      )[0];
+    } else {
+      address = args.address;
+    }
+    return Staker.fromAccountAddress(
+      this.nectarStaking.honeycomb().connection,
+      address
+    );
   }
 
   public stakedNfts(walletAddress?: web3.PublicKey) {
@@ -453,11 +464,11 @@ export class NectarStakingFetch {
     });
   }
 
-  public rewards(...stakedNfts: StakedNft[]) {
+  public rewards(stakedNfts: StakedNft[]) {
     return Promise.all(
       stakedNfts.map(async (nft) =>
         fetchRewards(this.nectarStaking, {
-          staker: await this.nectarStaking.staker(),
+          staker: await this.nectarStaking.staker({ address: nft.staker }),
           nft,
         })
       )

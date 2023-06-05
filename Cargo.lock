@@ -1010,7 +1010,7 @@ dependencies = [
 
 [[package]]
 name = "hpl-nectar-missions"
-version = "0.0.15"
+version = "0.0.16"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -1023,7 +1023,7 @@ dependencies = [
 
 [[package]]
 name = "hpl-nectar-staking"
-version = "0.0.49"
+version = "0.0.50"
 dependencies = [
  "anchor-lang",
  "anchor-spl",

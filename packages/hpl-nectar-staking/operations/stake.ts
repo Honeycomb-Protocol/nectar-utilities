@@ -164,7 +164,7 @@ export async function stake(
   );
 
   try {
-    await honeycomb.staking().fetch().staker();
+    await honeycomb.staking().fetch().staker({ wallet: wallet.publicKey });
   } catch {
     ctxs.unshift(
       createInitStakerCtx({

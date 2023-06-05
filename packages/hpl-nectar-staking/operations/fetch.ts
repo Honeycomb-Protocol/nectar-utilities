@@ -1,6 +1,13 @@
 import { Metadata, Metaplex } from "@metaplex-foundation/js";
-import { TokenStandard, TokenRecord, TokenState } from "@metaplex-foundation/mpl-token-metadata";
-import { TOKEN_PROGRAM_ID, getAssociatedTokenAddressSync } from "@solana/spl-token";
+import {
+  TokenStandard,
+  TokenRecord,
+  TokenState,
+} from "@metaplex-foundation/mpl-token-metadata";
+import {
+  TOKEN_PROGRAM_ID,
+  getAssociatedTokenAddressSync,
+} from "@solana/spl-token";
 import * as web3 from "@solana/web3.js";
 import { AvailableNft, StakedNft, TokenAccountInfo } from "../types";
 import { NFT, Staker } from "../generated";
@@ -42,10 +49,10 @@ export async function fetchStakedNfts(
         metaplexNfts.filter((x) => x.model == "metadata") as Metadata[]
       ).map(
         (nft) =>
-        ({
-          ...nft,
-          ...nfts.find((x) => x.mint.equals(nft.mintAddress)),
-        } as StakedNft)
+          ({
+            ...nft,
+            ...nfts.find((x) => x.mint.equals(nft.mintAddress)),
+          } as StakedNft)
       );
     });
 
@@ -63,12 +70,9 @@ export async function fetchAvailableNfts(
 ) {
   const wallet = args?.walletAddress || honeycomb.identity().publicKey;
   const ownedTokenAccounts: TokenAccountInfo[] = await honeycomb.connection
-    .getParsedTokenAccountsByOwner(
-      wallet,
-      {
-        programId: TOKEN_PROGRAM_ID,
-      }
-    )
+    .getParsedTokenAccountsByOwner(wallet, {
+      programId: TOKEN_PROGRAM_ID,
+    })
     .then((x) =>
       x.value
         .map((x) => ({
@@ -85,36 +89,45 @@ export async function fetchAvailableNfts(
       mints: ownedTokenAccounts.map((x) => x.tokenMint),
     })
     .then((nfts) =>
-      (nfts.filter((x) => x?.model == "metadata") as Metadata[])
-        .map((x) => {
-          return {
-            ...x,
-            ...ownedTokenAccounts.find(
-              (y) => y.tokenMint.toString() === x.mintAddress.toString()
-            ),
-          } as AvailableNft;
-        })
+      (nfts.filter((x) => x?.model == "metadata") as Metadata[]).map((x) => {
+        return {
+          ...x,
+          ...ownedTokenAccounts.find(
+            (y) => y.tokenMint.toString() === x.mintAddress.toString()
+          ),
+        } as AvailableNft;
+      })
     );
 
   ownedNfts = await Promise.all(
     ownedNfts.map(async (nft) => {
       if (nft.tokenStandard === TokenStandard.ProgrammableNonFungible) {
-        const tokenAccount = getAssociatedTokenAddressSync(nft.mintAddress, wallet)
-        const [tokenRecord] = getMetadataAccount_(nft.mintAddress, { __kind: "token_record", tokenAccount })
-        nft.tokenRecord = await TokenRecord.fromAccountAddress(honeycomb.connection, tokenRecord)
+        const tokenAccount = getAssociatedTokenAddressSync(
+          nft.mintAddress,
+          wallet
+        );
+        const [tokenRecord] = getMetadataAccount_(nft.mintAddress, {
+          __kind: "token_record",
+          tokenAccount,
+        });
+        nft.tokenRecord = await TokenRecord.fromAccountAddress(
+          honeycomb.connection,
+          tokenRecord
+        );
       }
       return nft;
     })
-  )
+  );
 
   ownedNfts = ownedNfts.filter((x) => {
     if (
-      x.tokenStandard && x.tokenStandard === TokenStandard.ProgrammableNonFungible
+      x.tokenStandard &&
+      x.tokenStandard === TokenStandard.ProgrammableNonFungible
     ) {
       return x.tokenRecord && x.tokenRecord.state === TokenState.Unlocked;
     }
     return x.state !== "frozen";
-  })
+  });
 
   let filteredNfts: AvailableNft[] = [];
 
@@ -139,15 +152,15 @@ export async function fetchAvailableNfts(
 
   const validCollections = !!honeycomb.staking().collections.length
     ? honeycomb
-      .project()
-      .collections.filter((_, i) =>
-        honeycomb.staking().collections.includes(i)
-      )
+        .project()
+        .collections.filter((_, i) =>
+          honeycomb.staking().collections.includes(i)
+        )
     : [];
   const validCreators = !!honeycomb.staking().creators
     ? honeycomb
-      .project()
-      .creators.filter((_, i) => honeycomb.staking().creators.includes(i))
+        .project()
+        .creators.filter((_, i) => honeycomb.staking().creators.includes(i))
     : [];
 
   filteredNfts = [
@@ -205,10 +218,10 @@ export async function fetchRewards(
 ) {
   const end: number = (args.till?.getTime() || Date.now()) / 1000;
   let secondsElapsed = end - Number(args.nft.lastClaim);
-
-  if (secondsElapsed < Number(staking.rewardsDuration)) {
-    return { rewards: 0, multipliers: 0 };
-  }
+  console.log("secondsElapsed", secondsElapsed);
+  // if (secondsElapsed < Number(staking.rewardsDuration)) {
+  //   return { rewards: 0, multipliers: 0 };
+  // }
 
   const maxRewardsDuration =
     staking.maxRewardsDuration && Number(staking.maxRewardsDuration);
@@ -247,7 +260,7 @@ export async function fetchRewards(
       if (
         multiplier.multiplierType.__kind === "NFTCount" &&
         Number(multiplier.multiplierType.minCount) <=
-        Number(args.staker.totalStaked)
+          Number(args.staker.totalStaked)
       ) {
         countMultiplier = Number(multiplier.value);
       } else {
@@ -285,5 +298,8 @@ export async function fetchRewards(
   }
 
   rewardsAmount = (rewardsAmount * totalMultipliers) / multipliersDecimals;
-  return { rewards: rewardsAmount, multipliers: totalMultipliers };
+  return {
+    rewards: rewardsAmount,
+    multipliers: (totalMultipliers - multipliersDecimals) / multipliersDecimals,
+  };
 }
