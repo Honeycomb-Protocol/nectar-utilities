@@ -69,8 +69,8 @@ export async function createMission(
     project: args.project || honeycomb.missions().project().address,
     missionPool: args.missionPool || honeycomb.missions().address,
     delegateAuthority: honeycomb.identity().delegateAuthority().address,
-    authority: honeycomb.identity().publicKey,
-    payer: honeycomb.identity().publicKey,
+    authority: honeycomb.identity().address,
+    payer: honeycomb.identity().address,
     programId: args.programId,
   });
 

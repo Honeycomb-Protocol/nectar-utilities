@@ -58,8 +58,8 @@ export async function updateStakingPool(
   const ctx = createUpdatePoolCtx({
     project: staking.pool().project,
     stakingPool: staking.poolAddress,
-    authority: wallet.publicKey,
-    payer: wallet.publicKey,
+    authority: wallet.address,
+    payer: wallet.address,
     args: args.args,
     collection: args.collection,
     creator: args.creator,

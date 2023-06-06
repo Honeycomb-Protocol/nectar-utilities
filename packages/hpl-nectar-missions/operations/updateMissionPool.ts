@@ -69,8 +69,8 @@ export async function updateMissionPool(
     collection: args.collection,
     creator: args.creator,
     delegateAuthority: honeycomb.identity().delegateAuthority().address,
-    authority: honeycomb.identity().publicKey,
-    payer: honeycomb.identity().publicKey,
+    authority: honeycomb.identity().address,
+    payer: honeycomb.identity().address,
     programId: args.programId,
   });
 

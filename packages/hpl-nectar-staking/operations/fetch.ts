@@ -22,7 +22,7 @@ type FetchStakerArgs = {
 export function fetchStaker(honeycomb: Honeycomb, args: FetchStakerArgs) {
   const [staker] = getStakerPda(
     honeycomb.staking().poolAddress,
-    args?.walletAddress || honeycomb.identity().publicKey,
+    args?.walletAddress || honeycomb.identity().address,
     args?.programId
   );
   return Staker.fromAccountAddress(honeycomb.connection, staker);
@@ -68,7 +68,7 @@ export async function fetchAvailableNfts(
   honeycomb: Honeycomb,
   args?: FetchAvailableNfts
 ) {
-  const wallet = args?.walletAddress || honeycomb.identity().publicKey;
+  const wallet = args?.walletAddress || honeycomb.identity().address;
   const ownedTokenAccounts: TokenAccountInfo[] = await honeycomb.connection
     .getParsedTokenAccountsByOwner(wallet, {
       programId: TOKEN_PROGRAM_ID,

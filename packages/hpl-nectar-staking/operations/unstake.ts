@@ -107,7 +107,7 @@ export async function createUnstakeCtx(
   const signers: web3.Signer[] = [];
 
   const claimCtx = await createClaimRewardsCtx({
-    wallet: honeycomb.identity().publicKey,
+    wallet: honeycomb.identity().address,
     connection: honeycomb.connection,
     project: honeycomb.project().projectAddress,
     stakingPool: honeycomb.staking(),
@@ -124,7 +124,7 @@ export async function createUnstakeCtx(
     project: honeycomb.project().projectAddress,
     stakingPool: honeycomb.staking().poolAddress,
     nftMint: args.nft.mintAddress,
-    wallet: honeycomb.identity().publicKey,
+    wallet: honeycomb.identity().address,
     authRuleSet: args.nft.programmableConfig?.ruleSet,
     lockType: honeycomb.staking().lockType,
     tokenStandard: args.nft.tokenStandard,

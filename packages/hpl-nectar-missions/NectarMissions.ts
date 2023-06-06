@@ -245,7 +245,7 @@ class NectarMissionsFetch {
   ): Promise<NectarMissionParticipation[]> {
     const gpa = Participation.gpaBuilder().addFilter(
       "wallet",
-      walletAddress || this._missions.honeycomb().identity().publicKey
+      walletAddress || this._missions.honeycomb().identity().address
     );
     if (mission) gpa.addFilter("mission", mission);
     return gpa

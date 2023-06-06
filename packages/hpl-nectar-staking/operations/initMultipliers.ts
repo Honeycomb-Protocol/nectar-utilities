@@ -54,8 +54,8 @@ export async function initMultipliers(
   const ctx = createInitMultiplierCtx({
     project: honeycomb.project().projectAddress,
     stakingPool: honeycomb.staking().poolAddress,
-    authority: wallet.publicKey,
-    payer: wallet.publicKey,
+    authority: wallet.address,
+    payer: wallet.address,
     args: args.args,
     delegateAuthority: wallet.delegateAuthority().address,
     programId: args.programId,

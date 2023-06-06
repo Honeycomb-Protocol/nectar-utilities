@@ -119,7 +119,7 @@ export async function createStakeCtx(
       project: honeycomb.project().projectAddress,
       stakingPool: honeycomb.staking().poolAddress,
       nftMint: args.nft.tokenMint,
-      wallet: honeycomb.identity().publicKey,
+      wallet: honeycomb.identity().address,
       programId: args.programId,
     });
     instructions.push(...initNftCtx.tx.instructions);
@@ -131,7 +131,7 @@ export async function createStakeCtx(
       project: honeycomb.project().projectAddress,
       stakingPool: honeycomb.staking().poolAddress,
       nftMint: args.nft.tokenMint,
-      wallet: honeycomb.identity().publicKey,
+      wallet: honeycomb.identity().address,
       authRuleSet: args.nft.programmableConfig?.ruleSet,
       lockType: honeycomb.staking().lockType,
       tokenStandard: args.nft.tokenStandard,
@@ -164,13 +164,13 @@ export async function stake(
   );
 
   try {
-    await honeycomb.staking().fetch().staker({ wallet: wallet.publicKey });
+    await honeycomb.staking().fetch().staker({ wallet: wallet.address });
   } catch {
     ctxs.unshift(
       createInitStakerCtx({
         project: honeycomb.project().projectAddress,
         stakingPool: honeycomb.staking().poolAddress,
-        wallet: wallet.publicKey,
+        wallet: wallet.address,
         programId: args.programId,
       })
     );

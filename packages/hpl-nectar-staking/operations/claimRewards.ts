@@ -136,7 +136,7 @@ export async function claimRewards(
         project: (args.staking || honeycomb.staking()).project().address,
         stakingPool: args.staking || honeycomb.staking(),
         nft,
-        wallet: wallet.publicKey,
+        wallet: wallet.address,
         multipliers: multipliers?.address,
         isFirst: i === 0,
         programId: args.programId,

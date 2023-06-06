@@ -16,8 +16,8 @@ import {
   UpdateStakingPoolArgs,
 } from "./generated";
 import {
-  addMultiplier,
   claimRewards,
+  createAddMultiplierOperation,
   createStakingPool,
   fetchAvailableNfts,
   fetchRewards,
@@ -202,7 +202,7 @@ export class NectarStaking extends Module {
     reFetch = false
   ) {
     let address: web3.PublicKey;
-    if (!args) args = { wallet: this.honeycomb().identity().publicKey };
+    if (!args) args = { wallet: this.honeycomb().identity().address };
     if ("wallet" in args) {
       address = getStakerPda(this.address, args.wallet, this.programId)[0];
     } else {
@@ -275,18 +275,16 @@ export class NectarStaking extends Module {
     );
   }
 
-  public addMultiplier(
+  public async addMultiplier(
     args: AddMultiplierArgs,
     confirmOptions?: web3.ConfirmOptions
   ) {
-    return addMultiplier(
-      this,
-      {
-        args,
-        programId: this.programId,
-      },
-      confirmOptions
-    );
+    const { operation } = await createAddMultiplierOperation(this.honeycomb(), {
+      args,
+      staking: this,
+      programId: this.programId,
+    });
+    return operation.send(confirmOptions);
   }
 
   public withdrawRewards(amount: number, confirmOptions?: web3.ConfirmOptions) {
@@ -417,7 +415,7 @@ export class NectarStakingFetch {
     gpa.addFilter("stakingPool", this.nectarStaking.poolAddress);
     const [staker] = getStakerPda(
       this.nectarStaking.poolAddress,
-      walletAddress || this.nectarStaking.honeycomb().identity().publicKey,
+      walletAddress || this.nectarStaking.honeycomb().identity().address,
       this.nectarStaking.programId
     );
     gpa.addFilter("staker", staker);
@@ -451,7 +449,7 @@ export class NectarStakingFetch {
   public stakedNfts(walletAddress?: web3.PublicKey) {
     return fetchStakedNfts(this.nectarStaking.honeycomb(), {
       walletAddress:
-        walletAddress || this.nectarStaking.honeycomb().identity().publicKey,
+        walletAddress || this.nectarStaking.honeycomb().identity().address,
       programId: this.nectarStaking.programId,
     });
   }
@@ -459,7 +457,7 @@ export class NectarStakingFetch {
   public availableNfts(walletAddress?: web3.PublicKey) {
     return fetchAvailableNfts(this.nectarStaking.honeycomb(), {
       walletAddress:
-        walletAddress || this.nectarStaking.honeycomb().identity().publicKey,
+        walletAddress || this.nectarStaking.honeycomb().identity().address,
       programId: this.nectarStaking.programId,
     });
   }

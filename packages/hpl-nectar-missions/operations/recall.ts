@@ -261,7 +261,7 @@ export async function recall(
     args.participations.map((participation, i) =>
       createRecallCtxs({
         participation,
-        wallet: honeycomb.identity().publicKey,
+        wallet: honeycomb.identity().address,
         user: user.address,
         isFirst: i === 0,
         programId: args.programId,

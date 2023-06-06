@@ -106,8 +106,8 @@ export async function createMissionPool(
     args: args.args,
     project: args.project || honeycomb.project().address,
     delegateAuthority: honeycomb.identity().delegateAuthority().address,
-    authority: honeycomb.identity().publicKey,
-    payer: honeycomb.identity().publicKey,
+    authority: honeycomb.identity().address,
+    payer: honeycomb.identity().address,
     programId: args.programId,
   });
 

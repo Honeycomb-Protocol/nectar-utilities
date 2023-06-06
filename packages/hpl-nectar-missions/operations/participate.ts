@@ -83,7 +83,7 @@ export async function participate(
       mission: args.mission.address,
       nft: getNftPda(nft.stakingPool, nft.mint)[0],
       staker: nft.staker,
-      wallet: honeycomb.identity().publicKey,
+      wallet: honeycomb.identity().address,
       programId: args.programId,
     })
   );

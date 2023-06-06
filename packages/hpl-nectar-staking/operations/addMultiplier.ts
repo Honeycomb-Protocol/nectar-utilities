@@ -5,34 +5,34 @@ import {
   PROGRAM_ID,
 } from "../generated";
 import { getMultipliersPda } from "../pdas";
-import { VAULT, createCtx } from "@honeycomb-protocol/hive-control";
+import { Honeycomb, Operation, VAULT } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
 
-type CreateAddMultiplierCtxArgs = {
-  project: web3.PublicKey;
-  stakingPool: web3.PublicKey;
-  authority: web3.PublicKey;
-  payer: web3.PublicKey;
+type CreateAddMultiplierOperationArgs = {
   args: AddMultiplierArgsChain;
-  delegateAuthority?: web3.PublicKey;
+  staking: NectarStaking;
   programId?: web3.PublicKey;
 };
 
-export function createAddMultiplierCtx(args: CreateAddMultiplierCtxArgs) {
+export async function createAddMultiplierOperation(
+  honeycomb: Honeycomb,
+  args: CreateAddMultiplierOperationArgs
+) {
   const programId = args.programId || PROGRAM_ID;
 
-  const [multipliers] = getMultipliersPda(args.stakingPool, programId);
+  const [multipliers] = getMultipliersPda(args.staking.address, programId);
 
   const instructions: web3.TransactionInstruction[] = [
     createAddMultiplierInstruction(
       {
-        project: args.project,
+        project: args.staking.project().address,
         vault: VAULT,
-        stakingPool: args.stakingPool,
+        stakingPool: args.staking.address,
         multipliers,
-        delegateAuthority: args.delegateAuthority || programId,
-        authority: args.authority,
-        payer: args.payer,
+        delegateAuthority:
+          honeycomb.identity().delegateAuthority().address || programId,
+        authority: honeycomb.identity().address,
+        payer: honeycomb.identity().address,
         rentSysvar: web3.SYSVAR_RENT_PUBKEY,
       },
       { args: args.args },
@@ -40,32 +40,7 @@ export function createAddMultiplierCtx(args: CreateAddMultiplierCtxArgs) {
     ),
   ];
 
-  return createCtx(instructions);
-}
-
-type AddMultiplierArgs = {
-  args: AddMultiplierArgsChain;
-  programId?: web3.PublicKey;
-};
-
-export async function addMultiplier(
-  staking: NectarStaking,
-  args: AddMultiplierArgs,
-  confirmOptions?: web3.ConfirmOptions
-) {
-  const wallet = staking.honeycomb().identity();
-  const ctx = createAddMultiplierCtx({
-    project: staking.pool().project,
-    stakingPool: staking.poolAddress,
-    authority: wallet.publicKey,
-    payer: wallet.publicKey,
-    args: args.args,
-    delegateAuthority: wallet.delegateAuthority().address,
-    programId: args.programId,
-  });
-
-  return staking
-    .honeycomb()
-    .rpc()
-    .sendAndConfirmTransaction(ctx, confirmOptions);
+  return {
+    operation: new Operation(honeycomb, instructions),
+  };
 }

@@ -61,11 +61,11 @@ describe("Nectar Utilities", () => {
     honeycomb = await prepare();
     const balance = await honeycomb
       .rpc()
-      .getBalance(honeycomb.identity().publicKey);
+      .getBalance(honeycomb.identity().address);
 
     console.log(
       "address",
-      honeycomb.identity().publicKey.toString(),
+      honeycomb.identity().address.toString(),
       balance.toString(),
       honeycomb.connection.rpcEndpoint
     );
@@ -291,12 +291,12 @@ describe("Nectar Utilities", () => {
 
     await honeycomb
       .identity()
-      .profile(honeycomb.project().address, honeycomb.identity().publicKey)
+      .profile(honeycomb.project().address, honeycomb.identity().address)
       .catch((_) =>
         honeycomb
           .identity()
           .create()
-          .profile(honeycomb.project().address, honeycomb.identity().publicKey)
+          .profile(honeycomb.project().address, honeycomb.identity().address)
       );
 
     // console.log("User", user.address.toString(), profile.address.toString());

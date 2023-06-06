@@ -51,7 +51,7 @@ export async function initNft(
     project: honeycomb.project().projectAddress,
     stakingPool: honeycomb.staking().poolAddress,
     nftMint: args.nftMint,
-    wallet: wallet.publicKey,
+    wallet: wallet.address,
     delegateAuthority: wallet.delegateAuthority().address,
     programId: args.programId,
   });
