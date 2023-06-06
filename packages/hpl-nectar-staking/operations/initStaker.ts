@@ -1,51 +1,33 @@
 import * as web3 from "@solana/web3.js";
 import { createInitStakerInstruction, PROGRAM_ID } from "../generated";
 import { getStakerPda } from "../pdas";
-import { VAULT, createCtx, Honeycomb } from "@honeycomb-protocol/hive-control";
+import { VAULT, Operation, Honeycomb } from "@honeycomb-protocol/hive-control";
+import { NectarStaking } from "../NectarStaking";
 
 type CreateInitStakerCtxArgs = {
-  project: web3.PublicKey;
-  stakingPool: web3.PublicKey;
-  wallet: web3.PublicKey;
+  stakingPool: NectarStaking;
   programId?: web3.PublicKey;
 };
 
-export function createInitStakerCtx(args: CreateInitStakerCtxArgs) {
+export async function createInitStakerOperation(honeycomb:Honeycomb,args: CreateInitStakerCtxArgs) {
   const programId = args.programId || PROGRAM_ID;
-  const [staker] = getStakerPda(args.stakingPool, args.wallet, programId);
+  const [staker] = getStakerPda(args.stakingPool.address,honeycomb.identity().address, programId);
 
   const instructions: web3.TransactionInstruction[] = [
     createInitStakerInstruction(
       {
-        project: args.project,
+        project: args.stakingPool.project().address,
         vault: VAULT,
-        stakingPool: args.stakingPool,
+        stakingPool: args.stakingPool.address,
         staker,
-        wallet: args.wallet,
+        wallet: honeycomb.identity().address,
       },
       programId
     ),
   ];
 
-  return createCtx(instructions);
+  return {
+    operation: new Operation(honeycomb, instructions),
+  };
 }
 
-type InitStakerArgs = {
-  programId?: web3.PublicKey;
-};
-
-export async function initStaker(
-  honeycomb: Honeycomb,
-  args: InitStakerArgs,
-  confirmOptions?: web3.ConfirmOptions
-) {
-  const wallet = honeycomb.identity();
-  const ctx = createInitStakerCtx({
-    project: honeycomb.project().projectAddress,
-    stakingPool: honeycomb.staking().poolAddress,
-    wallet: wallet.address,
-    programId: args.programId,
-  });
-
-  return honeycomb.rpc().sendAndConfirmTransaction(ctx, confirmOptions);
-}

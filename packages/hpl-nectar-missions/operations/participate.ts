@@ -4,35 +4,32 @@ import {
   SYSVAR_RENT_PUBKEY,
 } from "@solana/web3.js";
 import {
-  ConfirmedContext,
   Honeycomb,
-  OperationCtx,
+  Operation,
   VAULT,
-  createCtx,
 } from "@honeycomb-protocol/hive-control";
 import {
-  ParticipateArgs as ParticipateArgsSolita,
+  ParticipateArgs,
   PROGRAM_ID,
   createParticipateInstruction,
 } from "../generated";
 import { participationPda } from "../utils";
-import { NectarMission } from "../NectarMissions";
-import { StakedNft, getNftPda } from "@honeycomb-protocol/nectar-staking";
+import {  NectarMissions } from "../NectarMissions";
+import { NectarStaking } from "../../hpl-nectar-staking/NectarStaking";
+import { StakedNft, Staker } from "@honeycomb-protocol/nectar-staking";
 
 type CreateParticipateCtxArgs = {
-  args: ParticipateArgsSolita;
-  project: PublicKey;
-  stakingPool: PublicKey;
-  missionPool: PublicKey;
+  args: ParticipateArgs;
+  stakingPool: NectarStaking;
+  missionPool: NectarMissions;
   mission: PublicKey;
-  nft: PublicKey;
-  staker: PublicKey;
-  wallet: PublicKey;
+  nft: StakedNft;
+  staker: Staker;
   programId?: PublicKey;
 };
-export function createParticipateCtx(
+export async function createParticipateOperation(honeycomb:Honeycomb,
   args: CreateParticipateCtxArgs
-): OperationCtx {
+) {
   const programId = args.programId || PROGRAM_ID;
 
   const [participation] = participationPda(args.nft, programId);
@@ -40,14 +37,14 @@ export function createParticipateCtx(
   const instructions = [
     createParticipateInstruction(
       {
-        project: args.project,
-        stakingPool: args.stakingPool,
-        missionPool: args.missionPool,
+        project: args.missionPool.project().address,
+        stakingPool: args.stakingPool.address,
+        missionPool: args.missionPool.address,
         mission: args.mission,
         nft: args.nft,
         staker: args.staker,
         participation,
-        wallet: args.wallet,
+        wallet: honeycomb.identity().address,
         vault: VAULT,
         rentSysvar: SYSVAR_RENT_PUBKEY,
         clock: SYSVAR_CLOCK_PUBKEY,
@@ -59,36 +56,8 @@ export function createParticipateCtx(
     ),
   ];
 
-  return createCtx(instructions);
+  return {
+    operation: new Operation(honeycomb, instructions),
+  };
 }
 
-type ParticipateArgs = {
-  mission: NectarMission;
-  nfts: (StakedNft & ParticipateArgsSolita)[];
-  programId?: PublicKey;
-};
-export async function participate(
-  honeycomb: Honeycomb,
-  args: ParticipateArgs
-): Promise<ConfirmedContext[]> {
-  const ctxs = args.nfts.map((nft) =>
-    createParticipateCtx({
-      args: {
-        faction: nft.faction,
-        merkleProof: nft.merkleProof,
-      },
-      project: args.mission.pool().project().address,
-      stakingPool: nft.stakingPool,
-      missionPool: args.mission.pool().address,
-      mission: args.mission.address,
-      nft: getNftPda(nft.stakingPool, nft.mint)[0],
-      staker: nft.staker,
-      wallet: honeycomb.identity().address,
-      programId: args.programId,
-    })
-  );
-
-  return honeycomb.rpc().sendAndConfirmTransactionsInBatches(ctxs, {
-    commitment: "processed",
-  });
-}

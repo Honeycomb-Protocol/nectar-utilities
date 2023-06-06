@@ -31,7 +31,7 @@ type CreateCreateProjectCtxArgs = {
   programId?: web3.PublicKey;
 };
 
-export function createCreateProjectCtx(
+export  function createCreateProjectCtx(
   args: CreateCreateProjectCtxArgs
 ): OperationCtx & { stakingPool: web3.PublicKey } {
   const programId = args.programId || PROGRAM_ID;

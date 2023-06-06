@@ -1,10 +1,8 @@
 import { PublicKey, SYSVAR_RENT_PUBKEY } from "@solana/web3.js";
 import {
-  ConfirmedContext,
   Honeycomb,
-  OperationCtx,
+ Operation,
   VAULT,
-  createCtx,
 } from "@honeycomb-protocol/hive-control";
 import {
   CreateMissionArgs as CreateMissionArgsSolita,
@@ -12,19 +10,16 @@ import {
   createCreateMissionInstruction,
 } from "../generated";
 import { missionPda } from "../utils";
+import { NectarMissions } from "../NectarMissions";
 
 type CreateCreateMissionCtxArgs = {
   args: CreateMissionArgsSolita;
-  project: PublicKey;
-  missionPool: PublicKey;
-  delegateAuthority?: PublicKey;
-  authority: PublicKey;
-  payer: PublicKey;
+  missionPool: NectarMissions;
   programId?: PublicKey;
 };
-export function createCreateMissionCtx(
+export async function createCreateMissionOperation(honeycomb:Honeycomb,
   args: CreateCreateMissionCtxArgs
-): OperationCtx & { mission: PublicKey } {
+) {
   const programId = args.programId || PROGRAM_ID;
 
   const [mission] = missionPda(args.missionPool, args.args.name, programId);
@@ -32,12 +27,12 @@ export function createCreateMissionCtx(
   const instructions = [
     createCreateMissionInstruction(
       {
-        project: args.project,
-        missionPool: args.missionPool,
+        project: args.missionPool.project().address,
+        missionPool: args.missionPool.address,
         mission,
-        delegateAuthority: args.delegateAuthority || programId,
-        authority: args.authority,
-        payer: args.payer,
+        delegateAuthority: honeycomb.identity().delegateAuthority()?.address || programId,
+        authority:honeycomb.identity().address,
+        payer: honeycomb.identity().address,
         vault: VAULT,
         rentSysvar: SYSVAR_RENT_PUBKEY,
       },
@@ -49,33 +44,7 @@ export function createCreateMissionCtx(
   ];
 
   return {
-    ...createCtx(instructions),
+    operation: new Operation(honeycomb, instructions),
     mission,
-  };
-}
-
-type CreateMissionArgs = {
-  args: CreateMissionArgsSolita;
-  project?: PublicKey;
-  missionPool?: PublicKey;
-  programId?: PublicKey;
-};
-export async function createMission(
-  honeycomb: Honeycomb,
-  args: CreateMissionArgs
-): Promise<ConfirmedContext & { mission: PublicKey }> {
-  const ctx = createCreateMissionCtx({
-    args: args.args,
-    project: args.project || honeycomb.missions().project().address,
-    missionPool: args.missionPool || honeycomb.missions().address,
-    delegateAuthority: honeycomb.identity().delegateAuthority().address,
-    authority: honeycomb.identity().address,
-    payer: honeycomb.identity().address,
-    programId: args.programId,
-  });
-
-  return {
-    ...(await honeycomb.rpc().sendAndConfirmTransaction(ctx)),
-    mission: ctx.mission,
   };
 }

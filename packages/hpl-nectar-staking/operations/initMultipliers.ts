@@ -1,65 +1,42 @@
 import * as web3 from "@solana/web3.js";
 import {
   createInitMultipliersInstruction,
-  InitMultipliersArgs as InitMultipliersArgsChain,
+  InitMultipliersArgs,
   PROGRAM_ID,
 } from "../generated";
 import { getMultipliersPda } from "../pdas";
-import { VAULT, createCtx, Honeycomb } from "@honeycomb-protocol/hive-control";
+import { VAULT, Honeycomb,Operation } from "@honeycomb-protocol/hive-control";
+import { NectarStaking } from "../NectarStaking";
 
 type CreateInitMultiplierCtxArgs = {
-  project: web3.PublicKey;
-  stakingPool: web3.PublicKey;
-  authority: web3.PublicKey;
-  payer: web3.PublicKey;
-  args: InitMultipliersArgsChain;
-  delegateAuthority?: web3.PublicKey;
+  args: InitMultipliersArgs;
+  stakingPool: NectarStaking;
   programId?: web3.PublicKey;
 };
 
-export function createInitMultiplierCtx(args: CreateInitMultiplierCtxArgs) {
-  const programId = args.programId || PROGRAM_ID;
+export async function createInitMultiplierOperation(honeycomb: Honeycomb,
+  args: CreateInitMultiplierCtxArgs) {
+    const programId = args.programId || PROGRAM_ID;
   const [multipliers] = getMultipliersPda(args.stakingPool, programId);
 
   const instructions: web3.TransactionInstruction[] = [
     createInitMultipliersInstruction(
       {
-        project: args.project,
+        project: args.stakingPool.project().address,
         vault: VAULT,
-        stakingPool: args.stakingPool,
+        stakingPool: args.stakingPool.address,
         multipliers,
-        authority: args.authority,
-        payer: args.payer,
-        delegateAuthority: args.delegateAuthority || programId,
+        authority: honeycomb.identity().address,
+        payer: honeycomb.identity().address,
+        delegateAuthority: honeycomb.identity().delegateAuthority()?.address || programId,
       },
       { args: args.args },
       programId
     ),
   ];
 
-  return createCtx(instructions);
+  return {
+    operation: new Operation(honeycomb, instructions),
+  };
 }
 
-type InitMultipliersArgs = {
-  args: InitMultipliersArgsChain;
-  programId?: web3.PublicKey;
-};
-
-export async function initMultipliers(
-  honeycomb: Honeycomb,
-  args: InitMultipliersArgs,
-  confirmOptions?: web3.ConfirmOptions
-) {
-  const wallet = honeycomb.identity();
-  const ctx = createInitMultiplierCtx({
-    project: honeycomb.project().projectAddress,
-    stakingPool: honeycomb.staking().poolAddress,
-    authority: wallet.address,
-    payer: wallet.address,
-    args: args.args,
-    delegateAuthority: wallet.delegateAuthority().address,
-    programId: args.programId,
-  });
-
-  return honeycomb.rpc().sendAndConfirmTransaction(ctx, confirmOptions);
-}

@@ -1,28 +1,25 @@
 import * as web3 from "@solana/web3.js";
 import { createWithdrawRewardsInstruction, PROGRAM_ID } from "../generated";
-import { VAULT, createCtx } from "@honeycomb-protocol/hive-control";
+import { Honeycomb, VAULT, Operation } from "@honeycomb-protocol/hive-control";
 import {
   PROGRAM_ID as HPL_CURRENCY_MANAGER_PROGRAM_ID,
   CurrencyKind,
   holderAccountPdas,
+  HplCurrency,
 } from "@honeycomb-protocol/currency-manager";
 import { NectarStaking } from "../NectarStaking";
 
 type CreateWithdrawRewardsCrx = {
-  project: web3.PublicKey;
-  stakingPool: web3.PublicKey;
-  currency: web3.PublicKey;
+  stakingPool: NectarStaking;
+  currency: HplCurrency;
   currencyKind: CurrencyKind;
   mint: web3.PublicKey;
   receiverWallet: web3.PublicKey;
-  authority: web3.PublicKey;
-  payer: web3.PublicKey;
   amount: number;
-  delegateAuthority?: web3.PublicKey;
   programId?: web3.PublicKey;
 };
 
-export function createWithdrawRewardsCtx(args: CreateWithdrawRewardsCrx) {
+export async function createWithdrawRewardsOperation(honeycomb:Honeycomb,args: CreateWithdrawRewardsCrx) {
   const programId = args.programId || PROGRAM_ID;
 
   const { holderAccount: vaultHolderAccount, tokenAccount: vaultTokenAccount } =
@@ -36,18 +33,18 @@ export function createWithdrawRewardsCtx(args: CreateWithdrawRewardsCrx) {
   const instructions: web3.TransactionInstruction[] = [
     createWithdrawRewardsInstruction(
       {
-        project: args.project,
+        project: args.stakingPool.project().address,
         vault: VAULT,
-        stakingPool: args.stakingPool,
+        stakingPool: args.stakingPool.address,
         currency: args.currency,
         mint: args.mint,
         vaultHolderAccount,
         vaultTokenAccount,
         holderAccount,
         tokenAccount,
-        delegateAuthority: args.delegateAuthority || programId,
-        authority: args.authority,
-        payer: args.payer,
+        delegateAuthority: honeycomb.identity().delegateAuthority()?.address || programId,
+        authority: honeycomb.identity().delegateAuthority()?.address || programId,
+        payer: honeycomb.identity().delegateAuthority()?.address || programId,
         currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
       },
       {
@@ -57,36 +54,8 @@ export function createWithdrawRewardsCtx(args: CreateWithdrawRewardsCrx) {
     ),
   ];
 
-  return createCtx(instructions);
+  return {
+    operation: new Operation(honeycomb, instructions),
+  };
 }
 
-type WithdrawRewardsArgs = {
-  amount: number;
-  receiverWallet?: web3.PublicKey;
-  programId?: web3.PublicKey;
-};
-export async function withdrawRewards(
-  staking: NectarStaking,
-  args: WithdrawRewardsArgs,
-  confirmOptions?: web3.ConfirmOptions
-) {
-  const wallet = staking.honeycomb().identity();
-  const ctx = createWithdrawRewardsCtx({
-    project: staking.pool().project,
-    stakingPool: staking.poolAddress,
-    currency: staking.currency().address,
-    currencyKind: staking.currency().kind,
-    mint: staking.currency().mint,
-    receiverWallet: args.receiverWallet || wallet.address,
-    authority: wallet.address,
-    payer: wallet.address,
-    amount: args.amount,
-    delegateAuthority: wallet.delegateAuthority().address,
-    programId: args.programId,
-  });
-
-  return staking
-    .honeycomb()
-    .rpc()
-    .sendAndConfirmTransaction(ctx, confirmOptions);
-}

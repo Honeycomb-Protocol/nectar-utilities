@@ -74,7 +74,7 @@ type CreateClaimRewardsCtxArgs = {
   programId?: web3.PublicKey;
 };
 
-export async function createClaimRewardsCtx({
+export async function createClaimRewardsOperation({
   connection,
   ...args
 }: CreateClaimRewardsCtxArgs) {

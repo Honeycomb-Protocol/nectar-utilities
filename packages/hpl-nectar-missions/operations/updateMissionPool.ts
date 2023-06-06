@@ -1,43 +1,38 @@
 import { PublicKey } from "@solana/web3.js";
 import {
-  ConfirmedContext,
   Honeycomb,
-  OperationCtx,
+  Operation,
   VAULT,
-  createCtx,
 } from "@honeycomb-protocol/hive-control";
 import {
   UpdateMissionPoolArgs as UpdateMissionPoolArgsSolita,
   PROGRAM_ID,
   createUpdateMissionPoolInstruction,
 } from "../generated";
+import { NectarMissions } from "../NectarMissions";
 
 type CreateUpdateMissionPoolCtxArgs = {
   args: UpdateMissionPoolArgsSolita;
-  project: PublicKey;
-  missionPool: PublicKey;
+  missionPool: NectarMissions;
   collection?: PublicKey;
   creator?: PublicKey;
-  delegateAuthority?: PublicKey;
-  authority: PublicKey;
-  payer: PublicKey;
   programId?: PublicKey;
 };
-export function createUpdateMissionPoolCtx(
+export async function createUpdateMissionPoolOperation(honeycomb:Honeycomb,
   args: CreateUpdateMissionPoolCtxArgs
-): OperationCtx {
+) {
   const programId = args.programId || PROGRAM_ID;
 
   const instructions = [
     createUpdateMissionPoolInstruction(
       {
-        project: args.project,
-        missionPool: args.missionPool,
+        project: args.missionPool.project().address,
+        missionPool: args.missionPool.address,
         collection: args.collection || programId,
         creator: args.creator || programId,
-        delegateAuthority: args.delegateAuthority || programId,
-        authority: args.authority,
-        payer: args.payer,
+        delegateAuthority: honeycomb.identity().delegateAuthority()?.address || programId,
+        authority: honeycomb.identity().address,
+        payer: honeycomb.identity().address,
         vault: VAULT,
       },
       {
@@ -47,32 +42,7 @@ export function createUpdateMissionPoolCtx(
     ),
   ];
 
-  return createCtx(instructions);
-}
-
-type UpdateMissionPoolArgs = {
-  args: UpdateMissionPoolArgsSolita;
-  project?: PublicKey;
-  missionPool?: PublicKey;
-  collection?: PublicKey;
-  creator?: PublicKey;
-  programId?: PublicKey;
-};
-export async function updateMissionPool(
-  honeycomb: Honeycomb,
-  args: UpdateMissionPoolArgs
-): Promise<ConfirmedContext> {
-  const ctx = createUpdateMissionPoolCtx({
-    args: args.args,
-    project: args.project || honeycomb.project().address,
-    missionPool: args.missionPool || honeycomb.missions().address,
-    collection: args.collection,
-    creator: args.creator,
-    delegateAuthority: honeycomb.identity().delegateAuthority().address,
-    authority: honeycomb.identity().address,
-    payer: honeycomb.identity().address,
-    programId: args.programId,
-  });
-
-  return honeycomb.rpc().sendAndConfirmTransaction(ctx);
+  return {
+    operation: new Operation(honeycomb, instructions),
+  };
 }

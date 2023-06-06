@@ -4,34 +4,30 @@ import {
   createUpdateStakingPoolInstruction,
   PROGRAM_ID,
 } from "../generated";
-import { VAULT, createCtx } from "@honeycomb-protocol/hive-control";
+import { Honeycomb, VAULT, Operation } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
 
 type CreateUpdatePoolCtxArgs = {
-  project: web3.PublicKey;
-  stakingPool: web3.PublicKey;
-  authority: web3.PublicKey;
-  payer: web3.PublicKey;
   args: UpdateStakingPoolArgs;
+  stakingPool: NectarStaking;
   collection?: web3.PublicKey;
   creator?: web3.PublicKey;
-  delegateAuthority?: web3.PublicKey;
   programId?: web3.PublicKey;
 };
-export function createUpdatePoolCtx(args: CreateUpdatePoolCtxArgs) {
+export async function createUpdatePoolOperation(honeycomb: Honeycomb,args: CreateUpdatePoolCtxArgs) {
   const programId = args.programId || PROGRAM_ID;
 
   const instructions: web3.TransactionInstruction[] = [
     createUpdateStakingPoolInstruction(
       {
-        project: args.project,
+        project: args.stakingPool.project().address,
         vault: VAULT,
-        stakingPool: args.stakingPool,
+        stakingPool: args.stakingPool.address,
         collection: args.collection || programId,
         creator: args.creator || programId,
-        authority: args.authority,
-        payer: args.payer,
-        delegateAuthority: args.delegateAuthority || programId,
+        authority: honeycomb.identity().delegateAuthority()?.address || programId,
+        payer: honeycomb.identity().delegateAuthority()?.address || programId,
+        delegateAuthority: honeycomb.identity().delegateAuthority()?.address || programId,
       },
       {
         args: args.args,
@@ -40,35 +36,8 @@ export function createUpdatePoolCtx(args: CreateUpdatePoolCtxArgs) {
     ),
   ];
 
-  return createCtx(instructions);
+  return {
+    operation: new Operation(honeycomb, instructions),
+  };
 }
 
-type UpdatePoolArgs = {
-  args: UpdateStakingPoolArgs;
-  collection?: web3.PublicKey;
-  creator?: web3.PublicKey;
-  programId?: web3.PublicKey;
-};
-export async function updateStakingPool(
-  staking: NectarStaking,
-  args: UpdatePoolArgs,
-  confirmOptions?: web3.ConfirmOptions
-) {
-  const wallet = staking.honeycomb().identity();
-  const ctx = createUpdatePoolCtx({
-    project: staking.pool().project,
-    stakingPool: staking.poolAddress,
-    authority: wallet.address,
-    payer: wallet.address,
-    args: args.args,
-    collection: args.collection,
-    creator: args.creator,
-    delegateAuthority: wallet.delegateAuthority().address,
-    programId: args.programId,
-  });
-
-  return staking
-    .honeycomb()
-    .rpc()
-    .sendAndConfirmTransaction(ctx, confirmOptions);
-}

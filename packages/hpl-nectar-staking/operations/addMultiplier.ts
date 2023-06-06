@@ -14,7 +14,7 @@ type CreateAddMultiplierCtxArgs = {
   programId?: web3.PublicKey;
 };
 
-export async function createAddMultiplierCtx(
+export async function createAddMultiplierOperation(
   honeycomb: Honeycomb,
   args: CreateAddMultiplierCtxArgs
 ) {
@@ -30,7 +30,7 @@ export async function createAddMultiplierCtx(
         stakingPool: args.stakingPool.address,
         multipliers,
         delegateAuthority:
-          honeycomb.identity().delegateAuthority().address || programId,
+          honeycomb.identity().delegateAuthority()?.address || programId,
         authority: honeycomb.identity().address,
         payer: honeycomb.identity().address,
         rentSysvar: web3.SYSVAR_RENT_PUBKEY,
