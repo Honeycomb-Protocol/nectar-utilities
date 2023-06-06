@@ -1,33 +1,33 @@
 import * as web3 from "@solana/web3.js";
 import {
   createAddMultiplierInstruction,
-  AddMultiplierArgs as AddMultiplierArgsChain,
+  AddMultiplierArgs,
   PROGRAM_ID,
 } from "../generated";
 import { getMultipliersPda } from "../pdas";
 import { Honeycomb, Operation, VAULT } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
 
-type CreateAddMultiplierOperationArgs = {
-  args: AddMultiplierArgsChain;
-  staking: NectarStaking;
+type CreateAddMultiplierCtxArgs = {
+  args: AddMultiplierArgs;
+  stakingPool: NectarStaking;
   programId?: web3.PublicKey;
 };
 
-export async function createAddMultiplierOperation(
+export async function createAddMultiplierCtx(
   honeycomb: Honeycomb,
-  args: CreateAddMultiplierOperationArgs
+  args: CreateAddMultiplierCtxArgs
 ) {
   const programId = args.programId || PROGRAM_ID;
 
-  const [multipliers] = getMultipliersPda(args.staking.address, programId);
+  const [multipliers] = getMultipliersPda(args.stakingPool.address, programId);
 
   const instructions: web3.TransactionInstruction[] = [
     createAddMultiplierInstruction(
       {
-        project: args.staking.project().address,
+        project: args.stakingPool.project().address,
         vault: VAULT,
-        stakingPool: args.staking.address,
+        stakingPool: args.stakingPool.address,
         multipliers,
         delegateAuthority:
           honeycomb.identity().delegateAuthority().address || programId,
