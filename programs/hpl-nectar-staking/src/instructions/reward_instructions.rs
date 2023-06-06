@@ -73,6 +73,7 @@ pub fn withdraw_rewards(ctx: Context<WithdrawRewards>, amount: u64) -> Result<()
         CpiContext::new_with_signer(
             ctx.accounts.currency_manager_program.to_account_info(),
             TransferCurrency {
+                project: ctx.accounts.project.to_account_info(),
                 currency: ctx.accounts.currency.to_account_info(),
                 mint: ctx.accounts.mint.to_account_info(),
                 sender_holder_account: ctx.accounts.vault_holder_account.to_account_info(),
@@ -80,6 +81,8 @@ pub fn withdraw_rewards(ctx: Context<WithdrawRewards>, amount: u64) -> Result<()
                 receiver_holder_account: ctx.accounts.holder_account.to_account_info(),
                 receiver_token_account: ctx.accounts.token_account.to_account_info(),
                 owner: ctx.accounts.staking_pool.to_account_info(),
+                vault: ctx.accounts.vault.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
                 token_program: ctx.accounts.token_program.to_account_info(),
             },
             pool_signer,
@@ -254,6 +257,7 @@ pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
         CpiContext::new_with_signer(
             ctx.accounts.currency_manager_program.to_account_info(),
             TransferCurrency {
+                project: ctx.accounts.project.to_account_info(),
                 currency: ctx.accounts.currency.to_account_info(),
                 mint: ctx.accounts.mint.to_account_info(),
                 sender_holder_account: ctx.accounts.vault_holder_account.to_account_info(),
@@ -261,6 +265,8 @@ pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
                 receiver_holder_account: ctx.accounts.holder_account.to_account_info(),
                 receiver_token_account: ctx.accounts.token_account.to_account_info(),
                 owner: ctx.accounts.staking_pool.to_account_info(),
+                vault: ctx.accounts.vault.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
                 token_program: ctx.accounts.token_program.to_account_info(),
             },
             pool_signer,

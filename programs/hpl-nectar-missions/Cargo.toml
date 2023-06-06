@@ -22,7 +22,7 @@ default = []
 anchor-lang = "0.26.0"
 anchor-spl = "0.26.0"
 hpl-utils = "0.1.6"
-hpl-hive-control = { version="0.0.101", features = ["cpi"] }
-hpl-currency-manager = { version="0.0.9", features = ["cpi"] }
+hpl-hive-control = { version="0.1.2", features = ["cpi"] }
+hpl-currency-manager = { version="0.0.11", features = ["cpi"] }
 hpl-nectar-staking = { version="0.0.50", path="../hpl-nectar-staking", features = ["cpi"] }
 spl-account-compression = { version="0.1.8", features=["cpi"] }

@@ -223,6 +223,9 @@ pub struct CollectRewards<'info> {
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
     pub rent_sysvar: Sysvar<'info, Rent>,
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
     pub clock: Sysvar<'info, Clock>,
 }
 
@@ -283,6 +286,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                 CpiContext::new_with_signer(
                     ctx.accounts.currency_manager_program.to_account_info(),
                     TransferCurrency {
+                        project: ctx.accounts.project.to_account_info(),
                         currency: ctx.accounts.currency.clone().unwrap().to_account_info(),
                         mint: ctx.accounts.mint.clone().unwrap().to_account_info(),
                         sender_holder_account: ctx
@@ -310,6 +314,8 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                             .unwrap()
                             .to_account_info(),
                         owner: ctx.accounts.mission_pool.to_account_info(),
+                        vault: ctx.accounts.vault.to_account_info(),
+                        system_program: ctx.accounts.system_program.to_account_info(),
                         token_program: ctx.accounts.token_program.to_account_info(),
                     },
                     signer,
@@ -341,6 +347,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                             log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
                             compression_program: ctx.accounts.compression_program.to_account_info(),
                             vault: ctx.accounts.vault.to_account_info(),
+                            instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                         },
                     ),
                     AddProfileDataArgs {
@@ -372,6 +379,10 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                                         .compression_program
                                         .to_account_info(),
                                     vault: ctx.accounts.vault.to_account_info(),
+                                    instructions_sysvar: ctx
+                                        .accounts
+                                        .instructions_sysvar
+                                        .to_account_info(),
                                 },
                             ),
                             ModifyProfileDataArgs {

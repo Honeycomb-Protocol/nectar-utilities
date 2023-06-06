@@ -17,7 +17,7 @@ import { MerkleTree, NectarMissions } from "../packages/hpl-nectar-missions";
 jest.setTimeout(2000000);
 
 describe("Nectar Utilities", () => {
-  const totalNfts = 2;
+  const totalNfts = 10;
 
   let honeycomb: Honeycomb;
   let metaplex: Metaplex;
@@ -27,7 +27,7 @@ describe("Nectar Utilities", () => {
   let factionsMerkleTree: MerkleTree;
   let mainVault: HplHolderAccount;
 
-  it("Temp", async () => {
+  it.skip("Temp", async () => {
     const connection = new web3.Connection(
       "https://side-damp-bird.solana-mainnet.quiknode.pro/11449a3f0f4fd38ce2441a9ac133ab8111ad652d/"
     );
@@ -57,7 +57,7 @@ describe("Nectar Utilities", () => {
     console.log("rewards", rewards, multipliers);
   });
 
-  it.skip("Prepare and Setup", async () => {
+  it("Prepare and Setup", async () => {
     honeycomb = await prepare();
     const balance = await honeycomb
       .rpc()
@@ -144,16 +144,18 @@ describe("Nectar Utilities", () => {
     );
     mainVault = await honeycomb.currency().create().holderAccount();
     await mainVault.mint(100_000 * 1_000_000_000);
+
+    console.log("Project", honeycomb.project().address.toString());
   });
 
-  it.skip("Create Staking Pool", async () => {
+  it("Create Staking Pool", async () => {
     // Create staking pool
     honeycomb.use(
       await NectarStaking.new(honeycomb, {
         args: {
           name: "Staking3.0",
-          rewardsPerDuration: 1 * 1_000_000_000,
-          rewardsDuration: 10,
+          rewardsPerDuration: 50 * 1_000_000_000,
+          rewardsDuration: 60,
           maxRewardsDuration: 10,
           minStakeDuration: null,
           cooldownDuration: null,
@@ -165,6 +167,22 @@ describe("Nectar Utilities", () => {
         currency: honeycomb.currency().address,
         collections: [collection.mint.address],
         multipliersDecimals: 3,
+        multipliers: [
+          {
+            multiplierType: {
+              __kind: "NFTCount",
+              minCount: 3,
+            },
+            value: 1400,
+          },
+          {
+            multiplierType: {
+              __kind: "NFTCount",
+              minCount: 5,
+            },
+            value: 1800,
+          },
+        ],
       })
     );
 
@@ -173,10 +191,15 @@ describe("Nectar Utilities", () => {
       .currency()
       .create()
       .holderAccount(honeycomb.staking().address);
-    await mainVault.transfer(10_000_000_000_000, stakingVault);
+    await mainVault.transfer(50_000 * 1_000_000_000, stakingVault);
+    console.log(
+      "Stakinng",
+      honeycomb.staking().address.toString(),
+      stakingVault.tokenAccount.toString()
+    );
   });
 
-  it.skip("Create Mission Pool", async () => {
+  it("Create Mission Pool", async () => {
     honeycomb.use(
       await NectarMissions.new(honeycomb, {
         args: {
@@ -191,15 +214,35 @@ describe("Nectar Utilities", () => {
       .currency()
       .create()
       .holderAccount(honeycomb.missions().address);
-    await mainVault.transfer(10_000_000_000_000, missionsVault);
+    await mainVault.transfer(50_000 * 1_000_000_000, missionsVault);
     console.log(
       "Missions",
       honeycomb.missions().address.toString(),
-      mainVault.tokenAccount.toString()
+      missionsVault.tokenAccount.toString()
     );
   });
 
-  it.skip("Create Mission", async () => {
+  it("Create Mission", async () => {
+    const currentCurrency = honeycomb.currency();
+
+    honeycomb.use(
+      await HplCurrency.new(honeycomb, {
+        name: "Food",
+        symbol: "FOOD",
+        kind: PermissionedCurrencyKind.NonCustodial,
+        decimals: 9,
+        uri: "https://storage.googleapis.com/nft-assets/items/FOOD.png",
+      })
+    );
+    const foodVault = await honeycomb.currency().create().holderAccount();
+    await foodVault.mint(50_000 * 1_000_000_000);
+
+    const missionsFoodVault = await honeycomb
+      .currency()
+      .create()
+      .holderAccount(honeycomb.missions().address);
+    await mainVault.transfer(50_000 * 1_000_000_000, missionsFoodVault);
+
     await honeycomb
       .missions()
       .create()
@@ -209,7 +252,7 @@ describe("Nectar Utilities", () => {
           address: honeycomb.currency().address,
           amount: 10,
         },
-        duration: 1,
+        duration: 60,
         minXp: 0,
         rewards: [
           {
@@ -229,6 +272,8 @@ describe("Nectar Utilities", () => {
           },
         ],
       });
+
+    honeycomb.use(currentCurrency);
   });
 
   it.skip("Fetch or Create user/profile", async () => {
