@@ -17,10 +17,10 @@ import {
 } from "@honeycomb-protocol/hive-control";
 import { StakedNft, getNftPda } from "@honeycomb-protocol/nectar-staking";
 import {
-  createMission,
-  createMissionPool,
-  participate,
-  recall,
+  creatRecallOperation,
+  createCreateMissionOperation,
+  createCreateMissionPoolOperation,
+  createParticipateOperation,
 } from "./operations";
 import { missionPda, removeDuplicateFromArrayOf } from "./utils";
 
@@ -31,7 +31,7 @@ type NewMissionPoolArgs = {
     collections?: web3.PublicKey[];
     creators?: web3.PublicKey[];
   };
-  project?: web3.PublicKey;
+  project?: HoneycombProject;
 };
 
 declare module "@honeycomb-protocol/hive-control" {
@@ -42,6 +42,7 @@ declare module "@honeycomb-protocol/hive-control" {
 }
 
 export class NectarMissions extends Module {
+  public readonly programId = PROGRAM_ID;
   private _fetch: NectarMissionsFetch;
   private _create: NectarMissionsCreate;
   private _missions: { [name: string]: NectarMission } = {};
@@ -56,21 +57,34 @@ export class NectarMissions extends Module {
 
   static async fromAddress(
     connection: web3.Connection,
-    address: web3.PublicKey
+    address: web3.PublicKey,
+    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
   ) {
-    const pool = await MissionPool.fromAccountAddress(connection, address);
+    const pool = await MissionPool.fromAccountAddress(
+      connection,
+      address,
+      commitmentOrConfig
+    );
     return new NectarMissions(address, pool);
   }
 
-  static async new(honeycomb: Honeycomb, args: NewMissionPoolArgs) {
-    const { poolId } = await createMissionPool(honeycomb, {
-      programId: PROGRAM_ID,
-      ...args,
-      project: args.project || honeycomb.project().address,
-    });
+  static async new(
+    honeycomb: Honeycomb,
+    args: NewMissionPoolArgs,
+    confirmOptions?: web3.ConfirmOptions
+  ) {
+    const { missionPool, operation } = await createCreateMissionPoolOperation(
+      honeycomb,
+      {
+        programId: PROGRAM_ID,
+        project: args.project || honeycomb.project(),
+        ...args,
+      }
+    );
+    await operation.send(confirmOptions);
     return await NectarMissions.fromAddress(
       new web3.Connection(honeycomb.connection.rpcEndpoint, "processed"),
-      poolId
+      missionPool
     );
   }
 
@@ -92,46 +106,60 @@ export class NectarMissions extends Module {
 
   public async missions(reFetch: boolean = false) {
     if (Object.keys(this._missions).length === 0 || reFetch) {
-      await this.fetch().missions();
+      this._missions = await this.fetch()
+        .missions()
+        .then((missions) =>
+          missions.reduce(
+            (acc, mission) => ({ ...acc, [mission.name]: mission }),
+            {}
+          )
+        );
     }
     return Object.values(this._missions);
   }
 
-  public mission(name: string): Promise<NectarMission>;
-  public mission(address: web3.PublicKey): Promise<NectarMission>;
-  public mission(nameOrAddress: string | web3.PublicKey) {
+  public async mission(
+    name: string,
+    reFetch?: boolean,
+    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
+  ): Promise<NectarMission>;
+  public async mission(
+    address: web3.PublicKey,
+    reFetch?: boolean,
+    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
+  ): Promise<NectarMission>;
+  public async mission(
+    nameOrAddress: string | web3.PublicKey,
+    reFetch = false,
+    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
+  ) {
     if (typeof nameOrAddress === "string") {
-      if (this._missions[nameOrAddress])
-        return Promise.resolve(this._missions[nameOrAddress]);
-      return this.fetch().mission(nameOrAddress);
+      if (!this._missions[nameOrAddress] || reFetch) {
+        this._missions[nameOrAddress] = await this.fetch().mission(
+          nameOrAddress,
+          commitmentOrConfig
+        );
+      }
+      return this._missions[nameOrAddress];
     } else {
-      const mission = Object.values(this._missions).find((m) =>
+      let mission = Object.values(this._missions).find((m) =>
         m.address.equals(nameOrAddress)
       );
-      if (mission) return Promise.resolve(mission);
-      return this.fetch().mission(nameOrAddress);
+      if (!mission || reFetch) {
+        mission = await this.fetch().mission(nameOrAddress, commitmentOrConfig);
+        this._missions[mission.name] = mission;
+      }
+      return mission;
     }
   }
 
-  public participations(wallet: web3.PublicKey) {
-    const participations = this._participations[wallet.toString()];
-    if (participations) return Promise.resolve(participations);
-    return this.fetch()
-      .participations(wallet)
-      .then((p) => {
-        this._participations[wallet.toString()] = p;
-        return p;
-      });
-  }
-
-  public loadMissions() {
-    return this._fetch.missions().then((missions) => {
-      this._missions = missions.reduce(
-        (obj, mission) => ({ ...obj, [mission.name]: mission }),
-        {} as { [name: string]: NectarMission }
-      );
-      return this._missions;
-    });
+  public async participations(wallet?: web3.PublicKey, reFetch = false) {
+    const walletAddr = wallet || this.honeycomb().identity().address;
+    if (!this._participations[walletAddr.toString()] || reFetch) {
+      this._participations[walletAddr.toString()] =
+        await this.fetch().participations(wallet);
+    }
+    return this._participations[walletAddr.toString()];
   }
 
   public register(mission: NectarMission): NectarMissions;
@@ -153,7 +181,7 @@ export class NectarMissions extends Module {
         ];
 
         this._participations[arg.wallet.toString()] =
-          removeDuplicateFromArrayOf<NectarMissionParticipation>(
+          removeDuplicateFromArrayOf(
             this._participations[arg.wallet.toString()],
             (x) => x.address.toString()
           );
@@ -165,11 +193,40 @@ export class NectarMissions extends Module {
     return this;
   }
 
-  public recall(...participations: NectarMissionParticipation[]) {
-    return recall(this.honeycomb(), {
-      participations,
-      programId: PROGRAM_ID,
-    });
+  public async recall(
+    participations: NectarMissionParticipation[],
+    confirmOptions?: web3.ConfirmOptions
+  ) {
+    const operations = await Promise.all(
+      participations.map((participation, i) =>
+        creatRecallOperation(this.honeycomb(), {
+          participation,
+          isFirst: i == 0,
+          programId: this.programId,
+        })
+      )
+    );
+
+    const preparedOperations = await this.honeycomb()
+      .rpc()
+      .prepareTransactions(
+        operations.map(({ operation }) => operation.context)
+      );
+
+    const firstTxResponse = await this.honeycomb()
+      .rpc()
+      .sendAndConfirmTransaction(preparedOperations.shift(), {
+        commitment: "processed",
+        ...confirmOptions,
+      });
+
+    const responses = await this.honeycomb()
+      .rpc()
+      .sendAndConfirmTransactionsInBatches(preparedOperations, {
+        commitment: "processed",
+        ...confirmOptions,
+      });
+    return [firstTxResponse, ...responses];
   }
 
   public install(honeycomb: Honeycomb): Honeycomb {
@@ -214,29 +271,30 @@ class NectarMissionsFetch {
             }
           })
           .filter((x) => !!x)
-          .map((m) => {
-            this._missions.register(m);
-            return m;
-          })
       );
   }
 
-  public async mission(name: string): Promise<NectarMission>;
-  public async mission(address: web3.PublicKey): Promise<NectarMission>;
-  public async mission(nameOrAddress: string | web3.PublicKey) {
+  public async mission(
+    name: string,
+    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
+  ): Promise<NectarMission>;
+  public async mission(
+    address: web3.PublicKey,
+    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
+  ): Promise<NectarMission>;
+  public async mission(
+    nameOrAddress: string | web3.PublicKey,
+    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
+  ) {
     const address =
       typeof nameOrAddress === "string"
         ? missionPda(this._missions.address, nameOrAddress)[0]
         : nameOrAddress;
     return Mission.fromAccountAddress(
       this._missions.honeycomb().connection,
-      address
-    )
-      .then((m) => new NectarMission(this._missions, address, m))
-      .then((m) => {
-        this._missions.register(m);
-        return m;
-      });
+      address,
+      commitmentOrConfig
+    ).then((m) => new NectarMission(this._missions, address, m));
   }
 
   public async participations(
@@ -288,13 +346,22 @@ class NectarMissionsFetch {
 }
 
 class NectarMissionsCreate {
-  constructor(private _missions: NectarMissions) {}
+  constructor(private _missionPool: NectarMissions) {}
 
-  public async mission(args: CreateMissionArgs) {
-    return createMission(this._missions.honeycomb(), {
-      args,
-      programId: PROGRAM_ID,
-    }).then((m) => this._missions.fetch().mission(m.mission));
+  public async mission(
+    args: CreateMissionArgs,
+    confirmOptions?: web3.ConfirmOptions
+  ) {
+    const { operation, mission } = await createCreateMissionOperation(
+      this._missionPool.honeycomb(),
+      {
+        args,
+        missionPool: this._missionPool,
+        programId: this._missionPool.programId,
+      }
+    );
+    await operation.send(confirmOptions);
+    return this._missionPool.mission(mission, true, "processed");
   }
 }
 
@@ -320,7 +387,11 @@ export class NectarMission {
   public get requirements() {
     return {
       minXp: this._mission.minXp,
-      cost: this._mission.cost,
+      cost: {
+        amount: this._mission.cost.amount,
+        currency: () =>
+          this.pool().honeycomb().currency(this._mission.cost.address),
+      },
     };
   }
 
@@ -332,19 +403,83 @@ export class NectarMission {
     return this._mission.rewards.map((r) => new MissionReward(this, r));
   }
 
-  public participate(...nfts: (StakedNft & ParticipateArgs)[]) {
-    return participate(this._pool.honeycomb(), {
-      mission: this,
-      nfts,
-      programId: PROGRAM_ID,
-    });
+  public async participate(
+    nfts: (StakedNft & { args: ParticipateArgs })[],
+    confirmOptions?: web3.ConfirmOptions
+  ) {
+    const operations = await Promise.all(
+      nfts.map((nft, i) =>
+        createParticipateOperation(this.pool().honeycomb(), {
+          args: nft.args,
+          mission: this,
+          nft,
+          programId: this.pool().programId,
+        })
+      )
+    );
+
+    const preparedOperations = await this.pool()
+      .honeycomb()
+      .rpc()
+      .prepareTransactions(
+        operations.map(({ operation }) => operation.context)
+      );
+
+    const firstTxResponse = await this.pool()
+      .honeycomb()
+      .rpc()
+      .sendAndConfirmTransaction(preparedOperations.shift(), {
+        commitment: "processed",
+        ...confirmOptions,
+      });
+
+    const responses = await this.pool()
+      .honeycomb()
+      .rpc()
+      .sendAndConfirmTransactionsInBatches(preparedOperations, {
+        commitment: "processed",
+        ...confirmOptions,
+      });
+    return [firstTxResponse, ...responses];
   }
 
-  public recall(...participations: NectarMissionParticipation[]) {
-    return recall(this._pool.honeycomb(), {
-      participations,
-      programId: PROGRAM_ID,
-    });
+  public async recall(
+    participations: NectarMissionParticipation[],
+    confirmOptions?: web3.ConfirmOptions
+  ) {
+    const operations = await Promise.all(
+      participations.map((participation, i) =>
+        creatRecallOperation(this.pool().honeycomb(), {
+          participation,
+          isFirst: i == 0,
+          programId: this.pool().programId,
+        })
+      )
+    );
+
+    const preparedOperations = await this.pool()
+      .honeycomb()
+      .rpc()
+      .prepareTransactions(
+        operations.map(({ operation }) => operation.context)
+      );
+
+    const firstTxResponse = await this.pool()
+      .honeycomb()
+      .rpc()
+      .sendAndConfirmTransaction(preparedOperations.shift(), {
+        commitment: "processed",
+        ...confirmOptions,
+      });
+
+    const responses = await this.pool()
+      .honeycomb()
+      .rpc()
+      .sendAndConfirmTransactionsInBatches(preparedOperations, {
+        commitment: "processed",
+        ...confirmOptions,
+      });
+    return [firstTxResponse, ...responses];
   }
 }
 
@@ -413,8 +548,8 @@ export class NectarMissionParticipation {
     );
   }
 
-  public recall() {
-    return this._mission.recall(this);
+  public recall(confirmOptions?: web3.ConfirmOptions) {
+    return this._mission.recall([this], confirmOptions);
   }
 }
 
@@ -461,6 +596,10 @@ export class ParticipationReward {
 
   public get collected() {
     return this._reward.collected;
+  }
+
+  public participation() {
+    return this._participation;
   }
 
   public isCurrency(): this is ParticipationCurrencyRewards {

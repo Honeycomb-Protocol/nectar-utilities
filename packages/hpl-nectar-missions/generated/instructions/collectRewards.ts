@@ -42,6 +42,7 @@ export const collectRewardsStruct = new beet.BeetArgsStruct<{
  * @property [] logWrapper
  * @property [] compressionProgram
  * @property [] rentSysvar
+ * @property [] instructionsSysvar
  * @property [] clock
  * @category Instructions
  * @category CollectRewards
@@ -69,6 +70,7 @@ export type CollectRewardsInstructionAccounts = {
   compressionProgram: web3.PublicKey
   tokenProgram?: web3.PublicKey
   rentSysvar: web3.PublicKey
+  instructionsSysvar: web3.PublicKey
   clock: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
@@ -268,6 +270,11 @@ export function createCollectRewardsInstruction(
   })
   keys.push({
     pubkey: accounts.rentSysvar,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.instructionsSysvar,
     isWritable: false,
     isSigner: false,
   })

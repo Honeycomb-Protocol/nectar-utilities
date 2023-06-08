@@ -16,21 +16,22 @@ import {
   UpdateStakingPoolArgs,
 } from "./generated";
 import {
-  claimRewards,
   createAddMultiplierOperation,
-  createStakingPool,
+  createClaimRewardsOperation,
+  createCreateStakingPoolOperation,
+  createInitNFTOperation,
+  createInitStakerOperation,
+  createStakeOperation,
+  createUnstakeOperation,
+  createUpdatePoolOperation,
+  createWithdrawRewardsOperation,
   fetchAvailableNfts,
   fetchRewards,
   fetchStakedNfts,
-  initNft,
-  initStaker,
-  stake,
-  unstake,
-  updateStakingPool,
-  withdrawRewards,
 } from "./operations";
 import { AvailableNft, StakedNft } from "./types";
 import { getMultipliersPda, getNftPda, getStakerPda } from "./pdas";
+import { HplCurrency } from "@honeycomb-protocol/currency-manager";
 
 declare module "@honeycomb-protocol/hive-control" {
   interface Honeycomb {
@@ -42,7 +43,8 @@ declare module "@honeycomb-protocol/hive-control" {
 
 type NewStakingPoolArgs = {
   args: CreateStakingPoolArgs;
-  currency: web3.PublicKey;
+  project: HoneycombProject;
+  currency: HplCurrency;
   collections?: web3.PublicKey[];
   creators?: web3.PublicKey[];
   multipliers?: AddMultiplierArgs[];
@@ -78,9 +80,14 @@ export class NectarStaking extends Module {
 
   static async fromAddress(
     connection: web3.Connection,
-    poolAddress: web3.PublicKey
+    poolAddress: web3.PublicKey,
+    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
   ) {
-    const pool = await StakingPool.fromAccountAddress(connection, poolAddress);
+    const pool = await StakingPool.fromAccountAddress(
+      connection,
+      poolAddress,
+      commitmentOrConfig
+    );
     return new NectarStaking(poolAddress, pool);
   }
 
@@ -89,17 +96,17 @@ export class NectarStaking extends Module {
     args: NewStakingPoolArgs,
     confirmOptions?: web3.ConfirmOptions
   ) {
-    const { poolId } = await createStakingPool(
+    const { stakingPool, operation } = await createCreateStakingPoolOperation(
       honeycomb,
       {
         programId: PROGRAM_ID,
         ...args,
-      },
-      confirmOptions
+      }
     );
+    await operation.send(confirmOptions);
     return await NectarStaking.fromAddress(
       new web3.Connection(honeycomb.connection.rpcEndpoint, "processed"),
-      poolId
+      stakingPool
     );
   }
 
@@ -118,59 +125,45 @@ export class NectarStaking extends Module {
   public get address() {
     return this.poolAddress;
   }
-
   public get lockType() {
     return this._pool.lockType;
   }
-
   public get name() {
     return this._pool.name;
   }
-
   public get rewardsPerDuration() {
     return this._pool.rewardsPerDuration;
   }
-
   public get rewardsDuration() {
     return this._pool.rewardsDuration;
   }
-
   public get maxRewardsDuration() {
     return this._pool.maxRewardsDuration;
   }
-
   public get minStakeDuration() {
     return this._pool.minStakeDuration;
   }
-
   public get cooldownDuration() {
     return this._pool.cooldownDuration;
   }
-
   public get resetStakeDuration() {
     return this._pool.resetStakeDuration;
   }
-
   public get allowedMints() {
     return this._pool.allowedMints;
   }
-
   public get totalStaked() {
     return this._pool.totalStaked;
   }
-
   public get startTime() {
     return this._pool.startTime;
   }
-
   public get endTime() {
     return this._pool.endTime;
   }
-
   public get collections() {
     return this._pool.collections;
   }
-
   public get creators() {
     return this._pool.creators;
   }
@@ -187,14 +180,11 @@ export class NectarStaking extends Module {
     return this.currency().holderAccount(this.address);
   }
 
-  public multipliers() {
-    if (this._multipliers) {
-      return Promise.resolve(this._multipliers);
+  public async multipliers(reFetch = false) {
+    if (!this._multipliers || reFetch) {
+      this._multipliers = await this.fetch().multipliers();
     }
-    return this._fetch.multipliers().then((multipliers) => {
-      this._multipliers = multipliers;
-      return multipliers;
-    });
+    return this._multipliers;
   }
 
   public async staker(
@@ -214,65 +204,41 @@ export class NectarStaking extends Module {
     return this._stakers[address.toString()];
   }
 
-  public availableNfts() {
-    if (this._availableNfts) {
-      return Promise.resolve(this._availableNfts);
+  public async availableNfts(reFetch = false) {
+    if (!this._availableNfts || reFetch) {
+      this._availableNfts = await this.fetch().availableNfts();
     }
-    return this._fetch.availableNfts().then((nfts) => {
-      this._availableNfts = nfts;
-      return nfts;
-    });
+    return this._availableNfts;
   }
 
-  public stakedNfts() {
-    if (this._stakedNfts) {
-      return Promise.resolve(this._stakedNfts);
+  public async stakedNfts(reFetch = false) {
+    if (!this._stakedNfts || reFetch) {
+      this._stakedNfts = await this.fetch().stakedNfts();
     }
-    return this._fetch.stakedNfts().then((nfts) => {
-      this._stakedNfts = nfts;
-      return nfts;
-    });
+    return this._stakedNfts;
   }
 
   public reloadData() {
     return Promise.all([
-      this._fetch
-        .multipliers()
-        .then((multipliers) => {
-          this._multipliers = multipliers;
-          return multipliers;
-        })
-        .catch((e) => console.error(e)),
+      this.multipliers(true).catch((e) => console.error(e)),
       this.staker(undefined, true).catch((e) => console.error(e)),
-      this._fetch
-        .availableNfts()
-        .then((nfts) => {
-          this._availableNfts = nfts;
-          return nfts;
-        })
-        .catch((e) => console.error(e)),
-      this._fetch
-        .stakedNfts()
-        .then((nfts) => {
-          this._stakedNfts = nfts;
-          return nfts;
-        })
-        .catch((e) => console.error(e)),
+      this.availableNfts(true).catch((e) => console.error(e)),
+      this.stakedNfts(true).catch((e) => console.error(e)),
     ]);
   }
 
-  public updatePool(
+  public async updatePool(
     args: UpdatePoolArgs,
     confirmOptions?: web3.ConfirmOptions
   ) {
-    return updateStakingPool(
-      this,
-      {
-        programId: this.programId,
-        ...args,
-      },
-      confirmOptions
-    );
+    const { operation } = await createUpdatePoolOperation(this.honeycomb(), {
+      project: this.project().address,
+      stakingPool: this.address,
+      programId: this.programId,
+      ...args,
+    });
+    const context = await operation.send(confirmOptions);
+    return context;
   }
 
   public async addMultiplier(
@@ -281,75 +247,156 @@ export class NectarStaking extends Module {
   ) {
     const { operation } = await createAddMultiplierOperation(this.honeycomb(), {
       args,
-      staking: this,
+      project: this.project().address,
+      stakingPool: this.address,
       programId: this.programId,
     });
     return operation.send(confirmOptions);
   }
 
-  public withdrawRewards(amount: number, confirmOptions?: web3.ConfirmOptions) {
-    return withdrawRewards(
-      this,
+  public async withdrawRewards(
+    amount: number,
+    receiverWallet?: web3.PublicKey,
+    confirmOptions?: web3.ConfirmOptions
+  ) {
+    const { operation } = await createWithdrawRewardsOperation(
+      this.honeycomb(),
       {
+        receiverWallet: receiverWallet || this.honeycomb().identity().address,
+        stakingPool: this,
         amount,
         programId: this.programId,
-      },
-      confirmOptions
+      }
     );
+    return operation.send(confirmOptions);
   }
 
-  public initStaker(confirmOptions?: web3.ConfirmOptions) {
-    return initStaker(
-      this._honeycomb,
-      {
-        programId: this.programId,
-      },
-      confirmOptions
+  public async initStaker(confirmOptions?: web3.ConfirmOptions) {
+    const { operation } = await createInitStakerOperation(this.honeycomb(), {
+      stakingPool: this,
+      programId: this.programId,
+    });
+    return operation.send(confirmOptions);
+  }
+
+  public async initNft(
+    mint: web3.PublicKey,
+    confirmOptions?: web3.ConfirmOptions
+  ) {
+    const { operation } = await createInitNFTOperation(this.honeycomb(), {
+      stakingPool: this,
+      nftMint: mint,
+      programId: this.programId,
+    });
+    return operation.send(confirmOptions);
+  }
+
+  public async stake(
+    nfts: AvailableNft[],
+    confirmOptions?: web3.ConfirmOptions
+  ) {
+    const operations = await Promise.all(
+      nfts.map((nft, i) =>
+        createStakeOperation(this.honeycomb(), {
+          stakingPool: this,
+          nft,
+          isFirst: i == 0,
+          programId: this.programId,
+        })
+      )
     );
+
+    const preparedOperations = await this.honeycomb()
+      .rpc()
+      .prepareTransactions(
+        operations.map(({ operation }) => operation.context)
+      );
+
+    const firstTxResponse = await this.honeycomb()
+      .rpc()
+      .sendAndConfirmTransaction(preparedOperations.shift(), {
+        commitment: "processed",
+        ...confirmOptions,
+      });
+
+    const responses = await this.honeycomb()
+      .rpc()
+      .sendAndConfirmTransactionsInBatches(preparedOperations, {
+        commitment: "processed",
+        ...confirmOptions,
+      });
+    return [firstTxResponse, ...responses];
   }
 
-  public initNft(mint: web3.PublicKey, confirmOptions?: web3.ConfirmOptions) {
-    return initNft(
-      this._honeycomb,
-      {
-        nftMint: mint,
-        programId: this.programId,
-      },
-      confirmOptions
+  public async claim(nfts: StakedNft[], confirmOptions?: web3.ConfirmOptions) {
+    const operations = await Promise.all(
+      nfts.map((nft, i) =>
+        createClaimRewardsOperation(this.honeycomb(), {
+          stakingPool: this,
+          nft,
+          isFirst: i == 0,
+          programId: this.programId,
+        })
+      )
     );
+
+    const preparedOperations = await this.honeycomb()
+      .rpc()
+      .prepareTransactions(
+        operations.map(({ operation }) => operation.context)
+      );
+
+    const firstTxResponse = await this.honeycomb()
+      .rpc()
+      .sendAndConfirmTransaction(preparedOperations.shift(), {
+        commitment: "processed",
+        ...confirmOptions,
+      });
+
+    const responses = await this.honeycomb()
+      .rpc()
+      .sendAndConfirmTransactionsInBatches(preparedOperations, {
+        commitment: "processed",
+        ...confirmOptions,
+      });
+    return [firstTxResponse, ...responses];
   }
 
-  public stake(nfts: AvailableNft[], confirmOptions?: web3.ConfirmOptions) {
-    return stake(
-      this._honeycomb,
-      {
-        nfts,
-        programId: this.programId,
-      },
-      confirmOptions
-    ).then((res) => this.reloadData().then(() => res));
-  }
+  public async unstake(
+    nfts: StakedNft[],
+    confirmOptions?: web3.ConfirmOptions
+  ) {
+    const operations = await Promise.all(
+      nfts.map((nft, i) =>
+        createUnstakeOperation(this.honeycomb(), {
+          stakingPool: this,
+          nft,
+          isFirst: i == 0,
+          programId: this.programId,
+        })
+      )
+    );
 
-  public claim(nfts: StakedNft[], confirmOptions?: web3.ConfirmOptions) {
-    return claimRewards(
-      this._honeycomb,
-      {
-        nfts,
-        programId: this.programId,
-      },
-      confirmOptions
-    ).then((res) => this.reloadData().then(() => res));
-  }
+    const preparedOperations = await this.honeycomb()
+      .rpc()
+      .prepareTransactions(
+        operations.map(({ operation }) => operation.context)
+      );
 
-  public unstake(nfts: StakedNft[], confirmOptions?: web3.ConfirmOptions) {
-    return unstake(
-      this._honeycomb,
-      {
-        nfts,
-        programId: this.programId,
-      },
-      confirmOptions
-    ).then((res) => this.reloadData().then(() => res));
+    const firstTxResponse = await this.honeycomb()
+      .rpc()
+      .sendAndConfirmTransaction(preparedOperations.shift(), {
+        commitment: "processed",
+        ...confirmOptions,
+      });
+
+    const responses = await this.honeycomb()
+      .rpc()
+      .sendAndConfirmTransactionsInBatches(preparedOperations, {
+        commitment: "processed",
+        ...confirmOptions,
+      });
+    return [firstTxResponse, ...responses];
   }
 
   public install(honeycomb: Honeycomb): Honeycomb {

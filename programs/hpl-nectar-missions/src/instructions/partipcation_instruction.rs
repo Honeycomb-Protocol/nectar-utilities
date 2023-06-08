@@ -47,6 +47,19 @@ pub struct Participate<'info> {
     #[account(has_one = staking_pool, has_one = wallet)]
     pub staker: Box<Account<'info, Staker>>,
 
+    #[account(has_one = mint, constraint = mission.cost.address == currency.key())]
+    pub currency: Box<Account<'info, Currency>>,
+    #[account()]
+    pub mint: Box<Account<'info, Mint>>,
+    #[account(has_one = currency, constraint = vault_holder_account.token_account == vault_token_account.key() && vault_holder_account.owner == mission_pool.key())]
+    pub vault_holder_account: Box<Account<'info, HolderAccount>>,
+    #[account(mut)]
+    pub vault_token_account: Box<Account<'info, TokenAccount>>,
+    #[account(has_one = currency, has_one = token_account, constraint = holder_account.owner == wallet.key())]
+    pub holder_account: Box<Account<'info, HolderAccount>>,
+    #[account(mut)]
+    pub token_account: Box<Account<'info, TokenAccount>>,
+
     /// Participation state account
     #[account(
       init, payer = wallet,
@@ -65,9 +78,15 @@ pub struct Participate<'info> {
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(mut)]
     pub vault: AccountInfo<'info>,
-    pub system_program: Program<'info, System>,
     pub rent_sysvar: Sysvar<'info, Rent>,
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
     pub clock: Sysvar<'info, Clock>,
+    pub system_program: Program<'info, System>,
+    #[account(address = token::ID)]
+    pub token_program: Program<'info, Token>,
+    pub currency_manager_program: Program<'info, HplCurrencyManager>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
@@ -171,6 +190,28 @@ pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<(
             return Err(ErrorCode::NftNotRecognized.into());
         }
     }
+
+    transfer_currency(
+        CpiContext::new(
+            ctx.accounts.currency_manager_program.to_account_info(),
+            TransferCurrency {
+                project: ctx.accounts.project.to_account_info(),
+                currency: ctx.accounts.currency.to_account_info(),
+                mint: ctx.accounts.mint.to_account_info(),
+                sender_holder_account: ctx.accounts.holder_account.to_account_info(),
+                sender_token_account: ctx.accounts.token_account.to_account_info(),
+                receiver_holder_account: ctx.accounts.vault_holder_account.to_account_info(),
+                receiver_token_account: ctx.accounts.vault_token_account.to_account_info(),
+                owner: ctx.accounts.mission_pool.to_account_info(),
+                authority: ctx.accounts.mission_pool.to_account_info(),
+                instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
+                vault: ctx.accounts.vault.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+                token_program: ctx.accounts.token_program.to_account_info(),
+            },
+        ),
+        ctx.accounts.mission.cost.amount,
+    )?;
 
     Ok(())
 }
@@ -314,6 +355,8 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                             .unwrap()
                             .to_account_info(),
                         owner: ctx.accounts.mission_pool.to_account_info(),
+                        authority: ctx.accounts.mission_pool.to_account_info(),
+                        instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                         vault: ctx.accounts.vault.to_account_info(),
                         system_program: ctx.accounts.system_program.to_account_info(),
                         token_program: ctx.accounts.token_program.to_account_info(),

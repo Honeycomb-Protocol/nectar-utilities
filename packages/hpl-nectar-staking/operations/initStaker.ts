@@ -4,14 +4,21 @@ import { getStakerPda } from "../pdas";
 import { VAULT, Operation, Honeycomb } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
 
-type CreateInitStakerCtxArgs = {
+type CreateInitStakerOperationArgs = {
   stakingPool: NectarStaking;
   programId?: web3.PublicKey;
 };
 
-export async function createInitStakerOperation(honeycomb:Honeycomb,args: CreateInitStakerCtxArgs) {
+export async function createInitStakerOperation(
+  honeycomb: Honeycomb,
+  args: CreateInitStakerOperationArgs
+) {
   const programId = args.programId || PROGRAM_ID;
-  const [staker] = getStakerPda(args.stakingPool.address,honeycomb.identity().address, programId);
+  const [staker] = getStakerPda(
+    args.stakingPool.address,
+    honeycomb.identity().address,
+    programId
+  );
 
   const instructions: web3.TransactionInstruction[] = [
     createInitStakerInstruction(
@@ -30,4 +37,3 @@ export async function createInitStakerOperation(honeycomb:Honeycomb,args: Create
     operation: new Operation(honeycomb, instructions),
   };
 }
-

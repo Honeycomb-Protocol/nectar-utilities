@@ -1,9 +1,5 @@
 import { PublicKey, SYSVAR_RENT_PUBKEY } from "@solana/web3.js";
-import {
-  Honeycomb,
- Operation,
-  VAULT,
-} from "@honeycomb-protocol/hive-control";
+import { Honeycomb, Operation, VAULT } from "@honeycomb-protocol/hive-control";
 import {
   CreateMissionArgs as CreateMissionArgsSolita,
   PROGRAM_ID,
@@ -17,12 +13,17 @@ type CreateCreateMissionCtxArgs = {
   missionPool: NectarMissions;
   programId?: PublicKey;
 };
-export async function createCreateMissionOperation(honeycomb:Honeycomb,
+export async function createCreateMissionOperation(
+  honeycomb: Honeycomb,
   args: CreateCreateMissionCtxArgs
 ) {
   const programId = args.programId || PROGRAM_ID;
 
-  const [mission] = missionPda(args.missionPool, args.args.name, programId);
+  const [mission] = missionPda(
+    args.missionPool.address,
+    args.args.name,
+    programId
+  );
 
   const instructions = [
     createCreateMissionInstruction(
@@ -30,8 +31,9 @@ export async function createCreateMissionOperation(honeycomb:Honeycomb,
         project: args.missionPool.project().address,
         missionPool: args.missionPool.address,
         mission,
-        delegateAuthority: honeycomb.identity().delegateAuthority()?.address || programId,
-        authority:honeycomb.identity().address,
+        delegateAuthority:
+          honeycomb.identity().delegateAuthority()?.address || programId,
+        authority: honeycomb.identity().address,
         payer: honeycomb.identity().address,
         vault: VAULT,
         rentSysvar: SYSVAR_RENT_PUBKEY,

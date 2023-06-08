@@ -1,36 +1,34 @@
 import { PublicKey } from "@solana/web3.js";
-import {
-  Honeycomb,
-  Operation,
-  VAULT,
-} from "@honeycomb-protocol/hive-control";
+import { Honeycomb, Operation, VAULT } from "@honeycomb-protocol/hive-control";
 import {
   UpdateMissionPoolArgs as UpdateMissionPoolArgsSolita,
   PROGRAM_ID,
   createUpdateMissionPoolInstruction,
 } from "../generated";
-import { NectarMissions } from "../NectarMissions";
 
-type CreateUpdateMissionPoolCtxArgs = {
+type CreateUpdateMissionPoolOperationArgs = {
   args: UpdateMissionPoolArgsSolita;
-  missionPool: NectarMissions;
+  project: PublicKey;
+  missionPool: PublicKey;
   collection?: PublicKey;
   creator?: PublicKey;
   programId?: PublicKey;
 };
-export async function createUpdateMissionPoolOperation(honeycomb:Honeycomb,
-  args: CreateUpdateMissionPoolCtxArgs
+export async function createUpdateMissionPoolOperation(
+  honeycomb: Honeycomb,
+  args: CreateUpdateMissionPoolOperationArgs
 ) {
   const programId = args.programId || PROGRAM_ID;
 
   const instructions = [
     createUpdateMissionPoolInstruction(
       {
-        project: args.missionPool.project().address,
-        missionPool: args.missionPool.address,
+        project: args.project,
+        missionPool: args.missionPool,
         collection: args.collection || programId,
         creator: args.creator || programId,
-        delegateAuthority: honeycomb.identity().delegateAuthority()?.address || programId,
+        delegateAuthority:
+          honeycomb.identity().delegateAuthority()?.address || programId,
         authority: honeycomb.identity().address,
         payer: honeycomb.identity().address,
         vault: VAULT,

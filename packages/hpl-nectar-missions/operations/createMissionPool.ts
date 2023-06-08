@@ -1,46 +1,48 @@
 import { PublicKey, SYSVAR_RENT_PUBKEY } from "@solana/web3.js";
 import {
-  ConfirmedContext,
   HIVECONTROL_PROGRAM_ID,
   Honeycomb,
-  OperationCtx,
+  HoneycombProject,
+  Operation,
   VAULT,
-  createCtx,
 } from "@honeycomb-protocol/hive-control";
 import {
-  CreateMissionPoolArgs as CreateMissionPoolArgsSolita,
+  CreateMissionPoolArgs,
   PROGRAM_ID,
   createCreateMissionPoolInstruction,
 } from "../generated";
 import { missionPoolPda } from "../utils";
-import { createUpdateMissionPoolCtx } from "./updateMissionPool";
+import { createUpdateMissionPoolOperation } from "./updateMissionPool";
 
-type CreateCreateMissionPoolCtxArgs = {
-  args: CreateMissionPoolArgsSolita & {
+type CreateCreateMissionPoolOperationArgs = {
+  args: CreateMissionPoolArgs & {
     collections?: PublicKey[];
     creators?: PublicKey[];
   };
-  project: PublicKey;
-  delegateAuthority?: PublicKey;
-  authority: PublicKey;
-  payer: PublicKey;
+  project: HoneycombProject;
   programId?: PublicKey;
 };
-export function createCreateMissionPoolCtx(
-  args: CreateCreateMissionPoolCtxArgs
-): OperationCtx & { poolId: PublicKey } {
+export async function createCreateMissionPoolOperation(
+  honeycomb: Honeycomb,
+  args: CreateCreateMissionPoolOperationArgs
+) {
   const programId = args.programId || PROGRAM_ID;
 
-  const [missionPool] = missionPoolPda(args.project, args.args.name, programId);
+  const [missionPool] = missionPoolPda(
+    args.project.address,
+    args.args.name,
+    programId
+  );
 
   const instructions = [
     createCreateMissionPoolInstruction(
       {
-        project: args.project,
+        project: args.project.address,
         missionPool,
-        delegateAuthority: args.delegateAuthority || programId,
-        authority: args.authority,
-        payer: args.payer,
+        delegateAuthority:
+          honeycomb.identity().delegateAuthority()?.address || programId,
+        authority: honeycomb.identity().address,
+        payer: honeycomb.identity().address,
         vault: VAULT,
         rentSysvar: SYSVAR_RENT_PUBKEY,
         hiveControl: HIVECONTROL_PROGRAM_ID,
@@ -50,69 +52,42 @@ export function createCreateMissionPoolCtx(
       },
       programId
     ),
-
-    ...(args.args.collections || []).flatMap((collection) => {
-      return createUpdateMissionPoolCtx({
-        args: {
-          factionsMerkleRoot: null,
-        },
-        project: args.project,
-        missionPool,
-        collection,
-        creator: programId,
-        delegateAuthority: args.delegateAuthority || programId,
-        authority: args.authority,
-        payer: args.payer,
-        programId,
-      }).tx.instructions;
-    }),
-
-    ...(args.args.creators || []).flatMap((creator) => {
-      return createUpdateMissionPoolCtx({
-        args: {
-          factionsMerkleRoot: null,
-        },
-        project: args.project,
-        missionPool,
-        collection: programId,
-        creator,
-        delegateAuthority: args.delegateAuthority || programId,
-        authority: args.authority,
-        payer: args.payer,
-        programId,
-      }).tx.instructions;
-    }),
   ];
 
-  return {
-    ...createCtx(instructions),
-    poolId: missionPool,
-  };
-}
+  if (args.args.collections?.length) {
+    await Promise.all(
+      args.args.collections.map((collection) =>
+        createUpdateMissionPoolOperation(honeycomb, {
+          args: {
+            factionsMerkleRoot: null,
+          },
+          project: args.project.address,
+          missionPool,
+          collection,
+          programId,
+        }).then(({ operation }) => instructions.push(...operation.instructions))
+      )
+    );
+  }
 
-type CreateMissionPoolArgs = {
-  args: CreateMissionPoolArgsSolita & {
-    collections?: PublicKey[];
-    creators?: PublicKey[];
-  };
-  project?: PublicKey;
-  programId?: PublicKey;
-};
-export async function createMissionPool(
-  honeycomb: Honeycomb,
-  args: CreateMissionPoolArgs
-): Promise<ConfirmedContext & { poolId: PublicKey }> {
-  const ctx = createCreateMissionPoolCtx({
-    args: args.args,
-    project: args.project || honeycomb.project().address,
-    delegateAuthority: honeycomb.identity().delegateAuthority().address,
-    authority: honeycomb.identity().address,
-    payer: honeycomb.identity().address,
-    programId: args.programId,
-  });
+  if (args.args.creators?.length) {
+    await Promise.all(
+      args.args.creators.map((creator) =>
+        createUpdateMissionPoolOperation(honeycomb, {
+          args: {
+            factionsMerkleRoot: null,
+          },
+          project: args.project.address,
+          missionPool,
+          creator,
+          programId,
+        }).then(({ operation }) => instructions.push(...operation.instructions))
+      )
+    );
+  }
 
   return {
-    ...(await honeycomb.rpc().sendAndConfirmTransaction(ctx)),
-    poolId: ctx.poolId,
+    operation: new Operation(honeycomb, instructions),
+    missionPool,
   };
 }

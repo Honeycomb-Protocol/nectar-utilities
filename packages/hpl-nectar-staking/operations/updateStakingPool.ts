@@ -5,29 +5,33 @@ import {
   PROGRAM_ID,
 } from "../generated";
 import { Honeycomb, VAULT, Operation } from "@honeycomb-protocol/hive-control";
-import { NectarStaking } from "../NectarStaking";
 
 type CreateUpdatePoolCtxArgs = {
   args: UpdateStakingPoolArgs;
-  stakingPool: NectarStaking;
+  project: web3.PublicKey;
+  stakingPool: web3.PublicKey;
   collection?: web3.PublicKey;
   creator?: web3.PublicKey;
   programId?: web3.PublicKey;
 };
-export async function createUpdatePoolOperation(honeycomb: Honeycomb,args: CreateUpdatePoolCtxArgs) {
+export async function createUpdatePoolOperation(
+  honeycomb: Honeycomb,
+  args: CreateUpdatePoolCtxArgs
+) {
   const programId = args.programId || PROGRAM_ID;
 
   const instructions: web3.TransactionInstruction[] = [
     createUpdateStakingPoolInstruction(
       {
-        project: args.stakingPool.project().address,
+        project: args.project,
         vault: VAULT,
-        stakingPool: args.stakingPool.address,
+        stakingPool: args.stakingPool,
         collection: args.collection || programId,
         creator: args.creator || programId,
-        authority: honeycomb.identity().delegateAuthority()?.address || programId,
-        payer: honeycomb.identity().delegateAuthority()?.address || programId,
-        delegateAuthority: honeycomb.identity().delegateAuthority()?.address || programId,
+        authority: honeycomb.identity().address,
+        payer: honeycomb.identity().address,
+        delegateAuthority:
+          honeycomb.identity().delegateAuthority()?.address || programId,
       },
       {
         args: args.args,
@@ -40,4 +44,3 @@ export async function createUpdatePoolOperation(honeycomb: Honeycomb,args: Creat
     operation: new Operation(honeycomb, instructions),
   };
 }
-

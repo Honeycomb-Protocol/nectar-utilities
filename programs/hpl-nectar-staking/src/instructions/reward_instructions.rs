@@ -43,6 +43,10 @@ pub struct WithdrawRewards<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
+
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
 
@@ -81,7 +85,9 @@ pub fn withdraw_rewards(ctx: Context<WithdrawRewards>, amount: u64) -> Result<()
                 receiver_holder_account: ctx.accounts.holder_account.to_account_info(),
                 receiver_token_account: ctx.accounts.token_account.to_account_info(),
                 owner: ctx.accounts.staking_pool.to_account_info(),
+                authority: ctx.accounts.staking_pool.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),
+                instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
                 token_program: ctx.accounts.token_program.to_account_info(),
             },
@@ -133,6 +139,9 @@ pub struct ClaimRewards<'info> {
     #[account(mut)]
     pub wallet: Signer<'info>,
 
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
 
@@ -265,7 +274,9 @@ pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
                 receiver_holder_account: ctx.accounts.holder_account.to_account_info(),
                 receiver_token_account: ctx.accounts.token_account.to_account_info(),
                 owner: ctx.accounts.staking_pool.to_account_info(),
+                authority: ctx.accounts.staking_pool.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),
+                instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
                 token_program: ctx.accounts.token_program.to_account_info(),
             },

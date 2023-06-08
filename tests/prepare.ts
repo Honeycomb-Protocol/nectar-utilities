@@ -21,7 +21,9 @@ export const prepare = async (airdropCount = 0) => {
   return honeycomb;
 };
 
-function tryKeyOrGenerate(keyPath = "../key.json"): [web3.Keypair, boolean] {
+export function tryKeyOrGenerate(
+  keyPath = "../key.json"
+): [web3.Keypair, boolean] {
   try {
     return [
       web3.Keypair.fromSecretKey(

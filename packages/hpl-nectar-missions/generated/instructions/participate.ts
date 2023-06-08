@@ -5,6 +5,7 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
+import * as splToken from '@solana/spl-token'
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
 import { ParticipateArgs, participateArgsBeet } from '../types/ParticipateArgs'
@@ -42,11 +43,19 @@ export const participateStruct = new beet.FixableBeetArgsStruct<
  * @property [] mission
  * @property [] nft
  * @property [] staker
+ * @property [] currency
+ * @property [] mint
+ * @property [] vaultHolderAccount
+ * @property [_writable_] vaultTokenAccount
+ * @property [] holderAccount
+ * @property [_writable_] tokenAccount
  * @property [_writable_] participation
  * @property [_writable_, **signer**] wallet
  * @property [_writable_] vault
  * @property [] rentSysvar
+ * @property [] instructionsSysvar
  * @property [] clock
+ * @property [] currencyManagerProgram
  * @category Instructions
  * @category Participate
  * @category generated
@@ -58,12 +67,21 @@ export type ParticipateInstructionAccounts = {
   mission: web3.PublicKey
   nft: web3.PublicKey
   staker: web3.PublicKey
+  currency: web3.PublicKey
+  mint: web3.PublicKey
+  vaultHolderAccount: web3.PublicKey
+  vaultTokenAccount: web3.PublicKey
+  holderAccount: web3.PublicKey
+  tokenAccount: web3.PublicKey
   participation: web3.PublicKey
   wallet: web3.PublicKey
   vault: web3.PublicKey
-  systemProgram?: web3.PublicKey
   rentSysvar: web3.PublicKey
+  instructionsSysvar: web3.PublicKey
   clock: web3.PublicKey
+  systemProgram?: web3.PublicKey
+  tokenProgram?: web3.PublicKey
+  currencyManagerProgram: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -122,6 +140,36 @@ export function createParticipateInstruction(
       isSigner: false,
     },
     {
+      pubkey: accounts.currency,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.mint,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.vaultHolderAccount,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.vaultTokenAccount,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.holderAccount,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.tokenAccount,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.participation,
       isWritable: true,
       isSigner: false,
@@ -137,17 +185,32 @@ export function createParticipateInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
       pubkey: accounts.rentSysvar,
       isWritable: false,
       isSigner: false,
     },
     {
+      pubkey: accounts.instructionsSysvar,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.clock,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.tokenProgram ?? splToken.TOKEN_PROGRAM_ID,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.currencyManagerProgram,
       isWritable: false,
       isSigner: false,
     },

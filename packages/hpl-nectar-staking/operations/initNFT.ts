@@ -4,16 +4,18 @@ import { getMetadataAccount_, getNftPda } from "../pdas";
 import { VAULT, Operation, Honeycomb } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
 
-type CreateInitNftCtxArgs = {
+type CreateInitNftOperationArgs = {
   stakingPool: NectarStaking;
   nftMint: web3.PublicKey;
   programId?: web3.PublicKey;
 };
 
-export async function createInitNFTOperation(honeycomb: Honeycomb,
-  args: CreateInitNftCtxArgs) {
+export async function createInitNFTOperation(
+  honeycomb: Honeycomb,
+  args: CreateInitNftOperationArgs
+) {
   const programId = args.programId || PROGRAM_ID;
-  const [nft] = getNftPda(args.stakingPool, args.nftMint, programId);
+  const [nft] = getNftPda(args.stakingPool.address, args.nftMint, programId);
   const [nftMetadata] = getMetadataAccount_(args.nftMint);
 
   const instructions: web3.TransactionInstruction[] = [
@@ -25,8 +27,9 @@ export async function createInitNFTOperation(honeycomb: Honeycomb,
         nft,
         nftMetadata,
         nftMint: args.nftMint,
-        wallet: honeycomb.identity().walletResolver?.name,
-        delegateAuthority: honeycomb.identity().delegateAuthority()?.address || programId,
+        wallet: honeycomb.identity().address,
+        delegateAuthority:
+          honeycomb.identity().delegateAuthority()?.address || programId,
       },
       programId
     ),
@@ -36,4 +39,3 @@ export async function createInitNFTOperation(honeycomb: Honeycomb,
     operation: new Operation(honeycomb, instructions),
   };
 }
-

@@ -1,5 +1,5 @@
 import * as web3 from "@solana/web3.js";
-import { Metaplex, Nft, walletAdapterIdentity } from "@metaplex-foundation/js";
+import { Metaplex, Nft, keypairIdentity } from "@metaplex-foundation/js";
 import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import { Honeycomb, HoneycombProject } from "@honeycomb-protocol/hive-control";
 import {
@@ -12,7 +12,7 @@ import {
   NectarStaking,
   nectarStakingModule,
 } from "../packages/hpl-nectar-staking";
-import { prepare } from "./prepare";
+import { prepare, tryKeyOrGenerate } from "./prepare";
 import { MerkleTree, NectarMissions } from "../packages/hpl-nectar-missions";
 jest.setTimeout(2000000);
 
@@ -73,7 +73,7 @@ describe("Nectar Utilities", () => {
     expect(balance).toBeGreaterThanOrEqual(web3.LAMPORTS_PER_SOL * 0.1);
 
     metaplex = new Metaplex(honeycomb.connection);
-    metaplex.use(walletAdapterIdentity(honeycomb.identity()));
+    metaplex.use(keypairIdentity(tryKeyOrGenerate()[0]));
 
     let out = await metaplex.nfts().create({
       name: "Collection",
@@ -142,7 +142,10 @@ describe("Nectar Utilities", () => {
         uri: "https://arweave.net/QPC6FYdUn-3V8ytFNuoCS85S2tHAuiDblh6u3CIZLsw",
       })
     );
-    mainVault = await honeycomb.currency().create().holderAccount();
+    mainVault = await honeycomb
+      .currency()
+      .create()
+      .holderAccount(honeycomb.identity().address);
     await mainVault.mint(100_000 * 1_000_000_000);
 
     console.log("Project", honeycomb.project().address.toString());
@@ -164,7 +167,8 @@ describe("Nectar Utilities", () => {
           endTime: null,
           lockType: LockType.Freeze,
         },
-        currency: honeycomb.currency().address,
+        project: honeycomb.project(),
+        currency: honeycomb.currency(),
         collections: [collection.mint.address],
         multipliersDecimals: 3,
         multipliers: [
@@ -234,7 +238,10 @@ describe("Nectar Utilities", () => {
         uri: "https://storage.googleapis.com/nft-assets/items/FOOD.png",
       })
     );
-    const foodVault = await honeycomb.currency().create().holderAccount();
+    const foodVault = await honeycomb
+      .currency()
+      .create()
+      .holderAccount(honeycomb.identity().address);
     await foodVault.mint(50_000 * 1_000_000_000);
 
     const missionsFoodVault = await honeycomb
@@ -246,43 +253,46 @@ describe("Nectar Utilities", () => {
     await honeycomb
       .missions()
       .create()
-      .mission({
-        name: "QuickPost",
-        cost: {
-          address: honeycomb.currency().address,
-          amount: 10,
+      .mission(
+        {
+          name: "QuickPost",
+          cost: {
+            address: currentCurrency.address,
+            amount: 10,
+          },
+          duration: 60,
+          minXp: 0,
+          rewards: [
+            {
+              min: 100,
+              max: 200,
+              rewardType: {
+                __kind: "Xp",
+              },
+            },
+            {
+              min: 10_000_000_000,
+              max: 20_000_000_000,
+              rewardType: {
+                __kind: "Currency",
+                address: honeycomb.currency().address,
+              },
+            },
+          ],
         },
-        duration: 60,
-        minXp: 0,
-        rewards: [
-          {
-            min: 100,
-            max: 200,
-            rewardType: {
-              __kind: "Xp",
-            },
-          },
-          {
-            min: 10_000_000_000,
-            max: 20_000_000_000,
-            rewardType: {
-              __kind: "Currency",
-              address: honeycomb.currency().address,
-            },
-          },
-        ],
-      });
+        { skipPreflight: true }
+      );
 
     honeycomb.use(currentCurrency);
   });
 
-  it.skip("Fetch or Create user/profile", async () => {
+  it("Fetch or Create user/profile", async () => {
     await honeycomb
       .identity()
       .user()
       .catch((_) =>
         honeycomb.identity().create().user({
-          username: "MissionTest7",
+          username: "MissionTest1",
           name: "MissionTest",
           bio: "This account is used for testing",
           pfp: "https://ottxzxktsovtp7hzlcgxu7ti42ukppp5pzavhy6rkj7v4neiblyq.arweave.net/dOd83VOTqzf8-ViNen5o5qinvf1-QVPj0VJ_XjSICvE?ext=png",
@@ -302,7 +312,7 @@ describe("Nectar Utilities", () => {
     // console.log("User", user.address.toString(), profile.address.toString());
   });
 
-  it.skip("Stake NFTs", async () => {
+  it("Stake NFTs", async () => {
     const availableNfts = await honeycomb.staking().fetch().availableNfts();
     expect(availableNfts.length).toBe(totalNfts);
     await honeycomb.staking().stake(availableNfts);
@@ -310,29 +320,31 @@ describe("Nectar Utilities", () => {
     expect(stakedNfts.length).toBe(totalNfts);
   });
 
-  it.skip("Participate on Mission", async () => {
+  it("Participate on Mission", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     const mission = await honeycomb.missions().mission("QuickPost");
     await mission.participate(
-      ...stakedNfts.map((x) => ({
+      stakedNfts.map((x) => ({
         ...x,
         serialize: x.serialize,
         pretty: x.pretty,
-        faction: "faction",
-        merkleProof: factionsMerkleTree.getProofArray(
-          factionsArray.findIndex((y) => y.mint.equals(x.mint))
-        ),
+        args: {
+          faction: "faction",
+          merkleProof: factionsMerkleTree.getProofArray(
+            factionsArray.findIndex((y) => y.mint.equals(x.mint))
+          ),
+        },
       }))
     );
   });
 
-  it.skip("Recall from missions", async () => {
+  it("Recall from missions", async () => {
     const participations = await honeycomb.missions().fetch().participations();
     const mission = await honeycomb.missions().mission("QuickPost");
-    await mission.recall(...participations);
+    await mission.recall(participations);
   });
 
-  it.skip("Unstake NFTs", async () => {
+  it("Unstake NFTs", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     await honeycomb.staking().unstake(stakedNfts, {
       skipPreflight: true,

@@ -1,10 +1,6 @@
 import * as web3 from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
-import {
-  createStakeInstruction as createStakeInstructionGenerated,
-  LockType,
-  PROGRAM_ID,
-} from "../generated";
+import { createStakeInstruction, LockType, PROGRAM_ID } from "../generated";
 import { AvailableNft } from "../types";
 import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import {
@@ -14,183 +10,116 @@ import {
   getStakerPda,
   METADATA_PROGRAM_ID,
 } from "../pdas";
-import { createInitStakerCtx } from "./initStaker";
-import { createInitNFTCtx } from "./initNFT";
-import { VAULT, createCtx, Honeycomb } from "@honeycomb-protocol/hive-control";
+import { VAULT, Honeycomb, Operation } from "@honeycomb-protocol/hive-control";
 import { PROGRAM_ID as AUTHORIZATION_PROGRAM_ID } from "@metaplex-foundation/mpl-token-auth-rules";
+import { NectarStaking } from "../NectarStaking";
+import { createInitNFTOperation } from "./initNFT";
+import { createInitStakerOperation } from "./initStaker";
 
-type CreateStakeTransactionArgs = {
-  project: web3.PublicKey;
-  stakingPool: web3.PublicKey;
-  nftMint: web3.PublicKey;
-  wallet: web3.PublicKey;
-  authRuleSet?: web3.PublicKey;
-  lockType?: LockType; // default: LockType.Freeze,
-  tokenStandard?: TokenStandard; // default: TokenStandard.NonFungible,
+type CreateStakeOperationArgs = {
+  stakingPool: NectarStaking;
+  nft: AvailableNft;
+  isFirst?: boolean;
   programId?: web3.PublicKey;
 };
 
-function createStakeInstruction(args: CreateStakeTransactionArgs) {
+export async function createStakeOperation(
+  honeycomb: Honeycomb,
+  args: CreateStakeOperationArgs
+) {
   const programId = args.programId || PROGRAM_ID;
 
-  const [nft] = getNftPda(args.stakingPool, args.nftMint);
+  const [nft] = getNftPda(args.stakingPool.address, args.nft.tokenMint);
   const nftAccount = splToken.getAssociatedTokenAddressSync(
-    args.nftMint,
-    args.wallet
+    args.nft.tokenMint,
+    honeycomb.identity().address
   );
-  const [nftMetadata] = getMetadataAccount_(args.nftMint);
-  const [nftEdition] = getMetadataAccount_(args.nftMint, { __kind: "edition" });
-  const [staker] = getStakerPda(args.stakingPool, args.wallet);
+  const [nftMetadata] = getMetadataAccount_(args.nft.tokenMint);
+  const [nftEdition] = getMetadataAccount_(args.nft.tokenMint, {
+    __kind: "edition",
+  });
+  const [staker] = getStakerPda(
+    args.stakingPool.address,
+    honeycomb.identity().address
+  );
 
   let nftTokenRecord: web3.PublicKey | undefined,
     depositAccount: web3.PublicKey | undefined,
     depositTokenRecord: web3.PublicKey | undefined;
 
-  if (args.lockType === LockType.Custoday) {
-    [depositAccount] = getDepositPda(args.nftMint);
+  if (args.stakingPool.lockType === LockType.Custoday) {
+    [depositAccount] = getDepositPda(nft);
   }
 
-  if (args.tokenStandard === TokenStandard.ProgrammableNonFungible) {
-    [nftTokenRecord] = getMetadataAccount_(args.nftMint, {
+  if (args.nft.tokenStandard === TokenStandard.ProgrammableNonFungible) {
+    [nftTokenRecord] = getMetadataAccount_(nft, {
       __kind: "token_record",
       tokenAccount: nftAccount,
     });
-    if (depositAccount && args.lockType === LockType.Custoday) {
-      [depositTokenRecord] = getMetadataAccount_(args.nftMint, {
+    if (depositAccount && args.stakingPool.lockType === LockType.Custoday) {
+      [depositTokenRecord] = getMetadataAccount_(nft, {
         __kind: "token_record",
         tokenAccount: depositAccount,
       });
     }
   }
 
-  return createStakeInstructionGenerated(
-    {
-      project: args.project,
-      vault: VAULT,
-      stakingPool: args.stakingPool,
-      nft,
-      nftMint: args.nftMint,
-      nftAccount,
-      nftMetadata,
-      nftEdition,
-      nftTokenRecord: nftTokenRecord || programId,
-      depositAccount: depositAccount || programId,
-      depositTokenRecord: depositTokenRecord || programId,
-      staker,
-      wallet: args.wallet,
-      associatedTokenProgram: splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
-      tokenMetadataProgram: METADATA_PROGRAM_ID,
-      clock: web3.SYSVAR_CLOCK_PUBKEY,
-      sysvarInstructions: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-      authorizationRulesProgram: args.authRuleSet
-        ? AUTHORIZATION_PROGRAM_ID
-        : programId,
-      authorizationRules: args.authRuleSet || programId,
-    },
-    programId
-  );
-}
-
-type CreateStakeCtxArgs = {
-  nft: AvailableNft;
-  isFirst?: boolean;
-  programId?: web3.PublicKey;
-};
-export async function createStakeCtx(
-  honeycomb: Honeycomb,
-  args: CreateStakeCtxArgs
-) {
-  const instructions: web3.TransactionInstruction[] = [
-    web3.ComputeBudgetProgram.setComputeUnitLimit({
-      units: 300_000,
-    }),
+  const instructions = [
+    createStakeInstruction(
+      {
+        project: args.stakingPool.project().address,
+        vault: VAULT,
+        stakingPool: args.stakingPool.address,
+        nft,
+        nftMint: args.nft.tokenMint,
+        nftAccount,
+        nftMetadata,
+        nftEdition,
+        nftTokenRecord: nftTokenRecord || programId,
+        depositAccount: depositAccount || programId,
+        depositTokenRecord: depositTokenRecord || programId,
+        staker,
+        wallet: honeycomb.identity().address,
+        associatedTokenProgram: splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
+        tokenMetadataProgram: METADATA_PROGRAM_ID,
+        clock: web3.SYSVAR_CLOCK_PUBKEY,
+        sysvarInstructions: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+        authorizationRulesProgram: args.nft.programmableConfig?.ruleSet
+          ? AUTHORIZATION_PROGRAM_ID
+          : programId,
+        authorizationRules: args.nft.programmableConfig?.ruleSet || programId,
+      },
+      programId
+    ),
   ];
-  const signers: web3.Signer[] = [];
+
+  if (args.isFirst) {
+    try {
+      await args.stakingPool
+        .fetch()
+        .staker({ wallet: honeycomb.identity().address });
+    } catch {
+      createInitStakerOperation(honeycomb, {
+        stakingPool: args.stakingPool,
+        programId: args.programId,
+      }).then(({ operation }) =>
+        instructions.unshift(...operation.instructions)
+      );
+    }
+  }
 
   try {
-    const nft = await honeycomb
-      .staking()
-      .fetch()
-      .nft(args.nft.tokenMint)
-      .catch();
+    const nft = await args.stakingPool.fetch().nft(args.nft.tokenMint).catch();
     if (!nft) throw new Error("NFT not initialized");
   } catch {
-    const initNftCtx = createInitNFTCtx({
-      project: honeycomb.project().projectAddress,
-      stakingPool: honeycomb.staking().poolAddress,
+    await createInitNFTOperation(honeycomb, {
+      stakingPool: args.stakingPool,
       nftMint: args.nft.tokenMint,
-      wallet: honeycomb.identity().address,
       programId: args.programId,
-    });
-    instructions.push(...initNftCtx.tx.instructions);
-    signers.push(...initNftCtx.signers);
+    }).then(({ operation }) => instructions.unshift(...operation.instructions));
   }
 
-  instructions.push(
-    createStakeInstruction({
-      project: honeycomb.project().projectAddress,
-      stakingPool: honeycomb.staking().poolAddress,
-      nftMint: args.nft.tokenMint,
-      wallet: honeycomb.identity().address,
-      authRuleSet: args.nft.programmableConfig?.ruleSet,
-      lockType: honeycomb.staking().lockType,
-      tokenStandard: args.nft.tokenStandard,
-      programId: args.programId,
-    })
-  );
-
-  return createCtx(instructions, signers);
-}
-
-type StakeArgs = {
-  nfts: AvailableNft[];
-  programId?: web3.PublicKey;
-};
-export async function stake(
-  honeycomb: Honeycomb,
-  args: StakeArgs,
-  confirmOptions?: web3.ConfirmOptions
-) {
-  const wallet = honeycomb.identity();
-
-  const ctxs = await Promise.all(
-    args.nfts.map((nft, i) =>
-      createStakeCtx(honeycomb, {
-        nft,
-        isFirst: i == 0,
-        programId: args.programId,
-      })
-    )
-  );
-
-  try {
-    await honeycomb.staking().fetch().staker({ wallet: wallet.address });
-  } catch {
-    ctxs.unshift(
-      createInitStakerCtx({
-        project: honeycomb.project().projectAddress,
-        stakingPool: honeycomb.staking().poolAddress,
-        wallet: wallet.address,
-        programId: args.programId,
-      })
-    );
-  }
-
-  const preparedCtxs = await honeycomb.rpc().prepareTransactions(ctxs);
-
-  const firstTxResponse = await honeycomb
-    .rpc()
-    .sendAndConfirmTransaction(preparedCtxs.shift(), {
-      commitment: "processed",
-      ...confirmOptions,
-    });
-
-  const responses = await honeycomb
-    .rpc()
-    .sendAndConfirmTransactionsInBatches(preparedCtxs, {
-      commitment: "processed",
-      ...confirmOptions,
-    });
-
-  return [firstTxResponse, ...responses];
+  return {
+    operation: new Operation(honeycomb, instructions),
+  };
 }
