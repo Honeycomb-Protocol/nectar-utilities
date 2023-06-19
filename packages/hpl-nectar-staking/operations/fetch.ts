@@ -218,7 +218,6 @@ export async function fetchRewards(
 ) {
   const end: number = (args.till?.getTime() || Date.now()) / 1000;
   let secondsElapsed = end - Number(args.nft.lastClaim);
-  console.log("secondsElapsed", secondsElapsed);
   // if (secondsElapsed < Number(staking.rewardsDuration)) {
   //   return { rewards: 0, multipliers: 0 };
   // }

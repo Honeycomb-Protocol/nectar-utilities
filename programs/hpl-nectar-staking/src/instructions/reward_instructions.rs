@@ -17,7 +17,7 @@ use {
 #[derive(Accounts)]
 pub struct WithdrawRewards<'info> {
     /// StakingPool state account
-    #[account(has_one = project, has_one = currency)]
+    #[account(mut, has_one = project, has_one = currency)]
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
     #[account(has_one = mint)]
@@ -205,7 +205,7 @@ pub fn migrate_vault(ctx: Context<MigrateVault>) -> Result<()> {
 #[derive(Accounts)]
 pub struct ClaimRewards<'info> {
     /// StakingPool state account
-    #[account(has_one = project, has_one = currency)]
+    #[account(mut, has_one = project, has_one = currency)]
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// Multpliers state account
