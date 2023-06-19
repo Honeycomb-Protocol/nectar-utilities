@@ -23,7 +23,7 @@ export const claimRewardsStruct = new beet.BeetArgsStruct<{
 /**
  * Accounts required by the _claimRewards_ instruction
  *
- * @property [] stakingPool
+ * @property [_writable_] stakingPool
  * @property [] multipliers (optional)
  * @property [_writable_] nft
  * @property [] currency
@@ -92,7 +92,7 @@ export function createClaimRewardsInstruction(
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.stakingPool,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
   ]

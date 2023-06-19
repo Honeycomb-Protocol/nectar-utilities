@@ -36,7 +36,7 @@ export const withdrawRewardsStruct = new beet.BeetArgsStruct<
 /**
  * Accounts required by the _withdrawRewards_ instruction
  *
- * @property [] stakingPool
+ * @property [_writable_] stakingPool
  * @property [] currency
  * @property [] mint
  * @property [_writable_] vaultHolderAccount
@@ -105,7 +105,7 @@ export function createWithdrawRewardsInstruction(
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.stakingPool,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {

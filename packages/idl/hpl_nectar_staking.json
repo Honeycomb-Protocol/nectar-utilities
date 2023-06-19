@@ -1,5 +1,5 @@
 {
-  "version": "0.0.51",
+  "version": "0.0.53",
   "name": "hpl_nectar_staking",
   "instructions": [
     {
@@ -793,7 +793,7 @@
       "accounts": [
         {
           "name": "stakingPool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "docs": [
             "StakingPool state account"
@@ -900,7 +900,7 @@
       "accounts": [
         {
           "name": "stakingPool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "docs": [
             "StakingPool state account"
