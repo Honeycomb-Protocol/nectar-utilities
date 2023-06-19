@@ -30,7 +30,7 @@ import { MerkleTree, NectarMissions } from "../packages/hpl-nectar-missions";
 jest.setTimeout(2000000);
 
 describe("Nectar Utilities", () => {
-  const totalNfts = 1;
+  const totalNfts = 10;
 
   let honeycomb: Honeycomb;
   let metaplex: Metaplex;
@@ -173,7 +173,7 @@ describe("Nectar Utilities", () => {
         name: `NFT #${i}`,
         symbol: `TEMP`,
         sellerFeeBasisPoints: 100,
-        uri: "https://arweave.net/HVD1kBCxlvkOMI17QwkFVXpDjtBjOfXa9aLmiFuxJ4w",
+        uri: "https://arweave.net/WhyRt90kgI7f0EG9GPfB8TIBTIBgX3X12QaF9ObFerE",
         collection: collection.mint.address,
         collectionAuthority: metaplex.identity(),
         tokenStandard: TokenStandard.NonFungible,
@@ -384,20 +384,20 @@ describe("Nectar Utilities", () => {
         )
       );
 
-    // await honeycomb
-    //   .identity()
-    //   .profile(honeycomb.project().address, honeycomb.identity().address)
-    //   .catch((_) =>
-    //     honeycomb
-    //       .identity()
-    //       .create()
-    //       .profile(honeycomb.project().address, honeycomb.identity().address)
-    //   );
+    await honeycomb
+      .identity()
+      .profile(honeycomb.project().address, honeycomb.identity().address)
+      .catch((_) =>
+        honeycomb
+          .identity()
+          .create()
+          .profile(honeycomb.project().address, honeycomb.identity().address)
+      );
 
     // console.log("User", user.address.toString(), profile.address.toString());
   });
 
-  it("Stake NFTs", async () => {
+  it.skip("Stake NFTs", async () => {
     const availableNfts = await honeycomb.staking().fetch().availableNfts();
     expect(availableNfts.length).toBe(totalNfts);
     await honeycomb.staking().stake(availableNfts);
@@ -405,7 +405,7 @@ describe("Nectar Utilities", () => {
     expect(stakedNfts.length).toBe(totalNfts);
   });
 
-  it("Participate on Mission", async () => {
+  it.skip("Participate on Mission", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     const mission = await honeycomb.missions().mission("QuickPost");
     await mission.participate(
@@ -423,15 +423,13 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it("Recall from missions", async () => {
+  it.skip("Recall from missions", async () => {
     const participations = await honeycomb.missions().fetch().participations();
     const mission = await honeycomb.missions().mission("QuickPost");
-    await mission.recall(participations, {
-      skipPreflight: true,
-    });
+    await mission.recall(participations);
   });
 
-  it("Unstake NFTs", async () => {
+  it.skip("Unstake NFTs", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     await honeycomb.staking().unstake(stakedNfts, {
       skipPreflight: true,

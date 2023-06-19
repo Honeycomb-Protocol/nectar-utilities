@@ -1,6 +1,6 @@
 [package]
 name = "hpl-nectar-missions"
-version = "0.0.17"
+version = "0.0.18"
 description = "Honeycomb protocol library nectar utilities missions program"
 author = ['Sultan Nadeem <sultanndilaram@gmail.com>']
 edition = "2021"
@@ -28,5 +28,5 @@ toml_datetime = "=0.6.1"
 hpl-utils = "0.1.7"
 hpl-hive-control = { version="0.1.6", features = ["cpi"] }
 hpl-currency-manager = { version="0.0.21", features = ["cpi"] }
-hpl-nectar-staking = { version="0.0.51", path="../hpl-nectar-staking", features = ["cpi"] }
+hpl-nectar-staking = { version="0.0.52", path="../hpl-nectar-staking", features = ["cpi"] }
 spl-account-compression = { version="0.1.8", features=["cpi"] }
