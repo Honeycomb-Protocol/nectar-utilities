@@ -28,14 +28,15 @@ export const claimRewardsStruct = new beet.BeetArgsStruct<{
  * @property [_writable_] nft
  * @property [] currency
  * @property [_writable_] mint
- * @property [] vaultHolderAccount
+ * @property [_writable_] vaultHolderAccount
  * @property [_writable_] vaultTokenAccount
  * @property [] holderAccount
  * @property [_writable_] tokenAccount
  * @property [_writable_] staker
  * @property [_writable_, **signer**] wallet
+ * @property [] instructionsSysvar
  * @property [] clock
- * @property [] project
+ * @property [_writable_] project
  * @property [_writable_] vault
  * @property [] currencyManagerProgram
  * @category Instructions
@@ -54,6 +55,7 @@ export type ClaimRewardsInstructionAccounts = {
   tokenAccount: web3.PublicKey
   staker: web3.PublicKey
   wallet: web3.PublicKey
+  instructionsSysvar: web3.PublicKey
   systemProgram?: web3.PublicKey
   tokenProgram?: web3.PublicKey
   clock: web3.PublicKey
@@ -119,7 +121,7 @@ export function createClaimRewardsInstruction(
   })
   keys.push({
     pubkey: accounts.vaultHolderAccount,
-    isWritable: false,
+    isWritable: true,
     isSigner: false,
   })
   keys.push({
@@ -148,6 +150,11 @@ export function createClaimRewardsInstruction(
     isSigner: true,
   })
   keys.push({
+    pubkey: accounts.instructionsSysvar,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
     pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
     isWritable: false,
     isSigner: false,
@@ -164,7 +171,7 @@ export function createClaimRewardsInstruction(
   })
   keys.push({
     pubkey: accounts.project,
-    isWritable: false,
+    isWritable: true,
     isSigner: false,
   })
   keys.push({

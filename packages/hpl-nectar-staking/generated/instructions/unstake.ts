@@ -23,7 +23,7 @@ export const unstakeStruct = new beet.BeetArgsStruct<{
 /**
  * Accounts required by the _unstake_ instruction
  *
- * @property [] stakingPool
+ * @property [_writable_] stakingPool
  * @property [_writable_] nft
  * @property [_writable_] nftMint
  * @property [_writable_] nftAccount
@@ -98,7 +98,7 @@ export function createUnstakeInstruction(
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.stakingPool,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {

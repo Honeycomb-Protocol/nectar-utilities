@@ -24,7 +24,7 @@ use {
 /// Accounts used in participate instruction
 #[derive(Accounts)]
 pub struct Participate<'info> {
-    #[account()]
+    #[account(mut)]
     pub project: Box<Account<'info, Project>>,
 
     /// StakingPool state account
@@ -55,7 +55,7 @@ pub struct Participate<'info> {
     pub vault_holder_account: Box<Account<'info, HolderAccount>>,
     #[account(mut)]
     pub vault_token_account: Box<Account<'info, TokenAccount>>,
-    #[account(has_one = currency, has_one = token_account, constraint = holder_account.owner == wallet.key())]
+    #[account(mut, has_one = currency, has_one = token_account, constraint = holder_account.owner == wallet.key())]
     pub holder_account: Box<Account<'info, HolderAccount>>,
     #[account(mut)]
     pub token_account: Box<Account<'info, TokenAccount>>,
@@ -202,8 +202,8 @@ pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<(
                 sender_token_account: ctx.accounts.token_account.to_account_info(),
                 receiver_holder_account: ctx.accounts.vault_holder_account.to_account_info(),
                 receiver_token_account: ctx.accounts.vault_token_account.to_account_info(),
-                owner: ctx.accounts.mission_pool.to_account_info(),
-                authority: ctx.accounts.mission_pool.to_account_info(),
+                owner: ctx.accounts.wallet.to_account_info(),
+                authority: ctx.accounts.wallet.to_account_info(),
                 instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
@@ -242,7 +242,7 @@ pub struct CollectRewards<'info> {
     pub currency: Option<Box<Account<'info, Currency>>>,
     #[account()]
     pub mint: Option<Box<Account<'info, Mint>>>,
-    #[account(has_one = currency, constraint = vault_token_account.is_some() && vault_holder_account.token_account == vault_token_account.clone().unwrap().key() && vault_holder_account.owner == mission_pool.key())]
+    #[account(mut, has_one = currency, constraint = vault_token_account.is_some() && vault_holder_account.token_account == vault_token_account.clone().unwrap().key() && vault_holder_account.owner == mission_pool.key())]
     pub vault_holder_account: Option<Box<Account<'info, HolderAccount>>>,
     #[account(mut)]
     pub vault_token_account: Option<Box<Account<'info, TokenAccount>>>,

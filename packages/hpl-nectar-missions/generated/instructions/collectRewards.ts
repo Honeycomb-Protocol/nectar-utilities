@@ -31,7 +31,7 @@ export const collectRewardsStruct = new beet.BeetArgsStruct<{
  * @property [_writable_] profile (optional)
  * @property [] currency (optional)
  * @property [] mint (optional)
- * @property [] vaultHolderAccount (optional)
+ * @property [_writable_] vaultHolderAccount (optional)
  * @property [_writable_] vaultTokenAccount (optional)
  * @property [] holderAccount (optional)
  * @property [_writable_] tokenAccount (optional)
@@ -170,7 +170,7 @@ export function createCollectRewardsInstruction(
     }
     keys.push({
       pubkey: accounts.vaultHolderAccount,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     })
   }

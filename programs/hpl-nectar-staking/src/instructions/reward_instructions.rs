@@ -1,9 +1,12 @@
 use {
-    crate::{errors::ErrorCode, state::*},
+    crate::state::*,
     anchor_lang::prelude::*,
-    anchor_spl::token::{Mint, Token, TokenAccount},
+    anchor_spl::token::{self, CloseAccount, Mint, Token, TokenAccount},
     hpl_currency_manager::{
-        cpi::{accounts::TransferCurrency, transfer_currency},
+        cpi::{
+            accounts::{FundAccount, TransferCurrency},
+            fund_account, transfer_currency,
+        },
         program::HplCurrencyManager,
         state::{Currency, HolderAccount},
     },
@@ -23,7 +26,7 @@ pub struct WithdrawRewards<'info> {
     #[account()]
     pub mint: Box<Account<'info, Mint>>,
 
-    #[account(has_one = currency, constraint = vault_holder_account.token_account == vault_token_account.key() && vault_holder_account.owner == staking_pool.key())]
+    #[account(mut, has_one = currency, constraint = vault_holder_account.token_account == vault_token_account.key() && vault_holder_account.owner == staking_pool.key())]
     pub vault_holder_account: Box<Account<'info, HolderAccount>>,
 
     #[account(mut)]
@@ -54,7 +57,7 @@ pub struct WithdrawRewards<'info> {
     pub token_program: Program<'info, Token>,
 
     // HIVE CONTROL
-    #[account()]
+    #[account(mut)]
     pub project: Box<Account<'info, Project>>,
     #[account(has_one = authority)]
     pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
@@ -98,6 +101,106 @@ pub fn withdraw_rewards(ctx: Context<WithdrawRewards>, amount: u64) -> Result<()
     Ok(())
 }
 
+/// Accounts used in withdraw rewards instruction
+#[derive(Accounts)]
+pub struct MigrateVault<'info> {
+    // HIVE CONTROL
+    #[account(mut, has_one = authority)]
+    pub project: Box<Account<'info, Project>>,
+
+    /// StakingPool state account
+    #[account(mut, has_one = project)]
+    pub staking_pool: Box<Account<'info, StakingPool>>,
+
+    #[account(has_one = project, has_one = mint)]
+    pub currency: Box<Account<'info, Currency>>,
+
+    /// Mint address of the reward token
+    #[account(mut, constraint = mint.key() == staking_pool.currency)]
+    pub mint: Box<Account<'info, Mint>>,
+
+    /// Reward Vault
+    #[account(mut, constraint = reward_vault.key() == staking_pool.temp_place_holder_2)]
+    pub reward_vault: Account<'info, TokenAccount>,
+
+    #[account(has_one = currency, constraint = vault_holder_account.token_account == vault_token_account.key() && vault_holder_account.owner == staking_pool.key())]
+    pub vault_holder_account: Box<Account<'info, HolderAccount>>,
+
+    #[account(mut)]
+    pub vault_token_account: Box<Account<'info, TokenAccount>>,
+
+    /// The wallet that holds authority for this action
+    #[account()]
+    pub authority: Signer<'info>,
+
+    /// The wallet that pays for the rent
+    #[account(mut)]
+    pub payer: Signer<'info>,
+
+    /// NATIVE SYSTEM PROGRAM
+    pub system_program: Program<'info, System>,
+
+    /// NATIVE TOKEN PROGRAM
+    pub token_program: Program<'info, Token>,
+
+    #[account(has_one = authority)]
+    pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
+    pub vault: AccountInfo<'info>,
+    pub currency_manager_program: Program<'info, HplCurrencyManager>,
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
+}
+
+/// Withdraw rewards
+pub fn migrate_vault(ctx: Context<MigrateVault>) -> Result<()> {
+    let pool_seeds = &[
+        b"staking_pool".as_ref(),
+        ctx.accounts.staking_pool.project.as_ref(),
+        ctx.accounts.staking_pool.key.as_ref(),
+        &[ctx.accounts.staking_pool.bump],
+    ];
+    let pool_signer = &[&pool_seeds[..]];
+
+    fund_account(
+        CpiContext::new_with_signer(
+            ctx.accounts.currency_manager_program.to_account_info(),
+            FundAccount {
+                project: ctx.accounts.project.to_account_info(),
+                currency: ctx.accounts.currency.to_account_info(),
+                mint: ctx.accounts.mint.to_account_info(),
+                holder_account: ctx.accounts.vault_holder_account.to_account_info(),
+                token_account: ctx.accounts.vault_token_account.to_account_info(),
+                source_token_account: ctx.accounts.reward_vault.to_account_info(),
+                wallet: ctx.accounts.staking_pool.to_account_info(),
+                authority: ctx.accounts.staking_pool.to_account_info(),
+                vault: ctx.accounts.vault.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+                token_program: ctx.accounts.token_program.to_account_info(),
+                instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
+            },
+            pool_signer,
+        ),
+        ctx.accounts.vault_token_account.amount,
+    )?;
+
+    token::close_account(CpiContext::new_with_signer(
+        ctx.accounts.token_program.to_account_info(),
+        CloseAccount {
+            account: ctx.accounts.reward_vault.to_account_info(),
+            destination: ctx.accounts.authority.to_account_info(),
+            authority: ctx.accounts.staking_pool.to_account_info(),
+        },
+        pool_signer,
+    ))?;
+
+    ctx.accounts.staking_pool.currency = ctx.accounts.currency.key();
+
+    Ok(())
+}
+
 /// Accounts used in fund rewards instruction
 #[derive(Accounts)]
 pub struct ClaimRewards<'info> {
@@ -119,7 +222,7 @@ pub struct ClaimRewards<'info> {
     #[account(mut)]
     pub mint: Box<Account<'info, Mint>>,
 
-    #[account(has_one = currency, constraint = vault_holder_account.token_account == vault_token_account.key() && vault_holder_account.owner == staking_pool.key())]
+    #[account(mut, has_one = currency, constraint = vault_holder_account.token_account == vault_token_account.key() && vault_holder_account.owner == staking_pool.key())]
     pub vault_holder_account: Box<Account<'info, HolderAccount>>,
 
     #[account(mut)]
@@ -152,7 +255,7 @@ pub struct ClaimRewards<'info> {
     pub clock: Sysvar<'info, Clock>,
 
     // HIVE CONTROL
-    #[account()]
+    #[account(mut)]
     pub project: Box<Account<'info, Project>>,
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(mut)]
@@ -169,7 +272,8 @@ pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
         u64::try_from(ctx.accounts.clock.unix_timestamp - nft.last_claim).unwrap();
 
     if seconds_elapsed < staking_pool.rewards_duration {
-        return Err(ErrorCode::RewardsNotAvailable.into());
+        msg!("Minimum Reward duration not reached yet so rewards not available yet");
+        return Ok(());
     }
 
     if let Some(max_rewards_duration) = staking_pool.max_rewards_duration {

@@ -1,5 +1,5 @@
 {
-  "version": "0.0.16",
+  "version": "0.0.17",
   "name": "hpl_nectar_missions",
   "instructions": [
     {
@@ -245,7 +245,7 @@
       "accounts": [
         {
           "name": "project",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -310,7 +310,7 @@
         },
         {
           "name": "holderAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -424,7 +424,7 @@
         },
         {
           "name": "vaultHolderAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "isOptional": true
         },

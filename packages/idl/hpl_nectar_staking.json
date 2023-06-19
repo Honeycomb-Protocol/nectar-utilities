@@ -1,5 +1,5 @@
 {
-  "version": "0.0.48",
+  "version": "0.0.51",
   "name": "hpl_nectar_staking",
   "instructions": [
     {
@@ -459,7 +459,7 @@
       "accounts": [
         {
           "name": "stakingPool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "docs": [
             "StakingPool state account"
@@ -626,7 +626,7 @@
       "accounts": [
         {
           "name": "stakingPool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "docs": [
             "StakingPool state account"
@@ -811,7 +811,7 @@
         },
         {
           "name": "vaultHolderAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -846,6 +846,11 @@
           ]
         },
         {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
@@ -863,7 +868,7 @@
         },
         {
           "name": "project",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -930,7 +935,7 @@
         },
         {
           "name": "vaultHolderAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -965,6 +970,11 @@
           ]
         },
         {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
@@ -990,7 +1000,7 @@
         },
         {
           "name": "project",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1176,6 +1186,109 @@
           }
         }
       ]
+    },
+    {
+      "name": "migrateVault",
+      "accounts": [
+        {
+          "name": "project",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakingPool",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "StakingPool state account"
+          ]
+        },
+        {
+          "name": "currency",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Mint address of the reward token"
+          ]
+        },
+        {
+          "name": "rewardVault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Reward Vault"
+          ]
+        },
+        {
+          "name": "vaultHolderAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vaultTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The wallet that holds authority for this action"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The wallet that pays for the rent"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE SYSTEM PROGRAM"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE TOKEN PROGRAM"
+          ]
+        },
+        {
+          "name": "delegateAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "currencyManagerProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [

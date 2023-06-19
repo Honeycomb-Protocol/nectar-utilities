@@ -50,7 +50,7 @@ export async function createCollectRewardsOperation(
   if (args.reward.isCurrency()) {
     const vault = holderAccountPdas(
       args.reward.participation().mission().pool().address,
-      args.reward.currency().mint,
+      args.reward.currency().mint.address,
       args.reward.currency().kind,
       TOKEN_PROGRAM_ID
     );
@@ -59,7 +59,7 @@ export async function createCollectRewardsOperation(
 
     const user = holderAccountPdas(
       args.wallet,
-      args.reward.currency().mint,
+      args.reward.currency().mint.address,
       args.reward.currency().kind,
       TOKEN_PROGRAM_ID
     );
@@ -88,7 +88,7 @@ export async function createCollectRewardsOperation(
           ? args.reward.currency().address
           : programId,
         mint: args.reward.isCurrency()
-          ? args.reward.currency().mint
+          ? args.reward.currency().mint.address
           : programId,
         vaultHolderAccount: vaultHolderAccount || programId,
         vaultTokenAccount: vaultTokenAccount || programId,

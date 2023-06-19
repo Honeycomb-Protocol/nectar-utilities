@@ -147,7 +147,7 @@ pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
 #[derive(Accounts)]
 pub struct Stake<'info> {
     /// StakingPool state account
-    #[account(has_one = project)]
+    #[account(mut, has_one = project)]
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// NFT state account
@@ -243,9 +243,11 @@ pub struct Stake<'info> {
 
 /// Stake NFT
 pub fn stake(ctx: Context<Stake>) -> Result<()> {
-    let staking_pool = &ctx.accounts.staking_pool;
+    let staking_pool = &mut ctx.accounts.staking_pool;
     let nft = &mut ctx.accounts.nft;
     let staker = &mut ctx.accounts.staker;
+
+    staking_pool.total_staked += 1;
 
     if let Some(cooldown_duration) = staking_pool.cooldown_duration {
         let duration = nft.last_unstaked_at + i64::try_from(cooldown_duration).unwrap();
@@ -373,7 +375,7 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
 #[derive(Accounts)]
 pub struct Unstake<'info> {
     /// StakingPool state account
-    #[account(has_one = project)]
+    #[account(mut, has_one = project)]
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// NFT state account
@@ -463,7 +465,7 @@ pub struct Unstake<'info> {
 
 /// Unstake NFT
 pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
-    let staking_pool = &ctx.accounts.staking_pool;
+    let staking_pool = &mut ctx.accounts.staking_pool;
     let staker = &mut ctx.accounts.staker;
     let nft = &mut ctx.accounts.nft;
 

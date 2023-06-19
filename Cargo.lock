@@ -823,9 +823,9 @@ dependencies = [
 
 [[package]]
 name = "hpl-currency-manager"
-version = "0.0.13"
+version = "0.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8a13235f558f7049dd9a5e779398f11d8ae98ac6ccc6dd6f5c220f8c826c71b"
+checksum = "8c9862eddf05a240b3f8eb1354a403d1c54676eaccc631ab7c62defbb3e71785"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -840,9 +840,9 @@ dependencies = [
 
 [[package]]
 name = "hpl-hive-control"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51d06191ae35871c9b25e2aa567ad18aca95d1232848fefc71a5407f97b5a7e4"
+checksum = "ad2b7d23df292e159b2452ca2c1ea28792c7b8f2c9dc9b5fcb77fa2fa2a363c8"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -861,11 +861,15 @@ version = "0.0.17"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
+ "getrandom 0.2.9",
  "hpl-currency-manager",
  "hpl-hive-control",
  "hpl-nectar-staking",
  "hpl-utils",
+ "solana-program",
  "spl-account-compression",
+ "toml_datetime 0.6.1",
+ "winnow",
 ]
 
 [[package]]
@@ -874,20 +878,29 @@ version = "0.0.51"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
+ "getrandom 0.2.9",
  "hpl-currency-manager",
  "hpl-hive-control",
  "hpl-utils",
  "mpl-token-metadata",
+ "solana-program",
+ "toml_datetime 0.6.1",
+ "winnow",
 ]
 
 [[package]]
 name = "hpl-utils"
-version = "0.1.6"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0cc714945459b42d67b04fd32637fef97a89fac277445001fe91b5221a37397e"
+checksum = "7850c0719f9ca4640ebaf7a8cc6fac5361f93b2de78c5a7ea43bfca60f8cfe7c"
 dependencies = [
  "anchor-lang",
+ "anchor-spl",
+ "getrandom 0.2.9",
  "mpl-token-metadata",
+ "solana-program",
+ "toml_datetime 0.6.1",
+ "winnow",
 ]
 
 [[package]]
@@ -1117,9 +1130,9 @@ dependencies = [
 
 [[package]]
 name = "mpl-token-metadata"
-version = "1.9.1"
+version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "410acbbc7d543108cc4d93f98290da008716c801f04a923cd83de2ec86244c1f"
+checksum = "f661ff8c1d64c48cf207c0d259783d411a4249058c1b861fabd8bb6ce30ae4d8"
 dependencies = [
  "arrayref",
  "borsh",
@@ -1147,9 +1160,9 @@ dependencies = [
 
 [[package]]
 name = "mpl-utils"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7fc48e64c50dba956acb46eec86d6968ef0401ef37031426da479f1f2b592066"
+checksum = "822133b6cba8f9a43e5e0e189813be63dd795858f54155c729833be472ffdb51"
 dependencies = [
  "arrayref",
  "borsh",

@@ -23,12 +23,12 @@ export async function createWithdrawRewardsOperation(
   const { holderAccount: vaultHolderAccount, tokenAccount: vaultTokenAccount } =
     holderAccountPdas(
       args.stakingPool.address,
-      args.stakingPool.currency().mint,
+      args.stakingPool.currency().mint.address,
       args.stakingPool.currency().kind
     );
   const { holderAccount, tokenAccount } = holderAccountPdas(
     args.receiverWallet,
-    args.stakingPool.currency().mint,
+    args.stakingPool.currency().mint.address,
     args.stakingPool.currency().kind
   );
 
@@ -39,7 +39,7 @@ export async function createWithdrawRewardsOperation(
         vault: VAULT,
         stakingPool: args.stakingPool.address,
         currency: args.stakingPool.currency().address,
-        mint: args.stakingPool.currency().mint,
+        mint: args.stakingPool.currency().mint.address,
         vaultHolderAccount,
         vaultTokenAccount,
         holderAccount,
@@ -50,6 +50,7 @@ export async function createWithdrawRewardsOperation(
           honeycomb.identity().delegateAuthority()?.address || programId,
         payer: honeycomb.identity().delegateAuthority()?.address || programId,
         currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
+        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
       },
       {
         amount: args.amount,

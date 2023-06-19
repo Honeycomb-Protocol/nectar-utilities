@@ -37,7 +37,7 @@ export const participateStruct = new beet.FixableBeetArgsStruct<
 /**
  * Accounts required by the _participate_ instruction
  *
- * @property [] project
+ * @property [_writable_] project
  * @property [] stakingPool
  * @property [_writable_] missionPool
  * @property [] mission
@@ -47,7 +47,7 @@ export const participateStruct = new beet.FixableBeetArgsStruct<
  * @property [] mint
  * @property [] vaultHolderAccount
  * @property [_writable_] vaultTokenAccount
- * @property [] holderAccount
+ * @property [_writable_] holderAccount
  * @property [_writable_] tokenAccount
  * @property [_writable_] participation
  * @property [_writable_, **signer**] wallet
@@ -111,7 +111,7 @@ export function createParticipateInstruction(
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.project,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {
@@ -161,7 +161,7 @@ export function createParticipateInstruction(
     },
     {
       pubkey: accounts.holderAccount,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {

@@ -37,14 +37,14 @@ export async function createParticipateOperation(
   const { holderAccount: vaultHolderAccount, tokenAccount: vaultTokenAccount } =
     holderAccountPdas(
       args.mission.pool().address,
-      args.mission.requirements.cost.currency().mint,
+      args.mission.requirements.cost.currency().mint.address,
       args.mission.requirements.cost.currency().kind,
       TOKEN_PROGRAM_ID
     );
 
   const { holderAccount, tokenAccount } = holderAccountPdas(
     honeycomb.identity().address,
-    args.mission.requirements.cost.currency().mint,
+    args.mission.requirements.cost.currency().mint.address,
     args.mission.requirements.cost.currency().kind,
     TOKEN_PROGRAM_ID
   );
@@ -59,7 +59,7 @@ export async function createParticipateOperation(
         nft,
         staker: args.nft.staker,
         currency: args.mission.requirements.cost.currency().address,
-        mint: args.mission.requirements.cost.currency().mint,
+        mint: args.mission.requirements.cost.currency().mint.address,
         holderAccount,
         tokenAccount,
         vaultHolderAccount,

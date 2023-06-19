@@ -33,13 +33,13 @@ export async function createClaimRewardsOperation(
   const { holderAccount: vaultHolderAccount, tokenAccount: vaultTokenAccount } =
     holderAccountPdas(
       args.stakingPool.address,
-      args.stakingPool.currency().mint,
+      args.stakingPool.currency().mint.address,
       args.stakingPool.currency().kind
     );
 
   const { holderAccount, tokenAccount } = holderAccountPdas(
     honeycomb.identity().address,
-    args.stakingPool.currency().mint,
+    args.stakingPool.currency().mint.address,
     args.stakingPool.currency().kind
   );
 
@@ -53,7 +53,7 @@ export async function createClaimRewardsOperation(
           (await args.stakingPool.multipliers()).address || programId,
         nft,
         currency: args.stakingPool.currency().address,
-        mint: args.stakingPool.currency().mint,
+        mint: args.stakingPool.currency().mint.address,
         vaultHolderAccount,
         vaultTokenAccount,
         holderAccount,
@@ -62,6 +62,7 @@ export async function createClaimRewardsOperation(
         wallet: honeycomb.identity().address,
         clock: web3.SYSVAR_CLOCK_PUBKEY,
         currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
+        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
       },
       programId
     ),

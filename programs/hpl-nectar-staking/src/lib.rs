@@ -199,4 +199,8 @@ pub mod hpl_nectar_staking {
 
         instructions::migrate_custodial(ctx, args)
     }
+
+    pub fn migrate_vault(ctx: Context<MigrateVault>) -> Result<()> {
+        instructions::migrate_vault(ctx)
+    }
 }

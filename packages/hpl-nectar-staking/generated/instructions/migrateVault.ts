@@ -11,75 +11,60 @@ import * as web3 from '@solana/web3.js'
 
 /**
  * @category Instructions
- * @category WithdrawRewards
+ * @category MigrateVault
  * @category generated
  */
-export type WithdrawRewardsInstructionArgs = {
-  amount: beet.bignum
-}
-/**
- * @category Instructions
- * @category WithdrawRewards
- * @category generated
- */
-export const withdrawRewardsStruct = new beet.BeetArgsStruct<
-  WithdrawRewardsInstructionArgs & {
-    instructionDiscriminator: number[] /* size: 8 */
-  }
->(
-  [
-    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['amount', beet.u64],
-  ],
-  'WithdrawRewardsInstructionArgs'
+export const migrateVaultStruct = new beet.BeetArgsStruct<{
+  instructionDiscriminator: number[] /* size: 8 */
+}>(
+  [['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]],
+  'MigrateVaultInstructionArgs'
 )
 /**
- * Accounts required by the _withdrawRewards_ instruction
+ * Accounts required by the _migrateVault_ instruction
  *
- * @property [] stakingPool
+ * @property [_writable_] project
+ * @property [_writable_] stakingPool
  * @property [] currency
- * @property [] mint
- * @property [_writable_] vaultHolderAccount
+ * @property [_writable_] mint
+ * @property [_writable_] rewardVault
+ * @property [] vaultHolderAccount
  * @property [_writable_] vaultTokenAccount
- * @property [] holderAccount
- * @property [_writable_] tokenAccount
  * @property [**signer**] authority
  * @property [_writable_, **signer**] payer
- * @property [] instructionsSysvar
- * @property [_writable_] project
  * @property [] delegateAuthority (optional)
  * @property [_writable_] vault
  * @property [] currencyManagerProgram
+ * @property [] instructionsSysvar
  * @category Instructions
- * @category WithdrawRewards
+ * @category MigrateVault
  * @category generated
  */
-export type WithdrawRewardsInstructionAccounts = {
+export type MigrateVaultInstructionAccounts = {
+  project: web3.PublicKey
   stakingPool: web3.PublicKey
   currency: web3.PublicKey
   mint: web3.PublicKey
+  rewardVault: web3.PublicKey
   vaultHolderAccount: web3.PublicKey
   vaultTokenAccount: web3.PublicKey
-  holderAccount: web3.PublicKey
-  tokenAccount: web3.PublicKey
   authority: web3.PublicKey
   payer: web3.PublicKey
-  instructionsSysvar: web3.PublicKey
   systemProgram?: web3.PublicKey
   tokenProgram?: web3.PublicKey
-  project: web3.PublicKey
   delegateAuthority?: web3.PublicKey
   vault: web3.PublicKey
   currencyManagerProgram: web3.PublicKey
+  instructionsSysvar: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const withdrawRewardsInstructionDiscriminator = [
-  10, 214, 219, 139, 205, 22, 251, 21,
+export const migrateVaultInstructionDiscriminator = [
+  139, 151, 25, 211, 120, 164, 24, 215,
 ]
 
 /**
- * Creates a _WithdrawRewards_ instruction.
+ * Creates a _MigrateVault_ instruction.
  *
  * Optional accounts that are not provided will be omitted from the accounts
  * array passed with the instruction.
@@ -87,25 +72,26 @@ export const withdrawRewardsInstructionDiscriminator = [
  * Otherwise an Error is raised.
  *
  * @param accounts that will be accessed while the instruction is processed
- * @param args to provide as instruction data to the program
- *
  * @category Instructions
- * @category WithdrawRewards
+ * @category MigrateVault
  * @category generated
  */
-export function createWithdrawRewardsInstruction(
-  accounts: WithdrawRewardsInstructionAccounts,
-  args: WithdrawRewardsInstructionArgs,
+export function createMigrateVaultInstruction(
+  accounts: MigrateVaultInstructionAccounts,
   programId = new web3.PublicKey('STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L')
 ) {
-  const [data] = withdrawRewardsStruct.serialize({
-    instructionDiscriminator: withdrawRewardsInstructionDiscriminator,
-    ...args,
+  const [data] = migrateVaultStruct.serialize({
+    instructionDiscriminator: migrateVaultInstructionDiscriminator,
   })
   const keys: web3.AccountMeta[] = [
     {
+      pubkey: accounts.project,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.stakingPool,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {
@@ -115,26 +101,21 @@ export function createWithdrawRewardsInstruction(
     },
     {
       pubkey: accounts.mint,
-      isWritable: false,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.rewardVault,
+      isWritable: true,
       isSigner: false,
     },
     {
       pubkey: accounts.vaultHolderAccount,
-      isWritable: true,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.vaultTokenAccount,
-      isWritable: true,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.holderAccount,
       isWritable: false,
       isSigner: false,
     },
     {
-      pubkey: accounts.tokenAccount,
+      pubkey: accounts.vaultTokenAccount,
       isWritable: true,
       isSigner: false,
     },
@@ -149,11 +130,6 @@ export function createWithdrawRewardsInstruction(
       isSigner: true,
     },
     {
-      pubkey: accounts.instructionsSysvar,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
       isWritable: false,
       isSigner: false,
@@ -161,11 +137,6 @@ export function createWithdrawRewardsInstruction(
     {
       pubkey: accounts.tokenProgram ?? splToken.TOKEN_PROGRAM_ID,
       isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.project,
-      isWritable: true,
       isSigner: false,
     },
   ]
@@ -184,6 +155,11 @@ export function createWithdrawRewardsInstruction(
   })
   keys.push({
     pubkey: accounts.currencyManagerProgram,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.instructionsSysvar,
     isWritable: false,
     isSigner: false,
   })
