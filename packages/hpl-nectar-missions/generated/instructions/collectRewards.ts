@@ -23,8 +23,8 @@ export const collectRewardsStruct = new beet.BeetArgsStruct<{
 /**
  * Accounts required by the _collectRewards_ instruction
  *
- * @property [] project
- * @property [] missionPool
+ * @property [_writable_] project
+ * @property [_writable_] missionPool
  * @property [] mission
  * @property [_writable_] participation
  * @property [] nft
@@ -102,12 +102,12 @@ export function createCollectRewardsInstruction(
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.project,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {
       pubkey: accounts.missionPool,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {

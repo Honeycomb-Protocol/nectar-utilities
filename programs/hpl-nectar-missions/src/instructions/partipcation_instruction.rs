@@ -219,9 +219,9 @@ pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<(
 /// Accounts used in recall instruction
 #[derive(Accounts)]
 pub struct CollectRewards<'info> {
-    #[account()]
+    #[account(mut)]
     pub project: Box<Account<'info, Project>>,
-    #[account(has_one = project)]
+    #[account(mut, has_one = project)]
     pub mission_pool: Box<Account<'info, MissionPool>>,
     #[account(has_one = mission_pool)]
     pub mission: Box<Account<'info, Mission>>,

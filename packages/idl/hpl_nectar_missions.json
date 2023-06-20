@@ -1,5 +1,5 @@
 {
-  "version": "0.0.18",
+  "version": "0.0.20",
   "name": "hpl_nectar_missions",
   "instructions": [
     {
@@ -381,12 +381,12 @@
       "accounts": [
         {
           "name": "project",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "missionPool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {

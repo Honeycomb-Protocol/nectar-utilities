@@ -64,6 +64,12 @@ export async function createUnstakeOperation(
   }
 
   const instructions = [
+    ...(await createClaimRewardsOperation(honeycomb, {
+      stakingPool: honeycomb.staking(),
+      nft: args.nft,
+      isFirst: args.isFirst,
+      programId: args.programId,
+    }).then(({ operation }) => operation.instructions)),
     createUnstakeInstruction(
       {
         project: args.stakingPool.project().address,
@@ -91,13 +97,6 @@ export async function createUnstakeOperation(
       programId
     ),
   ];
-
-  await createClaimRewardsOperation(honeycomb, {
-    stakingPool: honeycomb.staking(),
-    nft: args.nft,
-    isFirst: args.isFirst,
-    programId: args.programId,
-  });
 
   return {
     operation: new Operation(honeycomb, instructions),
