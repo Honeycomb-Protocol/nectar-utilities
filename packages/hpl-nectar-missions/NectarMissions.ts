@@ -400,7 +400,16 @@ export class NectarMission {
   }
 
   public get rewards() {
-    return this._mission.rewards.map((r) => new MissionReward(this, r));
+    return this._mission.rewards.map((r) =>
+      (() => {
+        switch (r.rewardType.__kind) {
+          case "Currency":
+            return new MissionCurrencyRewards(this, r);
+          default:
+            return new MissionReward(this, r);
+        }
+      })()
+    );
   }
 
   public async participate(
@@ -566,6 +575,19 @@ export class MissionReward {
 
   public isCurrency(): this is ParticipationCurrencyRewards {
     return this._reward.rewardType.__kind === "Currency";
+  }
+
+  public get uiAmount() {
+    const min = parseInt(this.min.toString());
+    const max = parseInt(this.max.toString());
+    if (this.isCurrency()) {
+      const decimals = 10 ** this.currency().mint.decimals;
+      if (min === max) return (min / decimals).toString();
+      return `${min / decimals}-${max / decimals}`;
+    } else {
+      if (min === max) return min.toString();
+      return `${min}-${max}`;
+    }
   }
 }
 

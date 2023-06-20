@@ -299,6 +299,6 @@ export async function fetchRewards(
   rewardsAmount = (rewardsAmount * totalMultipliers) / multipliersDecimals;
   return {
     rewards: rewardsAmount,
-    multipliers: (totalMultipliers - multipliersDecimals) / multipliersDecimals,
+    multipliers: totalMultipliers / multipliersDecimals,
   };
 }
