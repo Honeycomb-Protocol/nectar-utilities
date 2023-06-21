@@ -823,9 +823,9 @@ dependencies = [
 
 [[package]]
 name = "hpl-currency-manager"
-version = "0.0.23"
+version = "0.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b406fb88669eed70a849eeac76a46aa855259cded41f129c4abcf8037fe682cd"
+checksum = "6b6b6e88318bad5baeb6b7df27b815894fd65f3a9efbb02ca3f66710580bdca4"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -857,7 +857,7 @@ dependencies = [
 
 [[package]]
 name = "hpl-nectar-missions"
-version = "0.0.21"
+version = "0.0.22"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -874,7 +874,7 @@ dependencies = [
 
 [[package]]
 name = "hpl-nectar-staking"
-version = "0.0.55"
+version = "0.0.56"
 dependencies = [
  "anchor-lang",
  "anchor-spl",

@@ -4,25 +4,16 @@ import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import {
   Honeycomb,
   HoneycombProject,
-  Operation,
-  VAULT,
   identityModule,
 } from "@honeycomb-protocol/hive-control";
 import {
   PermissionedCurrencyKind,
   HplCurrency,
   HplHolderAccount,
-  PROGRAM_ID as CURRENCY_PROGRAM_ID,
-  currencyPda,
-  holderAccountPda,
-  tokenAccountPda,
-  createCreateCurrencyOperation,
-  createCreateHolderAccountInstruction,
 } from "@honeycomb-protocol/currency-manager";
 import {
   LockType,
   NectarStaking,
-  createMigrateVaultInstruction,
   findProjectStakingPools,
 } from "../packages/hpl-nectar-staking";
 import { prepare, tryKeyOrGenerate, wait } from "./prepare";
@@ -30,7 +21,7 @@ import { MerkleTree, NectarMissions } from "../packages/hpl-nectar-missions";
 jest.setTimeout(2000000);
 
 describe("Nectar Utilities", () => {
-  const totalNfts = 1;
+  const totalNfts = 10;
 
   let honeycomb: Honeycomb;
   let metaplex: Metaplex;
@@ -42,12 +33,13 @@ describe("Nectar Utilities", () => {
 
   it.skip("Temp", async () => {
     const connection = new web3.Connection(
-      "https://side-damp-bird.solana-mainnet.quiknode.pro/11449a3f0f4fd38ce2441a9ac133ab8111ad652d/"
+      // "https://side-damp-bird.solana-mainnet.quiknode.pro/11449a3f0f4fd38ce2441a9ac133ab8111ad652d/"
+      "https://lingering-newest-sheet.solana-devnet.quiknode.pro/fb6e6465df3955a06fd5ddec2e5b003896f56adb/"
     );
     const honeycomb = new Honeycomb(connection, { env: "main" }).use(
       await HoneycombProject.fromAddress(
         connection,
-        new web3.PublicKey("7CKTHsJ3EZqChNf3XGt9ytdZXvSzDFWmrQJL3BCe4Ppw")
+        new web3.PublicKey("B73zK97zv3WQfvF1o4tZF23oWo7rBGqj5kd9k51mMhdk")
       )
     );
     honeycomb.use(identityModule(tryKeyOrGenerate()[0]));
@@ -65,79 +57,87 @@ describe("Nectar Utilities", () => {
 
     await findProjectStakingPools(honeycomb.project());
     const staking = honeycomb.staking();
-    // console.log("Staking", honeycomb.staking().totalStaked.toString());
+    console.log("Staking", staking.totalStaked.toString());
 
-    // const availableNfts = await honeycomb
-    //   .staking()
-    //   .fetch()
-    //   .availableNfts(
-    //     new web3.PublicKey("232Z5QNvQ4wRyraGWFpC5i3HEbqozEWgBCV95eWASaG1")
-    //   );
-    // console.log("availableNfts", availableNfts.length);
-
-    // const stakedNfts = await honeycomb
-    //   .staking()
-    //   .fetch()
-    //   .stakedNfts(
-    //     new web3.PublicKey("232Z5QNvQ4wRyraGWFpC5i3HEbqozEWgBCV95eWASaG1")
-    //   );
-    // console.log("stakedNfts", stakedNfts.length);
-    // // const [{ rewards, multipliers }] = await honeycomb
-    // //   .staking()
-    // //   .fetch()
-    // //   .rewards(stakedNfts);
-    // // console.log("rewards", rewards, multipliers);
-
-    // @ts-ignore
-    const mint: web3.PublicKey = staking._pool.currency;
-
-    const [rewardVault] = web3.PublicKey.findProgramAddressSync(
-      [Buffer.from("vault"), staking.address.toBuffer(), mint.toBuffer()],
-      staking.programId
+    staking.staker().then((s) =>
+      console.log("Staker", {
+        ...s,
+        totalStaked: s.totalStaked.toString(),
+        wallet: s.wallet.toString(),
+      })
     );
 
-    const [currency] = currencyPda(mint);
-    const [vaultHolderAccount] = holderAccountPda(staking.address, mint);
-    const [vaultTokenAccount] = tokenAccountPda(staking.address, mint);
+    const availableNfts = await honeycomb
+      .staking()
+      .fetch()
+      .availableNfts(
+        new web3.PublicKey("DHB31zaA1TXZF35MwXkQxHyN9MZe7c4bWNyEUEBZgVDp")
+      );
+    console.log("availableNfts", availableNfts.length);
 
-    const operation = new Operation(honeycomb, [
-      ...(await createCreateCurrencyOperation(honeycomb, {
-        args: {
-          mint,
-        },
-        project: staking.project(),
-      }).then(({ operation }) => operation.instructions)),
+    const stakedNfts = await honeycomb
+      .staking()
+      .fetch()
+      .stakedNfts(
+        new web3.PublicKey("DHB31zaA1TXZF35MwXkQxHyN9MZe7c4bWNyEUEBZgVDp")
+      );
+    console.log("stakedNfts", stakedNfts.length);
+    const [{ rewards, multipliers }] = await honeycomb
+      .staking()
+      .fetch()
+      .rewards([stakedNfts[0]]);
+    console.log("rewards", rewards, multipliers);
 
-      createCreateHolderAccountInstruction({
-        project: staking.project().address,
-        currency,
-        holderAccount: vaultHolderAccount,
-        mint,
-        tokenAccount: vaultTokenAccount,
-        owner: honeycomb.identity().address,
-        payer: honeycomb.identity().address,
-        vault: VAULT,
-        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-      }),
+    // // @ts-ignore
+    // const mint: web3.PublicKey = staking._pool.currency;
 
-      createMigrateVaultInstruction({
-        project: staking.project().address,
-        stakingPool: staking.address,
-        currency,
-        mint,
-        rewardVault,
-        vaultHolderAccount,
-        vaultTokenAccount,
-        authority: honeycomb.identity().address,
-        payer: honeycomb.identity().address,
-        delegateAuthority: staking.programId,
-        vault: VAULT,
-        currencyManagerProgram: CURRENCY_PROGRAM_ID,
-        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-      }),
-    ]);
+    // const [rewardVault] = web3.PublicKey.findProgramAddressSync(
+    //   [Buffer.from("vault"), staking.address.toBuffer(), mint.toBuffer()],
+    //   staking.programId
+    // );
 
-    await operation.send({ skipPreflight: true });
+    // const [currency] = currencyPda(mint);
+    // const [vaultHolderAccount] = holderAccountPda(staking.address, mint);
+    // const [vaultTokenAccount] = tokenAccountPda(staking.address, mint);
+
+    // const operation = new Operation(honeycomb, [
+    //   ...(await createCreateCurrencyOperation(honeycomb, {
+    //     args: {
+    //       mint,
+    //     },
+    //     project: staking.project(),
+    //   }).then(({ operation }) => operation.instructions)),
+
+    //   createCreateHolderAccountInstruction({
+    //     project: staking.project().address,
+    //     currency,
+    //     holderAccount: vaultHolderAccount,
+    //     mint,
+    //     tokenAccount: vaultTokenAccount,
+    //     owner: honeycomb.identity().address,
+    //     payer: honeycomb.identity().address,
+    //     vault: VAULT,
+    //     instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //   }),
+
+    //   createMigrateVaultInstruction({
+    //     project: staking.project().address,
+    //     stakingPool: staking.address,
+    //     currency,
+    //     mint,
+    //     rewardVault,
+    //     vaultHolderAccount,
+    //     vaultTokenAccount,
+    //     authority: honeycomb.identity().address,
+    //     payer: honeycomb.identity().address,
+    //     delegateAuthority: staking.programId,
+    //     vault: VAULT,
+    //     currencyManagerProgram: CURRENCY_PROGRAM_ID,
+    //     instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //   }),
+    // ]);
+
+    // await operation.send({ skipPreflight: true });
   });
 
   it("Prepare and Setup", async () => {
@@ -218,8 +218,8 @@ describe("Nectar Utilities", () => {
 
     honeycomb.use(
       await HplCurrency.new(honeycomb, {
-        name: "COIN",
-        symbol: "CTC",
+        name: "BAIL",
+        symbol: "BAIL",
         kind: PermissionedCurrencyKind.NonCustodial,
         decimals: 9,
         uri: "https://arweave.net/QPC6FYdUn-3V8ytFNuoCS85S2tHAuiDblh6u3CIZLsw",
@@ -242,7 +242,7 @@ describe("Nectar Utilities", () => {
           name: "Staking3.0",
           rewardsPerDuration: 1 * 1_000_000_000,
           rewardsDuration: 1,
-          maxRewardsDuration: 10,
+          maxRewardsDuration: null,
           minStakeDuration: null,
           cooldownDuration: null,
           resetStakeDuration: false,
@@ -397,7 +397,7 @@ describe("Nectar Utilities", () => {
     // console.log("User", user.address.toString(), profile.address.toString());
   });
 
-  it("Stake NFTs", async () => {
+  it.skip("Stake NFTs", async () => {
     const availableNfts = await honeycomb.staking().fetch().availableNfts();
     expect(availableNfts.length).toBe(totalNfts);
     await honeycomb.staking().stake(availableNfts);
@@ -405,7 +405,7 @@ describe("Nectar Utilities", () => {
     expect(stakedNfts.length).toBe(totalNfts);
   });
 
-  it("Participate on Mission", async () => {
+  it.skip("Participate on Mission", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     const mission = await honeycomb.missions().mission("QuickPost");
     await mission.participate(
@@ -423,14 +423,14 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it("Recall from missions", async () => {
+  it.skip("Recall from missions", async () => {
     await wait(1);
     const participations = await honeycomb.missions().fetch().participations();
     const mission = await honeycomb.missions().mission("QuickPost");
     await mission.recall(participations, { skipPreflight: true });
   });
 
-  it("Unstake NFTs", async () => {
+  it.skip("Unstake NFTs", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     await honeycomb.staking().unstake(stakedNfts, {
       skipPreflight: true,
