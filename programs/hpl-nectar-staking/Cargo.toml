@@ -26,5 +26,5 @@ winnow = "=0.4.1"
 toml_datetime = "=0.6.1"
 hpl-utils = "0.1.7"
 hpl-hive-control = { version="0.1.7", features = ["cpi"] }
-hpl-currency-manager = { version="0.0.24", features = ["cpi"] }
+hpl-currency-manager = { version="0.0.27", features = ["cpi"] }
 mpl-token-metadata = { version="1.9.0", features = [ "no-entrypoint" ] }

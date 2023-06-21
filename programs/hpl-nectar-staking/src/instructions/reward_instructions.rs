@@ -183,7 +183,7 @@ pub fn migrate_vault(ctx: Context<MigrateVault>) -> Result<()> {
             },
             pool_signer,
         ),
-        ctx.accounts.vault_token_account.amount,
+        ctx.accounts.reward_vault.amount,
     )?;
 
     token::close_account(CpiContext::new_with_signer(

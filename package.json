@@ -18,15 +18,15 @@
     "test": "jest --verbose"
   },
   "dependencies": {
-    "@honeycomb-protocol/currency-manager": "^0.0.21",
-    "@honeycomb-protocol/hive-control": "^0.1.6",
+    "@honeycomb-protocol/currency-manager": "^0.0.28",
+    "@honeycomb-protocol/hive-control": "^0.1.7",
     "@honeycomb-protocol/nectar-staking": "^0.0.50",
     "@metaplex-foundation/js": "^0.18.1",
     "@metaplex-foundation/mpl-token-auth-rules": "^1.2.0",
     "@metaplex-foundation/mpl-token-metadata": "^2.10.0",
     "@msgpack/msgpack": "^3.0.0-beta2",
     "@solana/spl-account-compression": "^0.1.8",
-    "@solana/spl-token": "^0.3.7",
+    "@solana/spl-token": "^0.3.8",
     "@solana/web3.js": "^1.77.3",
     "@types/jest": "^29.5.1",
     "dotenv": "^16.0.3",
