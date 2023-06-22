@@ -9,7 +9,6 @@ import {
 import { getNftPda, getStakerPda } from "../pdas";
 import { StakedNft } from "../types";
 import { NectarStaking } from "../NectarStaking";
-import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
 type CreateClaimRewardsOperationArgs = {
   stakingPool: NectarStaking;
@@ -64,7 +63,6 @@ export async function createClaimRewardsOperation(
         clock: web3.SYSVAR_CLOCK_PUBKEY,
         currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
       },
       programId
     ),

@@ -85,7 +85,6 @@ export async function createUnstakeOperation(
         depositTokenRecord: depositTokenRecord || programId,
         staker,
         wallet: honeycomb.identity().address,
-        tokenProgram: splToken.TOKEN_2022_PROGRAM_ID,
         associatedTokenProgram: splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
         tokenMetadataProgram: METADATA_PROGRAM_ID,
         clock: web3.SYSVAR_CLOCK_PUBKEY,

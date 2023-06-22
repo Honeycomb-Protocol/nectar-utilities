@@ -17,7 +17,6 @@ import { createUpdatePoolOperation } from "./updateStakingPool";
 import { createInitMultiplierOperation } from "./initMultipliers";
 import { createAddMultiplierOperation } from "./addMultiplier";
 import { HplCurrency } from "@honeycomb-protocol/currency-manager";
-import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
 type CreateCreateStakingOperationArgs = {
   project: HoneycombProject;
@@ -53,7 +52,6 @@ export async function createCreateStakingPoolOperation(
         payer: honeycomb.identity().address,
         hiveControl: HIVECONTROL_PROGRAM_ID,
         rentSysvar: web3.SYSVAR_RENT_PUBKEY,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
       },
       { args: args.args },
       programId
