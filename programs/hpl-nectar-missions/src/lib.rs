@@ -5,7 +5,7 @@ pub mod instructions;
 pub mod state;
 pub mod utils;
 
-declare_id!("D7QpSyaRcv8GiH3jZiwgd4EQWsFbK3BWQTBFWCzRs9eu");
+declare_id!("HUNTopv9dHDdTPPMV1SfKZAxjXtuM4ic2PVEWPbsi9Z2");
 
 use instructions::*;
 

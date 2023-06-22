@@ -196,6 +196,6 @@ export async function creatRecallOperation(
   );
 
   return {
-    operation: Operation.concat(operations),
+    operations,
   };
 }

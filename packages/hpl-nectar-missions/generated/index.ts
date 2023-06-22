@@ -10,7 +10,7 @@ export * from './types'
  * @category constants
  * @category generated
  */
-export const PROGRAM_ADDRESS = 'D7QpSyaRcv8GiH3jZiwgd4EQWsFbK3BWQTBFWCzRs9eu'
+export const PROGRAM_ADDRESS = 'HUNTopv9dHDdTPPMV1SfKZAxjXtuM4ic2PVEWPbsi9Z2'
 
 /**
  * Program public key

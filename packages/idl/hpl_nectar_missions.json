@@ -1,5 +1,5 @@
 {
-  "version": "0.0.22",
+  "version": "0.0.25",
   "name": "hpl_nectar_missions",
   "instructions": [
     {
@@ -941,7 +941,7 @@
     }
   ],
   "metadata": {
-    "address": "D7QpSyaRcv8GiH3jZiwgd4EQWsFbK3BWQTBFWCzRs9eu",
+    "address": "HUNTopv9dHDdTPPMV1SfKZAxjXtuM4ic2PVEWPbsi9Z2",
     "origin": "anchor",
     "binaryVersion": "0.26.0",
     "libVersion": "0.26.0"

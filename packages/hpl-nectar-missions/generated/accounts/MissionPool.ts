@@ -98,7 +98,7 @@ export class MissionPool implements MissionPoolArgs {
    */
   static gpaBuilder(
     programId: web3.PublicKey = new web3.PublicKey(
-      'D7QpSyaRcv8GiH3jZiwgd4EQWsFbK3BWQTBFWCzRs9eu'
+      'HUNTopv9dHDdTPPMV1SfKZAxjXtuM4ic2PVEWPbsi9Z2'
     )
   ) {
     return beetSolana.GpaBuilder.fromStruct(programId, missionPoolBeet)

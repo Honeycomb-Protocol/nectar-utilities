@@ -197,21 +197,21 @@ export class NectarMissions extends Module {
     participations: NectarMissionParticipation[],
     confirmOptions?: web3.ConfirmOptions
   ) {
-    const operations = await Promise.all(
-      participations.map((participation, i) =>
-        creatRecallOperation(this.honeycomb(), {
-          participation,
-          isFirst: i == 0,
-          programId: this.programId,
-        })
+    const operations = (
+      await Promise.all(
+        participations.map((participation, i) =>
+          creatRecallOperation(this.honeycomb(), {
+            participation,
+            isFirst: i == 0,
+            programId: this.programId,
+          }).then(({ operations }) => operations)
+        )
       )
-    );
+    ).flat();
 
     const preparedOperations = await this.honeycomb()
       .rpc()
-      .prepareTransactions(
-        operations.map(({ operation }) => operation.context)
-      );
+      .prepareTransactions(operations.map((operation) => operation.context));
 
     const firstTxResponse = await this.honeycomb()
       .rpc()
@@ -456,22 +456,22 @@ export class NectarMission {
     participations: NectarMissionParticipation[],
     confirmOptions?: web3.ConfirmOptions
   ) {
-    const operations = await Promise.all(
-      participations.map((participation, i) =>
-        creatRecallOperation(this.pool().honeycomb(), {
-          participation,
-          isFirst: i == 0,
-          programId: this.pool().programId,
-        })
+    const operations = (
+      await Promise.all(
+        participations.map((participation, i) =>
+          creatRecallOperation(this.pool().honeycomb(), {
+            participation,
+            isFirst: i == 0,
+            programId: this.pool().programId,
+          }).then(({ operations }) => operations)
+        )
       )
-    );
+    ).flat();
 
     const preparedOperations = await this.pool()
       .honeycomb()
       .rpc()
-      .prepareTransactions(
-        operations.map(({ operation }) => operation.context)
-      );
+      .prepareTransactions(operations.map((operation) => operation.context));
 
     const firstTxResponse = await this.pool()
       .honeycomb()
