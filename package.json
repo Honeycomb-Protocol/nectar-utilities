@@ -34,7 +34,7 @@
     "ts-jest": "^29.1.0"
   },
   "devDependencies": {
-    "@metaplex-foundation/solita": "^0.19.3",
+    "@metaplex-foundation/solita": "^0.19.4",
     "@types/bn.js": "^5.1.0",
     "copyfiles": "^2.4.1",
     "husky": "^8.0.3",

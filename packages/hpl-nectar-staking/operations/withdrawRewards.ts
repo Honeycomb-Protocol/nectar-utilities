@@ -6,6 +6,7 @@ import {
   holderAccountPdas,
 } from "@honeycomb-protocol/currency-manager";
 import { NectarStaking } from "../NectarStaking";
+import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
 type CreateWithdrawRewardsCrx = {
   amount: number;
@@ -49,6 +50,7 @@ export async function createWithdrawRewardsOperation(
         authority:
           honeycomb.identity().delegateAuthority()?.address || programId,
         payer: honeycomb.identity().delegateAuthority()?.address || programId,
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
         currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
       },
