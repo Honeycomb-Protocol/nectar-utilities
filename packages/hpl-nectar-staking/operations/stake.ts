@@ -52,12 +52,12 @@ export async function createStakeOperation(
   }
 
   if (args.nft.tokenStandard === TokenStandard.ProgrammableNonFungible) {
-    [nftTokenRecord] = getMetadataAccount_(nft, {
+    [nftTokenRecord] = getMetadataAccount_(args.nft.tokenMint, {
       __kind: "token_record",
       tokenAccount: nftAccount,
     });
     if (depositAccount && args.stakingPool.lockType === LockType.Custoday) {
-      [depositTokenRecord] = getMetadataAccount_(nft, {
+      [depositTokenRecord] = getMetadataAccount_(args.nft.tokenMint, {
         __kind: "token_record",
         tokenAccount: depositAccount,
       });
@@ -65,6 +65,9 @@ export async function createStakeOperation(
   }
 
   const instructions = [
+    web3.ComputeBudgetProgram.setComputeUnitLimit({
+      units: 300_000,
+    }),
     createStakeInstruction(
       {
         project: args.stakingPool.project().address,
