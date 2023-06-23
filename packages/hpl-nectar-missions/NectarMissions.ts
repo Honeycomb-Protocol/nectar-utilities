@@ -9,6 +9,7 @@ import {
   ParticipateArgs,
   Participation,
   Reward,
+  UpdateMissionPoolArgs,
 } from "./generated";
 import {
   Honeycomb,
@@ -21,6 +22,7 @@ import {
   createCreateMissionOperation,
   createCreateMissionPoolOperation,
   createParticipateOperation,
+  createUpdateMissionPoolOperation,
 } from "./operations";
 import { missionPda, removeDuplicateFromArrayOf } from "./utils";
 
@@ -86,6 +88,27 @@ export class NectarMissions extends Module {
       new web3.Connection(honeycomb.connection.rpcEndpoint, "processed"),
       missionPool
     );
+  }
+
+  public async update(
+    args: UpdateMissionPoolArgs & {
+      collection?: web3.PublicKey;
+      creator?: web3.PublicKey;
+    },
+    confirmOptions?: web3.ConfirmOptions
+  ) {
+    const { operation } = await createUpdateMissionPoolOperation(
+      this.honeycomb(),
+      {
+        args,
+        programId: PROGRAM_ID,
+        project: this.project().address,
+        missionPool: this.address,
+        collection: args.collection,
+        creator: args.creator,
+      }
+    );
+    return operation.send(confirmOptions);
   }
 
   public fetch() {
@@ -671,7 +694,8 @@ export const findProjectMissionPools = (project: HoneycombProject) =>
                 MissionPool.fromAccountInfo(c.account)[0]
               )
             );
-        } catch {
+        } catch (e) {
+          console.error(e);
           return null;
         }
       })

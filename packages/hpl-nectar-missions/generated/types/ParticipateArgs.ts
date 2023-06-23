@@ -7,8 +7,8 @@
 
 import * as beet from '@metaplex-foundation/beet'
 export type ParticipateArgs = {
-  faction: string
-  merkleProof: number[] /* size: 32 */[]
+  faction: beet.COption<string>
+  merkleProof: beet.COption<number[] /* size: 32 */[]>
 }
 
 /**
@@ -18,8 +18,11 @@ export type ParticipateArgs = {
 export const participateArgsBeet =
   new beet.FixableBeetArgsStruct<ParticipateArgs>(
     [
-      ['faction', beet.utf8String],
-      ['merkleProof', beet.array(beet.uniformFixedSizeArray(beet.u8, 32))],
+      ['faction', beet.coption(beet.utf8String)],
+      [
+        'merkleProof',
+        beet.coption(beet.array(beet.uniformFixedSizeArray(beet.u8, 32))),
+      ],
     ],
     'ParticipateArgs'
   )

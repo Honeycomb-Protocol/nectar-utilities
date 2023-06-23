@@ -5,6 +5,12 @@ pub enum ErrorCode {
     #[msg("Opertaion overflowed")]
     Overflow,
 
+    #[msg("Faction not provided")]
+    FactionNotProvided,
+
+    #[msg("Merkle proof not provided")]
+    MerkleProofNotProvided,
+
     #[msg("Merkle proof provided is not valid")]
     InvalidProof,
 

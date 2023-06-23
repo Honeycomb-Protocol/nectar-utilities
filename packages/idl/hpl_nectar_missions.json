@@ -1,5 +1,5 @@
 {
-  "version": "0.0.25",
+  "version": "0.0.26",
   "name": "hpl_nectar_missions",
   "instructions": [
     {
@@ -746,16 +746,20 @@
         "fields": [
           {
             "name": "faction",
-            "type": "string"
+            "type": {
+              "option": "string"
+            }
           },
           {
             "name": "merkleProof",
             "type": {
-              "vec": {
-                "array": [
-                  "u8",
-                  32
-                ]
+              "option": {
+                "vec": {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                }
               }
             }
           }
@@ -891,51 +895,61 @@
     },
     {
       "code": 6001,
+      "name": "FactionNotProvided",
+      "msg": "Faction not provided"
+    },
+    {
+      "code": 6002,
+      "name": "MerkleProofNotProvided",
+      "msg": "Merkle proof not provided"
+    },
+    {
+      "code": 6003,
       "name": "InvalidProof",
       "msg": "Merkle proof provided is not valid"
     },
     {
-      "code": 6002,
+      "code": 6004,
       "name": "NftNotRecognized",
       "msg": "The NFT provided is not recognized by the mission pool"
     },
     {
-      "code": 6003,
+      "code": 6005,
       "name": "NotImplemented",
       "msg": "Not implemented yet"
     },
     {
-      "code": 6004,
+      "code": 6006,
       "name": "NotStaked",
       "msg": "NFT is not staked"
     },
     {
-      "code": 6005,
+      "code": 6007,
       "name": "NotEnded",
       "msg": "Participation is not ended yet"
     },
     {
-      "code": 6006,
+      "code": 6008,
       "name": "RewardNotAvailable",
       "msg": "Reward is either collected or not available"
     },
     {
-      "code": 6007,
+      "code": 6009,
       "name": "HolderAccountsNotProvided",
       "msg": "Mint, Holder account or token account not provided"
     },
     {
-      "code": 6008,
+      "code": 6010,
       "name": "RewardsNotCollected",
       "msg": "All rewards are not yet collected for this participaton"
     },
     {
-      "code": 6009,
+      "code": 6011,
       "name": "ProfileNotProvided",
       "msg": "Profile account not provided"
     },
     {
-      "code": 6010,
+      "code": 6012,
       "name": "InvalidProfileData",
       "msg": "Invalid Profile data"
     }

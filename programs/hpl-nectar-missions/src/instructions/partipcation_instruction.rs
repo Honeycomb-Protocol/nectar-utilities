@@ -91,8 +91,8 @@ pub struct Participate<'info> {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct ParticipateArgs {
-    pub faction: String,
-    pub merkle_proof: Vec<[u8; 32]>,
+    pub faction: Option<String>,
+    pub merkle_proof: Option<Vec<[u8; 32]>>,
 }
 
 /// participate in a mission
@@ -105,17 +105,27 @@ pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<(
     participation.nft = ctx.accounts.nft.key();
     participation.end_time = ctx.accounts.mission.duration + ctx.accounts.clock.unix_timestamp;
 
-    let node = hpl_utils::merkle_tree::create_node(&[
-        &[0x00],
-        args.faction.as_bytes(),
-        ctx.accounts.nft.mint.as_ref(),
-    ]);
-    if !hpl_utils::merkle_tree::verify_merkle(
-        args.merkle_proof,
-        ctx.accounts.mission_pool.factions_merkle_root,
-        node.0,
-    ) {
-        return Err(ErrorCode::InvalidProof.into());
+    if ctx.accounts.mission_pool.factions_merkle_root[0] != 0 {
+        if args.faction.is_none() {
+            return Err(ErrorCode::FactionNotProvided.into());
+        }
+
+        if args.merkle_proof.is_none() {
+            return Err(ErrorCode::MerkleProofNotProvided.into());
+        }
+
+        let node = hpl_utils::merkle_tree::create_node(&[
+            &[0x00],
+            args.faction.unwrap().as_bytes(),
+            ctx.accounts.nft.mint.as_ref(),
+        ]);
+        if !hpl_utils::merkle_tree::verify_merkle(
+            args.merkle_proof.unwrap(),
+            ctx.accounts.mission_pool.factions_merkle_root,
+            node.0,
+        ) {
+            return Err(ErrorCode::InvalidProof.into());
+        }
     }
 
     let rewards = ctx
