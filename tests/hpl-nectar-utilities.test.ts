@@ -58,7 +58,7 @@ describe("Nectar Utilities", () => {
   let factionsMerkleTree: MerkleTree;
   let mainVault: HplHolderAccount;
 
-  it("Temp", async () => {
+  it.skip("Temp", async () => {
     const connection = new web3.Connection(
       "https://side-damp-bird.solana-mainnet.quiknode.pro/11449a3f0f4fd38ce2441a9ac133ab8111ad652d/"
       // "https://lingering-newest-sheet.solana-devnet.quiknode.pro/fb6e6465df3955a06fd5ddec2e5b003896f56adb/"
@@ -333,6 +333,22 @@ describe("Nectar Utilities", () => {
     //   { skipPreflight: true }
     // );
 
+    console.log("StakingCollectionn", staking.collections, staking.creators);
+    console.log(
+      "MissionCollectionn",
+      honeycomb.missions().collections,
+      honeycomb.missions().creators
+    );
+
+    await bail
+      .fetch()
+      .holderAccount(honeycomb.missions().address)
+      .catch((_) =>
+        (bail as HplCurrency)
+          .create()
+          .holderAccount(honeycomb.missions().address)
+      );
+
     await bounty
       .fetch()
       .holderAccount(honeycomb.missions().address)
@@ -340,8 +356,8 @@ describe("Nectar Utilities", () => {
         (bounty as HplCurrency)
           .create()
           .holderAccount(honeycomb.missions().address)
-      );
-    // .then(hA => hA.mint(10_000 * 1_000_000_000))
+      )
+      .then((hA) => hA.mint(10_000 * 1_000_000_000));
 
     await ammo
       .fetch()
@@ -350,8 +366,8 @@ describe("Nectar Utilities", () => {
         (ammo as HplCurrency)
           .create()
           .holderAccount(honeycomb.missions().address)
-      );
-    // .then(hA => hA.mint(10_000 * 1_000_000_000))
+      )
+      .then((hA) => hA.mint(10_000 * 1_000_000_000));
 
     await food
       .fetch()
@@ -360,8 +376,8 @@ describe("Nectar Utilities", () => {
         (food as HplCurrency)
           .create()
           .holderAccount(honeycomb.missions().address)
-      );
-    // .then(hA => hA.mint(10_000 * 1_000_000_000))
+      )
+      .then((hA) => hA.mint(10_000 * 1_000_000_000));
 
     await gems
       .fetch()
@@ -370,8 +386,8 @@ describe("Nectar Utilities", () => {
         (gems as HplCurrency)
           .create()
           .holderAccount(honeycomb.missions().address)
-      );
-    // .then(hA => hA.mint(10_000 * 1_000_000_000))
+      )
+      .then((hA) => hA.mint(10_000 * 1_000_000_000));
 
     const missions = await honeycomb.missions().missions();
 
@@ -818,7 +834,7 @@ describe("Nectar Utilities", () => {
     }
   });
 
-  it.skip("Prepare and Setup", async () => {
+  it("Prepare and Setup", async () => {
     honeycomb = await prepare();
     const balance = await honeycomb
       .rpc()
@@ -912,7 +928,7 @@ describe("Nectar Utilities", () => {
     console.log("Project", honeycomb.project().address.toString());
   });
 
-  it.skip("Create Staking Pool", async () => {
+  it("Create Staking Pool", async () => {
     // Create staking pool
     honeycomb.use(
       await NectarStaking.new(honeycomb, {
@@ -964,7 +980,7 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it.skip("Create Mission Pool", async () => {
+  it("Create Mission Pool", async () => {
     honeycomb.use(
       await NectarMissions.new(honeycomb, {
         args: {
@@ -987,7 +1003,7 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it.skip("Create Mission", async () => {
+  it("Create Mission", async () => {
     const currentCurrency = honeycomb.currency();
 
     const bounty = await HplCurrency.new(honeycomb, {
@@ -1081,7 +1097,7 @@ describe("Nectar Utilities", () => {
       });
   });
 
-  it.skip("Fetch or Create user/profile", async () => {
+  it("Fetch or Create user/profile", async () => {
     await honeycomb
       .identity()
       .user()

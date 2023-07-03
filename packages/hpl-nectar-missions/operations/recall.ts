@@ -9,7 +9,6 @@ import {
   Honeycomb,
   Operation,
   VAULT,
-  createCreateProfileOperation,
   getProfilePda,
 } from "@honeycomb-protocol/hive-control";
 import {
@@ -116,7 +115,6 @@ export async function createCollectRewardsOperation(
 
 type CreateRecallOperationnArgs = {
   participation: NectarMissionParticipation;
-  isFirst?: boolean;
   programId?: PublicKey;
 };
 export async function creatRecallOperation(
@@ -127,33 +125,15 @@ export async function creatRecallOperation(
 
   const operations: Operation[] = [];
 
-  if (
-    !!args.participation.rewards.find((r) => !r.isCurrency()) &&
-    args.isFirst !== false
-  ) {
-    try {
-      await args.participation
-        .mission()
-        .pool()
-        .honeycomb()
-        .identity()
-        .profile(
-          args.participation.mission().pool().project().address,
-          honeycomb.identity().address
-        );
-    } catch {
-      await createCreateProfileOperation(honeycomb, {
-        project: args.participation.mission().pool().project(),
-        identity: { __kind: "Wallet", key: honeycomb.identity().address },
-      }).then(({ operations }) => operations.push(...operations));
-    }
-  }
-
+  const holderAccounts: { [key: string]: boolean } = {};
   for (let i = 0; i < args.participation.rewards.length; i++) {
     const reward = args.participation.rewards[i];
     if (reward.collected) continue;
 
-    if (reward.isCurrency() && args.isFirst !== false) {
+    if (
+      reward.isCurrency() &&
+      !holderAccounts[reward.currency().address.toString()]
+    ) {
       try {
         await reward
           .currency()
@@ -167,6 +147,7 @@ export async function creatRecallOperation(
           }).then(({ operation }) => operation)
         );
       }
+      holderAccounts[reward.currency().address.toString()] = true;
     }
 
     operations.push(

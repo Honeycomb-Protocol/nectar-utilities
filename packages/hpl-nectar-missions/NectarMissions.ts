@@ -123,6 +123,14 @@ export class NectarMissions extends Module {
     return this._pool.name;
   }
 
+  public get collections() {
+    return this._pool.collections;
+  }
+
+  public get creators() {
+    return this._pool.creators;
+  }
+
   public project() {
     return this._honeycomb.project(this._pool.project);
   }
@@ -225,7 +233,6 @@ export class NectarMissions extends Module {
         participations.map((participation, i) =>
           creatRecallOperation(this.honeycomb(), {
             participation,
-            isFirst: i == 0,
             programId: this.programId,
           }).then(({ operations }) => operations)
         )
@@ -484,7 +491,6 @@ export class NectarMission {
         participations.map((participation, i) =>
           creatRecallOperation(this.pool().honeycomb(), {
             participation,
-            isFirst: i == 0,
             programId: this.pool().programId,
           }).then(({ operations }) => operations)
         )
