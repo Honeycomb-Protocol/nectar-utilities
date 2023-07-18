@@ -83,5 +83,6 @@ pub fn create_mission(ctx: Context<CreateMission>, args: CreateMissionArgs) -> R
 
     mission.rewards = args.rewards;
 
+    msg!("JSON Mission: {:?}", mission);
     Ok(())
 }

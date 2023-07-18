@@ -130,6 +130,7 @@ pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
                     msg!("Creator: {:?}", nft.creator);
                 }
             }
+            msg!("JSON NFT: {:?}", nft);
             return Ok(());
         }
         Err(_) => {
@@ -370,6 +371,7 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
     }
     staker.total_staked += 1;
 
+    msg!("JSON NFT: {:?}", nft);
     Ok(())
 }
 
@@ -595,5 +597,6 @@ pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
         }
     }
 
+    msg!("JSON NFT: {:?}", nft);
     Ok(())
 }

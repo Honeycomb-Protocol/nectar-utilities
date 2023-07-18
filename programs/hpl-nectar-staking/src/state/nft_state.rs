@@ -2,6 +2,7 @@ use {anchor_lang::prelude::*, hpl_utils::traits::*};
 
 /// The staking account linked to the NFT
 #[account]
+#[derive(Debug)]
 pub struct NFT {
     pub bump: u8,
 

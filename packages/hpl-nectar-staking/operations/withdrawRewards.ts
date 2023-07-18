@@ -34,6 +34,9 @@ export async function createWithdrawRewardsOperation(
   );
 
   const instructions: web3.TransactionInstruction[] = [
+    web3.ComputeBudgetProgram.setComputeUnitLimit({
+      units: 300000,
+    }),
     createWithdrawRewardsInstruction(
       {
         project: args.stakingPool.project().address,

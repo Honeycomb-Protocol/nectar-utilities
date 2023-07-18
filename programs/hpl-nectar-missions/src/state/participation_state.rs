@@ -2,7 +2,7 @@ use {super::RewardType, anchor_lang::prelude::*, hpl_utils::Default};
 
 /// Participation state account
 #[account]
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Participation {
     pub bump: u8,
     pub wallet: Pubkey,

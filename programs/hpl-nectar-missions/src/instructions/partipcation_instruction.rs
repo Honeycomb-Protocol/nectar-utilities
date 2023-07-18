@@ -237,6 +237,8 @@ pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<(
         ctx.accounts.mission.cost.amount,
     )?;
 
+    msg!("JSON Participation: {:?}", participation);
+
     Ok(())
 }
 
@@ -328,7 +330,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
     let reward = reward.unwrap();
     reward.collected = true;
 
-    match reward.reward_type {
+    let res = match reward.reward_type {
         RewardType::Currency { address: _ } => {
             if ctx.accounts.mint.is_none()
                 || ctx.accounts.holder_account.is_none()
@@ -464,7 +466,10 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                 }
             }
         }
-    }
+    };
+
+    msg!("JSON Participation: {:?}", ctx.accounts.participation);
+    res
 }
 
 /// Accounts used in recall instruction
@@ -510,5 +515,6 @@ pub fn recall(ctx: Context<Recall>) -> Result<()> {
 
     participation.is_recalled = true;
 
+    msg!("JSON Participation: {:?}", participation);
     Ok(())
 }

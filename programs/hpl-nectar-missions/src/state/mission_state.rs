@@ -2,6 +2,7 @@ use {anchor_lang::prelude::*, hpl_utils::Default};
 
 /// Mission account holding the details about mission
 #[account]
+#[derive(Debug)]
 pub struct Mission {
     pub bump: u8,
     pub mission_pool: Pubkey,

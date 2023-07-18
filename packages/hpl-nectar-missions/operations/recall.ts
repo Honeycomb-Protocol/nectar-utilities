@@ -1,4 +1,5 @@
 import {
+  ComputeBudgetProgram,
   PublicKey,
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_INSTRUCTIONS_PUBKEY,
@@ -69,6 +70,9 @@ export async function createCollectRewardsOperation(
   const user = await honeycomb.identity().user();
 
   const instructions = [
+    ComputeBudgetProgram.setComputeUnitLimit({
+      units: 300000,
+    }),
     createCollectRewardsInstruction(
       {
         project: args.reward.participation().mission().pool().project().address,

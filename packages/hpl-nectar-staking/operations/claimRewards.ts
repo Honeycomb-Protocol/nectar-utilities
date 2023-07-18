@@ -44,6 +44,9 @@ export async function createClaimRewardsOperation(
   );
 
   const instructions = [
+    web3.ComputeBudgetProgram.setComputeUnitLimit({
+      units: 300000,
+    }),
     createClaimRewardsInstruction(
       {
         project: args.stakingPool.project().address,
