@@ -123,9 +123,11 @@ pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
             match x {
                 hpl_utils::ValidateCollectionCreatorOutput::Collection { address } => {
                     nft.collection = address;
+                    msg!("Collection: {:?}", nft.collection);
                 }
                 hpl_utils::ValidateCollectionCreatorOutput::Creator { address } => {
                     nft.creator = address;
+                    msg!("Creator: {:?}", nft.creator);
                 }
             }
             return Ok(());

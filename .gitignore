@@ -13,3 +13,4 @@ dist
 keys
 *key.json
 deployments.json
+.env

@@ -178,6 +178,13 @@ pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<(
         })
         .any(|collection| collection.eq(&ctx.accounts.nft.collection));
 
+    msg!(
+        "index: {}, collection: {:?}, needed: {:?}",
+        index,
+        ctx.accounts.nft.collection,
+        ctx.accounts.project.collections
+    );
+
     if !collection {
         index = 0;
         let creator = ctx
@@ -195,6 +202,13 @@ pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<(
                 key
             })
             .any(|creator| creator.eq(&ctx.accounts.nft.creator));
+
+        msg!(
+            "index: {}, creator: {:?}, needed: {:?}",
+            index,
+            ctx.accounts.nft.creator,
+            ctx.accounts.project.creators
+        );
 
         if !creator {
             return Err(ErrorCode::NftNotRecognized.into());

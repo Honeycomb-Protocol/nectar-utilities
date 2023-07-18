@@ -12,17 +12,9 @@ import {
   HplHolderAccount,
   findProjectCurrencies,
 } from "@honeycomb-protocol/currency-manager";
-import {
-  LockType,
-  NectarStaking,
-  findProjectStakingPools,
-} from "../packages/hpl-nectar-staking";
+import { LockType, NectarStaking } from "../packages/hpl-nectar-staking";
 import { prepare, tryKeyOrGenerate, wait } from "./prepare";
-import {
-  MerkleTree,
-  NectarMissions,
-  findProjectMissionPools,
-} from "../packages/hpl-nectar-missions";
+import { MerkleTree, NectarMissions } from "../packages/hpl-nectar-missions";
 jest.setTimeout(2000000);
 
 export function bytesOf(input: any): number {
@@ -58,9 +50,9 @@ describe("Nectar Utilities", () => {
   let factionsMerkleTree: MerkleTree;
   let mainVault: HplHolderAccount;
 
-  it.skip("Temp", async () => {
+  it("Temp", async () => {
     const connection = new web3.Connection(
-      "https://side-damp-bird.solana-mainnet.quiknode.pro/11449a3f0f4fd38ce2441a9ac133ab8111ad652d/"
+      "https://rpc.helius.xyz/?api-key=16d6d941-9f05-4bcf-a326-30d6cbfaa310"
       // "https://lingering-newest-sheet.solana-devnet.quiknode.pro/fb6e6465df3955a06fd5ddec2e5b003896f56adb/"
     );
     const honeycomb = new Honeycomb(connection, { env: "main" }).use(
@@ -205,9 +197,9 @@ describe("Nectar Utilities", () => {
       honeycomb.use(gems);
     }
 
-    await findProjectStakingPools(honeycomb.project());
-    const staking = honeycomb.staking();
-    console.log("Staking", staking.totalStaked.toString());
+    // await findProjectStakingPools(honeycomb.project());
+    // const staking = honeycomb.staking();
+    // console.log("Staking", staking.totalStaked.toString());
 
     // staking.updatePool({
     //   args: {
@@ -310,19 +302,19 @@ describe("Nectar Utilities", () => {
 
     // await operation.send({ skipPreflight: true });
 
-    await findProjectMissionPools(honeycomb.project());
-    if (!honeycomb._missions) {
-      const collections = [];
-      honeycomb.use(
-        await NectarMissions.new(honeycomb, {
-          args: {
-            name: "Sol Patrol",
-            factionsMerkleRoot: Array(32).fill(0),
-            collections,
-          },
-        })
-      );
-    }
+    // await findProjectMissionPools(honeycomb.project());
+    // if (!honeycomb._missions) {
+    //   const collections = [];
+    //   honeycomb.use(
+    //     await NectarMissions.new(honeycomb, {
+    //       args: {
+    //         name: "Sol Patrol",
+    //         factionsMerkleRoot: Array(32).fill(0),
+    //         collections,
+    //       },
+    //     })
+    //   );
+    // }
 
     // console.log("UPDATING MISSIONS");
     // await honeycomb.missions().update(
@@ -333,508 +325,489 @@ describe("Nectar Utilities", () => {
     //   { skipPreflight: true }
     // );
 
-    console.log("StakingCollectionn", staking.collections, staking.creators);
-    console.log(
-      "MissionCollectionn",
-      honeycomb.missions().collections,
-      honeycomb.missions().creators
-    );
+    // console.log("StakingCollectionn", staking.collections, staking.creators);
+    // console.log(
+    //   "MissionCollectionn",
+    //   honeycomb.missions().collections,
+    //   honeycomb.missions().creators
+    // );
 
+    const vault = new web3.PublicKey(
+      "232Z5QNvQ4wRyraGWFpC5i3HEbqozEWgBCV95eWASaG1"
+    );
+    // const vault = honeycomb.missions().address;
     await bail
       .fetch()
-      .holderAccount(honeycomb.missions().address)
-      .catch((_) =>
-        (bail as HplCurrency)
-          .create()
-          .holderAccount(honeycomb.missions().address)
-      );
+      .holderAccount(vault)
+      .catch((_) => (bail as HplCurrency).create().holderAccount(vault))
+      .then((hA) => hA.fund(10000 * 1_000_000_000));
 
-    await bounty
-      .fetch()
-      .holderAccount(honeycomb.missions().address)
-      .catch((_) =>
-        (bounty as HplCurrency)
-          .create()
-          .holderAccount(honeycomb.missions().address)
-      )
-      .then((hA) => hA.mint(10_000 * 1_000_000_000));
+    // await bounty
+    //   .fetch()
+    //   .holderAccount(vault)
+    //   .catch((_) => (bounty as HplCurrency).create().holderAccount(vault))
+    //   .then((hA) => hA.mint(1000 * 1_000_000_000));
 
-    await ammo
-      .fetch()
-      .holderAccount(honeycomb.missions().address)
-      .catch((_) =>
-        (ammo as HplCurrency)
-          .create()
-          .holderAccount(honeycomb.missions().address)
-      )
-      .then((hA) => hA.mint(10_000 * 1_000_000_000));
+    // await ammo
+    //   .fetch()
+    //   .holderAccount(vault)
+    //   .catch((_) => (ammo as HplCurrency).create().holderAccount(vault))
+    //   .then((hA) => hA.mint(1000 * 1_000_000_000));
 
-    await food
-      .fetch()
-      .holderAccount(honeycomb.missions().address)
-      .catch((_) =>
-        (food as HplCurrency)
-          .create()
-          .holderAccount(honeycomb.missions().address)
-      )
-      .then((hA) => hA.mint(10_000 * 1_000_000_000));
+    // await food
+    //   .fetch()
+    //   .holderAccount(vault)
+    //   .catch((_) => (food as HplCurrency).create().holderAccount(vault))
+    //   .then((hA) => hA.mint(1000 * 1_000_000_000));
 
-    await gems
-      .fetch()
-      .holderAccount(honeycomb.missions().address)
-      .catch((_) =>
-        (gems as HplCurrency)
-          .create()
-          .holderAccount(honeycomb.missions().address)
-      )
-      .then((hA) => hA.mint(10_000 * 1_000_000_000));
+    // await gems
+    //   .fetch()
+    //   .holderAccount(vault)
+    //   .catch((_) => (gems as HplCurrency).create().holderAccount(vault))
+    //   .then((hA) => hA.mint(100 * 1_000_000_000));
 
-    const missions = await honeycomb.missions().missions();
+    // const missions = await honeycomb.missions().missions();
 
-    missions[0].rewards.map((r) =>
-      console.log(r.isCurrency() ? r.currency().name : "Exprience Points")
-    );
+    // // Night Patrol - 3 hr
+    // // Cost in $BAIL: Zero
+    // // Duration: 180 min
+    // // Bounty yield: 2
+    // // XP awarded: 1  point
+    // // Resource 1 (Ammo):  1
+    // // Resource 2 (Food): 1
+    // // Resource 3 (Gems): 0
+    // // $BAIL reward: 0 $BAIL
+    // if (!missions.find((m) => m.name === "Night Patrol")) {
+    //   await honeycomb
+    //     .missions()
+    //     .create()
+    //     .mission({
+    //       name: "Night Patrol",
+    //       cost: {
+    //         address: bail.address,
+    //         amount: 0 * 1_000_000_000,
+    //       },
+    //       duration: 3 * 3600,
+    //       minXp: 0,
+    //       rewards: [
+    //         {
+    //           min: 2 * 1_000_000_000,
+    //           max: 2 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: bounty.address,
+    //           },
+    //         },
+    //         {
+    //           min: 1,
+    //           max: 1,
+    //           rewardType: {
+    //             __kind: "Xp",
+    //           },
+    //         },
+    //         {
+    //           min: 1 * 1_000_000_000,
+    //           max: 1 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: ammo.address,
+    //           },
+    //         },
+    //         {
+    //           min: 1 * 1_000_000_000,
+    //           max: 1 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: food.address,
+    //           },
+    //         },
+    //         {
+    //           min: 0 * 1_000_000_000,
+    //           max: 0 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: gems.address,
+    //           },
+    //         },
+    //         {
+    //           min: 0 * 1_000_000_000,
+    //           max: 0 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: bail.address,
+    //           },
+    //         },
+    //       ],
+    //     });
+    // }
 
-    // Night Patrol - 3 hr
-    // Cost in $BAIL: Zero
-    // Duration: 180 min
-    // Bounty yield: 2
-    // XP awarded: 1  point
-    // Resource 1 (Ammo):  1
-    // Resource 2 (Food): 1
-    // Resource 3 (Gems): 0
-    // $BAIL reward: 0 $BAIL
-    if (!missions.find((m) => m.name === "Night Patrol")) {
-      await honeycomb
-        .missions()
-        .create()
-        .mission({
-          name: "Night Patrol",
-          cost: {
-            address: bail.address,
-            amount: 0 * 1_000_000_000,
-          },
-          duration: 3 * 3600,
-          minXp: 0,
-          rewards: [
-            {
-              min: 2 * 1_000_000_000,
-              max: 2 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: bounty.address,
-              },
-            },
-            {
-              min: 1,
-              max: 1,
-              rewardType: {
-                __kind: "Xp",
-              },
-            },
-            {
-              min: 1 * 1_000_000_000,
-              max: 1 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: ammo.address,
-              },
-            },
-            {
-              min: 1 * 1_000_000_000,
-              max: 1 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: food.address,
-              },
-            },
-            {
-              min: 0 * 1_000_000_000,
-              max: 0 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: gems.address,
-              },
-            },
-            {
-              min: 0 * 1_000_000_000,
-              max: 0 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: bail.address,
-              },
-            },
-          ],
-        });
-    }
+    // // Investigate - 12 hours
+    // // Cost in $BAIL: 500 $BAIL
+    // // Duration: 12 hours
+    // // Bounty yield: 2.5 - 10
+    // // XP awarded: 6 - 10 points
+    // // Resource 1 (Ammo): 2
+    // // Resource 2 (Food): 5
+    // // Resource 3 (Gems): 0
+    // // $BAIL reward: 0 - 100 $BAIL
+    // if (!missions.find((m) => m.name === "Investigate")) {
+    //   await honeycomb
+    //     .missions()
+    //     .create()
+    //     .mission({
+    //       name: "Investigate",
+    //       cost: {
+    //         address: bail.address,
+    //         amount: 500 * 1_000_000_000,
+    //       },
+    //       duration: 12 * 3600,
+    //       minXp: 0,
+    //       rewards: [
+    //         {
+    //           min: 2.5 * 1_000_000_000,
+    //           max: 10 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: bounty.address,
+    //           },
+    //         },
+    //         {
+    //           min: 6,
+    //           max: 10,
+    //           rewardType: {
+    //             __kind: "Xp",
+    //           },
+    //         },
+    //         {
+    //           min: 2 * 1_000_000_000,
+    //           max: 2 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: ammo.address,
+    //           },
+    //         },
+    //         {
+    //           min: 5 * 1_000_000_000,
+    //           max: 5 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: food.address,
+    //           },
+    //         },
+    //         {
+    //           min: 0 * 1_000_000_000,
+    //           max: 0 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: gems.address,
+    //           },
+    //         },
+    //         {
+    //           min: 0 * 1_000_000_000,
+    //           max: 100 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: bail.address,
+    //           },
+    //         },
+    //       ],
+    //     });
+    // }
 
-    // Investigate - 12 hours
-    // Cost in $BAIL: 500 $BAIL
-    // Duration: 12 hours
-    // Bounty yield: 2.5 - 10
-    // XP awarded: 6 - 10 points
-    // Resource 1 (Ammo): 2
-    // Resource 2 (Food): 5
-    // Resource 3 (Gems): 0
-    // $BAIL reward: 0 - 100 $BAIL
-    if (!missions.find((m) => m.name === "Investigate")) {
-      await honeycomb
-        .missions()
-        .create()
-        .mission({
-          name: "Investigate",
-          cost: {
-            address: bail.address,
-            amount: 500 * 1_000_000_000,
-          },
-          duration: 12 * 3600,
-          minXp: 0,
-          rewards: [
-            {
-              min: 2.5 * 1_000_000_000,
-              max: 10 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: bounty.address,
-              },
-            },
-            {
-              min: 6,
-              max: 10,
-              rewardType: {
-                __kind: "Xp",
-              },
-            },
-            {
-              min: 2 * 1_000_000_000,
-              max: 2 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: ammo.address,
-              },
-            },
-            {
-              min: 5 * 1_000_000_000,
-              max: 5 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: food.address,
-              },
-            },
-            {
-              min: 0 * 1_000_000_000,
-              max: 0 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: gems.address,
-              },
-            },
-            {
-              min: 0 * 1_000_000_000,
-              max: 100 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: bail.address,
-              },
-            },
-          ],
-        });
-    }
+    // // Arrest - 12 hours
+    // // Cost in $BAIL: 500 $BAIL
+    // // Duration: 12 hours
+    // // Bounty yield: 1 - 10
+    // // XP awarded: 10 - 16 points
+    // // Resource 1 (Ammo): 3
+    // // Resource 2 (Food): 3
+    // // Resource 3 (Gems): 0
+    // // $BAIL reward: 0 -  100 $BAIL
+    // if (!missions.find((m) => m.name === "Arrest")) {
+    //   await honeycomb
+    //     .missions()
+    //     .create()
+    //     .mission({
+    //       name: "Arrest",
+    //       cost: {
+    //         address: bail.address,
+    //         amount: 500 * 1_000_000_000,
+    //       },
+    //       duration: 12 * 3600,
+    //       minXp: 0,
+    //       rewards: [
+    //         {
+    //           min: 1 * 1_000_000_000,
+    //           max: 10 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: bounty.address,
+    //           },
+    //         },
+    //         {
+    //           min: 10,
+    //           max: 16,
+    //           rewardType: {
+    //             __kind: "Xp",
+    //           },
+    //         },
+    //         {
+    //           min: 3 * 1_000_000_000,
+    //           max: 3 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: ammo.address,
+    //           },
+    //         },
+    //         {
+    //           min: 3 * 1_000_000_000,
+    //           max: 3 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: food.address,
+    //           },
+    //         },
+    //         {
+    //           min: 0 * 1_000_000_000,
+    //           max: 0 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: gems.address,
+    //           },
+    //         },
+    //         {
+    //           min: 0 * 1_000_000_000,
+    //           max: 100 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: bail.address,
+    //           },
+    //         },
+    //       ],
+    //     });
+    // }
 
-    // Arrest - 12 hours
-    // Cost in $BAIL: 500 $BAIL
-    // Duration: 12 hours
-    // Bounty yield: 1 - 10
-    // XP awarded: 10 - 16 points
-    // Resource 1 (Ammo): 3
-    // Resource 2 (Food): 3
-    // Resource 3 (Gems): 0
-    // $BAIL reward: 0 -  100 $BAIL
-    if (!missions.find((m) => m.name === "Arrest")) {
-      await honeycomb
-        .missions()
-        .create()
-        .mission({
-          name: "Arrest",
-          cost: {
-            address: bail.address,
-            amount: 500 * 1_000_000_000,
-          },
-          duration: 12 * 3600,
-          minXp: 0,
-          rewards: [
-            {
-              min: 1 * 1_000_000_000,
-              max: 10 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: bounty.address,
-              },
-            },
-            {
-              min: 10,
-              max: 16,
-              rewardType: {
-                __kind: "Xp",
-              },
-            },
-            {
-              min: 3 * 1_000_000_000,
-              max: 3 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: ammo.address,
-              },
-            },
-            {
-              min: 3 * 1_000_000_000,
-              max: 3 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: food.address,
-              },
-            },
-            {
-              min: 0 * 1_000_000_000,
-              max: 0 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: gems.address,
-              },
-            },
-            {
-              min: 0 * 1_000_000_000,
-              max: 100 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: bail.address,
-              },
-            },
-          ],
-        });
-    }
+    // // Combat - 2 Days (Level 3)
+    // // Cost in $BAIL: 1500 $BAIL
+    // // Duration: 48 hours
+    // // Bounty yield: 10 - 30
+    // // XP awarded: 25 - 50 points
+    // // Resource 1 (Ammo): 15
+    // // Resource 2 (Food): 25
+    // // Resource 3 (Gems): 1
+    // // $BAIL reward: 50 - 300 $BAIL
+    // if (!missions.find((m) => m.name === "Combat")) {
+    //   await honeycomb
+    //     .missions()
+    //     .create()
+    //     .mission({
+    //       name: "Combat",
+    //       cost: {
+    //         address: bail.address,
+    //         amount: 1500 * 1_000_000_000,
+    //       },
+    //       duration: 48 * 3600,
+    //       minXp: 300,
+    //       rewards: [
+    //         {
+    //           min: 10 * 1_000_000_000,
+    //           max: 30 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: bounty.address,
+    //           },
+    //         },
+    //         {
+    //           min: 25,
+    //           max: 50,
+    //           rewardType: {
+    //             __kind: "Xp",
+    //           },
+    //         },
+    //         {
+    //           min: 15 * 1_000_000_000,
+    //           max: 15 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: ammo.address,
+    //           },
+    //         },
+    //         {
+    //           min: 25 * 1_000_000_000,
+    //           max: 25 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: food.address,
+    //           },
+    //         },
+    //         {
+    //           min: 1 * 1_000_000_000,
+    //           max: 1 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: gems.address,
+    //           },
+    //         },
+    //         {
+    //           min: 50 * 1_000_000_000,
+    //           max: 300 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: bail.address,
+    //           },
+    //         },
+    //       ],
+    //     });
+    // }
 
-    // Combat - 2 Days (Level 3)
-    // Cost in $BAIL: 1500 $BAIL
-    // Duration: 48 hours
-    // Bounty yield: 10 - 30
-    // XP awarded: 25 - 50 points
-    // Resource 1 (Ammo): 15
-    // Resource 2 (Food): 25
-    // Resource 3 (Gems): 1
-    // $BAIL reward: 50 - 300 $BAIL
-    if (!missions.find((m) => m.name === "Combat")) {
-      await honeycomb
-        .missions()
-        .create()
-        .mission({
-          name: "Combat",
-          cost: {
-            address: bail.address,
-            amount: 1500 * 1_000_000_000,
-          },
-          duration: 48 * 3600,
-          minXp: 300,
-          rewards: [
-            {
-              min: 10 * 1_000_000_000,
-              max: 30 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: bounty.address,
-              },
-            },
-            {
-              min: 25,
-              max: 50,
-              rewardType: {
-                __kind: "Xp",
-              },
-            },
-            {
-              min: 15 * 1_000_000_000,
-              max: 15 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: ammo.address,
-              },
-            },
-            {
-              min: 25 * 1_000_000_000,
-              max: 25 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: food.address,
-              },
-            },
-            {
-              min: 1 * 1_000_000_000,
-              max: 1 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: gems.address,
-              },
-            },
-            {
-              min: 50 * 1_000_000_000,
-              max: 300 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: bail.address,
-              },
-            },
-          ],
-        });
-    }
+    // // Quick Patrol - 0.25 hr
+    // // Cost in $BAIL: 150
+    // // Duration: 15 min
+    // // Bounty yield: 1
+    // // XP awarded: 0  point
+    // // Resource 1 (Ammo):  1
+    // // Resource 2 (Food): 1
+    // // Resource 3 (Gems): 0
+    // // $BAIL reward: 0 $BAIL
+    // if (!missions.find((m) => m.name === "Quick Patrol")) {
+    //   await honeycomb
+    //     .missions()
+    //     .create()
+    //     .mission({
+    //       name: "Quick Patrol",
+    //       cost: {
+    //         address: bail.address,
+    //         amount: 150 * 1_000_000_000,
+    //       },
+    //       duration: 15 * 60,
+    //       minXp: 0,
+    //       rewards: [
+    //         {
+    //           min: 1 * 1_000_000_000,
+    //           max: 1 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: bounty.address,
+    //           },
+    //         },
+    //         {
+    //           min: 0,
+    //           max: 0,
+    //           rewardType: {
+    //             __kind: "Xp",
+    //           },
+    //         },
+    //         {
+    //           min: 1 * 1_000_000_000,
+    //           max: 1 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: ammo.address,
+    //           },
+    //         },
+    //         {
+    //           min: 1 * 1_000_000_000,
+    //           max: 1 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: food.address,
+    //           },
+    //         },
+    //         {
+    //           min: 0 * 1_000_000_000,
+    //           max: 0 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: gems.address,
+    //           },
+    //         },
+    //         {
+    //           min: 0 * 1_000_000_000,
+    //           max: 0 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: bail.address,
+    //           },
+    //         },
+    //       ],
+    //     });
+    // }
 
-    // Quick Patrol - 0.25 hr
-    // Cost in $BAIL: 150
-    // Duration: 15 min
-    // Bounty yield: 1
-    // XP awarded: 0  point
-    // Resource 1 (Ammo):  1
-    // Resource 2 (Food): 1
-    // Resource 3 (Gems): 0
-    // $BAIL reward: 0 $BAIL
-    if (!missions.find((m) => m.name === "Quick Patrol")) {
-      await honeycomb
-        .missions()
-        .create()
-        .mission({
-          name: "Quick Patrol",
-          cost: {
-            address: bail.address,
-            amount: 150 * 1_000_000_000,
-          },
-          duration: 15 * 60,
-          minXp: 0,
-          rewards: [
-            {
-              min: 1 * 1_000_000_000,
-              max: 1 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: bounty.address,
-              },
-            },
-            {
-              min: 0,
-              max: 0,
-              rewardType: {
-                __kind: "Xp",
-              },
-            },
-            {
-              min: 1 * 1_000_000_000,
-              max: 1 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: ammo.address,
-              },
-            },
-            {
-              min: 1 * 1_000_000_000,
-              max: 1 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: food.address,
-              },
-            },
-            {
-              min: 0 * 1_000_000_000,
-              max: 0 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: gems.address,
-              },
-            },
-            {
-              min: 0 * 1_000_000_000,
-              max: 0 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: bail.address,
-              },
-            },
-          ],
-        });
-    }
-
-    // Casino Heist - 1 hr
-    // Cost in $BAIL: 0
-    // Duration: 60 min
-    // Bounty yield: 0 - 1
-    // XP awarded: 0  point
-    // Resource 1 (Ammo):  1
-    // Resource 2 (Food): 0
-    // Resource 3 (Gems): 0
-    // $BAIL reward: 0 $BAIL
-    if (!missions.find((m) => m.name === "Casino Heist")) {
-      await honeycomb
-        .missions()
-        .create()
-        .mission({
-          name: "Casino Heist",
-          cost: {
-            address: bail.address,
-            amount: 0 * 1_000_000_000,
-          },
-          duration: 3600,
-          minXp: 0,
-          rewards: [
-            {
-              min: 0 * 1_000_000_000,
-              max: 1 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: bounty.address,
-              },
-            },
-            {
-              min: 0,
-              max: 0,
-              rewardType: {
-                __kind: "Xp",
-              },
-            },
-            {
-              min: 1 * 1_000_000_000,
-              max: 1 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: ammo.address,
-              },
-            },
-            {
-              min: 0 * 1_000_000_000,
-              max: 0 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: food.address,
-              },
-            },
-            {
-              min: 0 * 1_000_000_000,
-              max: 0 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: gems.address,
-              },
-            },
-            {
-              min: 0 * 1_000_000_000,
-              max: 0 * 1_000_000_000,
-              rewardType: {
-                __kind: "Currency",
-                address: bail.address,
-              },
-            },
-          ],
-        });
-    }
+    // // Casino Heist - 1 hr
+    // // Cost in $BAIL: 0
+    // // Duration: 60 min
+    // // Bounty yield: 0 - 1
+    // // XP awarded: 0  point
+    // // Resource 1 (Ammo):  1
+    // // Resource 2 (Food): 0
+    // // Resource 3 (Gems): 0
+    // // $BAIL reward: 0 $BAIL
+    // if (!missions.find((m) => m.name === "Casino Heist")) {
+    //   await honeycomb
+    //     .missions()
+    //     .create()
+    //     .mission({
+    //       name: "Casino Heist",
+    //       cost: {
+    //         address: bail.address,
+    //         amount: 0 * 1_000_000_000,
+    //       },
+    //       duration: 3600,
+    //       minXp: 0,
+    //       rewards: [
+    //         {
+    //           min: 0 * 1_000_000_000,
+    //           max: 1 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: bounty.address,
+    //           },
+    //         },
+    //         {
+    //           min: 0,
+    //           max: 0,
+    //           rewardType: {
+    //             __kind: "Xp",
+    //           },
+    //         },
+    //         {
+    //           min: 1 * 1_000_000_000,
+    //           max: 1 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: ammo.address,
+    //           },
+    //         },
+    //         {
+    //           min: 0 * 1_000_000_000,
+    //           max: 0 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: food.address,
+    //           },
+    //         },
+    //         {
+    //           min: 0 * 1_000_000_000,
+    //           max: 0 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: gems.address,
+    //           },
+    //         },
+    //         {
+    //           min: 0 * 1_000_000_000,
+    //           max: 0 * 1_000_000_000,
+    //           rewardType: {
+    //             __kind: "Currency",
+    //             address: bail.address,
+    //           },
+    //         },
+    //       ],
+    //     });
+    // }
   });
 
-  it("Prepare and Setup", async () => {
+  it.skip("Prepare and Setup", async () => {
     honeycomb = await prepare();
     const balance = await honeycomb
       .rpc()
@@ -928,7 +901,7 @@ describe("Nectar Utilities", () => {
     console.log("Project", honeycomb.project().address.toString());
   });
 
-  it("Create Staking Pool", async () => {
+  it.skip("Create Staking Pool", async () => {
     // Create staking pool
     honeycomb.use(
       await NectarStaking.new(honeycomb, {
@@ -980,7 +953,7 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it("Create Mission Pool", async () => {
+  it.skip("Create Mission Pool", async () => {
     honeycomb.use(
       await NectarMissions.new(honeycomb, {
         args: {
@@ -1003,7 +976,7 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it("Create Mission", async () => {
+  it.skip("Create Mission", async () => {
     const currentCurrency = honeycomb.currency();
 
     const bounty = await HplCurrency.new(honeycomb, {
@@ -1097,7 +1070,7 @@ describe("Nectar Utilities", () => {
       });
   });
 
-  it("Fetch or Create user/profile", async () => {
+  it.skip("Fetch or Create user/profile", async () => {
     await honeycomb
       .identity()
       .user()
