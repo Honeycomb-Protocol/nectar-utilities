@@ -35,7 +35,7 @@ export async function createWithdrawRewardsOperation(
 
   const instructions: web3.TransactionInstruction[] = [
     web3.ComputeBudgetProgram.setComputeUnitLimit({
-      units: 300000,
+      units: 400_000,
     }),
     createWithdrawRewardsInstruction(
       {

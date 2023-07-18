@@ -1,4 +1,4 @@
-import { PublicKey } from "@solana/web3.js";
+import { ComputeBudgetProgram, PublicKey } from "@solana/web3.js";
 import { Honeycomb, Operation, VAULT } from "@honeycomb-protocol/hive-control";
 import {
   UpdateMissionPoolArgs as UpdateMissionPoolArgsSolita,
@@ -21,6 +21,9 @@ export async function createUpdateMissionPoolOperation(
   const programId = args.programId || PROGRAM_ID;
 
   const instructions = [
+    ComputeBudgetProgram.setComputeUnitLimit({
+      units: 400_000,
+    }),
     createUpdateMissionPoolInstruction(
       {
         project: args.project,

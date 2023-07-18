@@ -66,7 +66,7 @@ export async function createStakeOperation(
 
   const instructions = [
     web3.ComputeBudgetProgram.setComputeUnitLimit({
-      units: 300_000,
+      units: 400_000,
     }),
     createStakeInstruction(
       {

@@ -71,7 +71,7 @@ export async function createCollectRewardsOperation(
 
   const instructions = [
     ComputeBudgetProgram.setComputeUnitLimit({
-      units: 300000,
+      units: 400_000,
     }),
     createCollectRewardsInstruction(
       {

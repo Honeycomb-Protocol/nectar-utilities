@@ -1,4 +1,5 @@
 import {
+  ComputeBudgetProgram,
   PublicKey,
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_INSTRUCTIONS_PUBKEY,
@@ -50,6 +51,9 @@ export async function createParticipateOperation(
   );
 
   const instructions = [
+    ComputeBudgetProgram.setComputeUnitLimit({
+      units: 400_000,
+    }),
     createParticipateInstruction(
       {
         project: args.mission.pool().project().address,

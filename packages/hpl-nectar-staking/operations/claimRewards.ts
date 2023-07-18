@@ -45,7 +45,7 @@ export async function createClaimRewardsOperation(
 
   const instructions = [
     web3.ComputeBudgetProgram.setComputeUnitLimit({
-      units: 300000,
+      units: 400_000,
     }),
     createClaimRewardsInstruction(
       {
