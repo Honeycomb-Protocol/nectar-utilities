@@ -130,7 +130,7 @@ pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
                     msg!("Creator: {:?}", nft.creator);
                 }
             }
-            msg!("JSON NFT: {:?}", nft);
+            // msg!("JSON NFT: {:?}", nft);
             return Ok(());
         }
         Err(_) => {
@@ -371,7 +371,7 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
     }
     staker.total_staked += 1;
 
-    msg!("JSON NFT: {:?}", nft);
+    // msg!("JSON NFT: {:?}", nft);
     Ok(())
 }
 
@@ -383,7 +383,7 @@ pub struct Unstake<'info> {
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// NFT state account
-    #[account(mut, has_one = staking_pool, has_one = staker)]
+    #[account(mut, has_one = staking_pool, has_one = staker, close = wallet)]
     pub nft: Box<Account<'info, NFT>>,
 
     /// Mint address of the NFT
@@ -486,8 +486,6 @@ pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
 
     nft.last_unstaked_at = ctx.accounts.clock.unix_timestamp;
     nft.staker = Pubkey::default();
-    nft.collection = Pubkey::default();
-    nft.creator = Pubkey::default();
     staker.total_staked -= 1;
 
     let wallet_key = ctx.accounts.wallet.key();
@@ -597,6 +595,6 @@ pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
         }
     }
 
-    msg!("JSON NFT: {:?}", nft);
+    // msg!("JSON NFT: {:?}", nft);
     Ok(())
 }

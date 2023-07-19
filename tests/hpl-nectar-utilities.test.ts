@@ -1,10 +1,12 @@
 import * as web3 from "@solana/web3.js";
+import fs from "fs";
 import { Metaplex, Nft, keypairIdentity } from "@metaplex-foundation/js";
 import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import {
   Honeycomb,
   HoneycombProject,
   identityModule,
+  toHoneycombFile,
 } from "@honeycomb-protocol/hive-control";
 import {
   PermissionedCurrencyKind,
@@ -52,7 +54,7 @@ describe("Nectar Utilities", () => {
 
   it("Temp", async () => {
     const connection = new web3.Connection(
-      "https://rpc.helius.xyz/?api-key=16d6d941-9f05-4bcf-a326-30d6cbfaa310"
+      "https://rpc.hellomoon.io/40f1e769-beb0-4a00-8f11-e9f19e1a576d"
       // "https://lingering-newest-sheet.solana-devnet.quiknode.pro/fb6e6465df3955a06fd5ddec2e5b003896f56adb/"
     );
     const honeycomb = new Honeycomb(connection, { env: "main" }).use(
@@ -112,6 +114,38 @@ describe("Nectar Utilities", () => {
       });
       honeycomb.use(bounty);
     }
+    // else {
+    //   const bundlr = await honeycomb.storage().bundlr();
+
+    //   const image = fs.readFileSync("./temp/bounty.png");
+    //   const ImageCost = await honeycomb
+    //     .storage()
+    //     .getUploadPriceForBytes(image.byteLength);
+    //   await bundlr.fund(ImageCost.basisPoints.toNumber());
+    //   const imageUri = await honeycomb
+    //     .storage()
+    //     .upload(toHoneycombFile(image, "bounty.png"));
+
+    //   const uriMetadata = {
+    //     name: "Bounty",
+    //     symbol: "BTY",
+    //     description: "Sol Patrol In-Game Currency",
+    //     image: imageUri,
+    //   };
+    //   const cost = await honeycomb
+    //     .storage()
+    //     .getUploadPriceForBytes(bytesOf(uriMetadata));
+    //   await bundlr.fund(cost.basisPoints.toNumber());
+    //   const uri = await honeycomb.storage().uploadJson(uriMetadata);
+
+    //   bounty.update({
+    //     name: uriMetadata.name,
+    //     symbol: uriMetadata.symbol,
+    //     uri,
+    //   });
+
+    //   console.log("Bounty Mint", bounty.mint.address.toString());
+    // }
 
     let ammo = Object.values(honeycomb._currencies).find(
       (c) =>
@@ -140,6 +174,38 @@ describe("Nectar Utilities", () => {
       });
       honeycomb.use(ammo);
     }
+    // else {
+    //   const bundlr = await honeycomb.storage().bundlr();
+
+    //   const image = fs.readFileSync("./temp/ammo.png");
+    //   const ImageCost = await honeycomb
+    //     .storage()
+    //     .getUploadPriceForBytes(image.byteLength);
+    //   await bundlr.fund(ImageCost.basisPoints.toNumber());
+    //   const imageUri = await honeycomb
+    //     .storage()
+    //     .upload(toHoneycombFile(image, "ammo.png"));
+
+    //   const uriMetadata = {
+    //     name: "Ammo",
+    //     symbol: "AMMO",
+    //     description: "Sol Patrol In-Game Currency",
+    //     image: imageUri,
+    //   };
+    //   const cost = await honeycomb
+    //     .storage()
+    //     .getUploadPriceForBytes(bytesOf(uriMetadata));
+    //   await bundlr.fund(cost.basisPoints.toNumber());
+    //   const uri = await honeycomb.storage().uploadJson(uriMetadata);
+
+    //   ammo.update({
+    //     name: uriMetadata.name,
+    //     symbol: uriMetadata.symbol,
+    //     uri,
+    //   });
+
+    //   console.log("Ammo Mint", ammo.mint.address.toString());
+    // }
 
     let food = Object.values(honeycomb._currencies).find(
       (c) =>
@@ -168,6 +234,38 @@ describe("Nectar Utilities", () => {
       });
       honeycomb.use(food);
     }
+    // else {
+    //   const bundlr = await honeycomb.storage().bundlr();
+
+    //   const image = fs.readFileSync("./temp/heal.png");
+    //   const ImageCost = await honeycomb
+    //     .storage()
+    //     .getUploadPriceForBytes(image.byteLength);
+    //   await bundlr.fund(ImageCost.basisPoints.toNumber());
+    //   const imageUri = await honeycomb
+    //     .storage()
+    //     .upload(toHoneycombFile(image, "food.png"));
+
+    //   const uriMetadata = {
+    //     name: "Food",
+    //     symbol: "FOOD",
+    //     description: "Sol Patrol In-Game Currency",
+    //     image: imageUri,
+    //   };
+    //   const cost = await honeycomb
+    //     .storage()
+    //     .getUploadPriceForBytes(bytesOf(uriMetadata));
+    //   await bundlr.fund(cost.basisPoints.toNumber());
+    //   const uri = await honeycomb.storage().uploadJson(uriMetadata);
+
+    //   food.update({
+    //     name: uriMetadata.name,
+    //     symbol: uriMetadata.symbol,
+    //     uri,
+    //   });
+
+    //   console.log("Food Mint", food.mint.address.toString());
+    // }
 
     let gems = Object.values(honeycomb._currencies).find(
       (c) =>
@@ -196,6 +294,38 @@ describe("Nectar Utilities", () => {
       });
       honeycomb.use(gems);
     }
+    // else {
+    //   const bundlr = await honeycomb.storage().bundlr();
+
+    //   const image = fs.readFileSync("./temp/gem.png");
+    //   const ImageCost = await honeycomb
+    //     .storage()
+    //     .getUploadPriceForBytes(image.byteLength);
+    //   await bundlr.fund(ImageCost.basisPoints.toNumber());
+    //   const imageUri = await honeycomb
+    //     .storage()
+    //     .upload(toHoneycombFile(image, "gems.png"));
+
+    //   const uriMetadata = {
+    //     name: "Gems",
+    //     symbol: "GEMS",
+    //     description: "Sol Patrol In-Game Currency",
+    //     image: imageUri,
+    //   };
+    //   const cost = await honeycomb
+    //     .storage()
+    //     .getUploadPriceForBytes(bytesOf(uriMetadata));
+    //   await bundlr.fund(cost.basisPoints.toNumber());
+    //   const uri = await honeycomb.storage().uploadJson(uriMetadata);
+
+    //   gems.update({
+    //     name: uriMetadata.name,
+    //     symbol: uriMetadata.symbol,
+    //     uri,
+    //   });
+
+    //   console.log("Gems Mint", gems.mint.address.toString());
+    // }
 
     // await findProjectStakingPools(honeycomb.project());
     // const staking = honeycomb.staking();
@@ -332,15 +462,15 @@ describe("Nectar Utilities", () => {
     //   honeycomb.missions().creators
     // );
 
-    const vault = new web3.PublicKey(
-      "232Z5QNvQ4wRyraGWFpC5i3HEbqozEWgBCV95eWASaG1"
-    );
+    // const vault = new web3.PublicKey(
+    //   "GhJ1wzXo1rmi87GewEMJ8AAEnLi4cLwqeWgn2LTb9i5P"
+    // );
     // const vault = honeycomb.missions().address;
-    await bail
-      .fetch()
-      .holderAccount(vault)
-      .catch((_) => (bail as HplCurrency).create().holderAccount(vault))
-      .then((hA) => hA.fund(10000 * 1_000_000_000));
+    // await bail
+    //   .fetch()
+    //   .holderAccount(vault)
+    //   .catch((_) => (bail as HplCurrency).create().holderAccount(vault))
+    //   .then((hA) => hA.fund(200000 * 1_000_000_000));
 
     // await bounty
     //   .fetch()

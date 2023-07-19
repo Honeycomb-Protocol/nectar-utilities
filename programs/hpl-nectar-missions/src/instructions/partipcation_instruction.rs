@@ -237,7 +237,7 @@ pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<(
         ctx.accounts.mission.cost.amount,
     )?;
 
-    msg!("JSON Participation: {:?}", participation);
+    // msg!("JSON Participation: {:?}", participation);
 
     Ok(())
 }
@@ -468,7 +468,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
         }
     };
 
-    msg!("JSON Participation: {:?}", ctx.accounts.participation);
+    // msg!("JSON Participation: {:?}", ctx.accounts.participation);
     res
 }
 
@@ -515,6 +515,6 @@ pub fn recall(ctx: Context<Recall>) -> Result<()> {
 
     participation.is_recalled = true;
 
-    msg!("JSON Participation: {:?}", participation);
+    // msg!("JSON Participation: {:?}", participation);
     Ok(())
 }
