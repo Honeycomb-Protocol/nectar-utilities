@@ -1,6 +1,6 @@
 {
   "name": "@honeycomb-protocol/nectar-staking",
-  "version": "0.0.64",
+  "version": "0.0.65",
   "private": false,
   "dependencies": {
     "@metaplex-foundation/js": "^0.18.1",

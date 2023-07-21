@@ -15,6 +15,7 @@ import {
   Honeycomb,
   HoneycombProject,
   Module,
+  Operation,
 } from "@honeycomb-protocol/hive-control";
 import { StakedNft, getNftPda } from "@honeycomb-protocol/nectar-staking";
 import {
@@ -24,7 +25,11 @@ import {
   createParticipateOperation,
   createUpdateMissionPoolOperation,
 } from "./operations";
-import { missionPda, removeDuplicateFromArrayOf } from "./utils";
+import {
+  createLookupTable,
+  missionPda,
+  removeDuplicateFromArrayOf,
+} from "./utils";
 
 type ItemOrArray<T = any> = T | T[];
 
@@ -239,24 +244,34 @@ export class NectarMissions extends Module {
       )
     ).flat();
 
-    const preparedOperations = await this.honeycomb()
-      .rpc()
-      .prepareTransactions(operations.map((operation) => operation.context));
-
-    const firstTxResponse = await this.honeycomb()
-      .rpc()
-      .sendAndConfirmTransaction(preparedOperations.shift(), {
-        commitment: "processed",
-        ...confirmOptions,
-      });
-
-    const responses = await this.honeycomb()
-      .rpc()
-      .sendAndConfirmTransactionsInBatches(preparedOperations, {
-        commitment: "processed",
-        ...confirmOptions,
-      });
-    return [firstTxResponse, ...responses];
+    const operation = Operation.concat(operations);
+    const lookupTable = await createLookupTable(
+      this.honeycomb(),
+      operation.accounts
+    );
+    if (!lookupTable) throw new Error("Failed to create lookup table");
+    const latestBlockhash = await this.honeycomb().rpc().getLatestBlockhash();
+    const tx = new web3.VersionedTransaction(
+      new web3.TransactionMessage({
+        payerKey: this.honeycomb().identity().address,
+        recentBlockhash: latestBlockhash.blockhash,
+        instructions: operation.instructions,
+      }).compileToV0Message([lookupTable])
+    );
+    const signedTx = await this.honeycomb().identity().signTransaction(tx);
+    const signature = await this.honeycomb().connection.sendRawTransaction(
+      signedTx.serialize(),
+      confirmOptions
+    );
+    await this.honeycomb().connection.confirmTransaction(
+      {
+        signature,
+        blockhash: latestBlockhash.blockhash,
+        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+      },
+      confirmOptions?.commitment
+    );
+    return signature;
   }
 
   public install(honeycomb: Honeycomb): Honeycomb {
@@ -497,27 +512,61 @@ export class NectarMission {
       )
     ).flat();
 
-    const preparedOperations = await this.pool()
+    const operation = Operation.concat(operations);
+    const lookupTable = await createLookupTable(
+      this.pool().honeycomb(),
+      operation.accounts
+    );
+    if (!lookupTable) throw new Error("Failed to create lookup table");
+    const latestBlockhash = await this.pool()
       .honeycomb()
       .rpc()
-      .prepareTransactions(operations.map((operation) => operation.context));
+      .getLatestBlockhash();
+    const tx = new web3.VersionedTransaction(
+      new web3.TransactionMessage({
+        payerKey: this.pool().honeycomb().identity().address,
+        recentBlockhash: latestBlockhash.blockhash,
+        instructions: operation.instructions,
+      }).compileToV0Message([lookupTable])
+    );
+    const signedTx = await this.pool()
+      .honeycomb()
+      .identity()
+      .signTransaction(tx);
+    const signature = await this.pool()
+      .honeycomb()
+      .connection.sendRawTransaction(signedTx.serialize(), confirmOptions);
+    await this.pool().honeycomb().connection.confirmTransaction(
+      {
+        signature,
+        blockhash: latestBlockhash.blockhash,
+        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+      },
+      confirmOptions?.commitment
+    );
+    return signature;
 
-    const firstTxResponse = await this.pool()
-      .honeycomb()
-      .rpc()
-      .sendAndConfirmTransaction(preparedOperations.shift(), {
-        commitment: "processed",
-        ...confirmOptions,
-      });
+    // const preparedOperations = await this.pool()
+    //   .honeycomb()
+    //   .rpc()
+    //   .prepareTransactions(operations.map((operation) => operation.context));
 
-    const responses = await this.pool()
-      .honeycomb()
-      .rpc()
-      .sendAndConfirmTransactionsInBatches(preparedOperations, {
-        commitment: "processed",
-        ...confirmOptions,
-      });
-    return [firstTxResponse, ...responses];
+    // const firstTxResponse = await this.pool()
+    //   .honeycomb()
+    //   .rpc()
+    //   .sendAndConfirmTransaction(preparedOperations.shift(), {
+    //     commitment: "processed",
+    //     ...confirmOptions,
+    //   });
+
+    // const responses = await this.pool()
+    //   .honeycomb()
+    //   .rpc()
+    //   .sendAndConfirmTransactionsInBatches(preparedOperations, {
+    //     commitment: "processed",
+    //     ...confirmOptions,
+    //   });
+    // return [firstTxResponse, ...responses];
   }
 }
 

@@ -1,12 +1,10 @@
 import * as web3 from "@solana/web3.js";
-import fs from "fs";
 import { Metaplex, Nft, keypairIdentity } from "@metaplex-foundation/js";
 import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import {
   Honeycomb,
   HoneycombProject,
   identityModule,
-  toHoneycombFile,
 } from "@honeycomb-protocol/hive-control";
 import {
   PermissionedCurrencyKind,
@@ -462,39 +460,39 @@ describe("Nectar Utilities", () => {
     //   honeycomb.missions().creators
     // );
 
-    // const vault = new web3.PublicKey(
-    //   "GhJ1wzXo1rmi87GewEMJ8AAEnLi4cLwqeWgn2LTb9i5P"
-    // );
+    const vault = new web3.PublicKey(
+      "GWpdaAZyW6WCiHzSNaoPSvf8CdQE8j2BuQqCKeKUokQw"
+    );
     // const vault = honeycomb.missions().address;
-    // await bail
-    //   .fetch()
-    //   .holderAccount(vault)
-    //   .catch((_) => (bail as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.fund(200000 * 1_000_000_000));
+    await bail
+      .fetch()
+      .holderAccount(vault)
+      .catch((_) => (bail as HplCurrency).create().holderAccount(vault))
+      .then((hA) => hA.fund(100_000 * 1_000_000_000));
 
-    // await bounty
-    //   .fetch()
-    //   .holderAccount(vault)
-    //   .catch((_) => (bounty as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.mint(1000 * 1_000_000_000));
+    await bounty
+      .fetch()
+      .holderAccount(vault)
+      .catch((_) => (bounty as HplCurrency).create().holderAccount(vault))
+      .then((hA) => hA.mint(1000 * 1_000_000_000));
 
-    // await ammo
-    //   .fetch()
-    //   .holderAccount(vault)
-    //   .catch((_) => (ammo as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.mint(1000 * 1_000_000_000));
+    await ammo
+      .fetch()
+      .holderAccount(vault)
+      .catch((_) => (ammo as HplCurrency).create().holderAccount(vault))
+      .then((hA) => hA.mint(1000 * 1_000_000_000));
 
-    // await food
-    //   .fetch()
-    //   .holderAccount(vault)
-    //   .catch((_) => (food as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.mint(1000 * 1_000_000_000));
+    await food
+      .fetch()
+      .holderAccount(vault)
+      .catch((_) => (food as HplCurrency).create().holderAccount(vault))
+      .then((hA) => hA.mint(1000 * 1_000_000_000));
 
-    // await gems
-    //   .fetch()
-    //   .holderAccount(vault)
-    //   .catch((_) => (gems as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.mint(100 * 1_000_000_000));
+    await gems
+      .fetch()
+      .holderAccount(vault)
+      .catch((_) => (gems as HplCurrency).create().holderAccount(vault))
+      .then((hA) => hA.mint(100 * 1_000_000_000));
 
     // const missions = await honeycomb.missions().missions();
 
