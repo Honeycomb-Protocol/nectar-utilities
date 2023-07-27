@@ -32,11 +32,45 @@ import {
   SPL_NOOP_PROGRAM_ID,
 } from "@solana/spl-account-compression";
 
+/**
+ * Represents the arguments needed to create a collect rewards operation.
+ * @category Types
+ */
 type CreateCollectRewardsOperationArgs = {
+  /**
+   * The participation reward to collect.
+   */
   reward: ParticipationReward;
+  /**
+   * The wallet address of the user collecting the rewards.
+   */
   wallet: PublicKey;
+  /**
+   * (Optional) The program ID associated with the collect rewards operation.
+   * If not provided, the default PROGRAM_ID will be used.
+   */
   programId?: PublicKey;
 };
+
+/**
+ * Creates a new collect rewards operation for a given participation reward.
+ * @category Operation Builder
+ * @param honeycomb - An instance of the Honeycomb class.
+ * @param args - The arguments for collecting rewards.
+ * @returns An object containing the collect rewards operation.
+ * @example
+ * const honeycomb = new Honeycomb(...); // Initialize Honeycomb instance
+ * const participation = await honeycomb.mission(missionAddress).participations(walletAddress);
+ * const reward = participation[0].rewards[0]; // Assuming there is at least one participation and one reward
+ * const createCollectRewardsArgs: CreateCollectRewardsOperationArgs = {
+ *   reward,
+ *   wallet: myWalletAddress,
+ *   programId: myCustomProgramId, // (Optional) Provide a custom program ID if needed
+ * };
+ * const { operation } = createCollectRewardsOperation(honeycomb, createCollectRewardsArgs);
+ * // Execute the collect rewards transaction
+ * await operation.send(confirmOptions);
+ */
 export async function createCollectRewardsOperation(
   honeycomb: Honeycomb,
   args: CreateCollectRewardsOperationArgs
@@ -117,10 +151,41 @@ export async function createCollectRewardsOperation(
   };
 }
 
+/**
+ * Represents the arguments needed to create a recall operation.
+ * @category Types
+ */
 type CreateRecallOperationnArgs = {
+  /**
+   * The NectarMissionParticipation to recall rewards from.
+   */
   participation: NectarMissionParticipation;
+  /**
+   * (Optional) The program ID associated with the recall operation.
+   * If not provided, the default PROGRAM_ID will be used.
+   */
   programId?: PublicKey;
 };
+
+/**
+ * Creates a new recall operation to retrieve uncollected rewards from a participation.
+ * @category Operation Builder
+ * @param honeycomb - An instance of the Honeycomb class.
+ * @param args - The arguments for recalling rewards.
+ * @returns An object containing the recall operation.
+ * @example
+ * const honeycomb = new Honeycomb(...); // Initialize Honeycomb instance
+ * const participation = await honeycomb.mission(missionAddress).participations(walletAddress);
+ * const createRecallArgs: CreateRecallOperationnArgs = {
+ *   participation: participation[0], // Assuming there is at least one participation
+ *   programId: myCustomProgramId, // (Optional) Provide a custom program ID if needed
+ * };
+ * const { operations } = createRecallOperation(honeycomb, createRecallArgs);
+ * // Execute the recall transactions
+ * for (const operation of operations) {
+ *   await operation.send(confirmOptions);
+ * }
+ */
 export async function creatRecallOperation(
   honeycomb: Honeycomb,
   args: CreateRecallOperationnArgs

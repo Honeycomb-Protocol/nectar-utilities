@@ -1,0 +1,21 @@
+{
+    "entryPoints": ["index.d.ts"],
+    "excludeInternal": true,
+    "excludePrivate": true,
+    "categorizeByGroup": false,
+    "defaultCategory": "sdk",
+    "includeVersion": true,
+    "categoryOrder": [
+      "Main",
+      "Modules",
+      "Factory",
+      "Abstracts",
+      "Operation Builders",
+      "Helpers",
+      "Types",
+      "Accounts",
+      "Instructions"
+    ],
+    "readme": "none",
+    "emit": "both",
+  }

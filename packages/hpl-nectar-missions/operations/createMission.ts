@@ -12,11 +12,55 @@ import {
 import { missionPda } from "../utils";
 import { NectarMissions } from "../NectarMissions";
 
+/**
+ * Represents the arguments needed to create a new mission operation.
+ * @category Types
+ */
 type CreateCreateMissionCtxArgs = {
+  /**
+   * The arguments for creating the mission (defined in CreateMissionArgsSolita).
+   */
   args: CreateMissionArgsSolita;
+  /**
+   * The mission pool where the new mission will be created.
+   */
   missionPool: NectarMissions;
+  /**
+   * (Optional) The program ID associated with the mission.
+   * If not provided, the default PROGRAM_ID will be used.
+   */
   programId?: PublicKey;
 };
+
+/**
+ * Creates a new mission operation.
+ * @category Operation Builder
+ * @param honeycomb - An instance of the Honeycomb class.
+ * @param args - The arguments for creating the mission operation.
+ * @returns An object containing the operation and the address of the new mission.
+ * @example
+ * const honeycomb = new Honeycomb(...); // Initialize Honeycomb instance
+ * const missionPool = await NectarMissions.fromAddress(honeycomb.connection, missionPoolAddress);
+ * const args: CreateMissionArgsSolita = {
+ *   name: "Mission 1",
+ *   minXp: 100,
+ *   cost: {
+ *     amount: 1000,
+ *     address: "..."
+ *   },
+ *   duration: 3600, // 1 hour (in seconds)
+ *   rewards: [...],
+ *   ...
+ * };
+ * const createMissionArgs: CreateCreateMissionCtxArgs = {
+ *   args,
+ *   missionPool,
+ *   programId: myCustomProgramId // (Optional) Provide a custom program ID if needed
+ * };
+ * const { operation, mission } = createCreateMissionOperation(honeycomb, createMissionArgs);
+ * // Execute the transaction to create the mission
+ * await operation.send(confirmOptions);
+ */
 export async function createCreateMissionOperation(
   honeycomb: Honeycomb,
   args: CreateCreateMissionCtxArgs

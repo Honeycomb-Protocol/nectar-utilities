@@ -15,6 +15,10 @@ import { PROGRAM_ID as AUTHORIZATION_PROGRAM_ID } from "@metaplex-foundation/mpl
 import { NectarStaking } from "../NectarStaking";
 import { createClaimRewardsOperation } from "./claimRewards";
 
+/**
+ * Represents the arguments required to create an unstake operation.
+ * @category Types
+ */
 type CreateUnstakeOperationArgs = {
   stakingPool: NectarStaking;
   nft: StakedNft;
@@ -22,6 +26,29 @@ type CreateUnstakeOperationArgs = {
   programId?: web3.PublicKey;
 };
 
+/**
+ * Creates an unstake operation to unstake an NFT from the specified staking pool.
+ *
+ * @category Operation Builder
+ * @param honeycomb - The Honeycomb instance to use for creating the operation.
+ * @param args - The arguments required to create the unstake operation.
+ * @returns An object containing the created operation.
+ *
+ * @example
+ * // Assuming you have initialized the `honeycomb` instance and imported necessary types
+ *
+ * const stakingPool = new NectarStaking(honeycomb, "your_staking_pool_address");
+ *
+ * // Assuming you have an initialized `StakedNft` object `stakedNft`
+ *
+ * const createUnstakeArgs: CreateUnstakeOperationArgs = {
+ *   stakingPool,
+ *   nft: stakedNft,
+ * };
+ *
+ * const operationResult = await createUnstakeOperation(honeycomb, createUnstakeArgs);
+ * console.log("Created unstake operation:", operationResult.operation);
+ */
 export async function createUnstakeOperation(
   honeycomb: Honeycomb,
   args: CreateUnstakeOperationArgs
@@ -63,6 +90,7 @@ export async function createUnstakeOperation(
     }
   }
 
+  // Create the transaction instructions for claiming rewards and unstaking the NFT
   const instructions = [
     ...(await createClaimRewardsOperation(honeycomb, {
       stakingPool: honeycomb.staking(),

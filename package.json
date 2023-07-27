@@ -4,7 +4,7 @@
   "private": false,
   "scripts": {
     "prepare": "husky install",
-    "copy-packages": "copyfiles -u 1 packages/**/package.json dist/",
+    "copy-packages": "copyfiles -u 1 packages/**/package.json dist/ && copyfiles -u 1 packages/**/typedoc.json dist/",
     "pre-commit": "node ./scripts/precommit.js && git add programs/**/Cargo.toml && git add Cargo.lock",
     "pre-push": "echo LFG",
     "publish-all": "node ./scripts/publishall.js",

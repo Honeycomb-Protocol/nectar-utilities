@@ -20,12 +20,54 @@ import { participationPda } from "../utils";
 import { NectarMission } from "../NectarMissions";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
+/**
+ * Represents the arguments needed to create a participate operation.
+ * @category Types
+ */
 type CreateParticipateOperationArgs = {
+  /**
+   * The arguments for participating in a mission (defined in ParticipateArgs).
+   */
   args: ParticipateArgs;
+  /**
+   * The NectarMission to participate in.
+   */
   mission: NectarMission;
+  /**
+   * The StakedNft to use for participation.
+   */
   nft: StakedNft;
+  /**
+   * (Optional) The program ID associated with the participate operation.
+   * If not provided, the default PROGRAM_ID will be used.
+   */
   programId?: PublicKey;
 };
+
+/**
+ * Creates a new participate operation to join a mission.
+ * @category Operation Builder
+ * @param honeycomb - An instance of the Honeycomb class.
+ * @param args - The arguments for participating in the mission.
+ * @returns An object containing the participate operation.
+ * @example
+ * const honeycomb = new Honeycomb(...); // Initialize Honeycomb instance
+ * const mission = await honeycomb.mission(missionAddress);
+ * const nft = { stakingPool: stakingPoolAddress, mint: nftMintAddress, staker: stakerAddress };
+ * const args: ParticipateArgs = {
+ *   ...
+ *   // Add other required fields for ParticipateArgs
+ * };
+ * const createParticipateArgs: CreateParticipateOperationArgs = {
+ *   args,
+ *   mission,
+ *   nft,
+ *   programId: myCustomProgramId, // (Optional) Provide a custom program ID if needed
+ * };
+ * const { operation } = createParticipateOperation(honeycomb, createParticipateArgs);
+ * // Execute the participate transaction
+ * await operation.send(confirmOptions);
+ */
 export async function createParticipateOperation(
   honeycomb: Honeycomb,
   args: CreateParticipateOperationArgs

@@ -10,6 +10,10 @@ import { getNftPda, getStakerPda } from "../pdas";
 import { StakedNft } from "../types";
 import { NectarStaking } from "../NectarStaking";
 
+/**
+ * Represents the context arguments for creating the ClaimRewards operation.
+ * @category Types
+ */
 type CreateClaimRewardsOperationArgs = {
   stakingPool: NectarStaking;
   nft: StakedNft;
@@ -17,6 +21,22 @@ type CreateClaimRewardsOperationArgs = {
   programId?: web3.PublicKey;
 };
 
+/**
+ * Create an operation to claim rewards for a staked NFT.
+ * @category Operation Builder
+ * @param honeycomb - The Honeycomb instance.
+ * @param args - The context arguments for creating the ClaimRewards operation.
+ * @returns An object containing the ClaimRewards operation.
+ * @example
+ * // Usage example:
+ * const honeycomb = new Honeycomb(connection, wallet);
+ * const stakingPool = await NectarStaking.fromAddress(connection, stakingPoolAddress);
+ * const stakedNft = { mint: nftMintAddress, staker: stakerAddress };
+ * const args = { stakingPool, nft: stakedNft };
+ * const { operation } = await createClaimRewardsOperation(honeycomb, args);
+ * // Send the transaction
+ * const txSignature = await honeycomb.sendTransaction(operation);
+ */
 export async function createClaimRewardsOperation(
   honeycomb: Honeycomb,
   args: CreateClaimRewardsOperationArgs

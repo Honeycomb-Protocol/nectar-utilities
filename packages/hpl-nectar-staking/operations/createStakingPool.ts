@@ -18,6 +18,10 @@ import { createInitMultiplierOperation } from "./initMultipliers";
 import { createAddMultiplierOperation } from "./addMultiplier";
 import { HplCurrency } from "@honeycomb-protocol/currency-manager";
 
+/**
+ * Represents the context arguments for creating the CreateStakingPool operation.
+ * @category Types
+ */
 type CreateCreateStakingOperationArgs = {
   project: HoneycombProject;
   currency: HplCurrency;
@@ -29,6 +33,43 @@ type CreateCreateStakingOperationArgs = {
   programId?: web3.PublicKey;
 };
 
+/**
+ * Create an operation to create a new staking pool.
+ * @category Operation Builder
+ * @param honeycomb - The Honeycomb instance.
+ * @param args - The context arguments for creating the CreateStakingPool operation.
+ * @returns An object containing the CreateStakingPool operation and the newly created staking pool's address.
+ * @example
+ * // Usage example:
+ * const honeycomb = new Honeycomb(connection, wallet);
+ * const project = await honeycomb.getProject(projectAddress);
+ * const currency = await honeycomb.getCurrency(currencyAddress);
+ * const args = {
+ *   project,
+ *   currency,
+ *   args: {
+ *     name: "My Staking Pool",
+ *     rewardsPerDuration: 10,
+ *     rewardsDuration: 86400, // 1 day in seconds
+ *     maxRewardsDuration: 604800, // 7 days in seconds
+ *     minStakeDuration: 86400, // 1 day in seconds
+ *     cooldownDuration: 86400, // 1 day in seconds
+ *     resetStakeDuration: 2592000, // 30 days in seconds
+ *     startTime: Math.floor(Date.now() / 1000) + 60, // Start after 1 minute
+ *     endTime: Math.floor(Date.now() / 1000) + 604800, // End after 7 days
+ *   },
+ *   collections: [collection1Address, collection2Address],
+ *   creators: [creator1Address, creator2Address],
+ *   multipliers: [
+ *     { nftMint: nftMintAddress1, multiplier: 2 },
+ *     { nftMint: nftMintAddress2, multiplier: 3 },
+ *   ],
+ *   multipliersDecimals: 6,
+ * };
+ * const { operation, stakingPool } = await createCreateStakingPoolOperation(honeycomb, args);
+ * // Send the transaction
+ * const txSignature = await honeycomb.sendTransaction(operation);
+ */
 export async function createCreateStakingPoolOperation(
   honeycomb: Honeycomb,
   args: CreateCreateStakingOperationArgs

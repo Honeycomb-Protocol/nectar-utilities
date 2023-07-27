@@ -1,6 +1,6 @@
 {
   "name": "@honeycomb-protocol/nectar-staking",
-  "version": "0.0.65",
+  "version": "0.0.66",
   "private": false,
   "dependencies": {
     "@metaplex-foundation/js": "^0.18.1",
@@ -11,7 +11,7 @@
   "peerDependencies": {
     "@solana/spl-token": "^0.3.8",
     "@solana/web3.js": "^1.78.0",
-    "@honeycomb-protocol/currency-manager": "^0.0.34",
-    "@honeycomb-protocol/hive-control": "^0.1.11"
+    "@honeycomb-protocol/currency-manager": "^0.0.35",
+    "@honeycomb-protocol/hive-control": "^0.1.17"
   }
 }

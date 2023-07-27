@@ -15,10 +15,31 @@ import { getMetadataAccount_, getStakerPda } from "../pdas";
 import { Honeycomb } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
 
+/**
+ * Represents the arguments for fetching a staker.
+ * @category Types
+ */
 type FetchStakerArgs = {
   walletAddress?: web3.PublicKey;
   programId?: web3.PublicKey;
 };
+
+/**
+ * Fetches a staker from the staking pool based on the provided `walletAddress`.
+ * If no `walletAddress` is provided, it uses the `identity().address` from the Honeycomb instance.
+ *
+ * @category Helpers
+ * @param honeycomb The Honeycomb instance used for fetching staker data.
+ * @param args Optional arguments for fetching the staker.
+ * @returns A promise that resolves to the Staker instance representing the staker data.
+ *
+ * @example
+ * const honeycomb = new Honeycomb(...);
+ * const staker = await fetchStaker(honeycomb, {
+ *   walletAddress: 'YOUR_WALLET_ADDRESS',
+ *   programId: 'YOUR_PROGRAM_ID',
+ * });
+ */
 export function fetchStaker(honeycomb: Honeycomb, args: FetchStakerArgs) {
   const [staker] = getStakerPda(
     honeycomb.staking().poolAddress,
@@ -28,10 +49,30 @@ export function fetchStaker(honeycomb: Honeycomb, args: FetchStakerArgs) {
   return Staker.fromAccountAddress(honeycomb.connection, staker);
 }
 
+/**
+ * Represents the arguments for fetching staked NFTs.
+ * @category Types
+ */
 type FetchStakedNftsArgs = {
   walletAddress?: web3.PublicKey;
   programId?: web3.PublicKey;
 };
+
+/**
+ * Fetches staked NFTs for a given `walletAddress` from the staking pool.
+ *
+ * @category Helpers
+ * @param honeycomb The Honeycomb instance used for fetching staked NFTs.
+ * @param args Optional arguments for fetching staked NFTs.
+ * @returns A promise that resolves to an array of StakedNft instances representing the staked NFTs.
+ *
+ * @example
+ * const honeycomb = new Honeycomb(...);
+ * const stakedNFTs = await fetchStakedNfts(honeycomb, {
+ *   walletAddress: 'YOUR_WALLET_ADDRESS',
+ *   programId: 'YOUR_PROGRAM_ID',
+ * });
+ */
 export async function fetchStakedNfts(
   honeycomb: Honeycomb,
   args?: FetchStakedNftsArgs
@@ -59,11 +100,32 @@ export async function fetchStakedNfts(
   return metaplexOut;
 }
 
+/**
+ * Represents the arguments for fetching available NFTs.
+ * @category Types
+ */
 type FetchAvailableNfts = {
   walletAddress?: web3.PublicKey;
   allowedMints?: web3.PublicKey[];
   programId?: web3.PublicKey;
 };
+
+/**
+ * Fetches available NFTs for a given `walletAddress`.
+ *
+ * @category Helpers
+ * @param honeycomb The Honeycomb instance used for fetching available NFTs.
+ * @param args Optional arguments for fetching available NFTs.
+ * @returns A promise that resolves to an array of AvailableNft instances representing the available NFTs.
+ *
+ * @example
+ * const honeycomb = new Honeycomb(...);
+ * const availableNFTs = await fetchAvailableNfts(honeycomb, {
+ *   walletAddress: 'YOUR_WALLET_ADDRESS',
+ *   allowedMints: ['MINT_ADDRESS_1', 'MINT_ADDRESS_2'],
+ *   programId: 'YOUR_PROGRAM_ID',
+ * });
+ */
 export async function fetchAvailableNfts(
   honeycomb: Honeycomb,
   args?: FetchAvailableNfts
@@ -207,11 +269,30 @@ export async function fetchAvailableNfts(
   return filteredNfts;
 }
 
+/**
+ * Represents the arguments for fetching rewards for a staker's NFT.
+ * @category Types
+ */
 type FetchRewardsArgs = {
   staker: Staker;
   nft: StakedNft;
   till?: Date;
 };
+
+/**
+ * Fetches the rewards and multipliers for a given staker's NFT.
+ *
+ * @category Helpers
+ * @param staking The NectarStaking instance used for fetching rewards and multipliers.
+ * @param args Arguments for fetching rewards for a staker's NFT.
+ * @returns A promise that resolves to an object containing the rewards and multipliers for the NFT.
+ *
+ * @example
+ * const staking = new NectarStaking(...);
+ * const staker = ... // Get the staker instance
+ * const nft = ... // Get the staked NFT instance
+ * const rewards = await fetchRewards(staking, { staker, nft });
+ */
 export async function fetchRewards(
   staking: NectarStaking,
   args: FetchRewardsArgs

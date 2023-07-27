@@ -14,14 +14,56 @@ import {
 import { missionPoolPda } from "../utils";
 import { createUpdateMissionPoolOperation } from "./updateMissionPool";
 
+/**
+ * Represents the arguments needed to create a new mission pool operation.
+ * @category Types
+ */
 type CreateCreateMissionPoolOperationArgs = {
+  /**
+   * The arguments for creating the mission pool (defined in CreateMissionPoolArgs).
+   * You can provide additional fields like collections and creators.
+   */
   args: CreateMissionPoolArgs & {
     collections?: PublicKey[];
     creators?: PublicKey[];
   };
+  /**
+   * The HoneycombProject where the new mission pool will be created.
+   */
   project: HoneycombProject;
+  /**
+   * (Optional) The program ID associated with the mission pool.
+   * If not provided, the default PROGRAM_ID will be used.
+   */
   programId?: PublicKey;
 };
+
+/**
+ * Creates a new mission pool operation.
+ * @category Operation Builder
+ * @param honeycomb - An instance of the Honeycomb class.
+ * @param args - The arguments for creating the mission pool operation.
+ * @returns An object containing the operation and the address of the new mission pool.
+ * @example
+ * const honeycomb = new Honeycomb(...); // Initialize Honeycomb instance
+ * const project = await honeycomb.project(projectAddress);
+ * const args: CreateMissionPoolArgs = {
+ *   name: "Mission Pool 1",
+ *   description: "This is a mission pool.",
+ *   ...
+ *   // Add other required fields for CreateMissionPoolArgs
+ *   collections: [collectionPublicKey1, collectionPublicKey2],
+ *   creators: [creatorPublicKey1, creatorPublicKey2],
+ * };
+ * const createMissionPoolArgs: CreateCreateMissionPoolOperationArgs = {
+ *   args,
+ *   project,
+ *   programId: myCustomProgramId, // (Optional) Provide a custom program ID if needed
+ * };
+ * const { operation, missionPool } = createCreateMissionPoolOperation(honeycomb, createMissionPoolArgs);
+ * // Execute the transaction to create the mission pool
+ * await operation.send(confirmOptions);
+ */
 export async function createCreateMissionPoolOperation(
   honeycomb: Honeycomb,
   args: CreateCreateMissionPoolOperationArgs

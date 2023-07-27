@@ -3,6 +3,10 @@ import * as web3 from "@solana/web3.js";
 import { NFT } from "./generated";
 import { TokenRecord } from "@metaplex-foundation/mpl-token-metadata";
 
+/**
+ * Represents the information about a token account.
+ * @category Types
+ */
 export type TokenAccountInfo = {
   tokenMint: web3.PublicKey;
   owner: string;
@@ -15,5 +19,15 @@ export type TokenAccountInfo = {
   };
 };
 
+/**
+ * Represents a staked NFT.
+ * @category Types
+ */
 export type StakedNft = Metadata & NFT;
-export type AvailableNft = Metadata & TokenAccountInfo & { tokenRecord?: TokenRecord };
+
+/**
+ * Represents the available NFT.
+ * @category Types
+ */
+export type AvailableNft = Metadata &
+  TokenAccountInfo & { tokenRecord?: TokenRecord };
