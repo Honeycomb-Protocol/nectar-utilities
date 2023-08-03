@@ -383,7 +383,7 @@ pub struct Unstake<'info> {
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// NFT state account
-    #[account(mut, has_one = staking_pool, has_one = staker, close = wallet)]
+    #[account(mut, has_one = staking_pool, has_one = staker)]
     pub nft: Box<Account<'info, NFT>>,
 
     /// Mint address of the NFT
