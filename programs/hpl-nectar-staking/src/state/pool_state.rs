@@ -1,6 +1,8 @@
 use {anchor_lang::prelude::*, hpl_utils::traits::*};
 
 /// The NFT collection staking_pool state account
+/// PDA: ['staking_pool', project, key]
+/// Category: staking_pool_state
 #[account]
 pub struct StakingPool {
     pub bump: u8,

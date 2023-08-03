@@ -1,6 +1,8 @@
 use {anchor_lang::prelude::*, hpl_utils::traits::*};
 
 /// The staking_pool multiplier state account
+/// PDA: ['staker', wallet, staking_pool]
+/// Category: staker_state
 #[account]
 pub struct Staker {
     pub bump: u8,

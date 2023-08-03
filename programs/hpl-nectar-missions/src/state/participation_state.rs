@@ -1,6 +1,8 @@
 use {super::RewardType, anchor_lang::prelude::*, hpl_utils::Default};
 
 /// Participation state account
+/// PDA: ['participation', nft]
+/// Category: participation_state
 #[account]
 #[derive(Default, Debug)]
 pub struct Participation {

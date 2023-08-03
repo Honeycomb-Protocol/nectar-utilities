@@ -1,6 +1,8 @@
 use {anchor_lang::prelude::*, hpl_utils::traits::*};
 
 /// The staking account linked to the NFT
+/// PDA: ['nft', mint, staking_pool]
+/// Category: nft_state
 #[account]
 #[derive(Debug)]
 pub struct NFT {

@@ -1,6 +1,8 @@
 use {anchor_lang::prelude::*, hpl_utils::Default};
 
 /// MissionPool state account
+/// PDA: ['mission_pool', project, name]
+/// Category: pool_state
 #[account]
 pub struct MissionPool {
     pub bump: u8,

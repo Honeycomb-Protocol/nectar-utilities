@@ -1,6 +1,8 @@
 use {anchor_lang::prelude::*, hpl_utils::Default};
 
 /// Mission account holding the details about mission
+/// PDA: ['mission', project, name]
+/// Category: mission_state
 #[account]
 #[derive(Debug)]
 pub struct Mission {
