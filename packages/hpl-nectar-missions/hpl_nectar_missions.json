@@ -365,6 +365,11 @@
           "name": "currencyManagerProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -555,6 +560,11 @@
           "name": "clock",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": []
@@ -564,7 +574,9 @@
     {
       "name": "Mission",
       "docs": [
-        "Mission account holding the details about mission"
+        "Mission account holding the details about mission",
+        "PDA: ['mission', project, name]",
+        "Category: mission_state"
       ],
       "type": {
         "kind": "struct",
@@ -612,7 +624,9 @@
     {
       "name": "Participation",
       "docs": [
-        "Participation state account"
+        "Participation state account",
+        "PDA: ['participation', nft]",
+        "Category: participation_state"
       ],
       "type": {
         "kind": "struct",
@@ -659,7 +673,9 @@
     {
       "name": "MissionPool",
       "docs": [
-        "MissionPool state account"
+        "MissionPool state account",
+        "PDA: ['mission_pool', project, name]",
+        "Category: pool_state"
       ],
       "type": {
         "kind": "struct",
@@ -862,6 +878,65 @@
           {
             "name": "collected",
             "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Event",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NewParticipation",
+            "fields": [
+              {
+                "name": "address",
+                "type": "publicKey"
+              },
+              {
+                "name": "info",
+                "type": "bytes"
+              },
+              {
+                "name": "timestamp",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "CollectParticipationReward",
+            "fields": [
+              {
+                "name": "address",
+                "type": "publicKey"
+              },
+              {
+                "name": "index",
+                "type": "u8"
+              },
+              {
+                "name": "info",
+                "type": "bytes"
+              },
+              {
+                "name": "timestamp",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "RecallParticipation",
+            "fields": [
+              {
+                "name": "address",
+                "type": "publicKey"
+              },
+              {
+                "name": "timestamp",
+                "type": "i64"
+              }
+            ]
           }
         ]
       }

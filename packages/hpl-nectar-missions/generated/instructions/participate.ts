@@ -56,6 +56,7 @@ export const participateStruct = new beet.FixableBeetArgsStruct<
  * @property [] instructionsSysvar
  * @property [] clock
  * @property [] currencyManagerProgram
+ * @property [] logWrapper
  * @category Instructions
  * @category Participate
  * @category generated
@@ -82,6 +83,7 @@ export type ParticipateInstructionAccounts = {
   systemProgram?: web3.PublicKey
   tokenProgram?: web3.PublicKey
   currencyManagerProgram: web3.PublicKey
+  logWrapper: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -211,6 +213,11 @@ export function createParticipateInstruction(
     },
     {
       pubkey: accounts.currencyManagerProgram,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.logWrapper,
       isWritable: false,
       isSigner: false,
     },

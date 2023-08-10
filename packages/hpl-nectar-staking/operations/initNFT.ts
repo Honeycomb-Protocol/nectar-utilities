@@ -3,6 +3,7 @@ import { createInitNftInstruction, PROGRAM_ID } from "../generated";
 import { getMetadataAccount_, getNftPda } from "../pdas";
 import { VAULT, Operation, Honeycomb } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
+import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
 
 /**
  * Represents the arguments required to create an initialization NFT operation.
@@ -60,6 +61,8 @@ export async function createInitNFTOperation(
         wallet: honeycomb.identity().address,
         delegateAuthority:
           honeycomb.identity().delegateAuthority()?.address || programId,
+        logWrapper: SPL_NOOP_PROGRAM_ID,
+        clock: web3.SYSVAR_CLOCK_PUBKEY,
       },
       programId
     ),

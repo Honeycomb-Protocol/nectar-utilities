@@ -1,6 +1,6 @@
 use {
     crate::state::*, anchor_lang::prelude::*, hpl_hive_control::state::Project,
-    hpl_utils::traits::Default,
+    hpl_utils::traits::Default, spl_account_compression::Noop,
 };
 
 /// Accounts used in initialize staker instruction
@@ -29,6 +29,10 @@ pub struct InitStaker<'info> {
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+    /// SPL NO OP PROGRAM
+    pub log_wrapper: Program<'info, Noop>,
+    /// NATIVE CLOCK SYSVAR
+    pub clock: Sysvar<'info, Clock>,
 
     // HIVE CONTROL
     #[account()]
@@ -45,5 +49,8 @@ pub fn init_staker(ctx: Context<InitStaker>) -> Result<()> {
     staker.bump = ctx.bumps["staker"];
     staker.staking_pool = ctx.accounts.staking_pool.key();
     staker.wallet = ctx.accounts.wallet.key();
+
+    Event::new_staker(staker.key(), &staker, &ctx.accounts.clock)
+        .wrap(ctx.accounts.log_wrapper.to_account_info())?;
     Ok(())
 }

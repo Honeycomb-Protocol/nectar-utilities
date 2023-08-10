@@ -87,6 +87,7 @@ pub struct Participate<'info> {
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
     pub currency_manager_program: Program<'info, HplCurrencyManager>,
+    pub log_wrapper: Program<'info, Noop>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
@@ -239,6 +240,10 @@ pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<(
 
     // msg!("JSON Participation: {:?}", participation);
 
+    let event =
+        events::Event::new_participation(participation.key(), &participation, &ctx.accounts.clock);
+    event.wrap(ctx.accounts.log_wrapper.to_account_info())?;
+
     Ok(())
 }
 
@@ -306,12 +311,16 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
         return Err(ErrorCode::NotEnded.into());
     }
 
+    let participation_key = ctx.accounts.participation.key();
+
+    let mut reward_serial_no: u8 = 0;
     let reward = ctx
         .accounts
         .participation
         .rewards
         .iter_mut()
         .find(|reward| {
+            reward_serial_no += 1;
             if ctx.accounts.currency.is_some() {
                 reward.reward_type
                     == RewardType::Currency {
@@ -468,6 +477,14 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
         }
     };
 
+    let event = events::Event::collect_participation_reward(
+        participation_key,
+        reward_serial_no - 1,
+        &reward,
+        &ctx.accounts.clock,
+    );
+    event.wrap(ctx.accounts.log_wrapper.to_account_info())?;
+
     // msg!("JSON Participation: {:?}", ctx.accounts.participation);
     res
 }
@@ -498,6 +515,7 @@ pub struct Recall<'info> {
     #[account(mut)]
     pub vault: AccountInfo<'info>,
     pub clock: Sysvar<'info, Clock>,
+    pub log_wrapper: Program<'info, Noop>,
 }
 
 /// recall from a mission
@@ -514,6 +532,9 @@ pub fn recall(ctx: Context<Recall>) -> Result<()> {
     }
 
     participation.is_recalled = true;
+
+    let event = events::Event::recall_participation(participation.key(), &ctx.accounts.clock);
+    event.wrap(ctx.accounts.log_wrapper.to_account_info())?;
 
     // msg!("JSON Participation: {:?}", participation);
     Ok(())

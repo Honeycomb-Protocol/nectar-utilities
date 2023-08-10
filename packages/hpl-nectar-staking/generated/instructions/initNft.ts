@@ -27,6 +27,8 @@ export const initNftStruct = new beet.BeetArgsStruct<{
  * @property [_writable_] nftMint
  * @property [_writable_] nftMetadata
  * @property [_writable_, **signer**] wallet
+ * @property [] logWrapper
+ * @property [] clock
  * @property [] project
  * @property [] delegateAuthority (optional)
  * @property [_writable_] vault
@@ -41,6 +43,8 @@ export type InitNftInstructionAccounts = {
   nftMetadata: web3.PublicKey
   wallet: web3.PublicKey
   systemProgram?: web3.PublicKey
+  logWrapper: web3.PublicKey
+  clock: web3.PublicKey
   project: web3.PublicKey
   delegateAuthority?: web3.PublicKey
   vault: web3.PublicKey
@@ -99,6 +103,16 @@ export function createInitNftInstruction(
     },
     {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.logWrapper,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.clock,
       isWritable: false,
       isSigner: false,
     },

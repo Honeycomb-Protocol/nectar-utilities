@@ -11,6 +11,7 @@ use {
         state::{Currency, HolderAccount},
     },
     hpl_hive_control::state::{DelegateAuthority, Project},
+    spl_account_compression::Noop,
 };
 
 /// Accounts used in withdraw rewards instruction
@@ -251,6 +252,8 @@ pub struct ClaimRewards<'info> {
     /// NATIVE TOKEN PROGRAM
     pub token_program: Program<'info, Token>,
 
+    /// SPL NO OP PROGRAM
+    pub log_wrapper: Program<'info, Noop>,
     /// SYSVAR CLOCK
     pub clock: Sysvar<'info, Clock>,
 
@@ -388,5 +391,15 @@ pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
         ),
         rewards_amount,
     )?;
+
+    Event::claim_rewards(
+        nft.key(),
+        &nft,
+        ctx.accounts.staker.key(),
+        rewards_amount,
+        &ctx.accounts.clock,
+    )
+    .wrap(ctx.accounts.log_wrapper.to_account_info())?;
+
     Ok(())
 }

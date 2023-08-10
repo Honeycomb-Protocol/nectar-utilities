@@ -25,6 +25,8 @@ export const initStakerStruct = new beet.BeetArgsStruct<{
  * @property [] stakingPool
  * @property [_writable_] staker
  * @property [_writable_, **signer**] wallet
+ * @property [] logWrapper
+ * @property [] clock
  * @property [] project
  * @property [_writable_] vault
  * @category Instructions
@@ -36,6 +38,8 @@ export type InitStakerInstructionAccounts = {
   staker: web3.PublicKey
   wallet: web3.PublicKey
   systemProgram?: web3.PublicKey
+  logWrapper: web3.PublicKey
+  clock: web3.PublicKey
   project: web3.PublicKey
   vault: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
@@ -78,6 +82,16 @@ export function createInitStakerInstruction(
     },
     {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.logWrapper,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.clock,
       isWritable: false,
       isSigner: false,
     },

@@ -1,5 +1,5 @@
 {
-  "version": "0.0.65",
+  "version": "0.0.68",
   "name": "hpl_nectar_staking",
   "instructions": [
     {
@@ -388,6 +388,22 @@
           ]
         },
         {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL NO OP PROGRAM"
+          ]
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE CLOCK SYSVAR"
+          ]
+        },
+        {
           "name": "project",
           "isMut": false,
           "isSigner": false
@@ -439,6 +455,22 @@
           "isSigner": false,
           "docs": [
             "NATIVE SYSTEM PROGRAM"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL NO OP PROGRAM"
+          ]
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE CLOCK SYSVAR"
           ]
         },
         {
@@ -578,6 +610,14 @@
           "isSigner": false,
           "docs": [
             "METAPLEX TOKEN METADATA PROGRAM"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL NO OP PROGRAM"
           ]
         },
         {
@@ -761,6 +801,14 @@
           "isSigner": false,
           "docs": [
             "NATIVE Instructions SYSVAR"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL NO OP PROGRAM"
           ]
         },
         {
@@ -988,6 +1036,14 @@
           "isSigner": false,
           "docs": [
             "NATIVE TOKEN PROGRAM"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL NO OP PROGRAM"
           ]
         },
         {
@@ -1295,7 +1351,9 @@
     {
       "name": "Multipliers",
       "docs": [
-        "The staking_pool multiplier state account"
+        "The staking_pool multiplier state account",
+        "PDA: ['multipliers', staking_pool]",
+        "Category: multiplier_state"
       ],
       "type": {
         "kind": "struct",
@@ -1368,7 +1426,9 @@
     {
       "name": "NFT",
       "docs": [
-        "The staking account linked to the NFT"
+        "The staking account linked to the NFT",
+        "PDA: ['nft', mint, staking_pool]",
+        "Category: nft_state"
       ],
       "type": {
         "kind": "struct",
@@ -1446,7 +1506,9 @@
     {
       "name": "StakingPool",
       "docs": [
-        "The NFT collection staking_pool state account"
+        "The NFT collection staking_pool state account",
+        "PDA: ['staking_pool', project, key]",
+        "Category: staking_pool_state"
       ],
       "type": {
         "kind": "struct",
@@ -1597,7 +1659,9 @@
     {
       "name": "Staker",
       "docs": [
-        "The staking_pool multiplier state account"
+        "The staking_pool multiplier state account",
+        "PDA: ['staker', wallet, staking_pool]",
+        "Category: staker_state"
       ],
       "type": {
         "kind": "struct",
@@ -1820,6 +1884,123 @@
             "type": {
               "defined": "MultiplierType"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Event",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NewNft",
+            "fields": [
+              {
+                "name": "address",
+                "type": "publicKey"
+              },
+              {
+                "name": "info",
+                "type": "bytes"
+              },
+              {
+                "name": "timestamp",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "NewStaker",
+            "fields": [
+              {
+                "name": "address",
+                "type": "publicKey"
+              },
+              {
+                "name": "info",
+                "type": "bytes"
+              },
+              {
+                "name": "timestamp",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "Stake",
+            "fields": [
+              {
+                "name": "nft_address",
+                "type": "publicKey"
+              },
+              {
+                "name": "nft_info",
+                "type": "bytes"
+              },
+              {
+                "name": "staker_address",
+                "type": "publicKey"
+              },
+              {
+                "name": "staker_info",
+                "type": "bytes"
+              },
+              {
+                "name": "timestamp",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "Unstake",
+            "fields": [
+              {
+                "name": "nft_address",
+                "type": "publicKey"
+              },
+              {
+                "name": "nft_info",
+                "type": "bytes"
+              },
+              {
+                "name": "staker_address",
+                "type": "publicKey"
+              },
+              {
+                "name": "staker_info",
+                "type": "bytes"
+              },
+              {
+                "name": "timestamp",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "ClaimRewards",
+            "fields": [
+              {
+                "name": "nft_address",
+                "type": "publicKey"
+              },
+              {
+                "name": "nft_info",
+                "type": "bytes"
+              },
+              {
+                "name": "staker_address",
+                "type": "publicKey"
+              },
+              {
+                "name": "amount",
+                "type": "u64"
+              },
+              {
+                "name": "timestamp",
+                "type": "i64"
+              }
+            ]
           }
         ]
       }

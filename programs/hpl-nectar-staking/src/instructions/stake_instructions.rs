@@ -11,6 +11,7 @@ use {
         instruction::{DelegateArgs, RevokeArgs},
         state::{Metadata, TokenMetadataAccount},
     },
+    spl_account_compression::Noop,
 };
 
 /// Accounts used in init NFT instruction
@@ -48,6 +49,10 @@ pub struct InitNFT<'info> {
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+    /// SPL NO OP PROGRAM
+    pub log_wrapper: Program<'info, Noop>,
+    /// NATIVE CLOCK SYSVAR
+    pub clock: Sysvar<'info, Clock>,
 
     // HIVE CONTROL
     #[account()]
@@ -117,6 +122,9 @@ pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
         .collect::<Vec<_>>();
 
     let validation_out = hpl_utils::validate_collection_creator(metadata, &collections, &creators);
+
+    Event::new_nft(nft.key(), &nft, &ctx.accounts.clock)
+        .wrap(ctx.accounts.log_wrapper.to_account_info())?;
 
     match validation_out {
         Ok(x) => {
@@ -221,6 +229,8 @@ pub struct Stake<'info> {
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(address = mpl_token_metadata::ID)]
     pub token_metadata_program: AccountInfo<'info>,
+    /// SPL NO OP PROGRAM
+    pub log_wrapper: Program<'info, Noop>,
 
     /// NATIVE CLOCK SYSVAR
     pub clock: Sysvar<'info, Clock>,
@@ -371,6 +381,9 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
     }
     staker.total_staked += 1;
 
+    Event::stake(nft.key(), &nft, staker.key(), &staker, &ctx.accounts.clock)
+        .wrap(ctx.accounts.log_wrapper.to_account_info())?;
+
     // msg!("JSON NFT: {:?}", nft);
     Ok(())
 }
@@ -452,6 +465,8 @@ pub struct Unstake<'info> {
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(address = solana_program::sysvar::instructions::ID)]
     pub sysvar_instructions: AccountInfo<'info>,
+    /// SPL NO OP PROGRAM
+    pub log_wrapper: Program<'info, Noop>,
 
     // HIVE CONTROL
     #[account()]
@@ -595,6 +610,8 @@ pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
         }
     }
 
+    Event::stake(nft.key(), &nft, staker.key(), &staker, &ctx.accounts.clock)
+        .wrap(ctx.accounts.log_wrapper.to_account_info())?;
     // msg!("JSON NFT: {:?}", nft);
     Ok(())
 }

@@ -239,6 +239,7 @@ export async function creatRecallOperation(
           wallet: honeycomb.identity().address,
           vault: VAULT,
           clock: SYSVAR_CLOCK_PUBKEY,
+          logWrapper: SPL_NOOP_PROGRAM_ID,
         },
         programId
       ),

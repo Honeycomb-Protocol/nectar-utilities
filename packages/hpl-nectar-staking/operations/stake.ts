@@ -15,6 +15,7 @@ import { PROGRAM_ID as AUTHORIZATION_PROGRAM_ID } from "@metaplex-foundation/mpl
 import { NectarStaking } from "../NectarStaking";
 import { createInitNFTOperation } from "./initNFT";
 import { createInitStakerOperation } from "./initStaker";
+import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
 
 /**
  * Represents the arguments required to create a stake operation.
@@ -139,6 +140,7 @@ export async function createStakeOperation(
           ? AUTHORIZATION_PROGRAM_ID
           : programId,
         authorizationRules: args.nft.programmableConfig?.ruleSet || programId,
+        logWrapper: SPL_NOOP_PROGRAM_ID,
       },
       programId
     ),

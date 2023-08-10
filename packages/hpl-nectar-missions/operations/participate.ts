@@ -19,6 +19,7 @@ import {
 import { participationPda } from "../utils";
 import { NectarMission } from "../NectarMissions";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
 
 /**
  * Represents the arguments needed to create a participate operation.
@@ -117,6 +118,7 @@ export async function createParticipateOperation(
         instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
         clock: SYSVAR_CLOCK_PUBKEY,
         currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM,
+        logWrapper: SPL_NOOP_PROGRAM_ID,
       },
       {
         args: args.args,

@@ -1,5 +1,6 @@
 export * from './AddMultiplierArgs'
 export * from './CreateStakingPoolArgs'
+export * from './Event'
 export * from './InitMultipliersArgs'
 export * from './LockType'
 export * from './MigrateArgs'

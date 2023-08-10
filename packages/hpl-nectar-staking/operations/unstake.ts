@@ -14,6 +14,7 @@ import { VAULT, Honeycomb, Operation } from "@honeycomb-protocol/hive-control";
 import { PROGRAM_ID as AUTHORIZATION_PROGRAM_ID } from "@metaplex-foundation/mpl-token-auth-rules";
 import { NectarStaking } from "../NectarStaking";
 import { createClaimRewardsOperation } from "./claimRewards";
+import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
 
 /**
  * Represents the arguments required to create an unstake operation.
@@ -121,6 +122,7 @@ export async function createUnstakeOperation(
           ? AUTHORIZATION_PROGRAM_ID
           : programId,
         authorizationRules: args.nft.programmableConfig?.ruleSet || programId,
+        logWrapper: SPL_NOOP_PROGRAM_ID,
       },
       programId
     ),

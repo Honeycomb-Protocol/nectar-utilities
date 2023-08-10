@@ -26,7 +26,8 @@ solana-program = "=1.14.17"
 winnow = "=0.4.1"
 toml_datetime = "=0.6.1"
 hpl-utils = "0.1.7"
-hpl-hive-control = { version="0.1.17", features = ["cpi"] }
-hpl-currency-manager = { version="0.0.37", features = ["cpi"] }
+hpl-compression = "0.1.3"
+hpl-hive-control = { version="0.1.21", features = ["cpi"] }
+hpl-currency-manager = { version="0.0.38", features = ["cpi"] }
 hpl-nectar-staking = { version="0.0.68", path="../hpl-nectar-staking", features = ["cpi"] }
 spl-account-compression = { version="0.1.8", features=["cpi"] }

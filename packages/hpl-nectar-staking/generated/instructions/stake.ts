@@ -36,6 +36,7 @@ export const stakeStruct = new beet.BeetArgsStruct<{
  * @property [_writable_, **signer**] wallet
  * @property [] associatedTokenProgram
  * @property [] tokenMetadataProgram
+ * @property [] logWrapper
  * @property [] clock
  * @property [] sysvarInstructions
  * @property [] project
@@ -62,6 +63,7 @@ export type StakeInstructionAccounts = {
   tokenProgram?: web3.PublicKey
   associatedTokenProgram: web3.PublicKey
   tokenMetadataProgram: web3.PublicKey
+  logWrapper: web3.PublicKey
   clock: web3.PublicKey
   sysvarInstructions: web3.PublicKey
   project: web3.PublicKey
@@ -186,6 +188,11 @@ export function createStakeInstruction(
   })
   keys.push({
     pubkey: accounts.tokenMetadataProgram,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.logWrapper,
     isWritable: false,
     isSigner: false,
   })
