@@ -17,7 +17,7 @@ import {
   NectarStaking,
   findProjectStakingPools,
 } from "../packages/hpl-nectar-staking";
-import { prepare, tryKeyOrGenerate, wait } from "./prepare";
+import { createTree, mintOneCNFT, prepare, tryKeyOrGenerate, wait } from "./prepare";
 import {
   MerkleTree,
   NectarMissions,
@@ -68,7 +68,7 @@ describe("Nectar Utilities", () => {
     console.log("Event", event.read(buffer, 0));
   });
 
-  it("Temp", async () => {
+  it.skip("Temp", async () => {
     const connection = new web3.Connection(
       "https://rpc.hellomoon.io/40f1e769-beb0-4a00-8f11-e9f19e1a576d"
       // "https://lingering-newest-sheet.solana-devnet.quiknode.pro/fb6e6465df3955a06fd5ddec2e5b003896f56adb/"
@@ -966,10 +966,14 @@ describe("Nectar Utilities", () => {
       honeycomb.connection.rpcEndpoint
     );
 
+    const treeKeypair = web3.Keypair.generate();
+
     expect(balance).toBeGreaterThanOrEqual(web3.LAMPORTS_PER_SOL * 0.1);
 
     metaplex = new Metaplex(honeycomb.connection);
     metaplex.use(keypairIdentity(tryKeyOrGenerate()[0]));
+
+    await createTree(treeKeypair);
 
     let out = await metaplex.nfts().create({
       name: "Collection",
@@ -979,7 +983,19 @@ describe("Nectar Utilities", () => {
       isCollection: true,
       collectionIsSized: true,
     });
+
     collection = out.nft;
+
+
+    await mintOneCNFT({
+      dropWalletKey: honeycomb.identity().address.toString(),
+      NftName: "Test",
+      NftSymbol: "TEST",
+      metaDataUri: "https://arweave.net/WhyRt90kgI7f0EG9GPfB8TIBTIBgX3X12QaF9ObFerE",
+      tree: treeKeypair,
+      collection: collection.mint.address,
+    });
+
 
     for (let i = 1; i <= totalNfts; i++) {
       out = await metaplex.nfts().create({
