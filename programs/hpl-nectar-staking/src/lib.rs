@@ -110,6 +110,21 @@ pub mod hpl_nectar_staking {
         instructions::init_nft(ctx)
     }
 
+    pub fn init_cnft(ctx: Context<InitCNFT>, args: CNFTArgs) -> Result<()> {
+        hpl_hive_control::instructions::platform_gate_fn(
+            hpl_hive_control::constants::ACTIONS.public_low,
+            None,
+            &ctx.accounts.project,
+            ctx.accounts.wallet.key(),
+            ctx.accounts.wallet.to_account_info(),
+            ctx.accounts.vault.to_account_info(),
+            &ctx.accounts.delegate_authority,
+            ctx.accounts.system_program.to_account_info(),
+        )?;
+
+        instructions::init_cnft(ctx, args)
+    }
+
     pub fn init_staker(ctx: Context<InitStaker>) -> Result<()> {
         hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.public_low,
@@ -153,6 +168,36 @@ pub mod hpl_nectar_staking {
         )?;
 
         instructions::unstake(ctx)
+    }
+
+    pub fn stake_cnft(ctx: Context<StakeCNFT>, args: CNFTArgs) -> Result<()> {
+        hpl_hive_control::instructions::platform_gate_fn(
+            hpl_hive_control::constants::ACTIONS.public_low,
+            None,
+            &ctx.accounts.project,
+            ctx.accounts.wallet.key(),
+            ctx.accounts.wallet.to_account_info(),
+            ctx.accounts.vault.to_account_info(),
+            &None,
+            ctx.accounts.system_program.to_account_info(),
+        )?;
+
+        instructions::stake_cnft(ctx, args)
+    }
+
+    pub fn unstake_cnft(ctx: Context<UnstakeCNFT>, args: CNFTArgs) -> Result<()> {
+        hpl_hive_control::instructions::platform_gate_fn(
+            hpl_hive_control::constants::ACTIONS.public_low,
+            None,
+            &ctx.accounts.project,
+            ctx.accounts.wallet.key(),
+            ctx.accounts.wallet.to_account_info(),
+            ctx.accounts.vault.to_account_info(),
+            &None,
+            ctx.accounts.system_program.to_account_info(),
+        )?;
+
+        instructions::unstake_cnft(ctx, args)
     }
 
     pub fn withdraw_rewards(ctx: Context<WithdrawRewards>, amount: u64) -> Result<()> {

@@ -4,6 +4,7 @@ use {anchor_lang::prelude::*, hpl_utils::traits::*};
 /// PDA: ['staker', wallet, staking_pool]
 /// Category: staker_state
 #[account]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Staker {
     pub bump: u8,
 

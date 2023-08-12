@@ -118,6 +118,10 @@ pub struct UpdateStakingPool<'info> {
     /// CHECK: This is not dangerous because we don't read or write from this account
     pub creator: Option<AccountInfo<'info>>,
 
+    /// Merkle tree address for cNFTs
+    /// CHECK: This account is modified in the downstream program
+    pub merkle_tree: Option<AccountInfo<'info>>,
+
     /// The wallet that holds authority for this action
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -233,6 +237,17 @@ pub fn update_staking_pool(
             &ctx.accounts.system_program,
         )?;
         staking_pool.creators.push(index as u8);
+    }
+
+    if let Some(merkle_tree) = &ctx.accounts.merkle_tree {
+        hpl_utils::reallocate(
+            32,
+            staking_pool.to_account_info(),
+            ctx.accounts.payer.to_account_info(),
+            &ctx.accounts.rent,
+            &ctx.accounts.system_program,
+        )?;
+        staking_pool.merkle_trees.push(merkle_tree.key());
     }
 
     Ok(())
