@@ -423,6 +423,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                             rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
                             system_program: ctx.accounts.system_program.to_account_info(),
                             log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+                            clock: ctx.accounts.clock.to_account_info(),
                             compression_program: ctx.accounts.compression_program.to_account_info(),
                             vault: ctx.accounts.vault.to_account_info(),
                             instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
@@ -452,6 +453,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                                     rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
                                     system_program: ctx.accounts.system_program.to_account_info(),
                                     log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+                                    clock: ctx.accounts.clock.to_account_info(),
                                     compression_program: ctx
                                         .accounts
                                         .compression_program

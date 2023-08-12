@@ -8,6 +8,7 @@ use {
         state::{DelegateAuthority, Project},
     },
     hpl_utils::traits::Default,
+    spl_account_compression::Noop,
 };
 
 /// Accounts used in create staking_pool instruction
@@ -52,6 +53,12 @@ pub struct CreateStakingPool<'info> {
 
     /// SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    /// SPL NO OP PROGRAM
+    pub log_wrapper: Program<'info, Noop>,
+
+    /// SYSVAR CLOCK
+    pub clock_sysvar: Sysvar<'info, Clock>,
 
     /// RENT SYSVAR
     pub rent_sysvar: Sysvar<'info, Rent>,

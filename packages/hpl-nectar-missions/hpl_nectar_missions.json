@@ -1,5 +1,5 @@
 {
-  "version": "0.0.34",
+  "version": "0.0.36",
   "name": "hpl_nectar_missions",
   "instructions": [
     {
@@ -55,6 +55,16 @@
           "docs": [
             "SYSTEM PROGRAM"
           ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clockSysvar",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "rentSysvar",

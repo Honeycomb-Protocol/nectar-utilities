@@ -17,6 +17,7 @@ import { createUpdatePoolOperation } from "./updateStakingPool";
 import { createInitMultiplierOperation } from "./initMultipliers";
 import { createAddMultiplierOperation } from "./addMultiplier";
 import { HplCurrency } from "@honeycomb-protocol/currency-manager";
+import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
 
 /**
  * Represents the context arguments for creating the CreateStakingPool operation.
@@ -92,6 +93,8 @@ export async function createCreateStakingPoolOperation(
         authority: honeycomb.identity().address,
         payer: honeycomb.identity().address,
         hiveControl: HIVECONTROL_PROGRAM_ID,
+        logWrapper: SPL_NOOP_PROGRAM_ID,
+        clockSysvar: web3.SYSVAR_CLOCK_PUBKEY,
         rentSysvar: web3.SYSVAR_RENT_PUBKEY,
       },
       { args: args.args },

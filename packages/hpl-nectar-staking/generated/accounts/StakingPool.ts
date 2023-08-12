@@ -36,6 +36,7 @@ export type StakingPoolArgs = {
   endTime: beet.COption<beet.bignum>
   collections: Uint8Array
   creators: Uint8Array
+  merkleTrees: web3.PublicKey[]
 }
 
 export const stakingPoolDiscriminator = [203, 19, 214, 220, 220, 154, 24, 102]
@@ -67,7 +68,8 @@ export class StakingPool implements StakingPoolArgs {
     readonly startTime: beet.COption<beet.bignum>,
     readonly endTime: beet.COption<beet.bignum>,
     readonly collections: Uint8Array,
-    readonly creators: Uint8Array
+    readonly creators: Uint8Array,
+    readonly merkleTrees: web3.PublicKey[]
   ) {}
 
   /**
@@ -94,7 +96,8 @@ export class StakingPool implements StakingPoolArgs {
       args.startTime,
       args.endTime,
       args.collections,
-      args.creators
+      args.creators,
+      args.merkleTrees
     )
   }
 
@@ -253,6 +256,7 @@ export class StakingPool implements StakingPoolArgs {
       endTime: this.endTime,
       collections: this.collections,
       creators: this.creators,
+      merkleTrees: this.merkleTrees,
     }
   }
 }
@@ -289,6 +293,7 @@ export const stakingPoolBeet = new beet.FixableBeetStruct<
     ['endTime', beet.coption(beet.i64)],
     ['collections', beet.bytes],
     ['creators', beet.bytes],
+    ['merkleTrees', beet.array(beetSolana.publicKey)],
   ],
   StakingPool.fromArgs,
   'StakingPool'

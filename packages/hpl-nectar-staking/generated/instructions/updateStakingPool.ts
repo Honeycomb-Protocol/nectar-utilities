@@ -42,6 +42,7 @@ export const updateStakingPoolStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] stakingPool
  * @property [] collection (optional)
  * @property [] creator (optional)
+ * @property [] merkleTree (optional)
  * @property [_writable_, **signer**] authority
  * @property [_writable_, **signer**] payer
  * @property [] project
@@ -55,6 +56,7 @@ export type UpdateStakingPoolInstructionAccounts = {
   stakingPool: web3.PublicKey
   collection?: web3.PublicKey
   creator?: web3.PublicKey
+  merkleTree?: web3.PublicKey
   authority: web3.PublicKey
   payer: web3.PublicKey
   systemProgram?: web3.PublicKey
@@ -120,6 +122,18 @@ export function createUpdateStakingPoolInstruction(
       isSigner: false,
     })
   }
+  if (accounts.merkleTree != null) {
+    if (accounts.collection == null || accounts.creator == null) {
+      throw new Error(
+        "When providing 'merkleTree' then 'accounts.collection', 'accounts.creator' need(s) to be provided as well."
+      )
+    }
+    keys.push({
+      pubkey: accounts.merkleTree,
+      isWritable: false,
+      isSigner: false,
+    })
+  }
   keys.push({
     pubkey: accounts.authority,
     isWritable: true,
@@ -146,9 +160,13 @@ export function createUpdateStakingPoolInstruction(
     isSigner: false,
   })
   if (accounts.delegateAuthority != null) {
-    if (accounts.collection == null || accounts.creator == null) {
+    if (
+      accounts.collection == null ||
+      accounts.creator == null ||
+      accounts.merkleTree == null
+    ) {
       throw new Error(
-        "When providing 'delegateAuthority' then 'accounts.collection', 'accounts.creator' need(s) to be provided as well."
+        "When providing 'delegateAuthority' then 'accounts.collection', 'accounts.creator', 'accounts.merkleTree' need(s) to be provided as well."
       )
     }
     keys.push({

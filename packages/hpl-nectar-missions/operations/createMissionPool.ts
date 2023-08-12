@@ -1,4 +1,8 @@
-import { PublicKey, SYSVAR_RENT_PUBKEY } from "@solana/web3.js";
+import {
+  PublicKey,
+  SYSVAR_CLOCK_PUBKEY,
+  SYSVAR_RENT_PUBKEY,
+} from "@solana/web3.js";
 import {
   HIVECONTROL_PROGRAM_ID,
   Honeycomb,
@@ -13,6 +17,7 @@ import {
 } from "../generated";
 import { missionPoolPda } from "../utils";
 import { createUpdateMissionPoolOperation } from "./updateMissionPool";
+import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
 
 /**
  * Represents the arguments needed to create a new mission pool operation.
@@ -86,8 +91,10 @@ export async function createCreateMissionPoolOperation(
         authority: honeycomb.identity().address,
         payer: honeycomb.identity().address,
         vault: VAULT,
-        rentSysvar: SYSVAR_RENT_PUBKEY,
         hiveControl: HIVECONTROL_PROGRAM_ID,
+        logWrapper: SPL_NOOP_PROGRAM_ID,
+        clockSysvar: SYSVAR_CLOCK_PUBKEY,
+        rentSysvar: SYSVAR_RENT_PUBKEY,
       },
       {
         args: args.args,

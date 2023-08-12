@@ -846,23 +846,6 @@ dependencies = [
 
 [[package]]
 name = "hpl-currency-manager"
-version = "0.0.38"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7eed18ce393a81feea136648d0691dbef7cbfaa1e3e92ecf56f5f119e72d96c8"
-dependencies = [
- "anchor-lang",
- "anchor-spl",
- "getrandom 0.2.9",
- "hpl-hive-control",
- "hpl-utils",
- "mpl-token-metadata",
- "solana-program",
- "toml_datetime 0.6.1",
- "winnow",
-]
-
-[[package]]
-name = "hpl-currency-manager"
 version = "0.0.42"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ba94c7661a76dff3d97203a2dca70be619ae0b7b16093a9aa24a91618612ea3"
@@ -901,13 +884,13 @@ dependencies = [
 
 [[package]]
 name = "hpl-nectar-missions"
-version = "0.0.34"
+version = "0.0.36"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
  "getrandom 0.2.9",
  "hpl-compression",
- "hpl-currency-manager 0.0.38",
+ "hpl-currency-manager",
  "hpl-hive-control",
  "hpl-nectar-staking",
  "hpl-utils",
@@ -919,15 +902,16 @@ dependencies = [
 
 [[package]]
 name = "hpl-nectar-staking"
-version = "0.0.68"
+version = "0.0.70"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
  "getrandom 0.2.9",
  "hpl-compression",
- "hpl-currency-manager 0.0.42",
+ "hpl-currency-manager",
  "hpl-hive-control",
  "hpl-utils",
+ "mpl-bubblegum",
  "mpl-token-metadata",
  "solana-program",
  "spl-account-compression",
@@ -1155,6 +1139,21 @@ dependencies = [
  "keccak",
  "rand_core 0.6.4",
  "zeroize",
+]
+
+[[package]]
+name = "mpl-bubblegum"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b751e0658d7414a801b2fee9802d884f508724fdc1d8645405f69e604d348bc1"
+dependencies = [
+ "anchor-lang",
+ "bytemuck",
+ "mpl-token-metadata",
+ "solana-program",
+ "spl-account-compression",
+ "spl-associated-token-account",
+ "spl-token",
 ]
 
 [[package]]

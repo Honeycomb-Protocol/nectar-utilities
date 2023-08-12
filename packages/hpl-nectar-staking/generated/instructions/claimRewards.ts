@@ -37,7 +37,7 @@ export const claimRewardsStruct = new beet.BeetArgsStruct<{
  * @property [] instructionsSysvar
  * @property [] logWrapper
  * @property [] clock
- * @property [_writable_] project
+ * @property [] project
  * @property [_writable_] vault
  * @property [] currencyManagerProgram
  * @category Instructions
@@ -178,7 +178,7 @@ export function createClaimRewardsInstruction(
   })
   keys.push({
     pubkey: accounts.project,
-    isWritable: true,
+    isWritable: false,
     isSigner: false,
   })
   keys.push({
