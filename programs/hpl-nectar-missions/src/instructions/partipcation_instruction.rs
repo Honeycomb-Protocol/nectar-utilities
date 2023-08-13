@@ -513,11 +513,15 @@ pub struct Recall<'info> {
     pub wallet: Signer<'info>,
 
     pub system_program: Program<'info, System>,
+    pub log_wrapper: Program<'info, Noop>,
+    pub clock: Sysvar<'info, Clock>,
+    /// NATIVE INSTRUCTIONS SYSVAR
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(mut)]
     pub vault: AccountInfo<'info>,
-    pub clock: Sysvar<'info, Clock>,
-    pub log_wrapper: Program<'info, Noop>,
 }
 
 /// recall from a mission

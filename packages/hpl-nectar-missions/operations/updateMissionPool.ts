@@ -1,4 +1,8 @@
-import { ComputeBudgetProgram, PublicKey } from "@solana/web3.js";
+import {
+  ComputeBudgetProgram,
+  PublicKey,
+  SYSVAR_INSTRUCTIONS_PUBKEY,
+} from "@solana/web3.js";
 import { Honeycomb, Operation, VAULT } from "@honeycomb-protocol/hive-control";
 import {
   UpdateMissionPoolArgs as UpdateMissionPoolArgsSolita,
@@ -84,6 +88,7 @@ export async function createUpdateMissionPoolOperation(
           honeycomb.identity().delegateAuthority()?.address || programId,
         authority: honeycomb.identity().address,
         payer: honeycomb.identity().address,
+        instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
         vault: VAULT,
       },
       {

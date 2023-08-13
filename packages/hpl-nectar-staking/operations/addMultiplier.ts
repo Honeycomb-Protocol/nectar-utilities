@@ -63,6 +63,7 @@ export async function createAddMultiplierOperation(
         authority: honeycomb.identity().address,
         payer: honeycomb.identity().address,
         rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
       },
       { args: args.args },
       programId

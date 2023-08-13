@@ -135,7 +135,7 @@ export async function createStakeOperation(
         associatedTokenProgram: splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
         tokenMetadataProgram: METADATA_PROGRAM_ID,
         clock: web3.SYSVAR_CLOCK_PUBKEY,
-        sysvarInstructions: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
         authorizationRulesProgram: args.nft.programmableConfig?.ruleSet
           ? AUTHORIZATION_PROGRAM_ID
           : programId,

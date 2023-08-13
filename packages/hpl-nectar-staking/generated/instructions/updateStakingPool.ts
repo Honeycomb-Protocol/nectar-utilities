@@ -45,6 +45,7 @@ export const updateStakingPoolStruct = new beet.FixableBeetArgsStruct<
  * @property [] merkleTree (optional)
  * @property [_writable_, **signer**] authority
  * @property [_writable_, **signer**] payer
+ * @property [] instructionsSysvar
  * @property [] project
  * @property [] delegateAuthority (optional)
  * @property [_writable_] vault
@@ -61,6 +62,7 @@ export type UpdateStakingPoolInstructionAccounts = {
   payer: web3.PublicKey
   systemProgram?: web3.PublicKey
   rent?: web3.PublicKey
+  instructionsSysvar: web3.PublicKey
   project: web3.PublicKey
   delegateAuthority?: web3.PublicKey
   vault: web3.PublicKey
@@ -151,6 +153,11 @@ export function createUpdateStakingPoolInstruction(
   })
   keys.push({
     pubkey: accounts.rent ?? web3.SYSVAR_RENT_PUBKEY,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.instructionsSysvar,
     isWritable: false,
     isSigner: false,
   })

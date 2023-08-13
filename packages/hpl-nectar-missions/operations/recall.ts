@@ -240,6 +240,7 @@ export async function creatRecallOperation(
           vault: VAULT,
           clock: SYSVAR_CLOCK_PUBKEY,
           logWrapper: SPL_NOOP_PROGRAM_ID,
+          instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
         },
         programId
       ),

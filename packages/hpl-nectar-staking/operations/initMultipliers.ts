@@ -70,6 +70,7 @@ export async function createInitMultiplierOperation(
         payer: honeycomb.identity().address,
         delegateAuthority:
           honeycomb.identity().delegateAuthority()?.address || programId,
+        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
       },
       { args: args.args },
       programId

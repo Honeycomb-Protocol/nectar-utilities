@@ -1,6 +1,6 @@
 use {
     crate::{errors::ErrorCode, state::*},
-    anchor_lang::{prelude::*, solana_program},
+    anchor_lang::prelude::*,
     anchor_spl::{
         associated_token::AssociatedToken,
         token::{self, CloseAccount, Mint, Token, TokenAccount},
@@ -49,10 +49,17 @@ pub struct InitNFT<'info> {
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
     /// SPL NO OP PROGRAM
     pub log_wrapper: Program<'info, Noop>,
+
     /// NATIVE CLOCK SYSVAR
     pub clock: Sysvar<'info, Clock>,
+
+    /// NATIVE INSTRUCTIONS SYSVAR
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
 
     // HIVE CONTROL
     #[account()]
@@ -229,16 +236,17 @@ pub struct Stake<'info> {
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(address = mpl_token_metadata::ID)]
     pub token_metadata_program: AccountInfo<'info>,
+
     /// SPL NO OP PROGRAM
     pub log_wrapper: Program<'info, Noop>,
 
     /// NATIVE CLOCK SYSVAR
     pub clock: Sysvar<'info, Clock>,
 
-    /// NATIVE Instructions SYSVAR
+    /// NATIVE INSTRUCTIONS SYSVAR
     /// CHECK: This is not dangerous because we don't read or write from this account
-    #[account(address = solana_program::sysvar::instructions::ID)]
-    pub sysvar_instructions: AccountInfo<'info>,
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
 
     // HIVE CONTROL
     #[account()]
@@ -321,7 +329,7 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
                 ctx.accounts.wallet.to_account_info(),
                 ctx.accounts.wallet.to_account_info(),
                 ctx.accounts.system_program.to_account_info(),
-                ctx.accounts.sysvar_instructions.to_account_info(),
+                ctx.accounts.instructions_sysvar.to_account_info(),
                 ctx.accounts.token_program.to_account_info(),
                 ctx.accounts.authorization_rules_program.clone(),
                 ctx.accounts.authorization_rules.clone(),
@@ -338,7 +346,7 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
                 ctx.accounts.nft_token_record.clone(),
                 ctx.accounts.wallet.to_account_info(),
                 ctx.accounts.system_program.to_account_info(),
-                ctx.accounts.sysvar_instructions.to_account_info(),
+                ctx.accounts.instructions_sysvar.to_account_info(),
                 ctx.accounts.token_program.to_account_info(),
                 ctx.accounts.authorization_rules_program.clone(),
                 ctx.accounts.authorization_rules.clone(),
@@ -363,7 +371,7 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
                     ctx.accounts.system_program.to_account_info(),
                     ctx.accounts.token_program.to_account_info(),
                     ctx.accounts.associated_token_program.to_account_info(),
-                    ctx.accounts.sysvar_instructions.to_account_info(),
+                    ctx.accounts.instructions_sysvar.to_account_info(),
                     ctx.accounts.authorization_rules_program.clone(),
                     ctx.accounts.authorization_rules.clone(),
                     Some(staker_signer),
@@ -463,15 +471,16 @@ pub struct Unstake<'info> {
     #[account(address = mpl_token_metadata::ID)]
     pub token_metadata_program: AccountInfo<'info>,
 
+    /// SPL NO OP PROGRAM
+    pub log_wrapper: Program<'info, Noop>,
+
     /// NATIVE CLOCK SYSVAR
     pub clock: Sysvar<'info, Clock>,
 
-    /// NATIVE Instructions SYSVAR
+    /// NATIVE INSTRUCTIONS SYSVAR
     /// CHECK: This is not dangerous because we don't read or write from this account
-    #[account(address = solana_program::sysvar::instructions::ID)]
-    pub sysvar_instructions: AccountInfo<'info>,
-    /// SPL NO OP PROGRAM
-    pub log_wrapper: Program<'info, Noop>,
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
 
     // HIVE CONTROL
     #[account()]
@@ -555,7 +564,7 @@ pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
                 ctx.accounts.nft_token_record.clone(),
                 ctx.accounts.wallet.to_account_info(),
                 ctx.accounts.system_program.to_account_info(),
-                ctx.accounts.sysvar_instructions.to_account_info(),
+                ctx.accounts.instructions_sysvar.to_account_info(),
                 ctx.accounts.token_program.to_account_info(),
                 ctx.accounts.authorization_rules_program.clone(),
                 ctx.accounts.authorization_rules.clone(),
@@ -574,7 +583,7 @@ pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
                 ctx.accounts.wallet.to_account_info(),
                 ctx.accounts.wallet.to_account_info(),
                 ctx.accounts.system_program.to_account_info(),
-                ctx.accounts.sysvar_instructions.to_account_info(),
+                ctx.accounts.instructions_sysvar.to_account_info(),
                 ctx.accounts.token_program.to_account_info(),
                 ctx.accounts.authorization_rules_program.clone(),
                 ctx.accounts.authorization_rules.clone(),
@@ -599,7 +608,7 @@ pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
                     ctx.accounts.system_program.to_account_info(),
                     ctx.accounts.token_program.to_account_info(),
                     ctx.accounts.associated_token_program.to_account_info(),
-                    ctx.accounts.sysvar_instructions.to_account_info(),
+                    ctx.accounts.instructions_sysvar.to_account_info(),
                     ctx.accounts.authorization_rules_program.clone(),
                     ctx.accounts.authorization_rules.clone(),
                     Some(staker_signer),
@@ -700,15 +709,16 @@ pub struct ForceUnstake<'info> {
     #[account(address = mpl_token_metadata::ID)]
     pub token_metadata_program: AccountInfo<'info>,
 
+    /// SPL NO OP PROGRAM
+    pub log_wrapper: Program<'info, Noop>,
+
     /// NATIVE CLOCK SYSVAR
     pub clock: Sysvar<'info, Clock>,
 
-    /// NATIVE Instructions SYSVAR
+    /// NATIVE INSTRUCTIONS SYSVAR
     /// CHECK: This is not dangerous because we don't read or write from this account
-    #[account(address = solana_program::sysvar::instructions::ID)]
-    pub sysvar_instructions: AccountInfo<'info>,
-    /// SPL NO OP PROGRAM
-    pub log_wrapper: Program<'info, Noop>,
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
 
     // HIVE CONTROL
     #[account(has_one = authority)]
@@ -776,7 +786,7 @@ pub fn force_unstake(ctx: Context<ForceUnstake>) -> Result<()> {
                 ctx.accounts.nft_token_record.clone(),
                 ctx.accounts.wallet.to_account_info(),
                 ctx.accounts.system_program.to_account_info(),
-                ctx.accounts.sysvar_instructions.to_account_info(),
+                ctx.accounts.instructions_sysvar.to_account_info(),
                 ctx.accounts.token_program.to_account_info(),
                 ctx.accounts.authorization_rules_program.clone(),
                 ctx.accounts.authorization_rules.clone(),
@@ -795,7 +805,7 @@ pub fn force_unstake(ctx: Context<ForceUnstake>) -> Result<()> {
                 ctx.accounts.wallet.to_account_info(),
                 ctx.accounts.wallet.to_account_info(),
                 ctx.accounts.system_program.to_account_info(),
-                ctx.accounts.sysvar_instructions.to_account_info(),
+                ctx.accounts.instructions_sysvar.to_account_info(),
                 ctx.accounts.token_program.to_account_info(),
                 ctx.accounts.authorization_rules_program.clone(),
                 ctx.accounts.authorization_rules.clone(),
@@ -820,7 +830,7 @@ pub fn force_unstake(ctx: Context<ForceUnstake>) -> Result<()> {
                     ctx.accounts.system_program.to_account_info(),
                     ctx.accounts.token_program.to_account_info(),
                     ctx.accounts.associated_token_program.to_account_info(),
-                    ctx.accounts.sysvar_instructions.to_account_info(),
+                    ctx.accounts.instructions_sysvar.to_account_info(),
                     ctx.accounts.authorization_rules_program.clone(),
                     ctx.accounts.authorization_rules.clone(),
                     Some(staker_signer),

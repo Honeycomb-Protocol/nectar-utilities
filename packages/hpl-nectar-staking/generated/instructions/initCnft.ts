@@ -45,6 +45,7 @@ export const initCnftStruct = new beet.BeetArgsStruct<
  * @property [] compressionProgram
  * @property [] logWrapper
  * @property [] clock
+ * @property [] instructionsSysvar
  * @property [] delegateAuthority (optional)
  * @property [_writable_] vault
  * @category Instructions
@@ -62,6 +63,7 @@ export type InitCnftInstructionAccounts = {
   compressionProgram: web3.PublicKey
   logWrapper: web3.PublicKey
   clock: web3.PublicKey
+  instructionsSysvar: web3.PublicKey
   delegateAuthority?: web3.PublicKey
   vault: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
@@ -143,6 +145,11 @@ export function createInitCnftInstruction(
     },
     {
       pubkey: accounts.clock,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.instructionsSysvar,
       isWritable: false,
       isSigner: false,
     },

@@ -51,6 +51,7 @@ export const createStakingPoolStruct = new beet.FixableBeetArgsStruct<
  * @property [] logWrapper
  * @property [] clockSysvar
  * @property [] rentSysvar
+ * @property [] instructionsSysvar
  * @property [] hiveControl
  * @category Instructions
  * @category CreateStakingPool
@@ -69,6 +70,7 @@ export type CreateStakingPoolInstructionAccounts = {
   logWrapper: web3.PublicKey
   clockSysvar: web3.PublicKey
   rentSysvar: web3.PublicKey
+  instructionsSysvar: web3.PublicKey
   tokenProgram?: web3.PublicKey
   hiveControl: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
@@ -164,6 +166,11 @@ export function createCreateStakingPoolInstruction(
   })
   keys.push({
     pubkey: accounts.rentSysvar,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.instructionsSysvar,
     isWritable: false,
     isSigner: false,
   })

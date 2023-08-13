@@ -1,5 +1,5 @@
 {
-  "version": "0.0.70",
+  "version": "0.0.71",
   "name": "hpl_nectar_staking",
   "instructions": [
     {
@@ -91,6 +91,14 @@
           "isSigner": false,
           "docs": [
             "RENT SYSVAR"
+          ]
+        },
+        {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
           ]
         },
         {
@@ -190,6 +198,14 @@
           ]
         },
         {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
+          ]
+        },
+        {
           "name": "project",
           "isMut": false,
           "isSigner": false
@@ -256,6 +272,14 @@
           "isSigner": false,
           "docs": [
             "NATIVE SYSTEM PROGRAM"
+          ]
+        },
+        {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
           ]
         },
         {
@@ -333,6 +357,14 @@
           "isSigner": false,
           "docs": [
             "RENT SYSVAR"
+          ]
+        },
+        {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
           ]
         },
         {
@@ -426,6 +458,14 @@
           "isSigner": false,
           "docs": [
             "NATIVE CLOCK SYSVAR"
+          ]
+        },
+        {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
           ]
         },
         {
@@ -525,6 +565,14 @@
           ]
         },
         {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
+          ]
+        },
+        {
           "name": "delegateAuthority",
           "isMut": false,
           "isSigner": false,
@@ -594,6 +642,14 @@
           "isSigner": false,
           "docs": [
             "NATIVE CLOCK SYSVAR"
+          ]
+        },
+        {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
           ]
         },
         {
@@ -752,11 +808,11 @@
           ]
         },
         {
-          "name": "sysvarInstructions",
+          "name": "instructionsSysvar",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "NATIVE Instructions SYSVAR"
+            "NATIVE INSTRUCTIONS SYSVAR"
           ]
         },
         {
@@ -911,6 +967,14 @@
           ]
         },
         {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL NO OP PROGRAM"
+          ]
+        },
+        {
           "name": "clock",
           "isMut": false,
           "isSigner": false,
@@ -919,19 +983,11 @@
           ]
         },
         {
-          "name": "sysvarInstructions",
+          "name": "instructionsSysvar",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "NATIVE Instructions SYSVAR"
-          ]
-        },
-        {
-          "name": "logWrapper",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "SPL NO OP PROGRAM"
+            "NATIVE INSTRUCTIONS SYSVAR"
           ]
         },
         {
@@ -1045,11 +1101,11 @@
           ]
         },
         {
-          "name": "sysvarInstructions",
+          "name": "instructionsSysvar",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "NATIVE Instructions SYSVAR"
+            "NATIVE INSTRUCTIONS SYSVAR"
           ]
         },
         {
@@ -1158,11 +1214,11 @@
           ]
         },
         {
-          "name": "sysvarInstructions",
+          "name": "instructionsSysvar",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "NATIVE Instructions SYSVAR"
+            "NATIVE INSTRUCTIONS SYSVAR"
           ]
         },
         {
@@ -1243,11 +1299,6 @@
           ]
         },
         {
-          "name": "instructionsSysvar",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
@@ -1261,6 +1312,14 @@
           "isSigner": false,
           "docs": [
             "NATIVE TOKEN PROGRAM"
+          ]
+        },
+        {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
           ]
         },
         {
@@ -1367,9 +1426,144 @@
           ]
         },
         {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE SYSTEM PROGRAM"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE TOKEN PROGRAM"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL NO OP PROGRAM"
+          ]
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SYSVAR CLOCK"
+          ]
+        },
+        {
           "name": "instructionsSysvar",
           "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
+          ]
+        },
+        {
+          "name": "project",
+          "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "currencyManagerProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "distributeRewards",
+      "accounts": [
+        {
+          "name": "stakingPool",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "StakingPool state account"
+          ]
+        },
+        {
+          "name": "multipliers",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "Multpliers state account"
+          ]
+        },
+        {
+          "name": "nft",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "NFT state account"
+          ]
+        },
+        {
+          "name": "currency",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultHolderAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "holderAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "staker",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Staker state account"
+          ]
+        },
+        {
+          "name": "wallet",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The wallet that owns the NFT"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The authority of the project"
+          ]
         },
         {
           "name": "systemProgram",
@@ -1404,6 +1598,14 @@
           ]
         },
         {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
+          ]
+        },
+        {
           "name": "project",
           "isMut": false,
           "isSigner": false
@@ -1422,24 +1624,11 @@
       "args": []
     },
     {
-      "name": "migrateCustodial",
+      "name": "forceUnstake",
       "accounts": [
         {
-          "name": "escrow",
-          "isMut": true,
-          "isSigner": true,
-          "docs": [
-            "The wallet that the NFT is associated with"
-          ]
-        },
-        {
-          "name": "nftAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "stakingPool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "docs": [
             "StakingPool state account"
@@ -1458,7 +1647,15 @@
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "Mint address of the NFT∫"
+            "Mint address of the NFT"
+          ]
+        },
+        {
+          "name": "nftAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Token account of the NFT"
           ]
         },
         {
@@ -1478,12 +1675,30 @@
           ]
         },
         {
+          "name": "nftTokenRecord",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "NFT token record"
+          ]
+        },
+        {
           "name": "depositAccount",
           "isMut": true,
           "isSigner": false,
           "isOptional": true,
           "docs": [
             "The account that will hold the nft sent on expedition"
+          ]
+        },
+        {
+          "name": "depositTokenRecord",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "Deposit token_record"
           ]
         },
         {
@@ -1499,23 +1714,15 @@
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "The wallet that the NFT is associated with"
+            "The wallet that pays for the rent"
           ]
         },
         {
           "name": "authority",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true,
           "docs": [
-            "The wallet that holds the authority over the staking_pool"
-          ]
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true,
-          "docs": [
-            "The wallet that pays for rent"
+            "The authority of the project"
           ]
         },
         {
@@ -1551,6 +1758,14 @@
           ]
         },
         {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL NO OP PROGRAM"
+          ]
+        },
+        {
           "name": "clock",
           "isMut": false,
           "isSigner": false,
@@ -1559,138 +1774,34 @@
           ]
         },
         {
-          "name": "sysvarInstructions",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE Instructions SYSVAR"
-          ]
-        },
-        {
-          "name": "project",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "delegateAuthority",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "args",
-          "type": {
-            "defined": "MigrateArgs"
-          }
-        }
-      ]
-    },
-    {
-      "name": "migrateVault",
-      "accounts": [
-        {
-          "name": "project",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "stakingPool",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "StakingPool state account"
-          ]
-        },
-        {
-          "name": "currency",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "mint",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Mint address of the reward token"
-          ]
-        },
-        {
-          "name": "rewardVault",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Reward Vault"
-          ]
-        },
-        {
-          "name": "vaultHolderAccount",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "vaultTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The wallet that holds authority for this action"
-          ]
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true,
-          "docs": [
-            "The wallet that pays for the rent"
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE SYSTEM PROGRAM"
-          ]
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE TOKEN PROGRAM"
-          ]
-        },
-        {
-          "name": "delegateAuthority",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "currencyManagerProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "instructionsSysvar",
           "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
+          ]
+        },
+        {
+          "name": "project",
+          "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authorizationRulesProgram",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "authorizationRules",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
         }
       ],
       "args": []
@@ -2392,10 +2503,6 @@
                 "type": "publicKey"
               },
               {
-                "name": "info",
-                "type": "bytes"
-              },
-              {
                 "name": "timestamp",
                 "type": "i64"
               }
@@ -2407,10 +2514,6 @@
               {
                 "name": "address",
                 "type": "publicKey"
-              },
-              {
-                "name": "info",
-                "type": "bytes"
               },
               {
                 "name": "timestamp",
@@ -2426,16 +2529,8 @@
                 "type": "publicKey"
               },
               {
-                "name": "nft_info",
-                "type": "bytes"
-              },
-              {
                 "name": "staker_address",
                 "type": "publicKey"
-              },
-              {
-                "name": "staker_info",
-                "type": "bytes"
               },
               {
                 "name": "timestamp",
@@ -2451,16 +2546,8 @@
                 "type": "publicKey"
               },
               {
-                "name": "nft_info",
-                "type": "bytes"
-              },
-              {
                 "name": "staker_address",
                 "type": "publicKey"
-              },
-              {
-                "name": "staker_info",
-                "type": "bytes"
               },
               {
                 "name": "timestamp",
@@ -2474,10 +2561,6 @@
               {
                 "name": "nft_address",
                 "type": "publicKey"
-              },
-              {
-                "name": "nft_info",
-                "type": "bytes"
               },
               {
                 "name": "staker_address",

@@ -27,9 +27,10 @@ export const recallStruct = new beet.BeetArgsStruct<{
  * @property [] mission
  * @property [_writable_] participation
  * @property [_writable_, **signer**] wallet
- * @property [_writable_] vault
- * @property [] clock
  * @property [] logWrapper
+ * @property [] clock
+ * @property [] instructionsSysvar
+ * @property [_writable_] vault
  * @category Instructions
  * @category Recall
  * @category generated
@@ -41,9 +42,10 @@ export type RecallInstructionAccounts = {
   participation: web3.PublicKey
   wallet: web3.PublicKey
   systemProgram?: web3.PublicKey
-  vault: web3.PublicKey
-  clock: web3.PublicKey
   logWrapper: web3.PublicKey
+  clock: web3.PublicKey
+  instructionsSysvar: web3.PublicKey
+  vault: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -98,8 +100,8 @@ export function createRecallInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.vault,
-      isWritable: true,
+      pubkey: accounts.logWrapper,
+      isWritable: false,
       isSigner: false,
     },
     {
@@ -108,8 +110,13 @@ export function createRecallInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.logWrapper,
+      pubkey: accounts.instructionsSysvar,
       isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.vault,
+      isWritable: true,
       isSigner: false,
     },
   ]

@@ -8,89 +8,79 @@
 import * as splToken from '@solana/spl-token'
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
-import { MigrateArgs, migrateArgsBeet } from '../types/MigrateArgs'
 
 /**
  * @category Instructions
- * @category MigrateCustodial
+ * @category ForceUnstake
  * @category generated
  */
-export type MigrateCustodialInstructionArgs = {
-  args: MigrateArgs
-}
-/**
- * @category Instructions
- * @category MigrateCustodial
- * @category generated
- */
-export const migrateCustodialStruct = new beet.BeetArgsStruct<
-  MigrateCustodialInstructionArgs & {
-    instructionDiscriminator: number[] /* size: 8 */
-  }
->(
-  [
-    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['args', migrateArgsBeet],
-  ],
-  'MigrateCustodialInstructionArgs'
+export const forceUnstakeStruct = new beet.BeetArgsStruct<{
+  instructionDiscriminator: number[] /* size: 8 */
+}>(
+  [['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]],
+  'ForceUnstakeInstructionArgs'
 )
 /**
- * Accounts required by the _migrateCustodial_ instruction
+ * Accounts required by the _forceUnstake_ instruction
  *
- * @property [_writable_, **signer**] escrow
- * @property [_writable_] nftAccount
- * @property [] stakingPool
+ * @property [_writable_] stakingPool
  * @property [_writable_] nft
  * @property [_writable_] nftMint
+ * @property [_writable_] nftAccount
  * @property [_writable_] nftMetadata
  * @property [_writable_] nftEdition
+ * @property [_writable_] nftTokenRecord (optional)
  * @property [_writable_] depositAccount (optional)
+ * @property [_writable_] depositTokenRecord (optional)
  * @property [_writable_] staker
  * @property [_writable_] wallet
- * @property [_writable_, **signer**] authority
- * @property [_writable_, **signer**] payer
+ * @property [**signer**] authority
  * @property [] associatedTokenProgram
  * @property [] tokenMetadataProgram
+ * @property [] logWrapper
  * @property [] clock
- * @property [] sysvarInstructions
+ * @property [] instructionsSysvar
  * @property [] project
- * @property [] delegateAuthority (optional)
  * @property [_writable_] vault
+ * @property [] authorizationRulesProgram (optional)
+ * @property [] authorizationRules (optional)
  * @category Instructions
- * @category MigrateCustodial
+ * @category ForceUnstake
  * @category generated
  */
-export type MigrateCustodialInstructionAccounts = {
-  escrow: web3.PublicKey
-  nftAccount: web3.PublicKey
+export type ForceUnstakeInstructionAccounts = {
   stakingPool: web3.PublicKey
   nft: web3.PublicKey
   nftMint: web3.PublicKey
+  nftAccount: web3.PublicKey
   nftMetadata: web3.PublicKey
   nftEdition: web3.PublicKey
+  nftTokenRecord?: web3.PublicKey
   depositAccount?: web3.PublicKey
+  depositTokenRecord?: web3.PublicKey
   staker: web3.PublicKey
   wallet: web3.PublicKey
   authority: web3.PublicKey
-  payer: web3.PublicKey
   systemProgram?: web3.PublicKey
   tokenProgram?: web3.PublicKey
   associatedTokenProgram: web3.PublicKey
   tokenMetadataProgram: web3.PublicKey
+  logWrapper: web3.PublicKey
   clock: web3.PublicKey
-  sysvarInstructions: web3.PublicKey
+  instructionsSysvar: web3.PublicKey
   project: web3.PublicKey
-  delegateAuthority?: web3.PublicKey
   vault: web3.PublicKey
+  authorizationRulesProgram?: web3.PublicKey
+  authorizationRules?: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const migrateCustodialInstructionDiscriminator = [
-  185, 90, 240, 179, 249, 238, 69, 226,
+export const forceUnstakeInstructionDiscriminator = [
+  62, 187, 167, 168, 85, 151, 117, 4,
 ]
 
 /**
- * Creates a _MigrateCustodial_ instruction.
+ * Creates a _ForceUnstake_ instruction.
  *
  * Optional accounts that are not provided will be omitted from the accounts
  * array passed with the instruction.
@@ -98,35 +88,21 @@ export const migrateCustodialInstructionDiscriminator = [
  * Otherwise an Error is raised.
  *
  * @param accounts that will be accessed while the instruction is processed
- * @param args to provide as instruction data to the program
- *
  * @category Instructions
- * @category MigrateCustodial
+ * @category ForceUnstake
  * @category generated
  */
-export function createMigrateCustodialInstruction(
-  accounts: MigrateCustodialInstructionAccounts,
-  args: MigrateCustodialInstructionArgs,
+export function createForceUnstakeInstruction(
+  accounts: ForceUnstakeInstructionAccounts,
   programId = new web3.PublicKey('STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L')
 ) {
-  const [data] = migrateCustodialStruct.serialize({
-    instructionDiscriminator: migrateCustodialInstructionDiscriminator,
-    ...args,
+  const [data] = forceUnstakeStruct.serialize({
+    instructionDiscriminator: forceUnstakeInstructionDiscriminator,
   })
   const keys: web3.AccountMeta[] = [
     {
-      pubkey: accounts.escrow,
-      isWritable: true,
-      isSigner: true,
-    },
-    {
-      pubkey: accounts.nftAccount,
-      isWritable: true,
-      isSigner: false,
-    },
-    {
       pubkey: accounts.stakingPool,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {
@@ -136,6 +112,11 @@ export function createMigrateCustodialInstruction(
     },
     {
       pubkey: accounts.nftMint,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.nftAccount,
       isWritable: true,
       isSigner: false,
     },
@@ -151,9 +132,33 @@ export function createMigrateCustodialInstruction(
     },
   ]
 
+  if (accounts.nftTokenRecord != null) {
+    keys.push({
+      pubkey: accounts.nftTokenRecord,
+      isWritable: true,
+      isSigner: false,
+    })
+  }
   if (accounts.depositAccount != null) {
+    if (accounts.nftTokenRecord == null) {
+      throw new Error(
+        "When providing 'depositAccount' then 'accounts.nftTokenRecord' need(s) to be provided as well."
+      )
+    }
     keys.push({
       pubkey: accounts.depositAccount,
+      isWritable: true,
+      isSigner: false,
+    })
+  }
+  if (accounts.depositTokenRecord != null) {
+    if (accounts.nftTokenRecord == null || accounts.depositAccount == null) {
+      throw new Error(
+        "When providing 'depositTokenRecord' then 'accounts.nftTokenRecord', 'accounts.depositAccount' need(s) to be provided as well."
+      )
+    }
+    keys.push({
+      pubkey: accounts.depositTokenRecord,
       isWritable: true,
       isSigner: false,
     })
@@ -170,12 +175,7 @@ export function createMigrateCustodialInstruction(
   })
   keys.push({
     pubkey: accounts.authority,
-    isWritable: true,
-    isSigner: true,
-  })
-  keys.push({
-    pubkey: accounts.payer,
-    isWritable: true,
+    isWritable: false,
     isSigner: true,
   })
   keys.push({
@@ -199,12 +199,17 @@ export function createMigrateCustodialInstruction(
     isSigner: false,
   })
   keys.push({
+    pubkey: accounts.logWrapper,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
     pubkey: accounts.clock,
     isWritable: false,
     isSigner: false,
   })
   keys.push({
-    pubkey: accounts.sysvarInstructions,
+    pubkey: accounts.instructionsSysvar,
     isWritable: false,
     isSigner: false,
   })
@@ -213,23 +218,44 @@ export function createMigrateCustodialInstruction(
     isWritable: false,
     isSigner: false,
   })
-  if (accounts.delegateAuthority != null) {
-    if (accounts.depositAccount == null) {
-      throw new Error(
-        "When providing 'delegateAuthority' then 'accounts.depositAccount' need(s) to be provided as well."
-      )
-    }
-    keys.push({
-      pubkey: accounts.delegateAuthority,
-      isWritable: false,
-      isSigner: false,
-    })
-  }
   keys.push({
     pubkey: accounts.vault,
     isWritable: true,
     isSigner: false,
   })
+  if (accounts.authorizationRulesProgram != null) {
+    if (
+      accounts.nftTokenRecord == null ||
+      accounts.depositAccount == null ||
+      accounts.depositTokenRecord == null
+    ) {
+      throw new Error(
+        "When providing 'authorizationRulesProgram' then 'accounts.nftTokenRecord', 'accounts.depositAccount', 'accounts.depositTokenRecord' need(s) to be provided as well."
+      )
+    }
+    keys.push({
+      pubkey: accounts.authorizationRulesProgram,
+      isWritable: false,
+      isSigner: false,
+    })
+  }
+  if (accounts.authorizationRules != null) {
+    if (
+      accounts.nftTokenRecord == null ||
+      accounts.depositAccount == null ||
+      accounts.depositTokenRecord == null ||
+      accounts.authorizationRulesProgram == null
+    ) {
+      throw new Error(
+        "When providing 'authorizationRules' then 'accounts.nftTokenRecord', 'accounts.depositAccount', 'accounts.depositTokenRecord', 'accounts.authorizationRulesProgram' need(s) to be provided as well."
+      )
+    }
+    keys.push({
+      pubkey: accounts.authorizationRules,
+      isWritable: false,
+      isSigner: false,
+    })
+  }
 
   if (accounts.anchorRemainingAccounts != null) {
     for (const acc of accounts.anchorRemainingAccounts) {

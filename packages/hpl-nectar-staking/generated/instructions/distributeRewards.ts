@@ -11,17 +11,17 @@ import * as web3 from '@solana/web3.js'
 
 /**
  * @category Instructions
- * @category ClaimRewards
+ * @category DistributeRewards
  * @category generated
  */
-export const claimRewardsStruct = new beet.BeetArgsStruct<{
+export const distributeRewardsStruct = new beet.BeetArgsStruct<{
   instructionDiscriminator: number[] /* size: 8 */
 }>(
   [['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]],
-  'ClaimRewardsInstructionArgs'
+  'DistributeRewardsInstructionArgs'
 )
 /**
- * Accounts required by the _claimRewards_ instruction
+ * Accounts required by the _distributeRewards_ instruction
  *
  * @property [_writable_] stakingPool
  * @property [] multipliers (optional)
@@ -33,7 +33,8 @@ export const claimRewardsStruct = new beet.BeetArgsStruct<{
  * @property [] holderAccount
  * @property [_writable_] tokenAccount
  * @property [_writable_] staker
- * @property [_writable_, **signer**] wallet
+ * @property [_writable_] wallet
+ * @property [**signer**] authority
  * @property [] logWrapper
  * @property [] clock
  * @property [] instructionsSysvar
@@ -41,10 +42,10 @@ export const claimRewardsStruct = new beet.BeetArgsStruct<{
  * @property [_writable_] vault
  * @property [] currencyManagerProgram
  * @category Instructions
- * @category ClaimRewards
+ * @category DistributeRewards
  * @category generated
  */
-export type ClaimRewardsInstructionAccounts = {
+export type DistributeRewardsInstructionAccounts = {
   stakingPool: web3.PublicKey
   multipliers?: web3.PublicKey
   nft: web3.PublicKey
@@ -56,6 +57,7 @@ export type ClaimRewardsInstructionAccounts = {
   tokenAccount: web3.PublicKey
   staker: web3.PublicKey
   wallet: web3.PublicKey
+  authority: web3.PublicKey
   systemProgram?: web3.PublicKey
   tokenProgram?: web3.PublicKey
   logWrapper: web3.PublicKey
@@ -67,12 +69,12 @@ export type ClaimRewardsInstructionAccounts = {
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const claimRewardsInstructionDiscriminator = [
-  4, 144, 132, 71, 116, 23, 151, 80,
+export const distributeRewardsInstructionDiscriminator = [
+  97, 6, 227, 255, 124, 165, 3, 148,
 ]
 
 /**
- * Creates a _ClaimRewards_ instruction.
+ * Creates a _DistributeRewards_ instruction.
  *
  * Optional accounts that are not provided will be omitted from the accounts
  * array passed with the instruction.
@@ -81,15 +83,15 @@ export const claimRewardsInstructionDiscriminator = [
  *
  * @param accounts that will be accessed while the instruction is processed
  * @category Instructions
- * @category ClaimRewards
+ * @category DistributeRewards
  * @category generated
  */
-export function createClaimRewardsInstruction(
-  accounts: ClaimRewardsInstructionAccounts,
+export function createDistributeRewardsInstruction(
+  accounts: DistributeRewardsInstructionAccounts,
   programId = new web3.PublicKey('STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L')
 ) {
-  const [data] = claimRewardsStruct.serialize({
-    instructionDiscriminator: claimRewardsInstructionDiscriminator,
+  const [data] = distributeRewardsStruct.serialize({
+    instructionDiscriminator: distributeRewardsInstructionDiscriminator,
   })
   const keys: web3.AccountMeta[] = [
     {
@@ -149,6 +151,11 @@ export function createClaimRewardsInstruction(
   keys.push({
     pubkey: accounts.wallet,
     isWritable: true,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.authority,
+    isWritable: false,
     isSigner: true,
   })
   keys.push({

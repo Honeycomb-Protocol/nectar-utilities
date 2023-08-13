@@ -64,9 +64,9 @@ export type WithdrawRewardsInstructionAccounts = {
   tokenAccount: web3.PublicKey
   authority: web3.PublicKey
   payer: web3.PublicKey
-  instructionsSysvar: web3.PublicKey
   systemProgram?: web3.PublicKey
   tokenProgram?: web3.PublicKey
+  instructionsSysvar: web3.PublicKey
   project: web3.PublicKey
   delegateAuthority?: web3.PublicKey
   vault: web3.PublicKey
@@ -149,17 +149,17 @@ export function createWithdrawRewardsInstruction(
       isSigner: true,
     },
     {
-      pubkey: accounts.instructionsSysvar,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
       isWritable: false,
       isSigner: false,
     },
     {
       pubkey: accounts.tokenProgram ?? splToken.TOKEN_PROGRAM_ID,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.instructionsSysvar,
       isWritable: false,
       isSigner: false,
     },

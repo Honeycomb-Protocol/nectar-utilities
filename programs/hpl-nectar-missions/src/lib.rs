@@ -35,6 +35,7 @@ pub mod hpl_nectar_missions {
                     log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
                     clock: ctx.accounts.clock_sysvar.to_account_info(),
                     rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
+                    instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                     vault: ctx.accounts.vault.to_account_info(),
                 },
             ),
@@ -62,6 +63,7 @@ pub mod hpl_nectar_missions {
             ctx.accounts.vault.to_account_info(),
             &ctx.accounts.delegate_authority,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
         instructions::update_mission_pool(ctx, args)
     }
@@ -76,6 +78,7 @@ pub mod hpl_nectar_missions {
             ctx.accounts.vault.to_account_info(),
             &ctx.accounts.delegate_authority,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
         instructions::create_mission(ctx, args)
     }
@@ -90,6 +93,7 @@ pub mod hpl_nectar_missions {
             ctx.accounts.vault.to_account_info(),
             &None,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
         instructions::participate(ctx, args)
@@ -105,6 +109,7 @@ pub mod hpl_nectar_missions {
             ctx.accounts.vault.to_account_info(),
             &None,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
         instructions::collect_rewards(ctx)
@@ -120,6 +125,7 @@ pub mod hpl_nectar_missions {
             ctx.accounts.vault.to_account_info(),
             &None,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
         instructions::recall(ctx)

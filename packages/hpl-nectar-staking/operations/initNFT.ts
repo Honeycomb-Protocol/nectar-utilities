@@ -63,6 +63,7 @@ export async function createInitNFTOperation(
           honeycomb.identity().delegateAuthority()?.address || programId,
         logWrapper: SPL_NOOP_PROGRAM_ID,
         clock: web3.SYSVAR_CLOCK_PUBKEY,
+        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
       },
       programId
     ),

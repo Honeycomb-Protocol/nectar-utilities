@@ -96,6 +96,7 @@ export async function createCreateStakingPoolOperation(
         logWrapper: SPL_NOOP_PROGRAM_ID,
         clockSysvar: web3.SYSVAR_CLOCK_PUBKEY,
         rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
       },
       { args: args.args },
       programId

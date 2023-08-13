@@ -1,6 +1,6 @@
 use {
     crate::{errors::ErrorCode, state::*},
-    anchor_lang::{prelude::*, solana_program},
+    anchor_lang::prelude::*,
     hpl_hive_control::state::{DelegateAuthority, Project},
     hpl_utils::traits::Default,
     mpl_bubblegum::program::Bubblegum,
@@ -53,6 +53,11 @@ pub struct InitCNFT<'info> {
 
     /// NATIVE CLOCK SYSVAR
     pub clock: Sysvar<'info, Clock>,
+
+    /// NATIVE INSTRUCTIONS SYSVAR
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
 
     #[account(constraint = delegate_authority.authority == wallet.key())]
     pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
@@ -152,10 +157,10 @@ pub struct StakeCNFT<'info> {
     /// NATIVE CLOCK SYSVAR
     pub clock: Sysvar<'info, Clock>,
 
-    /// NATIVE Instructions SYSVAR
+    /// NATIVE INSTRUCTIONS SYSVAR
     /// CHECK: This is not dangerous because we don't read or write from this account
-    #[account(address = solana_program::sysvar::instructions::ID)]
-    pub sysvar_instructions: AccountInfo<'info>,
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
 
     // HIVE CONTROL
     #[account()]
@@ -272,10 +277,10 @@ pub struct UnstakeCNFT<'info> {
     /// NATIVE CLOCK SYSVAR
     pub clock: Sysvar<'info, Clock>,
 
-    /// NATIVE Instructions SYSVAR
+    /// NATIVE INSTRUCTIONS SYSVAR
     /// CHECK: This is not dangerous because we don't read or write from this account
-    #[account(address = solana_program::sysvar::instructions::ID)]
-    pub sysvar_instructions: AccountInfo<'info>,
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
 
     // HIVE CONTROL
     #[account()]

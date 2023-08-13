@@ -44,6 +44,7 @@ export const addMultiplierStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_, **signer**] authority
  * @property [_writable_, **signer**] payer
  * @property [] rentSysvar
+ * @property [] instructionsSysvar
  * @property [] project
  * @property [] delegateAuthority (optional)
  * @property [_writable_] vault
@@ -58,6 +59,7 @@ export type AddMultiplierInstructionAccounts = {
   payer: web3.PublicKey
   systemProgram?: web3.PublicKey
   rentSysvar: web3.PublicKey
+  instructionsSysvar: web3.PublicKey
   project: web3.PublicKey
   delegateAuthority?: web3.PublicKey
   vault: web3.PublicKey
@@ -120,6 +122,11 @@ export function createAddMultiplierInstruction(
     },
     {
       pubkey: accounts.rentSysvar,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.instructionsSysvar,
       isWritable: false,
       isSigner: false,
     },

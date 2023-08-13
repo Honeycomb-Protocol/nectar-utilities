@@ -31,6 +31,7 @@ pub mod hpl_nectar_staking {
                     log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
                     clock: ctx.accounts.clock_sysvar.to_account_info(),
                     rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
+                    instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                     payer: ctx.accounts.payer.to_account_info(),
                     vault: ctx.accounts.vault.to_account_info(),
                 },
@@ -59,6 +60,7 @@ pub mod hpl_nectar_staking {
             ctx.accounts.vault.to_account_info(),
             &ctx.accounts.delegate_authority,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
         instructions::update_staking_pool(ctx, args)
@@ -77,6 +79,7 @@ pub mod hpl_nectar_staking {
             ctx.accounts.vault.to_account_info(),
             &ctx.accounts.delegate_authority,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
         instructions::init_multipliers(ctx, args)
@@ -92,6 +95,7 @@ pub mod hpl_nectar_staking {
             ctx.accounts.vault.to_account_info(),
             &ctx.accounts.delegate_authority,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
         instructions::add_multiplier(ctx, args)
@@ -107,6 +111,7 @@ pub mod hpl_nectar_staking {
             ctx.accounts.vault.to_account_info(),
             &ctx.accounts.delegate_authority,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
         instructions::init_nft(ctx)
@@ -122,6 +127,7 @@ pub mod hpl_nectar_staking {
             ctx.accounts.vault.to_account_info(),
             &ctx.accounts.delegate_authority,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
         instructions::init_cnft(ctx, args)
@@ -137,6 +143,7 @@ pub mod hpl_nectar_staking {
             ctx.accounts.vault.to_account_info(),
             &None,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
         instructions::init_staker(ctx)
@@ -152,6 +159,7 @@ pub mod hpl_nectar_staking {
             ctx.accounts.vault.to_account_info(),
             &None,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
         instructions::stake(ctx)
@@ -167,6 +175,7 @@ pub mod hpl_nectar_staking {
             ctx.accounts.vault.to_account_info(),
             &None,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
         instructions::unstake(ctx)
@@ -182,6 +191,7 @@ pub mod hpl_nectar_staking {
             ctx.accounts.vault.to_account_info(),
             &None,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
         instructions::stake_cnft(ctx, args)
@@ -197,6 +207,7 @@ pub mod hpl_nectar_staking {
             ctx.accounts.vault.to_account_info(),
             &None,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
         instructions::unstake_cnft(ctx, args)
@@ -212,6 +223,7 @@ pub mod hpl_nectar_staking {
             ctx.accounts.vault.to_account_info(),
             &ctx.accounts.delegate_authority,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
         instructions::withdraw_rewards(ctx, amount)
@@ -227,27 +239,36 @@ pub mod hpl_nectar_staking {
             ctx.accounts.vault.to_account_info(),
             &None,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
         instructions::claim_rewards(ctx)
     }
 
-    pub fn migrate_custodial(ctx: Context<MigrateCustodial>, args: MigrateArgs) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate_fn(
-            hpl_hive_control::constants::ACTIONS.manage_staking_pool,
-            None,
-            &ctx.accounts.project,
-            ctx.accounts.authority.key(),
-            ctx.accounts.payer.to_account_info(),
-            ctx.accounts.vault.to_account_info(),
-            &ctx.accounts.delegate_authority,
-            ctx.accounts.system_program.to_account_info(),
-        )?;
-
-        instructions::migrate_custodial(ctx, args)
+    pub fn distribute_rewards(ctx: Context<DistriuteRewards>) -> Result<()> {
+        instructions::distribute_rewards(ctx)
     }
 
-    pub fn migrate_vault(ctx: Context<MigrateVault>) -> Result<()> {
-        instructions::migrate_vault(ctx)
+    pub fn force_unstake(ctx: Context<ForceUnstake>) -> Result<()> {
+        instructions::force_unstake(ctx)
     }
+
+    // pub fn migrate_custodial(ctx: Context<MigrateCustodial>, args: MigrateArgs) -> Result<()> {
+    //     hpl_hive_control::instructions::platform_gate_fn(
+    //         hpl_hive_control::constants::ACTIONS.manage_staking_pool,
+    //         None,
+    //         &ctx.accounts.project,
+    //         ctx.accounts.authority.key(),
+    //         ctx.accounts.payer.to_account_info(),
+    //         ctx.accounts.vault.to_account_info(),
+    //         &ctx.accounts.delegate_authority,
+    //         ctx.accounts.system_program.to_account_info(),
+    //     )?;
+
+    //     instructions::migrate_custodial(ctx, args)
+    // }
+
+    // pub fn migrate_vault(ctx: Context<MigrateVault>) -> Result<()> {
+    //     instructions::migrate_vault(ctx)
+    // }
 }

@@ -36,9 +36,9 @@ export const unstakeStruct = new beet.BeetArgsStruct<{
  * @property [_writable_, **signer**] wallet
  * @property [] associatedTokenProgram
  * @property [] tokenMetadataProgram
- * @property [] clock
- * @property [] sysvarInstructions
  * @property [] logWrapper
+ * @property [] clock
+ * @property [] instructionsSysvar
  * @property [] project
  * @property [_writable_] vault
  * @property [] authorizationRulesProgram (optional)
@@ -63,9 +63,9 @@ export type UnstakeInstructionAccounts = {
   tokenProgram?: web3.PublicKey
   associatedTokenProgram: web3.PublicKey
   tokenMetadataProgram: web3.PublicKey
-  clock: web3.PublicKey
-  sysvarInstructions: web3.PublicKey
   logWrapper: web3.PublicKey
+  clock: web3.PublicKey
+  instructionsSysvar: web3.PublicKey
   project: web3.PublicKey
   vault: web3.PublicKey
   authorizationRulesProgram?: web3.PublicKey
@@ -192,17 +192,17 @@ export function createUnstakeInstruction(
     isSigner: false,
   })
   keys.push({
+    pubkey: accounts.logWrapper,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
     pubkey: accounts.clock,
     isWritable: false,
     isSigner: false,
   })
   keys.push({
-    pubkey: accounts.sysvarInstructions,
-    isWritable: false,
-    isSigner: false,
-  })
-  keys.push({
-    pubkey: accounts.logWrapper,
+    pubkey: accounts.instructionsSysvar,
     isWritable: false,
     isSigner: false,
   })

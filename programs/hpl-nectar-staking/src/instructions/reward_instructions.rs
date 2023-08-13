@@ -47,15 +47,16 @@ pub struct WithdrawRewards<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    /// CHECK: This is not dangerous because we don't read or write from this account
-    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
-    pub instructions_sysvar: AccountInfo<'info>,
-
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
 
     /// NATIVE TOKEN PROGRAM
     pub token_program: Program<'info, Token>,
+
+    /// NATIVE INSTRUCTIONS SYSVAR
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
 
     // HIVE CONTROL
     #[account(mut)]
@@ -243,9 +244,6 @@ pub struct ClaimRewards<'info> {
     #[account(mut)]
     pub wallet: Signer<'info>,
 
-    /// CHECK: This is not dangerous because we don't read or write from this account
-    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
-    pub instructions_sysvar: AccountInfo<'info>,
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
 
@@ -254,8 +252,14 @@ pub struct ClaimRewards<'info> {
 
     /// SPL NO OP PROGRAM
     pub log_wrapper: Program<'info, Noop>,
+
     /// SYSVAR CLOCK
     pub clock: Sysvar<'info, Clock>,
+
+    /// NATIVE INSTRUCTIONS SYSVAR
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
 
     // HIVE CONTROL
     #[account()]
@@ -454,10 +458,6 @@ pub struct DistriuteRewards<'info> {
 
     /// The authority of the project
     pub authority: Signer<'info>,
-
-    /// CHECK: This is not dangerous because we don't read or write from this account
-    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
-    pub instructions_sysvar: AccountInfo<'info>,
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
 
@@ -466,8 +466,14 @@ pub struct DistriuteRewards<'info> {
 
     /// SPL NO OP PROGRAM
     pub log_wrapper: Program<'info, Noop>,
+
     /// SYSVAR CLOCK
     pub clock: Sysvar<'info, Clock>,
+
+    /// NATIVE INSTRUCTIONS SYSVAR
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
 
     // HIVE CONTROL
     #[account(has_one = authority)]

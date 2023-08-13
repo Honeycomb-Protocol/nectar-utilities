@@ -1,6 +1,7 @@
 import {
   PublicKey,
   SYSVAR_CLOCK_PUBKEY,
+  SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY,
 } from "@solana/web3.js";
 import {
@@ -95,6 +96,7 @@ export async function createCreateMissionPoolOperation(
         logWrapper: SPL_NOOP_PROGRAM_ID,
         clockSysvar: SYSVAR_CLOCK_PUBKEY,
         rentSysvar: SYSVAR_RENT_PUBKEY,
+        instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
       },
       {
         args: args.args,

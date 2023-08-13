@@ -1,6 +1,7 @@
 import {
   ComputeBudgetProgram,
   PublicKey,
+  SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY,
 } from "@solana/web3.js";
 import { Honeycomb, Operation, VAULT } from "@honeycomb-protocol/hive-control";
@@ -88,6 +89,7 @@ export async function createCreateMissionOperation(
         payer: honeycomb.identity().address,
         vault: VAULT,
         rentSysvar: SYSVAR_RENT_PUBKEY,
+        instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
       },
       {
         args: args.args,

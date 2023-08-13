@@ -43,6 +43,7 @@ export const initMultipliersStruct = new beet.BeetArgsStruct<
  * @property [_writable_] multipliers
  * @property [**signer**] authority
  * @property [_writable_, **signer**] payer
+ * @property [] instructionsSysvar
  * @property [] project
  * @property [] delegateAuthority (optional)
  * @property [_writable_] vault
@@ -56,6 +57,7 @@ export type InitMultipliersInstructionAccounts = {
   authority: web3.PublicKey
   payer: web3.PublicKey
   systemProgram?: web3.PublicKey
+  instructionsSysvar: web3.PublicKey
   project: web3.PublicKey
   delegateAuthority?: web3.PublicKey
   vault: web3.PublicKey
@@ -113,6 +115,11 @@ export function createInitMultipliersInstruction(
     },
     {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.instructionsSysvar,
       isWritable: false,
       isSigner: false,
     },

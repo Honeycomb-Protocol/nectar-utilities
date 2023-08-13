@@ -47,6 +47,7 @@ export const createMissionStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_, **signer**] payer
  * @property [_writable_] vault
  * @property [] rentSysvar
+ * @property [] instructionsSysvar
  * @category Instructions
  * @category CreateMission
  * @category generated
@@ -61,6 +62,7 @@ export type CreateMissionInstructionAccounts = {
   vault: web3.PublicKey
   systemProgram?: web3.PublicKey
   rentSysvar: web3.PublicKey
+  instructionsSysvar: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -139,6 +141,11 @@ export function createCreateMissionInstruction(
   })
   keys.push({
     pubkey: accounts.rentSysvar,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.instructionsSysvar,
     isWritable: false,
     isSigner: false,
   })

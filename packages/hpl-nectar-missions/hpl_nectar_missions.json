@@ -1,5 +1,5 @@
 {
-  "version": "0.0.36",
+  "version": "0.0.37",
   "name": "hpl_nectar_missions",
   "instructions": [
     {
@@ -70,6 +70,14 @@
           "name": "rentSysvar",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
+          ]
         },
         {
           "name": "hiveControl",
@@ -156,6 +164,14 @@
           "isSigner": false
         },
         {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
+          ]
+        },
+        {
           "name": "vault",
           "isMut": true,
           "isSigner": false
@@ -238,6 +254,14 @@
           "isSigner": false,
           "docs": [
             "RENT SYSVAR"
+          ]
+        },
+        {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
           ]
         }
       ],
@@ -562,8 +586,8 @@
           "isSigner": false
         },
         {
-          "name": "vault",
-          "isMut": true,
+          "name": "logWrapper",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -572,8 +596,16 @@
           "isSigner": false
         },
         {
-          "name": "logWrapper",
+          "name": "instructionsSysvar",
           "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
+          ]
+        },
+        {
+          "name": "vault",
+          "isMut": true,
           "isSigner": false
         }
       ],
@@ -905,10 +937,6 @@
                 "type": "publicKey"
               },
               {
-                "name": "info",
-                "type": "bytes"
-              },
-              {
                 "name": "timestamp",
                 "type": "i64"
               }
@@ -924,10 +952,6 @@
               {
                 "name": "index",
                 "type": "u8"
-              },
-              {
-                "name": "info",
-                "type": "bytes"
               },
               {
                 "name": "timestamp",
