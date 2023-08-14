@@ -1,7 +1,10 @@
-import { Metadata } from "@metaplex-foundation/js";
 import * as web3 from "@solana/web3.js";
-import { NFT } from "./generated";
-import { TokenRecord } from "@metaplex-foundation/mpl-token-metadata";
+import { NFTv1Args } from "./generated";
+import {
+  ProgrammableConfig,
+  TokenRecord,
+  TokenStandard,
+} from "@metaplex-foundation/mpl-token-metadata";
 
 /**
  * Represents the information about a token account.
@@ -20,14 +23,77 @@ export type TokenAccountInfo = {
 };
 
 /**
+ * Represents the metadata of an NFT.
+ * @category Types
+ */
+export type Metadata = {
+  mint: web3.PublicKey;
+  json?: JsonMetadata | null;
+  jsonLoaded: boolean;
+  name: string;
+  symbol: string;
+  uri: string;
+  tokenStandard?: TokenStandard | null;
+  programmableConfig?: ProgrammableConfig | null;
+  creators: {
+    address: web3.PublicKey;
+    share: number;
+    verified: boolean;
+  }[];
+  collection?: {
+    verified: boolean;
+    address: web3.PublicKey;
+  } | null;
+  merkleTree?: web3.PublicKey | null;
+  isCompressed: boolean;
+  frozen: boolean;
+};
+
+/**
+ * Represents the uri data of an NFT.
+ * @category Types
+ */
+export type JsonMetadata = {
+  name?: string;
+  symbol?: string;
+  description?: string;
+  seller_fee_basis_points?: number;
+  image?: string;
+  external_url?: string;
+  attributes?: Array<{
+    trait_type?: string;
+    value?: string;
+    [key: string]: unknown;
+  }>;
+  properties?: {
+    creators?: Array<{
+      address?: string;
+      share?: number;
+      [key: string]: unknown;
+    }>;
+    files?: Array<{
+      type?: string;
+      uri?: string;
+      [key: string]: unknown;
+    }>;
+    [key: string]: unknown;
+  };
+  collection?: {
+    name?: string;
+    family?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+};
+
+/**
  * Represents a staked NFT.
  * @category Types
  */
-export type StakedNft = Metadata & NFT;
+export type StakedNft = Metadata & NFTv1Args;
 
 /**
  * Represents the available NFT.
  * @category Types
  */
-export type AvailableNft = Metadata &
-  TokenAccountInfo & { tokenRecord?: TokenRecord };
+export type AvailableNft = Metadata & { tokenRecord?: TokenRecord };

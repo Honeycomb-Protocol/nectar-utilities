@@ -711,7 +711,7 @@ class NectarMissionsFetch {
                   x.find((y) =>
                     getNftPda(
                       this._missions.honeycomb().staking().address,
-                      y.mintAddress
+                      y.mint
                     )[0].equals(participation.nft)
                   )
                 );
@@ -719,6 +719,7 @@ class NectarMissionsFetch {
                 await this._missions.mission(participation.mission),
                 p.pubkey,
                 participation,
+                //@ts-ignore
                 stakedNft
               );
             } catch {

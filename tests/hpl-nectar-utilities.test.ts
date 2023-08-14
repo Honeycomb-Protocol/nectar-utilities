@@ -11,13 +11,12 @@ import {
 import {
   PermissionedCurrencyKind,
   HplCurrency,
-  HplHolderAccount,
   findProjectCurrencies,
+  HplHolderAccount,
 } from "@honeycomb-protocol/currency-manager";
 import { LockType, NectarStaking } from "../packages/hpl-nectar-staking";
 import {
-  createTree,
-  fetchNftAssets,
+  createNewTree,
   mintOneCNFT,
   prepare,
   tryKeyOrGenerate,
@@ -50,14 +49,14 @@ export function bytesOf(input: any): number {
 }
 
 describe("Nectar Utilities", () => {
-  const totalNfts = 1;
-  const totalcNfts = 1;
+  const totalNfts = 0;
+  const totalcNfts = 2;
 
   let honeycomb: Honeycomb;
   let metaplex: Metaplex;
   let collection: Nft;
   let nfts: Nft[] = [];
-  let cNfts: any = [];
+  // let cNfts: Metadata[];
   let factionsArray: { faction: string; mint: web3.PublicKey }[] = [];
   let factionsMerkleTree: MerkleTree;
   let mainVault: HplHolderAccount;
@@ -1088,7 +1087,7 @@ describe("Nectar Utilities", () => {
     //   .then((hA) => hA.mint(100 * 1_000_000_000));
   });
 
-  it.skip("Prepare and Setup", async () => {
+  it("Prepare and Setup", async () => {
     honeycomb = await prepare();
     const balance = await honeycomb
       .rpc()
@@ -1101,65 +1100,67 @@ describe("Nectar Utilities", () => {
       honeycomb.connection.rpcEndpoint
     );
 
-    const treeKeypair = web3.Keypair.generate();
-
     expect(balance).toBeGreaterThanOrEqual(web3.LAMPORTS_PER_SOL * 0.1);
 
+    // Set up Metaplex to mint some NFTs for testing
     metaplex = new Metaplex(honeycomb.connection);
     metaplex.use(keypairIdentity(tryKeyOrGenerate()[0]));
 
-    await createTree(treeKeypair);
+    // Mint Collection
+    collection = await metaplex
+      .nfts()
+      .create({
+        name: "Collection",
+        symbol: "COL",
+        sellerFeeBasisPoints: 0,
+        uri: "https://api.eboy.dev/",
+        isCollection: true,
+        collectionIsSized: true,
+      })
+      .then((x) => x.nft);
 
-    let out = await metaplex.nfts().create({
-      name: "Collection",
-      symbol: "COL",
-      sellerFeeBasisPoints: 0,
-      uri: "https://api.eboy.dev/",
-      isCollection: true,
-      collectionIsSized: true,
-    });
+    // Mint Nfts
+    for (let i = 1; i <= totalNfts; i++) {
+      nfts.push(
+        await metaplex
+          .nfts()
+          .create({
+            name: `NFT #${i}`,
+            symbol: `TEST`,
+            sellerFeeBasisPoints: 100,
+            uri: "https://arweave.net/WhyRt90kgI7f0EG9GPfB8TIBTIBgX3X12QaF9ObFerE",
+            collection: collection.mint.address,
+            collectionAuthority: metaplex.identity(),
+            tokenStandard: TokenStandard.NonFungible,
+          })
+          .then((x) => x.nft)
+      );
+    }
 
-    collection = out.nft;
+    // Create Merkle tree for cNFTs
+    const [treeKeypair] = await createNewTree(honeycomb);
 
+    // Mint cNFTs
     for (let i = 1; i <= totalcNfts; i++) {
-      await mintOneCNFT({
+      await mintOneCNFT(honeycomb, {
         dropWalletKey: honeycomb.identity().address.toString(),
-        NftName: "Test",
-        NftSymbol: "TEST",
-        metaDataUri:
-          "https://arweave.net/WhyRt90kgI7f0EG9GPfB8TIBTIBgX3X12QaF9ObFerE",
+        name: `cNFT #${i}`,
+        symbol: "TEST",
+        uri: "https://arweave.net/WhyRt90kgI7f0EG9GPfB8TIBTIBgX3X12QaF9ObFerE",
         tree: treeKeypair,
         collection: collection.mint.address,
       });
     }
 
-    for (let i = 1; i <= totalNfts; i++) {
-      out = await metaplex.nfts().create({
-        name: `NFT #${i}`,
-        symbol: `TEMP`,
-        sellerFeeBasisPoints: 100,
-        uri: "https://arweave.net/WhyRt90kgI7f0EG9GPfB8TIBTIBgX3X12QaF9ObFerE",
-        collection: collection.mint.address,
-        collectionAuthority: metaplex.identity(),
-        tokenStandard: TokenStandard.NonFungible,
-      });
+    // cNfts = await fetchCNfts({
+    //   walletAddress: honeycomb.identity().address,
+    //   collectionAddress: collection.mint.address,
+    // });
 
-      nfts.push(out.nft);
-    }
-
-    const parsedcNfts = await fetchNftAssets(honeycomb.identity().address, {
-      collectionId: collection.mint.address,
-      isCompressed: true
-    });
-    cNfts = parsedcNfts.map((nft) => ({
-      ...nft,
-      mint: new web3.PublicKey(nft.assetId),
-    }));
     factionsArray = nfts.map((nft) => ({
       faction: "faction",
       mint: nft.mint.address,
     }));
-
     factionsMerkleTree = new MerkleTree(
       factionsArray.map(({ faction, mint }) =>
         Buffer.from([...Buffer.from(faction), ...mint.toBuffer()])
@@ -1208,7 +1209,7 @@ describe("Nectar Utilities", () => {
     console.log("Project", honeycomb.project().address.toString());
   });
 
-  it.skip("Create Staking Pool", async () => {
+  it("Create Staking Pool", async () => {
     // Create staking pool
     honeycomb.use(
       await NectarStaking.new(honeycomb, {
@@ -1406,8 +1407,9 @@ describe("Nectar Utilities", () => {
     // console.log("User", user.address.toString(), profile.address.toString());
   });
 
-  it.skip("Stake NFTs", async () => {
+  it("Stake NFTs", async () => {
     const availableNfts = await honeycomb.staking().fetch().availableNfts();
+    console.log("availableNfts", availableNfts);
     expect(availableNfts.length).toBe(totalNfts);
     await honeycomb.staking().stake(availableNfts);
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
@@ -1418,10 +1420,9 @@ describe("Nectar Utilities", () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     const mission = await honeycomb.missions().mission("Quick Patrol");
     await mission.participate(
+      //@ts-ignore
       stakedNfts.map((x) => ({
         ...x,
-        serialize: x.serialize,
-        pretty: x.pretty,
         args: {
           faction: "faction",
           merkleProof: factionsMerkleTree.getProofArray(
@@ -1439,7 +1440,7 @@ describe("Nectar Utilities", () => {
     await mission.recall(participations, { skipPreflight: true });
   });
 
-  it.skip("Unstake NFTs", async () => {
+  it("Unstake NFTs", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     await honeycomb.staking().unstake(stakedNfts, {
       skipPreflight: true,

@@ -71,17 +71,17 @@ export async function createStakeOperation(
   const programId = args.programId || PROGRAM_ID;
 
   // Get the PDA account for the NFT
-  const [nft] = getNftPda(args.stakingPool.address, args.nft.tokenMint);
+  const [nft] = getNftPda(args.stakingPool.address, args.nft.mint);
 
   // Get the associated token address for the NFT account
   const nftAccount = splToken.getAssociatedTokenAddressSync(
-    args.nft.tokenMint,
+    args.nft.mint,
     honeycomb.identity().address
   );
 
   // Get metadata accounts for NFT
-  const [nftMetadata] = getMetadataAccount_(args.nft.tokenMint);
-  const [nftEdition] = getMetadataAccount_(args.nft.tokenMint, {
+  const [nftMetadata] = getMetadataAccount_(args.nft.mint);
+  const [nftEdition] = getMetadataAccount_(args.nft.mint, {
     __kind: "edition",
   });
 
@@ -100,12 +100,12 @@ export async function createStakeOperation(
   }
 
   if (args.nft.tokenStandard === TokenStandard.ProgrammableNonFungible) {
-    [nftTokenRecord] = getMetadataAccount_(args.nft.tokenMint, {
+    [nftTokenRecord] = getMetadataAccount_(args.nft.mint, {
       __kind: "token_record",
       tokenAccount: nftAccount,
     });
     if (depositAccount && args.stakingPool.lockType === LockType.Custoday) {
-      [depositTokenRecord] = getMetadataAccount_(args.nft.tokenMint, {
+      [depositTokenRecord] = getMetadataAccount_(args.nft.mint, {
         __kind: "token_record",
         tokenAccount: depositAccount,
       });
@@ -123,7 +123,7 @@ export async function createStakeOperation(
         vault: VAULT,
         stakingPool: args.stakingPool.address,
         nft,
-        nftMint: args.nft.tokenMint,
+        nftMint: args.nft.mint,
         nftAccount,
         nftMetadata,
         nftEdition,
@@ -162,12 +162,12 @@ export async function createStakeOperation(
   }
 
   try {
-    const nft = await args.stakingPool.fetch().nft(args.nft.tokenMint).catch();
+    const nft = await args.stakingPool.fetch().nft(args.nft.mint).catch();
     if (!nft) throw new Error("NFT not initialized");
   } catch {
     await createInitNFTOperation(honeycomb, {
       stakingPool: args.stakingPool,
-      nftMint: args.nft.tokenMint,
+      nftMint: args.nft.mint,
       programId: args.programId,
     }).then(({ operation }) => instructions.unshift(...operation.instructions));
   }

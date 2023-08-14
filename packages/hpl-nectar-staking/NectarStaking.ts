@@ -9,7 +9,7 @@ import {
   CreateStakingPoolArgs,
   Multipliers,
   MultipliersArgs,
-  NFT,
+  NFTv1,
   PROGRAM_ID,
   Staker,
   StakingPool,
@@ -267,14 +267,25 @@ export class NectarStaking extends Module {
    * Get the collections associated with the staking pool.
    */
   public get collections() {
-    return this._pool.collections;
+    return [...this._pool.collections].map(
+      (i) => this.project().collections[i]
+    );
   }
 
   /**
    * Get the creators associated with the staking pool.
    */
   public get creators() {
-    return this._pool.creators;
+    return [...this._pool.creators].map((i) => this.project().creators[i]);
+  }
+
+  /**
+   * Get the merkle trees associated with the staking pool.
+   */
+  public get merkleTrees() {
+    return [...this._pool.merkleTrees].map(
+      (i) => this.project().merkleTrees[i]
+    );
   }
 
   /**
@@ -660,7 +671,7 @@ export class NectarStakingFetch {
       mint,
       this.nectarStaking.programId
     );
-    return NFT.fromAccountAddress(
+    return NFTv1.fromAccountAddress(
       this.nectarStaking.honeycomb().connection,
       nftAddress
     ).then((nft) => ({
@@ -675,7 +686,7 @@ export class NectarStakingFetch {
    * @returns A Promise that resolves with an array of staked NFTs.
    */
   public nftsByWallet(walletAddress?: web3.PublicKey) {
-    const gpa = NFT.gpaBuilder();
+    const gpa = NFTv1.gpaBuilder();
     gpa.addFilter("stakingPool", this.nectarStaking.poolAddress);
     const [staker] = getStakerPda(
       this.nectarStaking.poolAddress,
@@ -687,7 +698,7 @@ export class NectarStakingFetch {
     return gpa
       .run(this.nectarStaking.honeycomb().connection)
       .then((nfts) =>
-        nfts.map(({ account }) => NFT.fromAccountInfo(account)[0])
+        nfts.map(({ account }) => NFTv1.fromAccountInfo(account)[0])
       );
   }
 
@@ -735,6 +746,7 @@ export class NectarStakingFetch {
    */
   public availableNfts(walletAddress?: web3.PublicKey) {
     return fetchAvailableNfts(this.nectarStaking.honeycomb(), {
+      stakingPool: this.nectarStaking.address,
       walletAddress:
         walletAddress || this.nectarStaking.honeycomb().identity().address,
       programId: this.nectarStaking.programId,

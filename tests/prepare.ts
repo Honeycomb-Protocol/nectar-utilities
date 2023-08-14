@@ -8,7 +8,11 @@ import {
   TransactionMessage,
   VersionedTransaction,
 } from "@solana/web3.js";
-import { Honeycomb, identityModule } from "@honeycomb-protocol/hive-control";
+import {
+  Honeycomb,
+  Operation,
+  identityModule,
+} from "@honeycomb-protocol/hive-control";
 import {
   createCreateTreeInstruction,
   PROGRAM_ID as BUBBLEGUM_PROGRAM_ID,
@@ -111,14 +115,8 @@ async function airdrop(
   }
 }
 
-export async function createTree(treeKeypair: Keypair) {
-  const keypair = loadWalletKey("Key.json");
-  const rpc =
-    process.env.prod === "true"
-      ? "https://rpc.hellomoon.io/b55ac723-2036-4a39-b49f-645107268a73"
-      : "https://api.devnet.solana.com/";
-  const connection = new Connection(rpc);
-  const merkleTree = treeKeypair;
+export async function createNewTree(honeycomb: Honeycomb) {
+  const merkleTree = Keypair.generate();
 
   const [treeAuthority, _bump] = PublicKey.findProgramAddressSync(
     [merkleTree.publicKey.toBuffer()],
@@ -134,65 +132,69 @@ export async function createTree(treeKeypair: Keypair) {
     depthSizePair.maxBufferSize
   );
 
-  const createAccountIx = await SystemProgram.createAccount({
-    newAccountPubkey: merkleTree.publicKey,
-    fromPubkey: keypair.publicKey,
-    space: space,
-    lamports: await connection.getMinimumBalanceForRentExemption(space),
-    programId: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-  });
+  const operation = new Operation(
+    honeycomb,
+    [
+      SystemProgram.createAccount({
+        newAccountPubkey: merkleTree.publicKey,
+        fromPubkey: honeycomb.identity().address,
+        space: space,
+        lamports: await honeycomb.connection.getMinimumBalanceForRentExemption(
+          space
+        ),
+        programId: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+      }),
+      new Transaction().add(
+        createCreateTreeInstruction(
+          {
+            merkleTree: merkleTree.publicKey,
+            treeAuthority: treeAuthority,
+            payer: honeycomb.identity().address,
+            treeCreator: honeycomb.identity().address,
+            compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+            logWrapper: SPL_NOOP_PROGRAM_ID,
+            systemProgram: SYSTEM_PROGRAM_ID,
+          },
+          {
+            maxDepth: depthSizePair.maxDepth,
+            maxBufferSize: depthSizePair.maxBufferSize,
+            public: false,
+          }
+        )
+      ),
+    ],
+    [merkleTree]
+  );
 
-  const createTreeIx = await createCreateTreeInstruction(
-    {
-      merkleTree: merkleTree.publicKey,
-      treeAuthority: treeAuthority,
-      payer: keypair.publicKey,
-      treeCreator: keypair.publicKey,
-      compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-      logWrapper: SPL_NOOP_PROGRAM_ID,
-      systemProgram: SYSTEM_PROGRAM_ID,
-    },
-    {
-      maxDepth: depthSizePair.maxDepth,
-      maxBufferSize: depthSizePair.maxBufferSize,
-      public: false,
-    }
-  );
-  const { signature, latestBlockhash } = await sendVersionedTx(
-    connection,
-    [createAccountIx, createTreeIx],
-    keypair.publicKey,
-    [keypair, merkleTree]
-  );
+  const { signature, blockhashWithBlockHeight: latestBlockhash } =
+    await operation.send();
+
   console.log(
     `Tree created with signature: ${signature} and blockhash: ${latestBlockhash.blockhash}`
   );
-  return signature;
+  return [merkleTree, signature] as [Keypair, string];
 }
 
-export async function mintOneCNFT({
-  dropWalletKey,
-  NftName,
-  NftSymbol,
-  metaDataUri,
-  tree,
-  collection,
-}: {
-  dropWalletKey: string;
-  NftName: string;
-  NftSymbol: string;
-  metaDataUri: string;
-  tree: Keypair;
-  collection: string | PublicKey;
-}) {
+export async function mintOneCNFT(
+  honeycomb: Honeycomb,
+  {
+    dropWalletKey,
+    name,
+    symbol,
+    uri,
+    tree,
+    collection,
+  }: {
+    dropWalletKey: string;
+    name: string;
+    symbol: string;
+    uri: string;
+    tree: Keypair;
+    collection: string | PublicKey;
+  }
+) {
   try {
-    console.log(colors.yellow(`Minting CNFT ${NftName} for ${dropWalletKey}`));
-    const keypair = loadWalletKey("key.json");
-    const rpc =
-      process.env.prod === "true"
-        ? "https://rpc.hellomoon.io/b55ac723-2036-4a39-b49f-645107268a73"
-        : "https://api.devnet.solana.com/";
-    const connection = new Connection(rpc);
+    console.log(colors.yellow(`Minting CNFT ${name} for ${dropWalletKey}`));
     const merkleTree = tree.publicKey;
 
     const [treeAuthority, _bump] = PublicKey.findProgramAddressSync(
@@ -222,91 +224,84 @@ export async function mintOneCNFT({
       [Buffer.from("collection_cpi", "utf8")],
       BUBBLEGUM_PROGRAM_ID
     );
-    const ix = await createMintToCollectionV1Instruction(
-      {
-        treeAuthority: treeAuthority,
-        // leafOwner: keypair.publicKey,
-        // leafDelegate: keypair.publicKey,
-        leafOwner: new PublicKey(dropWalletKey),
-        leafDelegate: new PublicKey(dropWalletKey),
-        merkleTree: merkleTree,
-        payer: keypair.publicKey,
-        treeDelegate: keypair.publicKey,
-        logWrapper: SPL_NOOP_PROGRAM_ID,
-        compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-        collectionAuthority: keypair.publicKey,
-        collectionAuthorityRecordPda: BUBBLEGUM_PROGRAM_ID,
-        collectionMint: collectionMint,
-        collectionMetadata: collectionMetadataAccount,
-        editionAccount: collectionEditionAccount,
-        bubblegumSigner: bgumSigner,
-        tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
-      },
-      {
-        metadataArgs: {
-          collection: { key: collectionMint, verified: false },
-          creators: [
-            {
-              address: new PublicKey(
-                "4gETqgEwFLkXX9yk6qBszA6LMjC2kRyyERXsAr2rwhwf"
-              ),
-              verified: false,
-              share: 100,
-            },
-          ],
-          isMutable: true,
-          name: NftName,
-          primarySaleHappened: true,
-          sellerFeeBasisPoints: 500,
-          symbol: NftSymbol,
-          uri: metaDataUri,
-          uses: null,
-          tokenStandard: null,
-          editionNonce: null,
-          tokenProgramVersion: TokenProgramVersion.Original,
-        },
-      }
-    );
 
-    const { signature } = await sendAndConfirmTransaction(
-      connection,
-      [ix],
-      keypair.publicKey,
-      [keypair]
-    );
+    const operation = new Operation(honeycomb, [
+      new Transaction().add(
+        createMintToCollectionV1Instruction(
+          {
+            treeAuthority: treeAuthority,
+            // leafOwner: honeycomb.identity().address,
+            // leafDelegate: honeycomb.identity().address,
+            leafOwner: new PublicKey(dropWalletKey),
+            leafDelegate: new PublicKey(dropWalletKey),
+            merkleTree: merkleTree,
+            payer: honeycomb.identity().address,
+            treeDelegate: honeycomb.identity().address,
+            logWrapper: SPL_NOOP_PROGRAM_ID,
+            compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+            collectionAuthority: honeycomb.identity().address,
+            collectionAuthorityRecordPda: BUBBLEGUM_PROGRAM_ID,
+            collectionMint: collectionMint,
+            collectionMetadata: collectionMetadataAccount,
+            editionAccount: collectionEditionAccount,
+            bubblegumSigner: bgumSigner,
+            tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+          },
+          {
+            metadataArgs: {
+              collection: { key: collectionMint, verified: false },
+              creators: [
+                {
+                  address: honeycomb.identity().address,
+                  verified: false,
+                  share: 100,
+                },
+              ],
+              isMutable: true,
+              name,
+              primarySaleHappened: true,
+              sellerFeeBasisPoints: 500,
+              symbol,
+              uri,
+              uses: null,
+              tokenStandard: null,
+              editionNonce: null,
+              tokenProgramVersion: TokenProgramVersion.Original,
+            },
+          }
+        )
+      ),
+    ]);
+
+    const { signature } = await operation.send();
+
     console.log(
       colors.green(
-        `Successfully Minted CNFT ${NftName} for ${dropWalletKey}, Tx: ${signature}`
+        `Successfully Minted CNFT ${name} for ${dropWalletKey}, Tx: ${signature}`
       )
     );
     return {
       txHash: signature,
       wallet: dropWalletKey,
-      NftName: NftName,
+      name,
       error: false,
       message: "Success",
     };
   } catch (e) {
     console.log(
-      colors.red(`Minting CNFT ${NftName} for ${dropWalletKey} Failed: `),
+      colors.red(`Minting CNFT ${name} for ${dropWalletKey} Failed: `),
       e
     );
-    return {
-      txHash: null,
-      wallet: dropWalletKey,
-      NftName: NftName,
-      error: true,
-      message: "error" + e,
-    };
+    throw new Error(e);
+    // return {
+    //   txHash: null,
+    //   wallet: dropWalletKey,
+    //   name,
+    //   error: true,
+    //   message: "error" + e,
+    // };
   }
 }
-
-// mintOneCNFT({
-//   dropWalletKey: "CNFTDFRQB8udixzRzrZX5nBnjJ5hJWuMv1Xp1RwQjU4E",
-//   NftName: "Grain",
-//   NftSymbol: "Grain",
-//   metaDataUri: "https://arweave.net/3JGimR30l6moM-HwE7Dt9dgZr5MYZJPvfSn9QDlrjqo",
-// });
 
 export function loadWalletKey(keypairFile: string): Keypair {
   const fs = require("fs");
@@ -356,51 +351,7 @@ export async function sendAndConfirmTransaction(
   return { signature, latestBlockhash };
 }
 
-export const fetchNftAssets = async (
-  wallet: web3.PublicKey,
-  options: {
-    collectionId: web3.PublicKey;
-    isCompressed?: boolean;
-  }
-) => {
-  let page: number | boolean = 1;
-  let assetList: any = [];
-  while (page) {
-    const response = await fetch(HELIUS_RPC_URL as string, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: Math.random().toString(36).substring(7),
-        method: "searchAssets",
-        params: {
-          ownerAddress: wallet.toString(),
-          grouping: ["collection", options.collectionId.toString()],
-          compressed: options.isCompressed || false,
-          page: page,
-          limit: 1000,
-        },
-      }),
-    });
-    const { result } = await response.json();
-
-    assetList.push(...result.items);
-    if (result.total !== 1000) {
-      page = false;
-    } else {
-      page++;
-    }
-  }
-  const resultData = {
-    totalResults: assetList.length,
-    results: assetList,
-  };
-  return resultData.results;
-};
-
-export const getAssetProof = async (nftMint: web3.PublicKey) => {
+export const getAssetProof = async (assetId: web3.PublicKey) => {
   const response = await fetch(HELIUS_RPC_URL as string, {
     method: "POST",
     headers: {
@@ -411,7 +362,7 @@ export const getAssetProof = async (nftMint: web3.PublicKey) => {
       id: "my-id",
       method: "getAssetProof",
       params: {
-        id: nftMint.toString(),
+        id: assetId.toString(),
       },
     }),
   });

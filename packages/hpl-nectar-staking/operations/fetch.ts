@@ -1,4 +1,7 @@
-import { Metadata, Metaplex } from "@metaplex-foundation/js";
+import {
+  Metaplex,
+  Metadata as MetaplexMetadata,
+} from "@metaplex-foundation/js";
 import {
   TokenStandard,
   TokenRecord,
@@ -9,11 +12,60 @@ import {
   getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
 import * as web3 from "@solana/web3.js";
-import { AvailableNft, StakedNft, TokenAccountInfo } from "../types";
+import { AvailableNft, Metadata, StakedNft, TokenAccountInfo } from "../types";
 import { NFT, Staker } from "../generated";
 import { getMetadataAccount_, getStakerPda } from "../pdas";
 import { Honeycomb } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
+
+const HELIUS_RPC_URL =
+  "https://devnet.helius-rpc.com/?api-key=014b4690-ef6d-4cab-b9e9-d3ec73610d52";
+
+const parseAsset = (asset: any): Metadata => {
+  let collection: any = null;
+  const foundCollection = asset.grouping.find(
+    (g) => g.group_key === "collection"
+  );
+  if (foundCollection) {
+    collection = {
+      verified: true,
+      address: new web3.PublicKey(
+        asset.grouping.find((g) => g.group_key === "collection").group_value
+      ),
+    };
+  }
+  return {
+    mint: new web3.PublicKey(asset.id),
+    json: null,
+    jsonLoaded: false,
+    name: asset.content.metadata.name,
+    symbol: asset.content.metadata.symbol,
+    uri: asset.content.json_uri,
+    creators: asset.creators.map((creator) => ({
+      ...creator,
+      address: new web3.PublicKey(creator.address),
+    })),
+    collection,
+    merkleTree: new web3.PublicKey(asset.compression.tree),
+    isCompressed: true,
+    frozen: false,
+  };
+};
+
+const parseMetaplexMetadata = (metadata: MetaplexMetadata): Metadata => {
+  return {
+    mint: metadata.mintAddress,
+    json: metadata.json,
+    jsonLoaded: metadata.jsonLoaded,
+    name: metadata.name,
+    symbol: metadata.symbol,
+    uri: metadata.uri,
+    creators: metadata.creators,
+    collection: metadata.collection,
+    isCompressed: false,
+    frozen: false,
+  };
+};
 
 /**
  * Represents the arguments for fetching a staker.
@@ -50,6 +102,111 @@ export function fetchStaker(honeycomb: Honeycomb, args: FetchStakerArgs) {
 }
 
 /**
+ * Fetches compressed NFTs of the provided wallet and collection
+ *
+ * @param args Arguements containing wallet address and collection address
+ * @returns A promise that resolves to metadata objects of cNFTs
+ *
+ * @example
+ * const cnfts = await fetchCNfts({
+ *   walletAddress: 'YOUR_WALLET_ADDRESS',
+ *   collectionAddress: 'COLLECTION_ADDRESS',
+ * });
+ */
+export async function fetchCNfts(
+  honeycomb: Honeycomb,
+  args:
+    | {
+        walletAddress: web3.PublicKey;
+        collectionAddress: web3.PublicKey;
+      }
+    | { assetList: web3.PublicKey[] }
+) {
+  if ("assetList" in args) {
+    let batch = args.assetList.map((e, i) => ({
+      jsonrpc: "2.0",
+      id: `my-id-${i}`,
+      method: "getAsset",
+      params: {
+        id: e.toString(),
+      },
+    }));
+    try {
+      const response = await honeycomb
+        .http()
+        .request(
+          "https://devnet.helius-rpc.com/?api-key=014b4690-ef6d-4cab-b9e9-d3ec73610d52",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(batch),
+          }
+        );
+      return response
+        .json()
+        .then(
+          (r) => r.map(({ result }) => result).map(parseAsset) as Metadata[]
+        );
+    } catch {
+      return [];
+    }
+  }
+
+  let page: number = 1;
+  let assetList: any = [];
+  while (page > 0) {
+    try {
+      const response = await honeycomb
+        .http()
+        .request(HELIUS_RPC_URL as string, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: Math.random().toString(36).substring(7),
+            method: "searchAssets",
+            params: {
+              ownerAddress: args.walletAddress.toString(),
+              grouping: ["collection", args.collectionAddress.toString()],
+              compressed: true,
+              page: page,
+              limit: 1000,
+            },
+          }),
+        });
+      const { result } = await response.json();
+      assetList.push(...result.items);
+      if (result.total !== 1000) {
+        page = 0;
+      } else {
+        page++;
+      }
+    } catch {
+      break;
+    }
+  }
+  return assetList.map(parseAsset) as Metadata[];
+}
+
+export async function fetchNftsByMintList(
+  honeycomb: Honeycomb,
+  mints: web3.PublicKey[]
+) {
+  const mx = new Metaplex(honeycomb.connection);
+  return mx
+    .nfts()
+    .findAllByMintList({ mints })
+    .then(
+      (nfts) => nfts.filter((x) => x.model === "metadata") as MetaplexMetadata[]
+    )
+    .then((nfts) => nfts.map(parseMetaplexMetadata));
+}
+
+/**
  * Represents the arguments for fetching staked NFTs.
  * @category Types
  */
@@ -81,23 +238,41 @@ export async function fetchStakedNfts(
     .staking()
     .fetch()
     .nftsByWallet(args.walletAddress);
-  const mx = new Metaplex(honeycomb.connection);
-  const metaplexOut: StakedNft[] = await mx
-    .nfts()
-    .findAllByMintList({ mints: nfts.map((x) => x.mint) })
-    .then((metaplexNfts) => {
-      return (
-        metaplexNfts.filter((x) => x.model == "metadata") as Metadata[]
-      ).map(
-        (nft) =>
-          ({
-            ...nft,
-            ...nfts.find((x) => x.mint.equals(nft.mintAddress)),
-          } as StakedNft)
-      );
-    });
 
-  return metaplexOut;
+  let ownedNfts: StakedNft[] = [
+    ...(await fetchNftsByMintList(
+      honeycomb,
+      nfts.filter((n) => !n.isCompressed).map((x) => x.mint)
+    )),
+    ...(await fetchCNfts(honeycomb, {
+      assetList: nfts.filter((n) => n.isCompressed).map((x) => x.mint),
+    })),
+  ].map((nft) => ({
+    ...nft,
+    ...nfts.find((x) => x.mint.equals(nft.mint)),
+  }));
+
+  // await Promise.all(
+  //   ownedNfts.map(async (nft) => {
+  //     if (!nft.jsonLoaded) {
+  //       if (!nft.json) {
+  //         nft.json = await honeycomb
+  //           .http()
+  //           .request(nft.uri, {
+  //             method: "GET",
+  //             redirect: "follow",
+  //             maxRedirects: 2,
+  //           })
+  //           .catch();
+  //       }
+  //       nft.jsonLoaded = !!nft.json;
+  //     }
+
+  //     return nft;
+  //   })
+  // );
+
+  return ownedNfts;
 }
 
 /**
@@ -105,6 +280,8 @@ export async function fetchStakedNfts(
  * @category Types
  */
 type FetchAvailableNfts = {
+  project?: web3.PublicKey;
+  stakingPool?: web3.PublicKey;
   walletAddress?: web3.PublicKey;
   allowedMints?: web3.PublicKey[];
   programId?: web3.PublicKey;
@@ -144,31 +321,38 @@ export async function fetchAvailableNfts(
         .filter((x) => x.tokenAmount.uiAmount > 0)
     );
 
-  const mx = new Metaplex(honeycomb.connection);
-  let ownedNfts = await mx
-    .nfts()
-    .findAllByMintList({
-      mints: ownedTokenAccounts.map((x) => x.tokenMint),
-    })
-    .then((nfts) =>
-      (nfts.filter((x) => x?.model == "metadata") as Metadata[]).map((x) => {
-        return {
-          ...x,
-          ...ownedTokenAccounts.find(
-            (y) => y.tokenMint.toString() === x.mintAddress.toString()
-          ),
-        } as AvailableNft;
-      })
-    );
+  let ownedNfts: AvailableNft[] = [
+    ...(await fetchNftsByMintList(
+      honeycomb,
+      ownedTokenAccounts.map((x) => x.tokenMint)
+    )),
+    ...(await Promise.all(
+      (args.stakingPool
+        ? honeycomb.staking(args.stakingPool).collections
+        : args.project
+        ? honeycomb.project(args.project).collections
+        : []
+      ).map((collection) =>
+        fetchCNfts(honeycomb, {
+          walletAddress: wallet,
+          collectionAddress: collection,
+        })
+      )
+    ).then((x) => x.flat())),
+  ];
 
   ownedNfts = await Promise.all(
     ownedNfts.map(async (nft) => {
+      const tokenAccount = ownedTokenAccounts.find((tokenAccount) =>
+        tokenAccount.tokenMint.equals(nft.mint)
+      );
+      if (tokenAccount) {
+        nft.frozen = tokenAccount.state === "frozen";
+      }
+
       if (nft.tokenStandard === TokenStandard.ProgrammableNonFungible) {
-        const tokenAccount = getAssociatedTokenAddressSync(
-          nft.mintAddress,
-          wallet
-        );
-        const [tokenRecord] = getMetadataAccount_(nft.mintAddress, {
+        const tokenAccount = getAssociatedTokenAddressSync(nft.mint, wallet);
+        const [tokenRecord] = getMetadataAccount_(nft.mint, {
           __kind: "token_record",
           tokenAccount,
         });
@@ -176,20 +360,31 @@ export async function fetchAvailableNfts(
           honeycomb.connection,
           tokenRecord
         );
+
+        if (nft.tokenRecord && nft.tokenRecord.state !== TokenState.Unlocked) {
+          return null;
+        }
+      } else {
+        if (nft.frozen) return null;
       }
+
+      // if (!nft.jsonLoaded) {
+      //   if (!nft.json) {
+      //     nft.json = await honeycomb
+      //       .http()
+      //       .request(nft.uri, {
+      //         method: "GET",
+      //         redirect: "follow",
+      //         maxRedirects: 2,
+      //       })
+      //       .catch();
+      //   }
+      //   nft.jsonLoaded = !!nft.json;
+      // }
+
       return nft;
     })
-  );
-
-  ownedNfts = ownedNfts.filter((x) => {
-    if (
-      x.tokenStandard &&
-      x.tokenStandard === TokenStandard.ProgrammableNonFungible
-    ) {
-      return x.tokenRecord && x.tokenRecord.state === TokenState.Unlocked;
-    }
-    return x.state !== "frozen";
-  });
+  ).then((nfts) => nfts.filter((x) => !!x));
 
   let filteredNfts: AvailableNft[] = [];
 
@@ -198,7 +393,7 @@ export async function fetchAvailableNfts(
       args?.allowedMints ||
       (await NFT.gpaBuilder(args.programId)
         .addFilter("stakingPool", honeycomb.staking().poolAddress)
-        .addFilter("staker", web3.PublicKey.default)
+        .addFilter("staker", null)
         .run(honeycomb.connection)
         .then((nfts) =>
           nfts.map(({ account }) => NFT.fromAccountInfo(account)[0].mint)
@@ -206,65 +401,41 @@ export async function fetchAvailableNfts(
 
     filteredNfts = [
       ...filteredNfts,
-      ...ownedNfts.filter(
-        (nft) => nft.tokenMint && allowedMints.includes(nft.tokenMint)
-      ),
+      ...ownedNfts.filter((nft) => nft.mint && allowedMints.includes(nft.mint)),
     ];
   }
-
-  const validCollections = !!honeycomb.staking().collections.length
-    ? honeycomb
-        .project()
-        .collections.filter((_, i) =>
-          honeycomb.staking().collections.includes(i)
-        )
-    : [];
-  const validCreators = !!honeycomb.staking().creators
-    ? honeycomb
-        .project()
-        .creators.filter((_, i) => honeycomb.staking().creators.includes(i))
-    : [];
 
   filteredNfts = [
     ...filteredNfts,
     ...ownedNfts.filter(
       (nft) =>
         (nft.collection &&
-          validCollections.length &&
+          honeycomb.staking().collections.length &&
           nft.collection.verified &&
-          !!validCollections.find((x) => x.equals(nft.collection.address))) ||
+          !!honeycomb
+            .staking()
+            .collections.find((x) => x.equals(nft.collection.address))) ||
         (!!nft.creators.length &&
-          !!validCreators.length &&
+          !!honeycomb.staking().creators.length &&
           nft.creators.some(
             (creator) =>
               creator.verified &&
-              validCreators.find((x) => x.equals(creator.address))
-          ))
+              honeycomb
+                .staking()
+                .creators.find((x) => x.equals(creator.address))
+          )) ||
+        (nft.merkleTree &&
+          honeycomb.staking().merkleTrees.length &&
+          !!honeycomb
+            .staking()
+            .merkleTrees.find((x) => x.equals(nft.merkleTree)))
     ),
   ];
 
   filteredNfts = filteredNfts.filter(
     (nft, index, self) =>
-      self.findIndex((t) => t.address.equals(nft.address)) === index
+      self.findIndex((t) => t.mint.equals(nft.mint)) === index
   );
-
-  // filteredNfts = await Promise.all(
-  //   filteredNfts.map(async (nft) => {
-  //     const newNft = { ...nft };
-  //     if (!newNft.jsonLoaded) {
-  //       if (!newNft.json) {
-  //         newNft.json = await fetch(newNft.uri, {
-  //           method: "GET",
-  //           redirect: "follow",
-  //         })
-  //           .then((x) => x.json())
-  //           .catch();
-  //       }
-  //       newNft.jsonLoaded = !!newNft.json;
-  //     }
-  //     return newNft;
-  //   })
-  // );
 
   return filteredNfts;
 }
@@ -354,7 +525,8 @@ export async function fetchRewards(
     for (const multiplier of multipliers.creatorMultipliers) {
       if (
         multiplier.multiplierType.__kind === "Creator" &&
-        args.nft.creator === multiplier.multiplierType.creator
+        args.nft.criteria.__kind === "Creator" &&
+        args.nft.criteria.address.equals(multiplier.multiplierType.creator)
       ) {
         creatorMultiplier = Number(multiplier.value);
         break;
@@ -367,7 +539,8 @@ export async function fetchRewards(
     for (const multiplier of multipliers.collectionMultipliers) {
       if (
         multiplier.multiplierType.__kind === "Collection" &&
-        args.nft.collection === multiplier.multiplierType.collection
+        args.nft.criteria.__kind === "Collection" &&
+        args.nft.criteria.address.equals(multiplier.multiplierType.collection)
       ) {
         collectionMultiplier = Number(multiplier.value);
         break;
