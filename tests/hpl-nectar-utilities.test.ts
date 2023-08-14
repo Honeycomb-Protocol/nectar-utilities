@@ -1,17 +1,10 @@
 import fs from "fs";
 import * as web3 from "@solana/web3.js";
-import {
-  Metadata,
-  Metaplex,
-  Nft,
-  keypairIdentity,
-} from "@metaplex-foundation/js";
+import { Metaplex, Nft, keypairIdentity } from "@metaplex-foundation/js";
 import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import {
   Honeycomb,
   HoneycombProject,
-  Operation,
-  VAULT,
   identityModule,
   toHoneycombFile,
 } from "@honeycomb-protocol/hive-control";
@@ -20,22 +13,8 @@ import {
   HplCurrency,
   HplHolderAccount,
   findProjectCurrencies,
-  CURRENCY_MANAGER_ID,
-  holderAccountPda,
-  tokenAccountPda,
-  HolderAccount,
-  createCreateHolderAccountInstruction,
-  createWrapHolderAccountInstruction,
 } from "@honeycomb-protocol/currency-manager";
-import {
-  LockType,
-  NFT,
-  NectarStaking,
-  StakedNft,
-  Staker,
-  createDistributeRewardsInstruction,
-  findProjectStakingPools,
-} from "../packages/hpl-nectar-staking";
+import { LockType, NectarStaking } from "../packages/hpl-nectar-staking";
 import {
   createTree,
   mintOneCNFT,
@@ -44,12 +23,6 @@ import {
   wait,
 } from "./prepare";
 import { MerkleTree, NectarMissions } from "../packages/hpl-nectar-missions";
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  getAccount,
-  getAssociatedTokenAddressSync,
-} from "@solana/spl-token";
-import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
 
 jest.setTimeout(2000000);
 
@@ -86,7 +59,7 @@ describe("Nectar Utilities", () => {
   let factionsMerkleTree: MerkleTree;
   let mainVault: HplHolderAccount;
 
-  it("Temp", async () => {
+  it.skip("Temp", async () => {
     const connection = new web3.Connection(
       "https://rpc.hellomoon.io/40f1e769-beb0-4a00-8f11-e9f19e1a576d"
       // "https://lingering-newest-sheet.solana-devnet.quiknode.pro/fb6e6465df3955a06fd5ddec2e5b003896f56adb/"
@@ -273,8 +246,8 @@ describe("Nectar Utilities", () => {
       honeycomb.use(gems);
     }
 
-    await findProjectStakingPools(honeycomb.project());
-    const staking = honeycomb.staking() as unknown as NectarStaking;
+    // await findProjectStakingPools(honeycomb.project());
+    // const staking = honeycomb.staking() as unknown as NectarStaking;
     // if (!staking) {
     //   honeycomb.use(
     //     await NectarStaking.new(honeycomb, {
