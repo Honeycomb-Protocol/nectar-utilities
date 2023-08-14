@@ -17,6 +17,7 @@ import {
 import { LockType, NectarStaking } from "../packages/hpl-nectar-staking";
 import {
   createTree,
+  fetchNftAssets,
   mintOneCNFT,
   prepare,
   tryKeyOrGenerate,
@@ -50,11 +51,13 @@ export function bytesOf(input: any): number {
 
 describe("Nectar Utilities", () => {
   const totalNfts = 1;
+  const totalcNfts = 1;
 
   let honeycomb: Honeycomb;
   let metaplex: Metaplex;
   let collection: Nft;
   let nfts: Nft[] = [];
+  let cNfts: any = [];
   let factionsArray: { faction: string; mint: web3.PublicKey }[] = [];
   let factionsMerkleTree: MerkleTree;
   let mainVault: HplHolderAccount;
@@ -1118,15 +1121,17 @@ describe("Nectar Utilities", () => {
 
     collection = out.nft;
 
-    await mintOneCNFT({
-      dropWalletKey: honeycomb.identity().address.toString(),
-      NftName: "Test",
-      NftSymbol: "TEST",
-      metaDataUri:
-        "https://arweave.net/WhyRt90kgI7f0EG9GPfB8TIBTIBgX3X12QaF9ObFerE",
-      tree: treeKeypair,
-      collection: collection.mint.address,
-    });
+    for (let i = 1; i <= totalcNfts; i++) {
+      await mintOneCNFT({
+        dropWalletKey: honeycomb.identity().address.toString(),
+        NftName: "Test",
+        NftSymbol: "TEST",
+        metaDataUri:
+          "https://arweave.net/WhyRt90kgI7f0EG9GPfB8TIBTIBgX3X12QaF9ObFerE",
+        tree: treeKeypair,
+        collection: collection.mint.address,
+      });
+    }
 
     for (let i = 1; i <= totalNfts; i++) {
       out = await metaplex.nfts().create({
@@ -1142,10 +1147,19 @@ describe("Nectar Utilities", () => {
       nfts.push(out.nft);
     }
 
+    const parsedcNfts = await fetchNftAssets(honeycomb.identity().address, {
+      collectionId: collection.mint.address,
+      isCompressed: true
+    });
+    cNfts = parsedcNfts.map((nft) => ({
+      ...nft,
+      mint: new web3.PublicKey(nft.assetId),
+    }));
     factionsArray = nfts.map((nft) => ({
       faction: "faction",
       mint: nft.mint.address,
     }));
+
     factionsMerkleTree = new MerkleTree(
       factionsArray.map(({ faction, mint }) =>
         Buffer.from([...Buffer.from(faction), ...mint.toBuffer()])

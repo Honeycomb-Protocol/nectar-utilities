@@ -34,6 +34,11 @@ import colors from "colors";
 
 dotenv.config();
 
+const isDevnet = process.env.prod === "true" ? false : true;
+const HELIUS_RPC_URL = isDevnet
+  ? process.env.HELIUS_DEVNET_RPC_URL
+  : process.env.HELIUS_RPC_URL;
+
 export const prepare = async (airdropCount = 0) => {
   const RPC_URL = process.env.SOLANA_RPC || "https://api.devnet.solana.com";
 
@@ -350,3 +355,66 @@ export async function sendAndConfirmTransaction(
   );
   return { signature, latestBlockhash };
 }
+
+export const fetchNftAssets = async (
+  wallet: web3.PublicKey,
+  options: {
+    collectionId: web3.PublicKey;
+    isCompressed?: boolean;
+  }
+) => {
+  let page: number | boolean = 1;
+  let assetList: any = [];
+  while (page) {
+    const response = await fetch(HELIUS_RPC_URL as string, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: Math.random().toString(36).substring(7),
+        method: "searchAssets",
+        params: {
+          ownerAddress: wallet.toString(),
+          grouping: ["collection", options.collectionId.toString()],
+          compressed: options.isCompressed || false,
+          page: page,
+          limit: 1000,
+        },
+      }),
+    });
+    const { result } = await response.json();
+
+    assetList.push(...result.items);
+    if (result.total !== 1000) {
+      page = false;
+    } else {
+      page++;
+    }
+  }
+  const resultData = {
+    totalResults: assetList.length,
+    results: assetList,
+  };
+  return resultData.results;
+};
+
+export const getAssetProof = async (nftMint: web3.PublicKey) => {
+  const response = await fetch(HELIUS_RPC_URL as string, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: "my-id",
+      method: "getAssetProof",
+      params: {
+        id: nftMint.toString(),
+      },
+    }),
+  });
+  const { result } = await response.json();
+  console.log("Assets Proof: ", result);
+};
