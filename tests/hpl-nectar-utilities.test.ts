@@ -1,22 +1,39 @@
+import fs from "fs";
 import * as web3 from "@solana/web3.js";
-import { Metaplex, Nft, keypairIdentity } from "@metaplex-foundation/js";
+import {
+  Metadata,
+  Metaplex,
+  Nft,
+  keypairIdentity,
+} from "@metaplex-foundation/js";
 import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import {
   Honeycomb,
   HoneycombProject,
   Operation,
+  VAULT,
   identityModule,
+  toHoneycombFile,
 } from "@honeycomb-protocol/hive-control";
 import {
   PermissionedCurrencyKind,
   HplCurrency,
   HplHolderAccount,
   findProjectCurrencies,
+  CURRENCY_MANAGER_ID,
+  holderAccountPda,
+  tokenAccountPda,
+  HolderAccount,
+  createCreateHolderAccountInstruction,
+  createWrapHolderAccountInstruction,
 } from "@honeycomb-protocol/currency-manager";
 import {
   LockType,
   NFT,
   NectarStaking,
+  StakedNft,
+  Staker,
+  createDistributeRewardsInstruction,
   findProjectStakingPools,
 } from "../packages/hpl-nectar-staking";
 import {
@@ -26,11 +43,13 @@ import {
   tryKeyOrGenerate,
   wait,
 } from "./prepare";
+import { MerkleTree, NectarMissions } from "../packages/hpl-nectar-missions";
 import {
-  MerkleTree,
-  NectarMissions,
-  eventBeet,
-} from "../packages/hpl-nectar-missions";
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  getAccount,
+  getAssociatedTokenAddressSync,
+} from "@solana/spl-token";
+import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
 
 jest.setTimeout(2000000);
 
@@ -67,7 +86,7 @@ describe("Nectar Utilities", () => {
   let factionsMerkleTree: MerkleTree;
   let mainVault: HplHolderAccount;
 
-  it.skip("Temp", async () => {
+  it("Temp", async () => {
     const connection = new web3.Connection(
       "https://rpc.hellomoon.io/40f1e769-beb0-4a00-8f11-e9f19e1a576d"
       // "https://lingering-newest-sheet.solana-devnet.quiknode.pro/fb6e6465df3955a06fd5ddec2e5b003896f56adb/"
@@ -109,11 +128,21 @@ describe("Nectar Utilities", () => {
     );
     if (!bounty) {
       const bundlr = await honeycomb.storage().bundlr();
+
+      const image = fs.readFileSync("./temp/bounty.png");
+      const ImageCost = await honeycomb
+        .storage()
+        .getUploadPriceForBytes(image.byteLength);
+      await bundlr.fund(ImageCost.basisPoints.toNumber());
+      const imageUri = await honeycomb
+        .storage()
+        .upload(toHoneycombFile(image, "bounty.png"));
+
       const uriMetadata = {
         name: "Bounty",
         symbol: "BTY",
         description: "Sol Patrol In-Game Currency",
-        image: "https://solpatrol.io/_next/static/media/bounty.19dbf99b.png",
+        image: imageUri,
       };
       const cost = await honeycomb
         .storage()
@@ -129,38 +158,6 @@ describe("Nectar Utilities", () => {
       });
       honeycomb.use(bounty);
     }
-    // else {
-    //   const bundlr = await honeycomb.storage().bundlr();
-
-    //   const image = fs.readFileSync("./temp/bounty.png");
-    //   const ImageCost = await honeycomb
-    //     .storage()
-    //     .getUploadPriceForBytes(image.byteLength);
-    //   await bundlr.fund(ImageCost.basisPoints.toNumber());
-    //   const imageUri = await honeycomb
-    //     .storage()
-    //     .upload(toHoneycombFile(image, "bounty.png"));
-
-    //   const uriMetadata = {
-    //     name: "Bounty",
-    //     symbol: "BTY",
-    //     description: "Sol Patrol In-Game Currency",
-    //     image: imageUri,
-    //   };
-    //   const cost = await honeycomb
-    //     .storage()
-    //     .getUploadPriceForBytes(bytesOf(uriMetadata));
-    //   await bundlr.fund(cost.basisPoints.toNumber());
-    //   const uri = await honeycomb.storage().uploadJson(uriMetadata);
-
-    //   bounty.update({
-    //     name: uriMetadata.name,
-    //     symbol: uriMetadata.symbol,
-    //     uri,
-    //   });
-
-    //   console.log("Bounty Mint", bounty.mint.address.toString());
-    // }
 
     let ammo = Object.values(honeycomb._currencies).find(
       (c) =>
@@ -169,11 +166,21 @@ describe("Nectar Utilities", () => {
     );
     if (!ammo) {
       const bundlr = await honeycomb.storage().bundlr();
+
+      const image = fs.readFileSync("./temp/ammo.png");
+      const ImageCost = await honeycomb
+        .storage()
+        .getUploadPriceForBytes(image.byteLength);
+      await bundlr.fund(ImageCost.basisPoints.toNumber());
+      const imageUri = await honeycomb
+        .storage()
+        .upload(toHoneycombFile(image, "ammo.png"));
+
       const uriMetadata = {
         name: "Ammo",
         symbol: "AMMO",
         description: "Sol Patrol In-Game Currency",
-        image: "https://solpatrol.io/_next/static/media/ammo.5bf182ea.png",
+        image: imageUri,
       };
       const cost = await honeycomb
         .storage()
@@ -189,38 +196,6 @@ describe("Nectar Utilities", () => {
       });
       honeycomb.use(ammo);
     }
-    // else {
-    //   const bundlr = await honeycomb.storage().bundlr();
-
-    //   const image = fs.readFileSync("./temp/ammo.png");
-    //   const ImageCost = await honeycomb
-    //     .storage()
-    //     .getUploadPriceForBytes(image.byteLength);
-    //   await bundlr.fund(ImageCost.basisPoints.toNumber());
-    //   const imageUri = await honeycomb
-    //     .storage()
-    //     .upload(toHoneycombFile(image, "ammo.png"));
-
-    //   const uriMetadata = {
-    //     name: "Ammo",
-    //     symbol: "AMMO",
-    //     description: "Sol Patrol In-Game Currency",
-    //     image: imageUri,
-    //   };
-    //   const cost = await honeycomb
-    //     .storage()
-    //     .getUploadPriceForBytes(bytesOf(uriMetadata));
-    //   await bundlr.fund(cost.basisPoints.toNumber());
-    //   const uri = await honeycomb.storage().uploadJson(uriMetadata);
-
-    //   ammo.update({
-    //     name: uriMetadata.name,
-    //     symbol: uriMetadata.symbol,
-    //     uri,
-    //   });
-
-    //   console.log("Ammo Mint", ammo.mint.address.toString());
-    // }
 
     let food = Object.values(honeycomb._currencies).find(
       (c) =>
@@ -229,11 +204,21 @@ describe("Nectar Utilities", () => {
     );
     if (!food) {
       const bundlr = await honeycomb.storage().bundlr();
+
+      const image = fs.readFileSync("./temp/heal.png");
+      const ImageCost = await honeycomb
+        .storage()
+        .getUploadPriceForBytes(image.byteLength);
+      await bundlr.fund(ImageCost.basisPoints.toNumber());
+      const imageUri = await honeycomb
+        .storage()
+        .upload(toHoneycombFile(image, "food.png"));
+
       const uriMetadata = {
         name: "Food",
         symbol: "FOOD",
         description: "Sol Patrol In-Game Currency",
-        image: "https://solpatrol.io/_next/static/media/food.fedbb519.png",
+        image: imageUri,
       };
       const cost = await honeycomb
         .storage()
@@ -249,38 +234,6 @@ describe("Nectar Utilities", () => {
       });
       honeycomb.use(food);
     }
-    // else {
-    //   const bundlr = await honeycomb.storage().bundlr();
-
-    //   const image = fs.readFileSync("./temp/heal.png");
-    //   const ImageCost = await honeycomb
-    //     .storage()
-    //     .getUploadPriceForBytes(image.byteLength);
-    //   await bundlr.fund(ImageCost.basisPoints.toNumber());
-    //   const imageUri = await honeycomb
-    //     .storage()
-    //     .upload(toHoneycombFile(image, "food.png"));
-
-    //   const uriMetadata = {
-    //     name: "Food",
-    //     symbol: "FOOD",
-    //     description: "Sol Patrol In-Game Currency",
-    //     image: imageUri,
-    //   };
-    //   const cost = await honeycomb
-    //     .storage()
-    //     .getUploadPriceForBytes(bytesOf(uriMetadata));
-    //   await bundlr.fund(cost.basisPoints.toNumber());
-    //   const uri = await honeycomb.storage().uploadJson(uriMetadata);
-
-    //   food.update({
-    //     name: uriMetadata.name,
-    //     symbol: uriMetadata.symbol,
-    //     uri,
-    //   });
-
-    //   console.log("Food Mint", food.mint.address.toString());
-    // }
 
     let gems = Object.values(honeycomb._currencies).find(
       (c) =>
@@ -289,11 +242,21 @@ describe("Nectar Utilities", () => {
     );
     if (!gems) {
       const bundlr = await honeycomb.storage().bundlr();
+
+      const image = fs.readFileSync("./temp/gem.png");
+      const ImageCost = await honeycomb
+        .storage()
+        .getUploadPriceForBytes(image.byteLength);
+      await bundlr.fund(ImageCost.basisPoints.toNumber());
+      const imageUri = await honeycomb
+        .storage()
+        .upload(toHoneycombFile(image, "gems.png"));
+
       const uriMetadata = {
         name: "Gems",
         symbol: "GEMS",
         description: "Sol Patrol In-Game Currency",
-        image: "https://solpatrol.io/_next/static/media/gems.27de6020.png",
+        image: imageUri,
       };
       const cost = await honeycomb
         .storage()
@@ -309,49 +272,68 @@ describe("Nectar Utilities", () => {
       });
       honeycomb.use(gems);
     }
-    // else {
-    //   const bundlr = await honeycomb.storage().bundlr();
-
-    //   const image = fs.readFileSync("./temp/gem.png");
-    //   const ImageCost = await honeycomb
-    //     .storage()
-    //     .getUploadPriceForBytes(image.byteLength);
-    //   await bundlr.fund(ImageCost.basisPoints.toNumber());
-    //   const imageUri = await honeycomb
-    //     .storage()
-    //     .upload(toHoneycombFile(image, "gems.png"));
-
-    //   const uriMetadata = {
-    //     name: "Gems",
-    //     symbol: "GEMS",
-    //     description: "Sol Patrol In-Game Currency",
-    //     image: imageUri,
-    //   };
-    //   const cost = await honeycomb
-    //     .storage()
-    //     .getUploadPriceForBytes(bytesOf(uriMetadata));
-    //   await bundlr.fund(cost.basisPoints.toNumber());
-    //   const uri = await honeycomb.storage().uploadJson(uriMetadata);
-
-    //   gems.update({
-    //     name: uriMetadata.name,
-    //     symbol: uriMetadata.symbol,
-    //     uri,
-    //   });
-
-    //   console.log("Gems Mint", gems.mint.address.toString());
-    // }
 
     await findProjectStakingPools(honeycomb.project());
-    const staking = honeycomb.staking();
-    console.log("Staking", staking.totalStaked.toString());
+    const staking = honeycomb.staking() as unknown as NectarStaking;
+    // if (!staking) {
+    //   honeycomb.use(
+    //     await NectarStaking.new(honeycomb, {
+    //       args: {
+    //         name: "Sol Patrol Staking",
+    //         rewardsPerDuration: (25 * 1_000_000_000) / 86400,
+    //         rewardsDuration: 1,
+    //         maxRewardsDuration: null,
+    //         minStakeDuration: null,
+    //         cooldownDuration: null,
+    //         resetStakeDuration: false,
+    //         startTime: Date.now(),
+    //         endTime: null,
+    //         lockType: LockType.Freeze,
+    //       },
+    //       project: honeycomb.project(),
+    //       currency: honeycomb.currency(),
+    //       collections: [collection.mint.address],
+    //       multipliersDecimals: 3,
+    //       multipliers: [
+    //         {
+    //           multiplierType: {
+    //             __kind: "NFTCount",
+    //             minCount: 3,
+    //           },
+    //           value: 1400,
+    //         },
+    //         {
+    //           multiplierType: {
+    //             __kind: "NFTCount",
+    //             minCount: 5,
+    //           },
+    //           value: 1800,
+    //         },
+    //       ],
+    //     })
+    //   );
+    // }
 
-    // Migrate NNFT to NFTv1
+    // await staking.updatePool({
+    //   args: {
+    //     name: null,
+    //     rewardsPerDuration: null,
+    //     rewardsDuration: null,
+    //     maxRewardsDuration: null,
+    //     minStakeDuration: null,
+    //     cooldownDuration: null,
+    //     resetStakeDuration: null,
+    //     startTime: null,
+    //     endTime: null,
+    //   },
+    //   currency: bounty.address,
+    // });
 
-    // const nfts = await NFT.gpaBuilder()
+    // // Migrate NFT to NFTv1
+    // const nftsRaw = await NFT.gpaBuilder()
     //   .run(honeycomb.connection)
-    //   .then(
-    //     (nfts) =>
+    //   .then((nfts) =>
+    //     (
     //       nfts
     //         .map((nft) => {
     //           try {
@@ -361,28 +343,179 @@ describe("Nectar Utilities", () => {
     //           }
     //         })
     //         .filter((x) => !!x) as [web3.PublicKey, NFT][]
+    //     ).filter((x) => !x[1].staker.equals(web3.PublicKey.default))
     //   );
+
+    // const mx = new Metaplex(honeycomb.connection);
+    // const nfts: [web3.PublicKey, StakedNft][] = await mx
+    //   .nfts()
+    //   .findAllByMintList({ mints: nftsRaw.map((x) => x[1].mint) })
+    //   .then((metaplexNfts) => {
+    //     return (
+    //       metaplexNfts.filter((x) => !!x && x.model == "metadata") as Metadata[]
+    //     ).map((nft) => {
+    //       const found = nftsRaw.find((x) =>
+    //         x[1].mint.equals(nft.mintAddress)
+    //       ) as [web3.PublicKey, NFT];
+    //       return [
+    //         found[0],
+    //         {
+    //           ...nft,
+    //           ...found[1],
+    //         },
+    //       ] as [web3.PublicKey, StakedNft];
+    //     });
+    //   });
     // console.log("NFTS", nfts.length);
+    // let stakers: { [key: string]: Staker } = {};
     // for (let nft of nfts) {
-    //   const ctx = await new Operation(honeycomb, []).send();
-    //   console.log("Signature", ctx.signature);
+    //   const stakingPool = Object.values(honeycomb._stakings).find((s) =>
+    //     s.address.equals(nft[1].stakingPool)
+    //   );
+    //   if (!stakingPool) continue;
+
+    //   const stakerKey = nft[1].staker.toString();
+    //   if (!stakers[stakerKey]) {
+    //     stakers[stakerKey] = await Staker.fromAccountAddress(
+    //       honeycomb.connection,
+    //       nft[1].staker
+    //     );
+    //   }
+    //   const staker = stakers[stakerKey];
+
+    //   const [nftTemp] = web3.PublicKey.findProgramAddressSync(
+    //     [
+    //       Buffer.from("nft-temp"),
+    //       nft[1].mint.toBuffer(),
+    //       stakingPool.address.toBuffer(),
+    //     ],
+    //     stakingPool.programId
+    //   );
+
+    //   const [vaultHolderAccount] = holderAccountPda(
+    //     stakingPool.address,
+    //     stakingPool.currency().mint.address
+    //   );
+    //   const [vaultTokenAccount] = tokenAccountPda(
+    //     stakingPool.address,
+    //     stakingPool.currency().mint.address,
+    //     undefined,
+    //     CURRENCY_MANAGER_ID
+    //   );
+
+    //   const [holderAccount] = holderAccountPda(
+    //     staker.wallet,
+    //     stakingPool.currency().mint.address
+    //   );
+    //   const preInstructions: web3.TransactionInstruction[] = [];
+
+    //   let tokenAccount: web3.PublicKey;
+    //   try {
+    //     tokenAccount = (
+    //       await HolderAccount.fromAccountAddress(
+    //         honeycomb.connection,
+    //         holderAccount
+    //       )
+    //     ).tokenAccount;
+    //   } catch {
+    //     tokenAccount = getAssociatedTokenAddressSync(
+    //       stakingPool.currency().mint.address,
+    //       staker.wallet
+    //     );
+
+    //     let wrap = false;
+
+    //     if (stakingPool.currency().kind.__kind === "Wrapped") {
+    //       try {
+    //         await getAccount(honeycomb.connection, tokenAccount);
+    //         wrap = true;
+    //       } catch {}
+    //     }
+
+    //     preInstructions.push(
+    //       wrap
+    //         ? createWrapHolderAccountInstruction({
+    //             project: stakingPool.currency().project().address,
+    //             currency: stakingPool.currency().address,
+    //             holderAccount,
+    //             tokenAccount,
+    //             mint: stakingPool.currency().mint.address,
+    //             owner: staker.wallet,
+    //             payer: honeycomb.identity().address,
+    //             vault: VAULT,
+    //             instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //             logWrapper: SPL_NOOP_PROGRAM_ID,
+    //             clockSysvar: web3.SYSVAR_CLOCK_PUBKEY,
+    //             associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+    //           })
+    //         : createCreateHolderAccountInstruction({
+    //             project: stakingPool.currency().project().address,
+    //             currency: stakingPool.currency().address,
+    //             holderAccount,
+    //             tokenAccount,
+    //             mint: stakingPool.currency().mint.address,
+    //             owner: staker.wallet,
+    //             payer: honeycomb.identity().address,
+    //             vault: VAULT,
+    //             instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //             logWrapper: SPL_NOOP_PROGRAM_ID,
+    //             clockSysvar: web3.SYSVAR_CLOCK_PUBKEY,
+    //             associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+    //           })
+    //     );
+    //   }
+
+    //   const instructions = [
+    //     ...preInstructions,
+
+    //     createDistributeRewardsInstruction({
+    //       project: stakingPool.project().address,
+    //       vault: VAULT,
+    //       stakingPool: stakingPool.address,
+    //       multipliers:
+    //         (await stakingPool.multipliers()).address || stakingPool.programId,
+    //       nft: nft[0],
+    //       currency: stakingPool.currency().address,
+    //       mint: stakingPool.currency().mint.address,
+    //       vaultHolderAccount,
+    //       vaultTokenAccount,
+    //       holderAccount,
+    //       tokenAccount,
+    //       staker: nft[1].staker,
+    //       wallet: staker.wallet,
+    //       authority: honeycomb.identity().address,
+    //       clock: web3.SYSVAR_CLOCK_PUBKEY,
+    //       currencyManagerProgram: CURRENCY_MANAGER_ID,
+    //       instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //       logWrapper: SPL_NOOP_PROGRAM_ID,
+    //     }),
+    //     createMigrateNftPart1Instruction({
+    //       project: stakingPool.project().address,
+    //       stakingPool: stakingPool.address,
+    //       nft: nft[0],
+    //       nftTemp,
+    //       authority: honeycomb.identity().address,
+    //     }),
+    //     createMigrateNftPart2Instruction({
+    //       project: stakingPool.project().address,
+    //       stakingPool: stakingPool.address,
+    //       nft: nft[0],
+    //       nftTemp,
+    //       authority: honeycomb.identity().address,
+    //     }),
+    //   ];
+
+    //   try {
+    //     const ctx = await new Operation(honeycomb, instructions).send({
+    //       skipPreflight: false,
+    //     });
+    //     console.log("Signature", ctx.signature);
+    //   } catch (e) {
+    //     console.dir(e);
+    //   }
     // }
 
-    // staking.updatePool({
-    //   args: {
-    //     name: null,
-    //     rewardsPerDuration: (25 * 1_000_000_000) / 86400,
-    //     rewardsDuration: 1,
-    //     maxRewardsDuration: null,
-    //     minStakeDuration: null,
-    //     cooldownDuration: null,
-    //     resetStakeDuration: null,
-    //     startTime: null,
-    //     endTime: null,
-    //   },
-    // });
-
-    // staking
+    // honeycomb.staking()
     //   .staker({
     //     wallet: new web3.PublicKey(
     //       "232Z5QNvQ4wRyraGWFpC5i3HEbqozEWgBCV95eWASaG1"
@@ -498,40 +631,6 @@ describe("Nectar Utilities", () => {
     //   honeycomb.missions().collections,
     //   honeycomb.missions().creators
     // );
-
-    // const vault = new web3.PublicKey(
-    //   "7LUbP4BZQiopPposQUW7JBrKJ2vgrv7drjbTeFRAb5TS"
-    // );
-    // // const vault = honeycomb.staking().address;
-    // await bail
-    //   .fetch()
-    //   .holderAccount(vault)
-    //   .catch((_) => (bail as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.fund(10_000 * 1_000_000_000));
-
-    // await bounty
-    //   .fetch()
-    //   .holderAccount(vault)
-    //   .catch((_) => (bounty as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.mint(10_000 * 1_000_000_000));
-
-    // await ammo
-    //   .fetch()
-    //   .holderAccount(vault)
-    //   .catch((_) => (ammo as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.mint(10_000 * 1_000_000_000));
-
-    // await food
-    //   .fetch()
-    //   .holderAccount(vault)
-    //   .catch((_) => (food as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.mint(10_000 * 1_000_000_000));
-
-    // await gems
-    //   .fetch()
-    //   .holderAccount(vault)
-    //   .catch((_) => (gems as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.mint(100 * 1_000_000_000));
 
     // const missions = await honeycomb.missions().missions();
 
@@ -972,6 +1071,45 @@ describe("Nectar Utilities", () => {
     //       ],
     //     });
     // }
+
+    // const vault = new web3.PublicKey(
+    //   "7LUbP4BZQiopPposQUW7JBrKJ2vgrv7drjbTeFRAb5TS"
+    // );
+    // const vault = honeycomb.staking().address;
+    // const vault = honeycomb.missions().address;
+    // await bail
+    //   .fetch()
+    //   .holderAccount(vault)
+    //   .catch((_) => (bail as HplCurrency).create().holderAccount(vault))
+    //   .then((hA) => hA.fund(10_000 * 1_000_000_000, { skipPreflight: true }));
+
+    // await bounty
+    //   .fetch()
+    //   .holderAccount(vault)
+    //   .catch((_) =>
+    //     (bounty as HplCurrency)
+    //       .create()
+    //       .holderAccount(vault)
+    //   )
+    //   .then((hA) => hA.mint(10_000 * 1_000_000_000));
+
+    // await ammo
+    //   .fetch()
+    //   .holderAccount(vault)
+    //   .catch((_) => (ammo as HplCurrency).create().holderAccount(vault))
+    //   .then((hA) => hA.mint(10_000 * 1_000_000_000));
+
+    // await food
+    //   .fetch()
+    //   .holderAccount(vault)
+    //   .catch((_) => (food as HplCurrency).create().holderAccount(vault))
+    //   .then((hA) => hA.mint(10_000 * 1_000_000_000));
+
+    // await gems
+    //   .fetch()
+    //   .holderAccount(vault)
+    //   .catch((_) => (gems as HplCurrency).create().holderAccount(vault))
+    //   .then((hA) => hA.mint(100 * 1_000_000_000));
   });
 
   it.skip("Prepare and Setup", async () => {

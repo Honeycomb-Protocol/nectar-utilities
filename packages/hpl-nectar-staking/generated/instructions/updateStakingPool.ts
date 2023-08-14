@@ -40,6 +40,7 @@ export const updateStakingPoolStruct = new beet.FixableBeetArgsStruct<
  * Accounts required by the _updateStakingPool_ instruction
  *
  * @property [_writable_] stakingPool
+ * @property [] currency (optional)
  * @property [] collection (optional)
  * @property [] creator (optional)
  * @property [] merkleTree (optional)
@@ -55,6 +56,7 @@ export const updateStakingPoolStruct = new beet.FixableBeetArgsStruct<
  */
 export type UpdateStakingPoolInstructionAccounts = {
   stakingPool: web3.PublicKey
+  currency?: web3.PublicKey
   collection?: web3.PublicKey
   creator?: web3.PublicKey
   merkleTree?: web3.PublicKey
@@ -105,7 +107,19 @@ export function createUpdateStakingPoolInstruction(
     },
   ]
 
+  if (accounts.currency != null) {
+    keys.push({
+      pubkey: accounts.currency,
+      isWritable: false,
+      isSigner: false,
+    })
+  }
   if (accounts.collection != null) {
+    if (accounts.currency == null) {
+      throw new Error(
+        "When providing 'collection' then 'accounts.currency' need(s) to be provided as well."
+      )
+    }
     keys.push({
       pubkey: accounts.collection,
       isWritable: false,
@@ -113,9 +127,9 @@ export function createUpdateStakingPoolInstruction(
     })
   }
   if (accounts.creator != null) {
-    if (accounts.collection == null) {
+    if (accounts.currency == null || accounts.collection == null) {
       throw new Error(
-        "When providing 'creator' then 'accounts.collection' need(s) to be provided as well."
+        "When providing 'creator' then 'accounts.currency', 'accounts.collection' need(s) to be provided as well."
       )
     }
     keys.push({
@@ -125,9 +139,13 @@ export function createUpdateStakingPoolInstruction(
     })
   }
   if (accounts.merkleTree != null) {
-    if (accounts.collection == null || accounts.creator == null) {
+    if (
+      accounts.currency == null ||
+      accounts.collection == null ||
+      accounts.creator == null
+    ) {
       throw new Error(
-        "When providing 'merkleTree' then 'accounts.collection', 'accounts.creator' need(s) to be provided as well."
+        "When providing 'merkleTree' then 'accounts.currency', 'accounts.collection', 'accounts.creator' need(s) to be provided as well."
       )
     }
     keys.push({
@@ -168,12 +186,13 @@ export function createUpdateStakingPoolInstruction(
   })
   if (accounts.delegateAuthority != null) {
     if (
+      accounts.currency == null ||
       accounts.collection == null ||
       accounts.creator == null ||
       accounts.merkleTree == null
     ) {
       throw new Error(
-        "When providing 'delegateAuthority' then 'accounts.collection', 'accounts.creator', 'accounts.merkleTree' need(s) to be provided as well."
+        "When providing 'delegateAuthority' then 'accounts.currency', 'accounts.collection', 'accounts.creator', 'accounts.merkleTree' need(s) to be provided as well."
       )
     }
     keys.push({

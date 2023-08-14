@@ -123,6 +123,9 @@ pub struct UpdateStakingPool<'info> {
     #[account(mut, has_one = project)]
     pub staking_pool: Account<'info, StakingPool>,
 
+    /// Currency to be used for the staking_pool
+    pub currency: Option<Account<'info, Currency>>,
+
     /// Collection mint address to be used for the staking_pool
     pub collection: Option<Account<'info, Mint>>,
 
@@ -220,6 +223,10 @@ pub fn update_staking_pool(
         staking_pool.end_time
     };
 
+    if let Some(currency) = &ctx.accounts.currency {
+        staking_pool.currency = currency.key();
+    }
+
     if let Some(collection) = &ctx.accounts.collection {
         let index = ctx
             .accounts
@@ -257,14 +264,21 @@ pub fn update_staking_pool(
     }
 
     if let Some(merkle_tree) = &ctx.accounts.merkle_tree {
+        let index = ctx
+            .accounts
+            .project
+            .merkle_trees
+            .iter()
+            .position(|x| x.eq(&merkle_tree.key()))
+            .unwrap();
         hpl_utils::reallocate(
-            32,
+            1,
             staking_pool.to_account_info(),
             ctx.accounts.payer.to_account_info(),
             &ctx.accounts.rent,
             &ctx.accounts.system_program,
         )?;
-        staking_pool.merkle_trees.push(merkle_tree.key());
+        staking_pool.merkle_trees.push(index as u8);
     }
 
     Ok(())

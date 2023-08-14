@@ -63,6 +63,8 @@ type UpdatePoolArgs = {
   args: UpdateStakingPoolArgs;
   collection?: web3.PublicKey;
   creator?: web3.PublicKey;
+  merkleTree?: web3.PublicKey;
+  currency?: web3.PublicKey;
 };
 
 /**

@@ -19,7 +19,7 @@ import { NFTUsedBy, nFTUsedByBeet } from '../types/NFTUsedBy'
 export type NFTv1Args = {
   bump: number
   stakingPool: web3.PublicKey
-  staker: web3.PublicKey
+  staker: beet.COption<web3.PublicKey>
   mint: web3.PublicKey
   lastClaim: beet.bignum
   stakedAt: beet.bignum
@@ -42,7 +42,7 @@ export class NFTv1 implements NFTv1Args {
   private constructor(
     readonly bump: number,
     readonly stakingPool: web3.PublicKey,
-    readonly staker: web3.PublicKey,
+    readonly staker: beet.COption<web3.PublicKey>,
     readonly mint: web3.PublicKey,
     readonly lastClaim: beet.bignum,
     readonly stakedAt: beet.bignum,
@@ -179,7 +179,7 @@ export class NFTv1 implements NFTv1Args {
     return {
       bump: this.bump,
       stakingPool: this.stakingPool.toBase58(),
-      staker: this.staker.toBase58(),
+      staker: this.staker,
       mint: this.mint.toBase58(),
       lastClaim: (() => {
         const x = <{ toNumber: () => number }>this.lastClaim
@@ -246,7 +246,7 @@ export const nFTv1Beet = new beet.FixableBeetStruct<
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['bump', beet.u8],
     ['stakingPool', beetSolana.publicKey],
-    ['staker', beetSolana.publicKey],
+    ['staker', beet.coption(beetSolana.publicKey)],
     ['mint', beetSolana.publicKey],
     ['lastClaim', beet.i64],
     ['stakedAt', beet.i64],

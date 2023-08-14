@@ -59,7 +59,7 @@ pub struct StakingPool {
     pub creators: Vec<u8>,
 
     /// The merkle tress for cNFTs
-    pub merkle_trees: Vec<Pubkey>,
+    pub merkle_trees: Vec<u8>,
 }
 impl Default for StakingPool {
     const LEN: usize = 8 + 268;

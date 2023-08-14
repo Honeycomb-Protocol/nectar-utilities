@@ -228,7 +228,7 @@ pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<(
                 receiver_holder_account: ctx.accounts.vault_holder_account.to_account_info(),
                 receiver_token_account: ctx.accounts.vault_token_account.to_account_info(),
                 owner: ctx.accounts.wallet.to_account_info(),
-                authority: ctx.accounts.wallet.to_account_info(),
+                payer: ctx.accounts.wallet.to_account_info(),
                 instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
@@ -390,7 +390,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                             .unwrap()
                             .to_account_info(),
                         owner: ctx.accounts.mission_pool.to_account_info(),
-                        authority: ctx.accounts.mission_pool.to_account_info(),
+                        payer: ctx.accounts.wallet.to_account_info(),
                         instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                         vault: ctx.accounts.vault.to_account_info(),
                         system_program: ctx.accounts.system_program.to_account_info(),

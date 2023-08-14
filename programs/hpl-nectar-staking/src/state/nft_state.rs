@@ -65,7 +65,7 @@ pub struct NFTv1 {
     pub staking_pool: Pubkey,
 
     /// wallet of the staker
-    pub staker: Pubkey,
+    pub staker: Option<Pubkey>,
 
     /// The mint of the NFT
     pub mint: Pubkey,
@@ -98,7 +98,7 @@ impl Default for NFTv1 {
     fn set_defaults(&mut self) {
         self.bump = 0;
         self.staking_pool = Pubkey::default();
-        self.staker = Pubkey::default();
+        self.staker = None;
         self.mint = Pubkey::default();
         self.last_claim = 0;
         self.staked_at = 0;

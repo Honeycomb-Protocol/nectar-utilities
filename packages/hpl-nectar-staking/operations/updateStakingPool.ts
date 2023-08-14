@@ -16,6 +16,8 @@ type CreateUpdatePoolCtxArgs = {
   stakingPool: web3.PublicKey;
   collection?: web3.PublicKey;
   creator?: web3.PublicKey;
+  merkleTree?: web3.PublicKey;
+  currency?: web3.PublicKey;
   programId?: web3.PublicKey;
 };
 
@@ -58,6 +60,8 @@ export async function createUpdatePoolOperation(
         stakingPool: args.stakingPool,
         collection: args.collection || programId,
         creator: args.creator || programId,
+        merkleTree: args.merkleTree || programId,
+        currency: args.currency || programId,
         authority: honeycomb.identity().address,
         payer: honeycomb.identity().address,
         delegateAuthority:

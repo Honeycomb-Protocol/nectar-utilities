@@ -220,7 +220,7 @@ pub fn stake_cnft(ctx: Context<StakeCNFT>, args: CNFTArgs) -> Result<()> {
         args.index,
     )?;
 
-    nft.staker = staker.key();
+    nft.staker = Some(staker.key());
     nft.last_staked_at = ctx.accounts.clock.unix_timestamp;
     if staking_pool.reset_stake_duration {
         nft.staked_at = ctx.accounts.clock.unix_timestamp;
@@ -245,7 +245,7 @@ pub struct UnstakeCNFT<'info> {
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// NFT state account
-    #[account(mut, has_one = staking_pool)]
+    #[account(mut, constraint = nft.staker.is_some() && nft.staker.unwrap().eq(&staker.key()))]
     pub nft: Box<Account<'info, NFTv1>>,
 
     /// CHECK: unsafe
@@ -308,7 +308,7 @@ pub fn unstake_cnft(ctx: Context<UnstakeCNFT>, args: CNFTArgs) -> Result<()> {
     }
 
     nft.last_unstaked_at = ctx.accounts.clock.unix_timestamp;
-    nft.staker = Pubkey::default();
+    nft.staker = None;
     staker.total_staked -= 1;
 
     let wallet_key = ctx.accounts.wallet.key();

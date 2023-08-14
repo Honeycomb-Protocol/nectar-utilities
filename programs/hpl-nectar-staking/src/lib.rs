@@ -249,9 +249,13 @@ pub mod hpl_nectar_staking {
         instructions::distribute_rewards(ctx)
     }
 
-    pub fn force_unstake(ctx: Context<ForceUnstake>) -> Result<()> {
-        instructions::force_unstake(ctx)
-    }
+    // pub fn migrate_nft_part1(ctx: Context<MigrateNFTPart1>) -> Result<()> {
+    //     instructions::migrate_nft_part1(ctx)
+    // }
+
+    // pub fn migrate_nft_part2(ctx: Context<MigrateNFTPart2>) -> Result<()> {
+    //     instructions::migrate_nft_part2(ctx)
+    // }
 
     // pub fn migrate_custodial(ctx: Context<MigrateCustodial>, args: MigrateArgs) -> Result<()> {
     //     hpl_hive_control::instructions::platform_gate_fn(

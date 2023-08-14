@@ -1,5 +1,5 @@
 {
-  "version": "0.0.37",
+  "version": "0.0.38",
   "name": "hpl_nectar_missions",
   "instructions": [
     {
@@ -937,6 +937,10 @@
                 "type": "publicKey"
               },
               {
+                "name": "info",
+                "type": "bytes"
+              },
+              {
                 "name": "timestamp",
                 "type": "i64"
               }
@@ -952,6 +956,10 @@
               {
                 "name": "index",
                 "type": "u8"
+              },
+              {
+                "name": "info",
+                "type": "bytes"
               },
               {
                 "name": "timestamp",

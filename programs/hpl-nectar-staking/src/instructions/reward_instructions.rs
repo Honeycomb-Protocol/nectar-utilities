@@ -90,7 +90,7 @@ pub fn withdraw_rewards(ctx: Context<WithdrawRewards>, amount: u64) -> Result<()
                 receiver_holder_account: ctx.accounts.holder_account.to_account_info(),
                 receiver_token_account: ctx.accounts.token_account.to_account_info(),
                 owner: ctx.accounts.staking_pool.to_account_info(),
-                authority: ctx.accounts.staking_pool.to_account_info(),
+                payer: ctx.accounts.payer.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),
                 instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
@@ -176,8 +176,8 @@ pub fn migrate_vault(ctx: Context<MigrateVault>) -> Result<()> {
                 holder_account: ctx.accounts.vault_holder_account.to_account_info(),
                 token_account: ctx.accounts.vault_token_account.to_account_info(),
                 source_token_account: ctx.accounts.reward_vault.to_account_info(),
-                wallet: ctx.accounts.staking_pool.to_account_info(),
-                authority: ctx.accounts.staking_pool.to_account_info(),
+                owner: ctx.accounts.payer.to_account_info(),
+                payer: ctx.accounts.payer.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
                 token_program: ctx.accounts.token_program.to_account_info(),
@@ -215,7 +215,7 @@ pub struct ClaimRewards<'info> {
     pub multipliers: Option<Account<'info, Multipliers>>,
 
     /// NFT state account
-    #[account(mut, has_one = staking_pool, has_one = staker)]
+    #[account(mut, has_one = staking_pool, constraint = nft.staker.is_some() && nft.staker.unwrap().eq(&staker.key()))]
     pub nft: Box<Account<'info, NFTv1>>,
 
     #[account(has_one = mint)]
@@ -391,7 +391,7 @@ pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
                 receiver_holder_account: ctx.accounts.holder_account.to_account_info(),
                 receiver_token_account: ctx.accounts.token_account.to_account_info(),
                 owner: ctx.accounts.staking_pool.to_account_info(),
-                authority: ctx.accounts.staking_pool.to_account_info(),
+                payer: ctx.accounts.wallet.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),
                 instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
@@ -427,7 +427,7 @@ pub struct DistriuteRewards<'info> {
 
     /// NFT state account
     #[account(mut, has_one = staking_pool, has_one = staker)]
-    pub nft: Box<Account<'info, NFTv1>>,
+    pub nft: Box<Account<'info, NFT>>,
 
     #[account(has_one = mint)]
     pub currency: Box<Account<'info, Currency>>,
@@ -476,7 +476,7 @@ pub struct DistriuteRewards<'info> {
     pub instructions_sysvar: AccountInfo<'info>,
 
     // HIVE CONTROL
-    #[account(has_one = authority)]
+    #[account(mut, has_one = authority)]
     pub project: Box<Account<'info, Project>>,
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(mut)]
@@ -549,15 +549,12 @@ pub fn distribute_rewards(ctx: Context<DistriuteRewards>) -> Result<()> {
         let mut creator_multiplier = multplier_decimals;
         for multiplier in multipliers.creator_multipliers.iter() {
             match multiplier.multiplier_type {
-                MultiplierType::Creator { creator } => match nft.criteria {
-                    NFTCriteria::Creator { address } => {
-                        if address.eq(&creator) {
-                            creator_multiplier = multiplier.value;
-                            break;
-                        }
+                MultiplierType::Creator { creator } => {
+                    if nft.creator.eq(&creator) {
+                        creator_multiplier = multiplier.value;
+                        break;
                     }
-                    _ => {}
-                },
+                }
                 _ => {}
             }
         }
@@ -567,15 +564,12 @@ pub fn distribute_rewards(ctx: Context<DistriuteRewards>) -> Result<()> {
         let mut collection_multiplier = multplier_decimals;
         for multiplier in multipliers.collection_multipliers.iter() {
             match multiplier.multiplier_type {
-                MultiplierType::Collection { collection } => match nft.criteria {
-                    NFTCriteria::Collection { address } => {
-                        if collection.eq(&address) {
-                            collection_multiplier = multiplier.value;
-                            break;
-                        }
+                MultiplierType::Collection { collection } => {
+                    if nft.collection.eq(&collection) {
+                        collection_multiplier = multiplier.value;
+                        break;
                     }
-                    _ => {}
-                },
+                }
                 _ => {}
             }
         }
@@ -605,7 +599,7 @@ pub fn distribute_rewards(ctx: Context<DistriuteRewards>) -> Result<()> {
                 receiver_holder_account: ctx.accounts.holder_account.to_account_info(),
                 receiver_token_account: ctx.accounts.token_account.to_account_info(),
                 owner: ctx.accounts.staking_pool.to_account_info(),
-                authority: ctx.accounts.staking_pool.to_account_info(),
+                payer: ctx.accounts.authority.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),
                 instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
@@ -616,14 +610,14 @@ pub fn distribute_rewards(ctx: Context<DistriuteRewards>) -> Result<()> {
         rewards_amount,
     )?;
 
-    Event::claim_rewards(
-        nft.key(),
-        &nft,
-        ctx.accounts.staker.key(),
-        rewards_amount,
-        &ctx.accounts.clock,
-    )
-    .wrap(ctx.accounts.log_wrapper.to_account_info())?;
+    // Event::claim_rewards(
+    //     nft.key(),
+    //     &nft,
+    //     ctx.accounts.staker.key(),
+    //     rewards_amount,
+    //     &ctx.accounts.clock,
+    // )
+    // .wrap(ctx.accounts.log_wrapper.to_account_info())?;
 
     Ok(())
 }

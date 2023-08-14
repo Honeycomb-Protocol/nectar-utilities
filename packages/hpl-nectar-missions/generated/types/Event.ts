@@ -18,10 +18,15 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  * @private
  */
 export type EventRecord = {
-  NewParticipation: { address: web3.PublicKey; timestamp: beet.bignum }
+  NewParticipation: {
+    address: web3.PublicKey
+    info: Uint8Array
+    timestamp: beet.bignum
+  }
   CollectParticipationReward: {
     address: web3.PublicKey
     index: number
+    info: Uint8Array
     timestamp: beet.bignum
   }
   RecallParticipation: { address: web3.PublicKey; timestamp: beet.bignum }
@@ -60,9 +65,10 @@ export const isEventRecallParticipation = (
 export const eventBeet = beet.dataEnum<EventRecord>([
   [
     'NewParticipation',
-    new beet.BeetArgsStruct<EventRecord['NewParticipation']>(
+    new beet.FixableBeetArgsStruct<EventRecord['NewParticipation']>(
       [
         ['address', beetSolana.publicKey],
+        ['info', beet.bytes],
         ['timestamp', beet.i64],
       ],
       'EventRecord["NewParticipation"]'
@@ -71,10 +77,11 @@ export const eventBeet = beet.dataEnum<EventRecord>([
 
   [
     'CollectParticipationReward',
-    new beet.BeetArgsStruct<EventRecord['CollectParticipationReward']>(
+    new beet.FixableBeetArgsStruct<EventRecord['CollectParticipationReward']>(
       [
         ['address', beetSolana.publicKey],
         ['index', beet.u8],
+        ['info', beet.bytes],
         ['timestamp', beet.i64],
       ],
       'EventRecord["CollectParticipationReward"]'

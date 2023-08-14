@@ -38,7 +38,7 @@ export const distributeRewardsStruct = new beet.BeetArgsStruct<{
  * @property [] logWrapper
  * @property [] clock
  * @property [] instructionsSysvar
- * @property [] project
+ * @property [_writable_] project
  * @property [_writable_] vault
  * @property [] currencyManagerProgram
  * @category Instructions
@@ -185,7 +185,7 @@ export function createDistributeRewardsInstruction(
   })
   keys.push({
     pubkey: accounts.project,
-    isWritable: false,
+    isWritable: true,
     isSigner: false,
   })
   keys.push({

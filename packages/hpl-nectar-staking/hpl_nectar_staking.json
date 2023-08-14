@@ -1,5 +1,5 @@
 {
-  "version": "0.0.71",
+  "version": "0.0.72",
   "name": "hpl_nectar_staking",
   "instructions": [
     {
@@ -136,6 +136,15 @@
           "isSigner": false,
           "docs": [
             "StakingPool state account"
+          ]
+        },
+        {
+          "name": "currency",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "Currency to be used for the staking_pool"
           ]
         },
         {
@@ -1607,7 +1616,7 @@
         },
         {
           "name": "project",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1619,189 +1628,6 @@
           "name": "currencyManagerProgram",
           "isMut": false,
           "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "forceUnstake",
-      "accounts": [
-        {
-          "name": "stakingPool",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "StakingPool state account"
-          ]
-        },
-        {
-          "name": "nft",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT state account"
-          ]
-        },
-        {
-          "name": "nftMint",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Mint address of the NFT"
-          ]
-        },
-        {
-          "name": "nftAccount",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Token account of the NFT"
-          ]
-        },
-        {
-          "name": "nftMetadata",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT token metadata"
-          ]
-        },
-        {
-          "name": "nftEdition",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT edition"
-          ]
-        },
-        {
-          "name": "nftTokenRecord",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "NFT token record"
-          ]
-        },
-        {
-          "name": "depositAccount",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The account that will hold the nft sent on expedition"
-          ]
-        },
-        {
-          "name": "depositTokenRecord",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "Deposit token_record"
-          ]
-        },
-        {
-          "name": "staker",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Staker state account"
-          ]
-        },
-        {
-          "name": "wallet",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "The wallet that pays for the rent"
-          ]
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The authority of the project"
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE SYSTEM PROGRAM"
-          ]
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE TOKEN PROGRAM"
-          ]
-        },
-        {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "ASSOCIATED TOKEN PROGRAM"
-          ]
-        },
-        {
-          "name": "tokenMetadataProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "METAPLEX TOKEN METADATA PROGRAM"
-          ]
-        },
-        {
-          "name": "logWrapper",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "SPL NO OP PROGRAM"
-          ]
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE CLOCK SYSVAR"
-          ]
-        },
-        {
-          "name": "instructionsSysvar",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE INSTRUCTIONS SYSVAR"
-          ]
-        },
-        {
-          "name": "project",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "authorizationRulesProgram",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "authorizationRules",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
         }
       ],
       "args": []
@@ -1988,7 +1814,9 @@
             "docs": [
               "wallet of the staker"
             ],
-            "type": "publicKey"
+            "type": {
+              "option": "publicKey"
+            }
           },
           {
             "name": "mint",
@@ -2208,9 +2036,7 @@
             "docs": [
               "The merkle tress for cNFTs"
             ],
-            "type": {
-              "vec": "publicKey"
-            }
+            "type": "bytes"
           }
         ]
       }
@@ -2503,6 +2329,10 @@
                 "type": "publicKey"
               },
               {
+                "name": "info",
+                "type": "bytes"
+              },
+              {
                 "name": "timestamp",
                 "type": "i64"
               }
@@ -2514,6 +2344,10 @@
               {
                 "name": "address",
                 "type": "publicKey"
+              },
+              {
+                "name": "info",
+                "type": "bytes"
               },
               {
                 "name": "timestamp",
@@ -2529,8 +2363,16 @@
                 "type": "publicKey"
               },
               {
+                "name": "nft_info",
+                "type": "bytes"
+              },
+              {
                 "name": "staker_address",
                 "type": "publicKey"
+              },
+              {
+                "name": "staker_info",
+                "type": "bytes"
               },
               {
                 "name": "timestamp",
@@ -2546,8 +2388,16 @@
                 "type": "publicKey"
               },
               {
+                "name": "nft_info",
+                "type": "bytes"
+              },
+              {
                 "name": "staker_address",
                 "type": "publicKey"
+              },
+              {
+                "name": "staker_info",
+                "type": "bytes"
               },
               {
                 "name": "timestamp",
@@ -2561,6 +2411,10 @@
               {
                 "name": "nft_address",
                 "type": "publicKey"
+              },
+              {
+                "name": "nft_info",
+                "type": "bytes"
               },
               {
                 "name": "staker_address",
