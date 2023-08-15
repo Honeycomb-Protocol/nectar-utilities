@@ -18,7 +18,7 @@
   "dependencies": {
     "@honeycomb-protocol/currency-manager": "^0.0.49",
     "@honeycomb-protocol/hive-control": "^0.1.26",
-    "@honeycomb-protocol/nectar-staking": "^0.0.72",
+    "@honeycomb-protocol/nectar-staking": "^0.0.73",
     "@metaplex-foundation/js": "^0.18.1",
     "@metaplex-foundation/mpl-bubblegum": "^0.7.0",
     "@metaplex-foundation/mpl-token-auth-rules": "^1.2.0",

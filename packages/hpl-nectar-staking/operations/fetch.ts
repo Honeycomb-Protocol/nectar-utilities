@@ -257,7 +257,8 @@ export async function fetchNftsByMintList(
     .nfts()
     .findAllByMintList({ mints })
     .then(
-      (nfts) => nfts.filter((x) => x.model === "metadata") as MetaplexMetadata[]
+      (nfts) =>
+        nfts.filter((x) => !!x && x.model === "metadata") as MetaplexMetadata[]
     )
     .then((nfts) => nfts.map(parseMetaplexMetadata));
 }

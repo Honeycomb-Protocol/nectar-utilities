@@ -2,7 +2,7 @@ pub mod errors;
 pub mod instructions;
 pub mod state;
 
-use {anchor_lang::prelude::*, instructions::*};
+use {anchor_lang::prelude::*, instructions::*, state::NFTUsedBy};
 
 declare_id!("STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L");
 
@@ -134,6 +134,22 @@ pub mod hpl_nectar_staking {
         )?;
 
         instructions::init_cnft(ctx, args)
+    }
+
+    pub fn use_nft<'info>(ctx: Context<UseNft>, used_by: NFTUsedBy) -> Result<()> {
+        hpl_hive_control::instructions::platform_gate_fn(
+            hpl_hive_control::constants::ACTIONS.public_low,
+            None,
+            &ctx.accounts.project,
+            ctx.accounts.wallet.key(),
+            ctx.accounts.wallet.to_account_info(),
+            ctx.accounts.vault.to_account_info(),
+            &None,
+            ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
+        )?;
+
+        instructions::use_nft(ctx, used_by)
     }
 
     pub fn init_staker(ctx: Context<InitStaker>) -> Result<()> {

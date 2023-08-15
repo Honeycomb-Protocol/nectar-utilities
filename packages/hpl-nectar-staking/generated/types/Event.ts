@@ -19,6 +19,11 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  */
 export type EventRecord = {
   NewNft: { address: web3.PublicKey; state: Uint8Array; timestamp: beet.bignum }
+  NftUsed: {
+    address: web3.PublicKey
+    state: Uint8Array
+    timestamp: beet.bignum
+  }
   NewStaker: {
     address: web3.PublicKey
     state: Uint8Array
@@ -62,6 +67,8 @@ export type Event = beet.DataEnumKeyAsKind<EventRecord>
 
 export const isEventNewNft = (x: Event): x is Event & { __kind: 'NewNft' } =>
   x.__kind === 'NewNft'
+export const isEventNftUsed = (x: Event): x is Event & { __kind: 'NftUsed' } =>
+  x.__kind === 'NftUsed'
 export const isEventNewStaker = (
   x: Event
 ): x is Event & { __kind: 'NewStaker' } => x.__kind === 'NewStaker'
@@ -87,6 +94,18 @@ export const eventBeet = beet.dataEnum<EventRecord>([
         ['timestamp', beet.i64],
       ],
       'EventRecord["NewNft"]'
+    ),
+  ],
+
+  [
+    'NftUsed',
+    new beet.FixableBeetArgsStruct<EventRecord['NftUsed']>(
+      [
+        ['address', beetSolana.publicKey],
+        ['state', beet.bytes],
+        ['timestamp', beet.i64],
+      ],
+      'EventRecord["NftUsed"]'
     ),
   ],
 

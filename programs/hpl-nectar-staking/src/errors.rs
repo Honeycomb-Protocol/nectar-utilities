@@ -20,6 +20,9 @@ pub enum ErrorCode {
     #[msg("Can't stake yet")]
     CantStakeYet,
 
+    #[msg("NFT already used by something")]
+    NFTAlreadyUsed,
+
     #[msg("Can't unstake yet")]
     CantUnstakeYet,
 

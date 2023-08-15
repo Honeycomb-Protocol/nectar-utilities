@@ -11,6 +11,11 @@ pub enum Event {
         state: Vec<u8>,
         timestamp: i64,
     },
+    NftUsed {
+        address: Pubkey,
+        state: Vec<u8>,
+        timestamp: i64,
+    },
     NewStaker {
         address: Pubkey,
         state: Vec<u8>,
@@ -42,6 +47,14 @@ pub enum Event {
 impl Event {
     pub fn new_nft(address: Pubkey, state: &NFTv1, clock: &Clock) -> Self {
         Self::NewNft {
+            address,
+            state: state.try_to_vec().unwrap(),
+            timestamp: clock.unix_timestamp,
+        }
+    }
+
+    pub fn nft_used(address: Pubkey, state: &NFTv1, clock: &Clock) -> Self {
+        Self::NftUsed {
             address,
             state: state.try_to_vec().unwrap(),
             timestamp: clock.unix_timestamp,

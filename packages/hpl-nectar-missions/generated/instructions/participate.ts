@@ -41,7 +41,7 @@ export const participateStruct = new beet.FixableBeetArgsStruct<
  * @property [] stakingPool
  * @property [_writable_] missionPool
  * @property [] mission
- * @property [] nft
+ * @property [_writable_] nft
  * @property [] staker
  * @property [] currency
  * @property [] mint
@@ -52,11 +52,12 @@ export const participateStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] participation
  * @property [_writable_, **signer**] wallet
  * @property [_writable_] vault
+ * @property [] currencyManagerProgram
+ * @property [] nectarStakingProgram
+ * @property [] logWrapper
+ * @property [] clock
  * @property [] rentSysvar
  * @property [] instructionsSysvar
- * @property [] clock
- * @property [] currencyManagerProgram
- * @property [] logWrapper
  * @category Instructions
  * @category Participate
  * @category generated
@@ -77,13 +78,14 @@ export type ParticipateInstructionAccounts = {
   participation: web3.PublicKey
   wallet: web3.PublicKey
   vault: web3.PublicKey
-  rentSysvar: web3.PublicKey
-  instructionsSysvar: web3.PublicKey
-  clock: web3.PublicKey
   systemProgram?: web3.PublicKey
   tokenProgram?: web3.PublicKey
   currencyManagerProgram: web3.PublicKey
+  nectarStakingProgram: web3.PublicKey
   logWrapper: web3.PublicKey
+  clock: web3.PublicKey
+  rentSysvar: web3.PublicKey
+  instructionsSysvar: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -133,7 +135,7 @@ export function createParticipateInstruction(
     },
     {
       pubkey: accounts.nft,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {
@@ -187,21 +189,6 @@ export function createParticipateInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.rentSysvar,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.instructionsSysvar,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.clock,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
       isWritable: false,
       isSigner: false,
@@ -217,7 +204,27 @@ export function createParticipateInstruction(
       isSigner: false,
     },
     {
+      pubkey: accounts.nectarStakingProgram,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.logWrapper,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.clock,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.rentSysvar,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.instructionsSysvar,
       isWritable: false,
       isSigner: false,
     },

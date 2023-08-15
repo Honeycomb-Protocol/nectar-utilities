@@ -1,5 +1,5 @@
 {
-  "version": "0.0.38",
+  "version": "0.0.41",
   "name": "hpl_nectar_missions",
   "instructions": [
     {
@@ -308,7 +308,7 @@
         },
         {
           "name": "nft",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "docs": [
             "NFT state account"
@@ -371,21 +371,6 @@
           "isSigner": false
         },
         {
-          "name": "rentSysvar",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "instructionsSysvar",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
@@ -401,7 +386,27 @@
           "isSigner": false
         },
         {
+          "name": "nectarStakingProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rentSysvar",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instructionsSysvar",
           "isMut": false,
           "isSigner": false
         }
@@ -548,8 +553,32 @@
       "accounts": [
         {
           "name": "project",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
+        },
+        {
+          "name": "stakingPool",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "StakingPool state account"
+          ]
+        },
+        {
+          "name": "nft",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "NFT state account"
+          ]
+        },
+        {
+          "name": "staker",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Staker state account"
+          ]
         },
         {
           "name": "missionPool",
@@ -582,6 +611,11 @@
         },
         {
           "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "nectarStakingProgram",
           "isMut": false,
           "isSigner": false
         },
@@ -937,7 +971,7 @@
                 "type": "publicKey"
               },
               {
-                "name": "info",
+                "name": "state",
                 "type": "bytes"
               },
               {
@@ -958,7 +992,7 @@
                 "type": "u8"
               },
               {
-                "name": "info",
+                "name": "state",
                 "type": "bytes"
               },
               {

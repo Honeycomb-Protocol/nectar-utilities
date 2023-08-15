@@ -945,6 +945,7 @@ export class NectarMission {
     ).flat();
 
     const operation = Operation.concat(operations);
+
     const lookupTable = await createLookupTable(
       this.pool().honeycomb(),
       operation.accounts

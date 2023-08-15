@@ -1,5 +1,5 @@
 {
-  "version": "0.0.73",
+  "version": "0.0.74",
   "name": "hpl_nectar_staking",
   "instructions": [
     {
@@ -598,6 +598,93 @@
           "name": "args",
           "type": {
             "defined": "CNFTArgs"
+          }
+        }
+      ]
+    },
+    {
+      "name": "useNft",
+      "accounts": [
+        {
+          "name": "project",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stakingPool",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "StakingPool state account"
+          ]
+        },
+        {
+          "name": "staker",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "StakingPool state account"
+          ]
+        },
+        {
+          "name": "nft",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "NFT state account"
+          ]
+        },
+        {
+          "name": "wallet",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The wallet ownning the cNFT"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE SYSTEM PROGRAM"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL NO OP PROGRAM"
+          ]
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE CLOCK SYSVAR"
+          ]
+        },
+        {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
+          ]
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "usedBy",
+          "type": {
+            "defined": "NFTUsedBy"
           }
         }
       ]
@@ -2082,49 +2169,6 @@
   ],
   "types": [
     {
-      "name": "CNFTArgs",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "root",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "dataHash",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "creatorHash",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "nonce",
-            "type": "u64"
-          },
-          {
-            "name": "index",
-            "type": "u32"
-          }
-        ]
-      }
-    },
-    {
       "name": "MigrateArgs",
       "type": {
         "kind": "struct",
@@ -2166,6 +2210,49 @@
             "type": {
               "defined": "MultiplierType"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CNFTArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "dataHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "creatorHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "index",
+            "type": "u32"
           }
         ]
       }
@@ -2323,6 +2410,23 @@
         "variants": [
           {
             "name": "NewNft",
+            "fields": [
+              {
+                "name": "address",
+                "type": "publicKey"
+              },
+              {
+                "name": "state",
+                "type": "bytes"
+              },
+              {
+                "name": "timestamp",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "NftUsed",
             "fields": [
               {
                 "name": "address",
@@ -2577,16 +2681,21 @@
     },
     {
       "code": 6006,
+      "name": "NFTAlreadyUsed",
+      "msg": "NFT already used by something"
+    },
+    {
+      "code": 6007,
       "name": "CantUnstakeYet",
       "msg": "Can't unstake yet"
     },
     {
-      "code": 6007,
+      "code": 6008,
       "name": "DepositAccountNotProvided",
       "msg": "Deposit account is not provided"
     },
     {
-      "code": 6008,
+      "code": 6009,
       "name": "NotImplemented",
       "msg": "Not Implemented"
     }

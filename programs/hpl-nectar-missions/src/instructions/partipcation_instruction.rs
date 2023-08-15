@@ -16,7 +16,11 @@ use {
         program::HplHiveControl,
         state::{Profile, ProfileData, ProfileIdentity, Project},
     },
-    hpl_nectar_staking::state::{Staker, StakingPool, NFT},
+    hpl_nectar_staking::{
+        cpi::{accounts::UseNft, use_nft},
+        program::HplNectarStaking,
+        state::{NFTCriteria, NFTUsedBy, NFTv1, Staker, StakingPool},
+    },
     hpl_utils::traits::Default,
     spl_account_compression::{program::SplAccountCompression, Noop},
 };
@@ -40,8 +44,8 @@ pub struct Participate<'info> {
     pub mission: Box<Account<'info, Mission>>,
 
     /// NFT state account
-    #[account(has_one = staking_pool, has_one = staker)]
-    pub nft: Box<Account<'info, NFT>>,
+    #[account(mut, has_one = staking_pool, constraint = nft.staker.is_some() && nft.staker.unwrap().eq(&staker.key()))]
+    pub nft: Box<Account<'info, NFTv1>>,
 
     /// Staker state account
     #[account(has_one = staking_pool, has_one = wallet)]
@@ -78,16 +82,17 @@ pub struct Participate<'info> {
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(mut)]
     pub vault: AccountInfo<'info>,
-    pub rent_sysvar: Sysvar<'info, Rent>,
-    /// CHECK: This is not dangerous because we don't read or write from this account
-    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
-    pub instructions_sysvar: AccountInfo<'info>,
-    pub clock: Sysvar<'info, Clock>,
     pub system_program: Program<'info, System>,
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
     pub currency_manager_program: Program<'info, HplCurrencyManager>,
+    pub nectar_staking_program: Program<'info, HplNectarStaking>,
     pub log_wrapper: Program<'info, Noop>,
+    pub clock: Sysvar<'info, Clock>,
+    pub rent_sysvar: Sysvar<'info, Rent>,
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
@@ -97,7 +102,7 @@ pub struct ParticipateArgs {
 }
 
 /// participate in a mission
-pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<()> {
+pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<()> {
     let participation = &mut ctx.accounts.participation;
     participation.set_defaults();
     participation.bump = ctx.bumps["participation"];
@@ -106,28 +111,28 @@ pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<(
     participation.nft = ctx.accounts.nft.key();
     participation.end_time = ctx.accounts.mission.duration + ctx.accounts.clock.unix_timestamp;
 
-    if ctx.accounts.mission_pool.factions_merkle_root[0] != 0 {
-        if args.faction.is_none() {
-            return Err(ErrorCode::FactionNotProvided.into());
-        }
+    // if ctx.accounts.mission_pool.factions_merkle_root[0] != 0 {
+    //     if args.faction.is_none() {
+    //         return Err(ErrorCode::FactionNotProvided.into());
+    //     }
 
-        if args.merkle_proof.is_none() {
-            return Err(ErrorCode::MerkleProofNotProvided.into());
-        }
+    //     if args.merkle_proof.is_none() {
+    //         return Err(ErrorCode::MerkleProofNotProvided.into());
+    //     }
 
-        let node = hpl_utils::merkle_tree::create_node(&[
-            &[0x00],
-            args.faction.unwrap().as_bytes(),
-            ctx.accounts.nft.mint.as_ref(),
-        ]);
-        if !hpl_utils::merkle_tree::verify_merkle(
-            args.merkle_proof.unwrap(),
-            ctx.accounts.mission_pool.factions_merkle_root,
-            node.0,
-        ) {
-            return Err(ErrorCode::InvalidProof.into());
-        }
-    }
+    //     let node = hpl_utils::merkle_tree::create_node(&[
+    //         &[0x00],
+    //         args.faction.unwrap().as_bytes(),
+    //         ctx.accounts.nft.mint.as_ref(),
+    //     ]);
+    //     if !hpl_utils::merkle_tree::verify_merkle(
+    //         args.merkle_proof.unwrap(),
+    //         ctx.accounts.mission_pool.factions_merkle_root,
+    //         node.0,
+    //     ) {
+    //         return Err(ErrorCode::InvalidProof.into());
+    //     }
+    // }
 
     let rewards = ctx
         .accounts
@@ -162,58 +167,50 @@ pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<(
         return Err(ErrorCode::NotStaked.into());
     }
 
-    let mut index = 0;
-    let collection = ctx
-        .accounts
-        .project
-        .collections
-        .iter()
-        .filter_map(|x| {
-            let key = if ctx.accounts.mission_pool.collections.contains(&index) {
-                Some(*x)
-            } else {
-                None
-            };
-            index += 1;
-            key
-        })
-        .any(|collection| collection.eq(&ctx.accounts.nft.collection));
-
-    msg!(
-        "index: {}, collection: {:?}, needed: {:?}",
-        index,
-        ctx.accounts.nft.collection,
-        ctx.accounts.project.collections
-    );
-
-    if !collection {
-        index = 0;
-        let creator = ctx
-            .accounts
-            .project
-            .creators
-            .iter()
-            .filter_map(|x| {
-                let key = if ctx.accounts.mission_pool.creators.contains(&index) {
-                    Some(*x)
-                } else {
-                    None
-                };
-                index += 1;
-                key
-            })
-            .any(|creator| creator.eq(&ctx.accounts.nft.creator));
-
-        msg!(
-            "index: {}, creator: {:?}, needed: {:?}",
-            index,
-            ctx.accounts.nft.creator,
-            ctx.accounts.project.creators
-        );
-
-        if !creator {
-            return Err(ErrorCode::NftNotRecognized.into());
+    match ctx.accounts.nft.criteria {
+        NFTCriteria::Collection { address } => {
+            let mut index = 0;
+            let collection = ctx
+                .accounts
+                .project
+                .collections
+                .iter()
+                .filter_map(|x| {
+                    let key = if ctx.accounts.mission_pool.collections.contains(&index) {
+                        Some(*x)
+                    } else {
+                        None
+                    };
+                    index += 1;
+                    key
+                })
+                .any(|collection| collection.eq(&address));
+            if !collection {
+                return Err(ErrorCode::NftNotRecognized.into());
+            }
         }
+        NFTCriteria::Creator { address } => {
+            let mut index = 0;
+            let creator = ctx
+                .accounts
+                .project
+                .creators
+                .iter()
+                .filter_map(|x| {
+                    let key = if ctx.accounts.mission_pool.creators.contains(&index) {
+                        Some(*x)
+                    } else {
+                        None
+                    };
+                    index += 1;
+                    key
+                })
+                .any(|creator| creator.eq(&address));
+            if !creator {
+                return Err(ErrorCode::NftNotRecognized.into());
+            }
+        }
+        _ => {}
     }
 
     transfer_currency(
@@ -238,7 +235,24 @@ pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<(
         ctx.accounts.mission.cost.amount,
     )?;
 
-    // msg!("JSON Participation: {:?}", participation);
+    use_nft(
+        CpiContext::new(
+            ctx.accounts.nectar_staking_program.to_account_info(),
+            UseNft {
+                project: ctx.accounts.project.to_account_info(),
+                staking_pool: ctx.accounts.staking_pool.to_account_info(),
+                staker: ctx.accounts.staker.to_account_info(),
+                nft: ctx.accounts.nft.to_account_info(),
+                wallet: ctx.accounts.wallet.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+                log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+                clock: ctx.accounts.clock.to_account_info(),
+                instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
+                vault: ctx.accounts.vault.to_account_info(),
+            },
+        ),
+        NFTUsedBy::Missions,
+    )?;
 
     let event =
         events::Event::new_participation(participation.key(), &participation, &ctx.accounts.clock);
@@ -259,7 +273,7 @@ pub struct CollectRewards<'info> {
     #[account(mut, has_one = wallet, has_one = nft, has_one = mission)]
     pub participation: Box<Account<'info, Participation>>,
     #[account()]
-    pub nft: Box<Account<'info, NFT>>,
+    pub nft: Box<Account<'info, NFTv1>>,
 
     #[account(
         mut,
@@ -432,7 +446,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                     AddProfileDataArgs {
                         label: String::from("nectar_missions_xp"),
                         value: Some(AddProfileDataArgsValue::SingleValue {
-                            value: String::from("0"),
+                            value: String::from(reward.amount.to_string()),
                         }),
                     },
                 )
@@ -486,16 +500,26 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
         &ctx.accounts.clock,
     );
     event.wrap(ctx.accounts.log_wrapper.to_account_info())?;
-
-    // msg!("JSON Participation: {:?}", ctx.accounts.participation);
     res
 }
 
 /// Accounts used in recall instruction
 #[derive(Accounts)]
 pub struct Recall<'info> {
-    #[account()]
+    #[account(mut)]
     pub project: Box<Account<'info, Project>>,
+
+    /// StakingPool state account
+    #[account(has_one = project)]
+    pub staking_pool: Box<Account<'info, StakingPool>>,
+
+    /// NFT state account
+    #[account(mut, has_one = staking_pool, constraint = nft.staker.is_some() && nft.staker.unwrap().eq(&staker.key()))]
+    pub nft: Box<Account<'info, NFTv1>>,
+
+    /// Staker state account
+    #[account(has_one = staking_pool, has_one = wallet)]
+    pub staker: Box<Account<'info, Staker>>,
 
     /// MissionPool account
     #[account(has_one = project)]
@@ -513,6 +537,7 @@ pub struct Recall<'info> {
     pub wallet: Signer<'info>,
 
     pub system_program: Program<'info, System>,
+    pub nectar_staking_program: Program<'info, HplNectarStaking>,
     pub log_wrapper: Program<'info, Noop>,
     pub clock: Sysvar<'info, Clock>,
     /// NATIVE INSTRUCTIONS SYSVAR
@@ -539,9 +564,26 @@ pub fn recall(ctx: Context<Recall>) -> Result<()> {
 
     participation.is_recalled = true;
 
+    use_nft(
+        CpiContext::new(
+            ctx.accounts.nectar_staking_program.to_account_info(),
+            UseNft {
+                project: ctx.accounts.project.to_account_info(),
+                staking_pool: ctx.accounts.staking_pool.to_account_info(),
+                staker: ctx.accounts.staker.to_account_info(),
+                nft: ctx.accounts.nft.to_account_info(),
+                wallet: ctx.accounts.wallet.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+                log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+                clock: ctx.accounts.clock.to_account_info(),
+                instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
+                vault: ctx.accounts.vault.to_account_info(),
+            },
+        ),
+        NFTUsedBy::None,
+    )?;
+
     let event = events::Event::recall_participation(participation.key(), &ctx.accounts.clock);
     event.wrap(ctx.accounts.log_wrapper.to_account_info())?;
-
-    // msg!("JSON Participation: {:?}", participation);
     Ok(())
 }

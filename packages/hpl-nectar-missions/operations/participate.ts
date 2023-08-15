@@ -10,7 +10,11 @@ import {
   PROGRAM_ID as HPL_CURRENCY_MANAGER_PROGRAM,
   holderAccountPdas,
 } from "@honeycomb-protocol/currency-manager";
-import { StakedNft, getNftPda } from "@honeycomb-protocol/nectar-staking";
+import {
+  HPL_NECTAR_STAKING_PROGRAM,
+  StakedNft,
+  getNftPda,
+} from "@honeycomb-protocol/nectar-staking";
 import {
   ParticipateArgs,
   PROGRAM_ID,
@@ -18,7 +22,6 @@ import {
 } from "../generated";
 import { participationPda } from "../utils";
 import { NectarMission } from "../NectarMissions";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
 
 /**
@@ -82,15 +85,13 @@ export async function createParticipateOperation(
     holderAccountPdas(
       args.mission.pool().address,
       args.mission.requirements.cost.currency().mint.address,
-      args.mission.requirements.cost.currency().kind,
-      TOKEN_PROGRAM_ID
+      args.mission.requirements.cost.currency().kind
     );
 
   const { holderAccount, tokenAccount } = holderAccountPdas(
     honeycomb.identity().address,
     args.mission.requirements.cost.currency().mint.address,
-    args.mission.requirements.cost.currency().kind,
-    TOKEN_PROGRAM_ID
+    args.mission.requirements.cost.currency().kind
   );
 
   const instructions = [
@@ -118,6 +119,7 @@ export async function createParticipateOperation(
         instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
         clock: SYSVAR_CLOCK_PUBKEY,
         currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM,
+        nectarStakingProgram: HPL_NECTAR_STAKING_PROGRAM,
         logWrapper: SPL_NOOP_PROGRAM_ID,
       },
       {

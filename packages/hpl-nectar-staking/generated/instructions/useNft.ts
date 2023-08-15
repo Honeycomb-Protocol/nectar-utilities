@@ -7,49 +7,55 @@
 
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
+import { NFTUsedBy, nFTUsedByBeet } from '../types/NFTUsedBy'
 
 /**
  * @category Instructions
- * @category Recall
+ * @category UseNft
  * @category generated
  */
-export const recallStruct = new beet.BeetArgsStruct<{
-  instructionDiscriminator: number[] /* size: 8 */
-}>(
-  [['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]],
-  'RecallInstructionArgs'
+export type UseNftInstructionArgs = {
+  usedBy: NFTUsedBy
+}
+/**
+ * @category Instructions
+ * @category UseNft
+ * @category generated
+ */
+export const useNftStruct = new beet.BeetArgsStruct<
+  UseNftInstructionArgs & {
+    instructionDiscriminator: number[] /* size: 8 */
+  }
+>(
+  [
+    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
+    ['usedBy', nFTUsedByBeet],
+  ],
+  'UseNftInstructionArgs'
 )
 /**
- * Accounts required by the _recall_ instruction
+ * Accounts required by the _useNft_ instruction
  *
- * @property [_writable_] project
+ * @property [] project
  * @property [] stakingPool
- * @property [_writable_] nft
  * @property [] staker
- * @property [] missionPool
- * @property [] mission
- * @property [_writable_] participation
+ * @property [_writable_] nft
  * @property [_writable_, **signer**] wallet
- * @property [] nectarStakingProgram
  * @property [] logWrapper
  * @property [] clock
  * @property [] instructionsSysvar
  * @property [_writable_] vault
  * @category Instructions
- * @category Recall
+ * @category UseNft
  * @category generated
  */
-export type RecallInstructionAccounts = {
+export type UseNftInstructionAccounts = {
   project: web3.PublicKey
   stakingPool: web3.PublicKey
-  nft: web3.PublicKey
   staker: web3.PublicKey
-  missionPool: web3.PublicKey
-  mission: web3.PublicKey
-  participation: web3.PublicKey
+  nft: web3.PublicKey
   wallet: web3.PublicKey
   systemProgram?: web3.PublicKey
-  nectarStakingProgram: web3.PublicKey
   logWrapper: web3.PublicKey
   clock: web3.PublicKey
   instructionsSysvar: web3.PublicKey
@@ -57,29 +63,33 @@ export type RecallInstructionAccounts = {
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const recallInstructionDiscriminator = [
-  116, 112, 101, 191, 131, 230, 83, 84,
+export const useNftInstructionDiscriminator = [
+  109, 209, 208, 225, 8, 35, 1, 237,
 ]
 
 /**
- * Creates a _Recall_ instruction.
+ * Creates a _UseNft_ instruction.
  *
  * @param accounts that will be accessed while the instruction is processed
+ * @param args to provide as instruction data to the program
+ *
  * @category Instructions
- * @category Recall
+ * @category UseNft
  * @category generated
  */
-export function createRecallInstruction(
-  accounts: RecallInstructionAccounts,
-  programId = new web3.PublicKey('HUNTopv9dHDdTPPMV1SfKZAxjXtuM4ic2PVEWPbsi9Z2')
+export function createUseNftInstruction(
+  accounts: UseNftInstructionAccounts,
+  args: UseNftInstructionArgs,
+  programId = new web3.PublicKey('STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L')
 ) {
-  const [data] = recallStruct.serialize({
-    instructionDiscriminator: recallInstructionDiscriminator,
+  const [data] = useNftStruct.serialize({
+    instructionDiscriminator: useNftInstructionDiscriminator,
+    ...args,
   })
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.project,
-      isWritable: true,
+      isWritable: false,
       isSigner: false,
     },
     {
@@ -88,27 +98,12 @@ export function createRecallInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.nft,
-      isWritable: true,
-      isSigner: false,
-    },
-    {
       pubkey: accounts.staker,
       isWritable: false,
       isSigner: false,
     },
     {
-      pubkey: accounts.missionPool,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.mission,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.participation,
+      pubkey: accounts.nft,
       isWritable: true,
       isSigner: false,
     },
@@ -119,11 +114,6 @@ export function createRecallInstruction(
     },
     {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.nectarStakingProgram,
       isWritable: false,
       isSigner: false,
     },

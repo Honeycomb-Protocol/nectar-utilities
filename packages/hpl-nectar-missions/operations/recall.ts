@@ -31,6 +31,10 @@ import {
   SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
   SPL_NOOP_PROGRAM_ID,
 } from "@solana/spl-account-compression";
+import {
+  HPL_NECTAR_STAKING_PROGRAM,
+  getNftPda,
+} from "@honeycomb-protocol/nectar-staking";
 
 /**
  * Represents the arguments needed to create a collect rewards operation.
@@ -45,6 +49,9 @@ type CreateCollectRewardsOperationArgs = {
    * The wallet address of the user collecting the rewards.
    */
   wallet: PublicKey;
+
+  isFirst?: boolean;
+
   /**
    * (Optional) The program ID associated with the collect rewards operation.
    * If not provided, the default PROGRAM_ID will be used.
@@ -85,8 +92,7 @@ export async function createCollectRewardsOperation(
     const vault = holderAccountPdas(
       args.reward.participation().mission().pool().address,
       args.reward.currency().mint.address,
-      args.reward.currency().kind,
-      TOKEN_PROGRAM_ID
+      args.reward.currency().kind
     );
     vaultHolderAccount = vault.holderAccount;
     vaultTokenAccount = vault.tokenAccount;
@@ -94,8 +100,7 @@ export async function createCollectRewardsOperation(
     const user = holderAccountPdas(
       args.wallet,
       args.reward.currency().mint.address,
-      args.reward.currency().kind,
-      TOKEN_PROGRAM_ID
+      args.reward.currency().kind
     );
     holderAccount = user.holderAccount;
     tokenAccount = user.tokenAccount;
@@ -104,9 +109,6 @@ export async function createCollectRewardsOperation(
   const user = await honeycomb.identity().user();
 
   const instructions = [
-    ComputeBudgetProgram.setComputeUnitLimit({
-      units: 400_000,
-    }),
     createCollectRewardsInstruction(
       {
         project: args.reward.participation().mission().pool().project().address,
@@ -145,6 +147,14 @@ export async function createCollectRewardsOperation(
       programId
     ),
   ];
+
+  if (args.isFirst) {
+    instructions.push(
+      ComputeBudgetProgram.setComputeUnitLimit({
+        units: 400_000,
+      })
+    );
+  }
 
   return {
     operation: new Operation(honeycomb, instructions),
@@ -228,18 +238,27 @@ export async function creatRecallOperation(
     );
   }
 
+  const [nft] = getNftPda(
+    args.participation.nft.stakingPool,
+    args.participation.nft.mint
+  );
+
   operations.push(
     new Operation(honeycomb, [
       createRecallInstruction(
         {
           project: args.participation.mission().pool().project().address,
+          stakingPool: args.participation.nft.stakingPool,
           missionPool: args.participation.mission().pool().address,
+          nft,
+          staker: args.participation.nft.staker,
           mission: args.participation.mission().address,
           participation: args.participation.address,
           wallet: honeycomb.identity().address,
           vault: VAULT,
-          clock: SYSVAR_CLOCK_PUBKEY,
+          nectarStakingProgram: HPL_NECTAR_STAKING_PROGRAM,
           logWrapper: SPL_NOOP_PROGRAM_ID,
+          clock: SYSVAR_CLOCK_PUBKEY,
           instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
         },
         programId

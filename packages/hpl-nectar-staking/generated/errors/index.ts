@@ -138,13 +138,33 @@ createErrorFromCodeLookup.set(0x1775, () => new CantStakeYetError())
 createErrorFromNameLookup.set('CantStakeYet', () => new CantStakeYetError())
 
 /**
+ * NFTAlreadyUsed: 'NFT already used by something'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class NFTAlreadyUsedError extends Error {
+  readonly code: number = 0x1776
+  readonly name: string = 'NFTAlreadyUsed'
+  constructor() {
+    super('NFT already used by something')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, NFTAlreadyUsedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1776, () => new NFTAlreadyUsedError())
+createErrorFromNameLookup.set('NFTAlreadyUsed', () => new NFTAlreadyUsedError())
+
+/**
  * CantUnstakeYet: 'Can't unstake yet'
  *
  * @category Errors
  * @category generated
  */
 export class CantUnstakeYetError extends Error {
-  readonly code: number = 0x1776
+  readonly code: number = 0x1777
   readonly name: string = 'CantUnstakeYet'
   constructor() {
     super("Can't unstake yet")
@@ -154,7 +174,7 @@ export class CantUnstakeYetError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1776, () => new CantUnstakeYetError())
+createErrorFromCodeLookup.set(0x1777, () => new CantUnstakeYetError())
 createErrorFromNameLookup.set('CantUnstakeYet', () => new CantUnstakeYetError())
 
 /**
@@ -164,7 +184,7 @@ createErrorFromNameLookup.set('CantUnstakeYet', () => new CantUnstakeYetError())
  * @category generated
  */
 export class DepositAccountNotProvidedError extends Error {
-  readonly code: number = 0x1777
+  readonly code: number = 0x1778
   readonly name: string = 'DepositAccountNotProvided'
   constructor() {
     super('Deposit account is not provided')
@@ -175,7 +195,7 @@ export class DepositAccountNotProvidedError extends Error {
 }
 
 createErrorFromCodeLookup.set(
-  0x1777,
+  0x1778,
   () => new DepositAccountNotProvidedError()
 )
 createErrorFromNameLookup.set(
@@ -190,7 +210,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class NotImplementedError extends Error {
-  readonly code: number = 0x1778
+  readonly code: number = 0x1779
   readonly name: string = 'NotImplemented'
   constructor() {
     super('Not Implemented')
@@ -200,7 +220,7 @@ export class NotImplementedError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1778, () => new NotImplementedError())
+createErrorFromCodeLookup.set(0x1779, () => new NotImplementedError())
 createErrorFromNameLookup.set('NotImplemented', () => new NotImplementedError())
 
 /**
