@@ -5,11 +5,13 @@ import {
   PROGRAM_ID as HPL_CURRENCY_MANAGER_PROGRAM_ID,
   holderAccountPdas,
   createCreateHolderAccountOperation,
+  createFixHolderAccountInstruction,
 } from "@honeycomb-protocol/currency-manager";
 import { getNftPda, getStakerPda } from "../pdas";
 import { StakedNft } from "../types";
 import { NectarStaking } from "../NectarStaking";
 import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
+import { ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 /**
  * Represents the context arguments for creating the ClaimRewards operation.
@@ -95,10 +97,27 @@ export async function createClaimRewardsOperation(
 
   if (args.isFirst) {
     try {
-      await args.stakingPool
+      const holderAccountT = await args.stakingPool
         .currency()
-        .fetch()
         .holderAccount(honeycomb.identity().address);
+
+      if (!holderAccountT.tokenAccount.equals(tokenAccount)) {
+        instructions.unshift(
+          createFixHolderAccountInstruction({
+            project: holderAccountT.currency().project().address,
+            currency: holderAccountT.currency().address,
+            mint: holderAccountT.currency().mint.address,
+            holderAccount,
+            tokenAccount: holderAccountT.tokenAccount,
+            newTokenAccount: tokenAccount,
+            owner: holderAccountT.owner,
+            payer: honeycomb.identity().address,
+            vault: VAULT,
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+            instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+          })
+        );
+      }
     } catch {
       instructions.unshift(
         ...(

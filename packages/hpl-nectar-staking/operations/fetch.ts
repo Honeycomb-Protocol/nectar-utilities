@@ -25,7 +25,7 @@ import { Honeycomb } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
 
 const HELIUS_RPC_URL =
-  "https://devnet.helius-rpc.com/?api-key=014b4690-ef6d-4cab-b9e9-d3ec73610d52";
+  "https://rpc.helius.xyz/?api-key=014b4690-ef6d-4cab-b9e9-d3ec73610d52";
 
 const parseAsset = (asset: any): Metadata => {
   let collection: any = null;
@@ -144,15 +144,14 @@ export async function fetchCNfts(
       },
     }));
     try {
-      return honeycomb
-        .http()
-        .request(HELIUS_RPC_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          data: JSON.stringify(batch),
-        })
+      return fetch(HELIUS_RPC_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(batch),
+      })
+        .then((r) => r.json())
         .then(
           (r) => r.map(({ result }) => result).map(parseAsset) as Metadata[]
         );
@@ -167,26 +166,24 @@ export async function fetchCNfts(
   let assetList: any = [];
   while (page > 0) {
     try {
-      const { result } = await honeycomb
-        .http()
-        .request(HELIUS_RPC_URL as string, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+      const { result } = await fetch(HELIUS_RPC_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: Math.random().toString(36).substring(7),
+          method: "searchAssets",
+          params: {
+            ownerAddress: args.walletAddress.toString(),
+            grouping: ["collection", args.collectionAddress.toString()],
+            compressed: true,
+            page: page,
+            limit: 1000,
           },
-          data: JSON.stringify({
-            jsonrpc: "2.0",
-            id: Math.random().toString(36).substring(7),
-            method: "searchAssets",
-            params: {
-              ownerAddress: args.walletAddress.toString(),
-              grouping: ["collection", args.collectionAddress.toString()],
-              compressed: true,
-              page: page,
-              limit: 1000,
-            },
-          }),
-        });
+        }),
+      }).then((r) => r.json());
       assetList.push(...result.items);
       if (result.total !== 1000) {
         page = 0;
