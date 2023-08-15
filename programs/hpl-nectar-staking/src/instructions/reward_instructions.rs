@@ -262,7 +262,7 @@ pub struct ClaimRewards<'info> {
     pub instructions_sysvar: AccountInfo<'info>,
 
     // HIVE CONTROL
-    #[account()]
+    #[account(mut)]
     pub project: Box<Account<'info, Project>>,
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(mut)]

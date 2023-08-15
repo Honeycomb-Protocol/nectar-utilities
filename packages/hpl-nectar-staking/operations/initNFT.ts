@@ -1,9 +1,18 @@
 import * as web3 from "@solana/web3.js";
-import { createInitNftInstruction, PROGRAM_ID } from "../generated";
+import {
+  createInitCnftInstruction,
+  createInitNftInstruction,
+  PROGRAM_ID,
+} from "../generated";
 import { getMetadataAccount_, getNftPda } from "../pdas";
 import { VAULT, Operation, Honeycomb } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
-import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
+import {
+  SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+  SPL_NOOP_PROGRAM_ID,
+} from "@solana/spl-account-compression";
+import { AvailableNft } from "../types";
+import { fetchAssetProof } from "./fetch";
 
 /**
  * Represents the arguments required to create an initialization NFT operation.
@@ -11,7 +20,7 @@ import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
  */
 type CreateInitNftOperationArgs = {
   stakingPool: NectarStaking;
-  nftMint: web3.PublicKey;
+  nft: AvailableNft;
   programId?: web3.PublicKey;
 };
 
@@ -45,29 +54,70 @@ export async function createInitNFTOperation(
   const programId = args.programId || PROGRAM_ID;
 
   // Get the PDA account for the NFT and its metadata
-  const [nft] = getNftPda(args.stakingPool.address, args.nftMint, programId);
-  const [nftMetadata] = getMetadataAccount_(args.nftMint);
+  const [nft] = getNftPda(args.stakingPool.address, args.nft.mint, programId);
 
-  // Create the transaction instruction for initializing the NFT
-  const instructions: web3.TransactionInstruction[] = [
-    createInitNftInstruction(
-      {
-        project: args.stakingPool.project().address,
-        vault: VAULT,
-        stakingPool: args.stakingPool.address,
-        nft,
-        nftMetadata,
-        nftMint: args.nftMint,
-        wallet: honeycomb.identity().address,
-        delegateAuthority:
-          honeycomb.identity().delegateAuthority()?.address || programId,
-        logWrapper: SPL_NOOP_PROGRAM_ID,
-        clock: web3.SYSVAR_CLOCK_PUBKEY,
-        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-      },
-      programId
-    ),
-  ];
+  const instructions: web3.TransactionInstruction[] = [];
+
+  if (args.nft.isCompressed) {
+    const proof = await fetchAssetProof(args.nft.mint);
+
+    instructions.push(
+      createInitCnftInstruction(
+        {
+          project: args.stakingPool.project().address,
+          vault: VAULT,
+          stakingPool: args.stakingPool.address,
+          nft,
+          assetId: args.nft.mint,
+          merkleTree: args.nft.compression.tree,
+          wallet: honeycomb.identity().address,
+          delegateAuthority:
+            honeycomb.identity().delegateAuthority()?.address || programId,
+          compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+          logWrapper: SPL_NOOP_PROGRAM_ID,
+          clock: web3.SYSVAR_CLOCK_PUBKEY,
+          instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+          anchorRemainingAccounts: proof.proof.map((p) => ({
+            pubkey: p,
+            isSigner: false,
+            isWritable: false,
+          })),
+        },
+        {
+          args: {
+            root: proof.root.toBuffer().toJSON().data,
+            nonce: args.nft.compression.leafId,
+            index: args.nft.compression.leafId,
+            creatorHash: args.nft.compression.creatorHash.toBuffer().toJSON()
+              .data,
+            dataHash: args.nft.compression.dataHash.toBuffer().toJSON().data,
+          },
+        },
+        programId
+      )
+    );
+  } else {
+    const [nftMetadata] = getMetadataAccount_(args.nft.mint);
+    instructions.push(
+      createInitNftInstruction(
+        {
+          project: args.stakingPool.project().address,
+          vault: VAULT,
+          stakingPool: args.stakingPool.address,
+          nft,
+          nftMetadata,
+          nftMint: args.nft.mint,
+          wallet: honeycomb.identity().address,
+          delegateAuthority:
+            honeycomb.identity().delegateAuthority()?.address || programId,
+          logWrapper: SPL_NOOP_PROGRAM_ID,
+          clock: web3.SYSVAR_CLOCK_PUBKEY,
+          instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+        },
+        programId
+      )
+    );
+  }
 
   // Return the operation as an object
   return {

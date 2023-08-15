@@ -8,31 +8,31 @@ use super::{NFTv1, Staker};
 pub enum Event {
     NewNft {
         address: Pubkey,
-        state: NFTv1,
+        state: Vec<u8>,
         timestamp: i64,
     },
     NewStaker {
         address: Pubkey,
-        state: Staker,
+        state: Vec<u8>,
         timestamp: i64,
     },
     Stake {
         nft_address: Pubkey,
-        nft: NFTv1,
+        nft: Vec<u8>,
         staker_address: Pubkey,
-        staker: Staker,
+        staker: Vec<u8>,
         timestamp: i64,
     },
     Unstake {
         nft_address: Pubkey,
-        nft: NFTv1,
+        nft: Vec<u8>,
         staker_address: Pubkey,
-        staker: Staker,
+        staker: Vec<u8>,
         timestamp: i64,
     },
     ClaimRewards {
         nft_address: Pubkey,
-        nft: NFTv1,
+        nft: Vec<u8>,
         staker_address: Pubkey,
         amount: u64,
         timestamp: i64,
@@ -43,7 +43,7 @@ impl Event {
     pub fn new_nft(address: Pubkey, state: &NFTv1, clock: &Clock) -> Self {
         Self::NewNft {
             address,
-            state: state.clone(),
+            state: state.try_to_vec().unwrap(),
             timestamp: clock.unix_timestamp,
         }
     }
@@ -51,7 +51,7 @@ impl Event {
     pub fn new_staker(address: Pubkey, state: &Staker, clock: &Clock) -> Self {
         Self::NewStaker {
             address,
-            state: state.clone(),
+            state: state.try_to_vec().unwrap(),
             timestamp: clock.unix_timestamp,
         }
     }
@@ -65,9 +65,9 @@ impl Event {
     ) -> Self {
         Self::Stake {
             nft_address,
-            nft: nft_state.clone(),
+            nft: nft_state.try_to_vec().unwrap(),
             staker_address,
-            staker: staker_state.clone(),
+            staker: staker_state.try_to_vec().unwrap(),
             timestamp: clock.unix_timestamp,
         }
     }
@@ -81,9 +81,9 @@ impl Event {
     ) -> Self {
         Self::Unstake {
             nft_address,
-            nft: nft_state.clone(),
+            nft: nft_state.try_to_vec().unwrap(),
             staker_address,
-            staker: staker_state.clone(),
+            staker: staker_state.try_to_vec().unwrap(),
             timestamp: clock.unix_timestamp,
         }
     }
@@ -97,7 +97,7 @@ impl Event {
     ) -> Self {
         Self::ClaimRewards {
             nft_address,
-            nft: nft_state.clone(),
+            nft: nft_state.try_to_vec().unwrap(),
             staker_address,
             amount,
             timestamp: clock.unix_timestamp,

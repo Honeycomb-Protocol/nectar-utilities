@@ -16,7 +16,7 @@ pub struct InitCNFT<'info> {
 
     /// StakingPool state account
     #[account(has_one = project)]
-    pub staking_pool: Account<'info, StakingPool>,
+    pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// NFT state account
     #[account(
@@ -29,7 +29,7 @@ pub struct InitCNFT<'info> {
         ],
         bump,
       )]
-    pub nft: Account<'info, NFTv1>,
+    pub nft: Box<Account<'info, NFTv1>>,
 
     /// cNFT asset id
     /// CHECK: This is not dangerous because we don't read or write from this account
@@ -77,7 +77,10 @@ pub struct CNFTArgs {
 }
 
 /// Init cNFT
-pub fn init_cnft(ctx: Context<InitCNFT>, args: CNFTArgs) -> Result<()> {
+pub fn init_cnft<'info>(
+    ctx: Context<'_, '_, '_, 'info, InitCNFT<'info>>,
+    args: CNFTArgs,
+) -> Result<()> {
     let nft = &mut ctx.accounts.nft;
     nft.set_defaults();
     nft.bump = ctx.bumps["nft"];
@@ -99,17 +102,14 @@ pub fn init_cnft(ctx: Context<InitCNFT>, args: CNFTArgs) -> Result<()> {
         args.creator_hash,
     );
 
-    spl_account_compression::cpi::verify_leaf(
-        CpiContext::new(
-            ctx.accounts.compression_program.to_account_info(),
-            spl_account_compression::cpi::accounts::VerifyLeaf {
-                merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-            },
-        ),
-        args.root,
-        leaf.to_node(),
-        args.index,
-    )?;
+    let cpi_ctx = CpiContext::new(
+        ctx.accounts.compression_program.to_account_info(),
+        spl_account_compression::cpi::accounts::VerifyLeaf {
+            merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
+        },
+    )
+    .with_remaining_accounts(ctx.remaining_accounts.to_vec());
+    spl_account_compression::cpi::verify_leaf(cpi_ctx, args.root, leaf.to_node(), args.index)?;
 
     Event::new_nft(nft.key(), &nft, &ctx.accounts.clock)
         .wrap(ctx.accounts.log_wrapper.to_account_info())?;
@@ -129,6 +129,7 @@ pub struct StakeCNFT<'info> {
     pub nft: Box<Account<'info, NFTv1>>,
 
     /// CHECK: unsafe
+    #[account(mut)]
     pub merkle_tree: UncheckedAccount<'info>,
 
     /// CHECK: unsafe
@@ -171,7 +172,11 @@ pub struct StakeCNFT<'info> {
 }
 
 /// Stake cNFT
-pub fn stake_cnft(ctx: Context<StakeCNFT>, args: CNFTArgs) -> Result<()> {
+// pub fn stake_cnft(ctx: Context<StakeCNFT>, args: CNFTArgs) -> Result<()> {
+pub fn stake_cnft<'info>(
+    ctx: Context<'_, '_, '_, 'info, StakeCNFT<'info>>,
+    args: CNFTArgs,
+) -> Result<()> {
     let staking_pool = &mut ctx.accounts.staking_pool;
     let nft = &mut ctx.accounts.nft;
     let staker = &mut ctx.accounts.staker;
@@ -199,20 +204,29 @@ pub fn stake_cnft(ctx: Context<StakeCNFT>, args: CNFTArgs) -> Result<()> {
     // ];
     // let staker_signer = &[&staker_seeds[..]];
 
+    let mut cpi_ctx = CpiContext::new(
+        ctx.accounts.bubblegum_program.to_account_info(),
+        mpl_bubblegum::cpi::accounts::Transfer {
+            tree_authority: ctx.accounts.tree_authority.to_account_info(),
+            leaf_owner: ctx.accounts.wallet.to_account_info(),
+            leaf_delegate: ctx.accounts.wallet.to_account_info(),
+            new_leaf_owner: staker.to_account_info(),
+            merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
+            log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+            compression_program: ctx.accounts.compression_program.to_account_info(),
+            system_program: ctx.accounts.system_program.to_account_info(),
+        },
+    )
+    .with_remaining_accounts(ctx.remaining_accounts.to_vec());
+
+    msg!(
+        "Is leaf owner signer {}",
+        cpi_ctx.accounts.leaf_owner.is_signer
+    );
+    cpi_ctx.accounts.leaf_owner.is_signer = true;
+
     mpl_bubblegum::cpi::transfer(
-        CpiContext::new(
-            ctx.accounts.bubblegum_program.to_account_info(),
-            mpl_bubblegum::cpi::accounts::Transfer {
-                tree_authority: ctx.accounts.tree_authority.to_account_info(),
-                leaf_owner: ctx.accounts.wallet.to_account_info(),
-                leaf_delegate: ctx.accounts.wallet.to_account_info(),
-                new_leaf_owner: staker.to_account_info(),
-                merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-                log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
-                compression_program: ctx.accounts.compression_program.to_account_info(),
-                system_program: ctx.accounts.system_program.to_account_info(),
-            },
-        ),
+        cpi_ctx,
         args.root,
         args.data_hash,
         args.creator_hash,
@@ -249,6 +263,7 @@ pub struct UnstakeCNFT<'info> {
     pub nft: Box<Account<'info, NFTv1>>,
 
     /// CHECK: unsafe
+    #[account(mut)]
     pub merkle_tree: UncheckedAccount<'info>,
 
     /// CHECK: unsafe
@@ -291,7 +306,10 @@ pub struct UnstakeCNFT<'info> {
 }
 
 /// Unstake NFT
-pub fn unstake_cnft(ctx: Context<UnstakeCNFT>, args: CNFTArgs) -> Result<()> {
+pub fn unstake_cnft<'info>(
+    ctx: Context<'_, '_, '_, 'info, UnstakeCNFT<'info>>,
+    args: CNFTArgs,
+) -> Result<()> {
     let staking_pool = &mut ctx.accounts.staking_pool;
     let staker = &mut ctx.accounts.staker;
     let nft = &mut ctx.accounts.nft;
@@ -321,21 +339,23 @@ pub fn unstake_cnft(ctx: Context<UnstakeCNFT>, args: CNFTArgs) -> Result<()> {
     ];
     let staker_signer = &[&staker_seeds[..]];
 
+    let cpi_ctx = CpiContext::new_with_signer(
+        ctx.accounts.bubblegum_program.to_account_info(),
+        mpl_bubblegum::cpi::accounts::Transfer {
+            tree_authority: ctx.accounts.tree_authority.to_account_info(),
+            leaf_owner: staker.to_account_info(),
+            leaf_delegate: staker.to_account_info(),
+            new_leaf_owner: ctx.accounts.wallet.to_account_info(),
+            merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
+            log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+            compression_program: ctx.accounts.compression_program.to_account_info(),
+            system_program: ctx.accounts.system_program.to_account_info(),
+        },
+        staker_signer,
+    )
+    .with_remaining_accounts(ctx.remaining_accounts.to_vec());
     mpl_bubblegum::cpi::transfer(
-        CpiContext::new_with_signer(
-            ctx.accounts.bubblegum_program.to_account_info(),
-            mpl_bubblegum::cpi::accounts::Transfer {
-                tree_authority: ctx.accounts.tree_authority.to_account_info(),
-                leaf_owner: staker.to_account_info(),
-                leaf_delegate: staker.to_account_info(),
-                new_leaf_owner: ctx.accounts.wallet.to_account_info(),
-                merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-                log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
-                compression_program: ctx.accounts.compression_program.to_account_info(),
-                system_program: ctx.accounts.system_program.to_account_info(),
-            },
-            staker_signer,
-        ),
+        cpi_ctx,
         args.root,
         args.data_hash,
         args.creator_hash,

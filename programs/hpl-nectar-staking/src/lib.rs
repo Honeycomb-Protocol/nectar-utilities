@@ -117,7 +117,10 @@ pub mod hpl_nectar_staking {
         instructions::init_nft(ctx)
     }
 
-    pub fn init_cnft(ctx: Context<InitCNFT>, args: CNFTArgs) -> Result<()> {
+    pub fn init_cnft<'info>(
+        ctx: Context<'_, '_, '_, 'info, InitCNFT<'info>>,
+        args: CNFTArgs,
+    ) -> Result<()> {
         hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.public_low,
             None,
@@ -181,7 +184,10 @@ pub mod hpl_nectar_staking {
         instructions::unstake(ctx)
     }
 
-    pub fn stake_cnft(ctx: Context<StakeCNFT>, args: CNFTArgs) -> Result<()> {
+    pub fn stake_cnft<'info>(
+        ctx: Context<'_, '_, '_, 'info, StakeCNFT<'info>>,
+        args: CNFTArgs,
+    ) -> Result<()> {
         hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.public_low,
             None,
@@ -197,7 +203,10 @@ pub mod hpl_nectar_staking {
         instructions::stake_cnft(ctx, args)
     }
 
-    pub fn unstake_cnft(ctx: Context<UnstakeCNFT>, args: CNFTArgs) -> Result<()> {
+    pub fn unstake_cnft<'info>(
+        ctx: Context<'_, '_, '_, 'info, UnstakeCNFT<'info>>,
+        args: CNFTArgs,
+    ) -> Result<()> {
         hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.public_low,
             None,

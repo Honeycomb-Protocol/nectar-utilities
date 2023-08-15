@@ -8,13 +8,13 @@ use super::{EarnedReward, Participation};
 pub enum Event {
     NewParticipation {
         address: Pubkey,
-        state: Participation,
+        state: Vec<u8>,
         timestamp: i64,
     },
     CollectParticipationReward {
         address: Pubkey,
         index: u8,
-        state: EarnedReward,
+        state: Vec<u8>,
         timestamp: i64,
     },
     RecallParticipation {
@@ -27,7 +27,7 @@ impl Event {
     pub fn new_participation(address: Pubkey, state: &Participation, clock: &Clock) -> Self {
         Self::NewParticipation {
             address,
-            state: state.clone(),
+            state: state.try_to_vec().unwrap(),
             timestamp: clock.unix_timestamp,
         }
     }
@@ -41,7 +41,7 @@ impl Event {
         Self::CollectParticipationReward {
             address,
             index,
-            state: state.clone(),
+            state: state.try_to_vec().unwrap(),
             timestamp: clock.unix_timestamp,
         }
     }

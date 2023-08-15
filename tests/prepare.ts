@@ -38,10 +38,10 @@ import colors from "colors";
 
 dotenv.config();
 
-const isDevnet = process.env.prod === "true" ? false : true;
-const HELIUS_RPC_URL = isDevnet
-  ? process.env.HELIUS_DEVNET_RPC_URL
-  : process.env.HELIUS_RPC_URL;
+// const isDevnet = process.env.prod === "true" ? false : true;
+// const HELIUS_RPC_URL = isDevnet
+//   ? process.env.HELIUS_DEVNET_RPC_URL
+//   : process.env.HELIUS_RPC_URL;
 
 export const prepare = async (airdropCount = 0) => {
   const RPC_URL = process.env.SOLANA_RPC || "https://api.devnet.solana.com";
@@ -350,22 +350,3 @@ export async function sendAndConfirmTransaction(
   );
   return { signature, latestBlockhash };
 }
-
-export const getAssetProof = async (assetId: web3.PublicKey) => {
-  const response = await fetch(HELIUS_RPC_URL as string, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: "my-id",
-      method: "getAssetProof",
-      params: {
-        id: assetId.toString(),
-      },
-    }),
-  });
-  const { result } = await response.json();
-  console.log("Assets Proof: ", result);
-};

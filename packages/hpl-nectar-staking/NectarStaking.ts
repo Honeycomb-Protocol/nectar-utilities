@@ -3,6 +3,7 @@ import {
   Honeycomb,
   HoneycombProject,
   Module,
+  Operation,
 } from "@honeycomb-protocol/hive-control";
 import {
   AddMultiplierArgs,
@@ -32,6 +33,7 @@ import {
 import { AvailableNft, StakedNft } from "./types";
 import { getMultipliersPda, getNftPda, getStakerPda } from "./pdas";
 import { HplCurrency } from "@honeycomb-protocol/currency-manager";
+import { createLookupTable } from "./utils";
 
 declare module "@honeycomb-protocol/hive-control" {
   interface Honeycomb {
@@ -467,12 +469,12 @@ export class NectarStaking extends Module {
    * @returns A promise that resolves when the transaction is confirmed.
    */
   public async initNft(
-    mint: web3.PublicKey,
+    nft: AvailableNft,
     confirmOptions?: web3.ConfirmOptions
   ) {
     const { operation } = await createInitNFTOperation(this.honeycomb(), {
       stakingPool: this,
-      nftMint: mint,
+      nft,
       programId: this.programId,
     });
     return operation.send(confirmOptions);
@@ -488,37 +490,80 @@ export class NectarStaking extends Module {
     nfts: AvailableNft[],
     confirmOptions?: web3.ConfirmOptions
   ) {
-    const operations = await Promise.all(
-      nfts.map((nft, i) =>
-        createStakeOperation(this.honeycomb(), {
-          stakingPool: this,
-          nft,
-          isFirst: i == 0,
-          programId: this.programId,
-        })
+    const operations = (
+      await Promise.all(
+        nfts.map((nft, i) =>
+          createStakeOperation(this.honeycomb(), {
+            stakingPool: this,
+            nft,
+            isFirst: i == 0,
+            programId: this.programId,
+          }).then(({ operation }) => operation)
+        )
       )
+    ).flat();
+
+    const operation = Operation.concat(operations);
+    const lookupTable = await createLookupTable(
+      this.honeycomb(),
+      operation.accounts
     );
+    if (!lookupTable) throw new Error("Failed to create lookup table");
+    console.log("operation.instructions", operation.instructions);
+    const latestBlockhash = await this.honeycomb().rpc().getLatestBlockhash();
+    const tx = new web3.VersionedTransaction(
+      new web3.TransactionMessage({
+        payerKey: this.honeycomb().identity().address,
+        recentBlockhash: latestBlockhash.blockhash,
+        instructions: operation.instructions,
+      }).compileToV0Message([lookupTable])
+    );
+    const signedTx = await this.honeycomb().identity().signTransaction(tx);
+    const signature = await this.honeycomb().connection.sendRawTransaction(
+      signedTx.serialize(),
+      confirmOptions
+    );
+    await this.honeycomb().connection.confirmTransaction(
+      {
+        signature,
+        blockhash: latestBlockhash.blockhash,
+        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+      },
+      confirmOptions?.commitment
+    );
+    return signature;
 
-    const preparedOperations = await this.honeycomb()
-      .rpc()
-      .prepareTransactions(
-        operations.map(({ operation }) => operation.context)
-      );
+    // const operations = await Promise.all(
+    //   nfts.map((nft, i) =>
+    //     createStakeOperation(this.honeycomb(), {
+    //       stakingPool: this,
+    //       nft,
+    //       isFirst: i == 0,
+    //       programId: this.programId,
+    //     })
+    //   )
+    // );
 
-    const firstTxResponse = await this.honeycomb()
-      .rpc()
-      .sendAndConfirmTransaction(preparedOperations.shift(), {
-        commitment: "processed",
-        ...confirmOptions,
-      });
+    // const preparedOperations = await this.honeycomb()
+    //   .rpc()
+    //   .prepareTransactions(
+    //     operations.map(({ operation }) => operation.context)
+    //   );
 
-    const responses = await this.honeycomb()
-      .rpc()
-      .sendAndConfirmTransactionsInBatches(preparedOperations, {
-        commitment: "processed",
-        ...confirmOptions,
-      });
-    return [firstTxResponse, ...responses];
+    // const firstTxResponse = await this.honeycomb()
+    //   .rpc()
+    //   .sendAndConfirmTransaction(preparedOperations.shift(), {
+    //     commitment: "processed",
+    //     ...confirmOptions,
+    //   });
+
+    // const responses = await this.honeycomb()
+    //   .rpc()
+    //   .sendAndConfirmTransactionsInBatches(preparedOperations, {
+    //     commitment: "processed",
+    //     ...confirmOptions,
+    //   });
+    // return [firstTxResponse, ...responses];
   }
 
   /**

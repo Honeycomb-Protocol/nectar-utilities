@@ -12,14 +12,20 @@ import {
   getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
 import * as web3 from "@solana/web3.js";
-import { AvailableNft, Metadata, StakedNft, TokenAccountInfo } from "../types";
+import {
+  AssetProof,
+  AvailableNft,
+  Metadata,
+  StakedNft,
+  TokenAccountInfo,
+} from "../types";
 import { NFT, Staker } from "../generated";
 import { getMetadataAccount_, getStakerPda } from "../pdas";
 import { Honeycomb } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
 
 const HELIUS_RPC_URL =
-  "https://devnet.helius-rpc.com/?api-key=014b4690-ef6d-4cab-b9e9-d3ec73610d52";
+  "https://devnet.helius-rpc.com/?api-key=16d6d941-9f05-4bcf-a326-30d6cbfaa310";
 
 const parseAsset = (asset: any): Metadata => {
   let collection: any = null;
@@ -46,9 +52,15 @@ const parseAsset = (asset: any): Metadata => {
       address: new web3.PublicKey(creator.address),
     })),
     collection,
-    merkleTree: new web3.PublicKey(asset.compression.tree),
     isCompressed: true,
-    frozen: false,
+    frozen: asset.ownership.frozen,
+    compression: {
+      leafId: asset.compression.leaf_id,
+      dataHash: new web3.PublicKey(asset.compression.data_hash),
+      creatorHash: new web3.PublicKey(asset.compression.creator_hash),
+      assetHash: new web3.PublicKey(asset.compression.asset_hash),
+      tree: new web3.PublicKey(asset.compression.tree),
+    },
   };
 };
 
@@ -102,7 +114,7 @@ export function fetchStaker(honeycomb: Honeycomb, args: FetchStakerArgs) {
 }
 
 /**
- * Fetches compressed NFTs of the provided wallet and collection
+ * Fetches compressed NFTs of the provided wallet & collection or asset list
  *
  * @param args Arguements containing wallet address and collection address
  * @returns A promise that resolves to metadata objects of cNFTs
@@ -120,10 +132,10 @@ export async function fetchCNfts(
         walletAddress: web3.PublicKey;
         collectionAddress: web3.PublicKey;
       }
-    | { assetList: web3.PublicKey[] }
+    | { mintList: web3.PublicKey[] }
 ) {
-  if ("assetList" in args) {
-    let batch = args.assetList.map((e, i) => ({
+  if ("mintList" in args) {
+    let batch = args.mintList.map((e, i) => ({
       jsonrpc: "2.0",
       id: `my-id-${i}`,
       method: "getAsset",
@@ -132,24 +144,21 @@ export async function fetchCNfts(
       },
     }));
     try {
-      const response = await honeycomb
+      return honeycomb
         .http()
-        .request(
-          "https://devnet.helius-rpc.com/?api-key=014b4690-ef6d-4cab-b9e9-d3ec73610d52",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(batch),
-          }
-        );
-      return response
-        .json()
+        .request(HELIUS_RPC_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          data: JSON.stringify(batch),
+        })
         .then(
           (r) => r.map(({ result }) => result).map(parseAsset) as Metadata[]
         );
-    } catch {
+    } catch (e) {
+      console.error(e);
+      console.error(e.response.data);
       return [];
     }
   }
@@ -158,14 +167,14 @@ export async function fetchCNfts(
   let assetList: any = [];
   while (page > 0) {
     try {
-      const response = await honeycomb
+      const { result } = await honeycomb
         .http()
         .request(HELIUS_RPC_URL as string, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
+          data: JSON.stringify({
             jsonrpc: "2.0",
             id: Math.random().toString(36).substring(7),
             method: "searchAssets",
@@ -178,20 +187,67 @@ export async function fetchCNfts(
             },
           }),
         });
-      const { result } = await response.json();
       assetList.push(...result.items);
       if (result.total !== 1000) {
         page = 0;
       } else {
         page++;
       }
-    } catch {
+    } catch (e) {
+      console.error(e);
+      console.error(e.response.data);
       break;
     }
   }
   return assetList.map(parseAsset) as Metadata[];
 }
 
+/**
+ * Fetches the merkle proof of the cNFT
+ *
+ * @param args Arguements containing mint of cNFT
+ * @returns A promise that resolves to AssetProof object
+ *
+ * @example
+ * const assetProof = await getAssetProof(new web3.PulicKey(...));
+ */
+export async function fetchAssetProof(
+  mint: web3.PublicKey
+): Promise<AssetProof> {
+  const response = await fetch(HELIUS_RPC_URL as string, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: "my-id",
+      method: "getAssetProof",
+      params: {
+        id: mint.toString(),
+      },
+    }),
+  });
+  const { result } = await response.json();
+
+  return {
+    root: new web3.PublicKey(result.root),
+    proof: result.proof.map((x: string) => new web3.PublicKey(x)),
+    node_index: result.node_index,
+    leaf: new web3.PublicKey(result.root),
+    tree_id: new web3.PublicKey(result.root),
+  };
+}
+
+/**
+ * Fetches metadata of the provided mints
+ *
+ * @param args Arguements containing mint list
+ * @returns A promise that resolves to metadata objects of NFTs
+ *
+ * @example
+ * const nfts = await fetchNftsByMintList([...]);
+ */
 export async function fetchNftsByMintList(
   honeycomb: Honeycomb,
   mints: web3.PublicKey[]
@@ -245,7 +301,7 @@ export async function fetchStakedNfts(
       nfts.filter((n) => !n.isCompressed).map((x) => x.mint)
     )),
     ...(await fetchCNfts(honeycomb, {
-      assetList: nfts.filter((n) => n.isCompressed).map((x) => x.mint),
+      mintList: nfts.filter((n) => n.isCompressed).map((x) => x.mint),
     })),
   ].map((nft) => ({
     ...nft,
@@ -424,11 +480,11 @@ export async function fetchAvailableNfts(
                 .staking()
                 .creators.find((x) => x.equals(creator.address))
           )) ||
-        (nft.merkleTree &&
+        (nft.isCompressed &&
           honeycomb.staking().merkleTrees.length &&
           !!honeycomb
             .staking()
-            .merkleTrees.find((x) => x.equals(nft.merkleTree)))
+            .merkleTrees.find((x) => x.equals(nft.compression.tree)))
     ),
   ];
 

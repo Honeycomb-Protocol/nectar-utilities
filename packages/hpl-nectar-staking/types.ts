@@ -33,8 +33,6 @@ export type Metadata = {
   name: string;
   symbol: string;
   uri: string;
-  tokenStandard?: TokenStandard | null;
-  programmableConfig?: ProgrammableConfig | null;
   creators: {
     address: web3.PublicKey;
     share: number;
@@ -44,10 +42,32 @@ export type Metadata = {
     verified: boolean;
     address: web3.PublicKey;
   } | null;
-  merkleTree?: web3.PublicKey | null;
-  isCompressed: boolean;
   frozen: boolean;
+
+  tokenStandard?: TokenStandard | null;
+  programmableConfig?: ProgrammableConfig | null;
+
+  compression?: {
+    leafId: number;
+    dataHash: web3.PublicKey;
+    creatorHash: web3.PublicKey;
+    assetHash: web3.PublicKey;
+    tree: web3.PublicKey;
+  } | null;
+  isCompressed: boolean;
 };
+
+/**
+ * Represents the proof data of cNFT for merkle tree.
+ * @category Types
+ */
+export interface AssetProof {
+  root: web3.PublicKey;
+  proof: web3.PublicKey[];
+  node_index: number;
+  leaf: web3.PublicKey;
+  tree_id: web3.PublicKey;
+}
 
 /**
  * Represents the uri data of an NFT.

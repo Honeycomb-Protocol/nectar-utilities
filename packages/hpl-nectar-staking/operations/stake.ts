@@ -1,8 +1,15 @@
 import * as web3 from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
-import { createStakeInstruction, LockType, PROGRAM_ID } from "../generated";
+import {
+  createStakeCnftInstruction,
+  createStakeInstruction,
+  LockType,
+  PROGRAM_ID,
+} from "../generated";
 import { AvailableNft } from "../types";
 import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
+import { PROGRAM_ID as BUBBLEGUM_PROGRAM_ID } from "@metaplex-foundation/mpl-bubblegum";
+import { PROGRAM_ID as AUTHORIZATION_PROGRAM_ID } from "@metaplex-foundation/mpl-token-auth-rules";
 import {
   getMetadataAccount_,
   getDepositPda,
@@ -11,11 +18,14 @@ import {
   METADATA_PROGRAM_ID,
 } from "../pdas";
 import { VAULT, Honeycomb, Operation } from "@honeycomb-protocol/hive-control";
-import { PROGRAM_ID as AUTHORIZATION_PROGRAM_ID } from "@metaplex-foundation/mpl-token-auth-rules";
 import { NectarStaking } from "../NectarStaking";
 import { createInitNFTOperation } from "./initNFT";
 import { createInitStakerOperation } from "./initStaker";
-import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
+import {
+  SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+  SPL_NOOP_PROGRAM_ID,
+} from "@solana/spl-account-compression";
+import { fetchAssetProof } from "./fetch";
 
 /**
  * Represents the arguments required to create a stake operation.
@@ -71,19 +81,7 @@ export async function createStakeOperation(
   const programId = args.programId || PROGRAM_ID;
 
   // Get the PDA account for the NFT
-  const [nft] = getNftPda(args.stakingPool.address, args.nft.mint);
-
-  // Get the associated token address for the NFT account
-  const nftAccount = splToken.getAssociatedTokenAddressSync(
-    args.nft.mint,
-    honeycomb.identity().address
-  );
-
-  // Get metadata accounts for NFT
-  const [nftMetadata] = getMetadataAccount_(args.nft.mint);
-  const [nftEdition] = getMetadataAccount_(args.nft.mint, {
-    __kind: "edition",
-  });
+  const [nft] = getNftPda(args.stakingPool.address, args.nft.mint, programId);
 
   // Get the PDA account for the staker
   const [staker] = getStakerPda(
@@ -91,66 +89,126 @@ export async function createStakeOperation(
     honeycomb.identity().address
   );
 
-  let nftTokenRecord: web3.PublicKey | undefined,
-    depositAccount: web3.PublicKey | undefined,
-    depositTokenRecord: web3.PublicKey | undefined;
-
-  if (args.stakingPool.lockType === LockType.Custoday) {
-    [depositAccount] = getDepositPda(nft);
-  }
-
-  if (args.nft.tokenStandard === TokenStandard.ProgrammableNonFungible) {
-    [nftTokenRecord] = getMetadataAccount_(args.nft.mint, {
-      __kind: "token_record",
-      tokenAccount: nftAccount,
-    });
-    if (depositAccount && args.stakingPool.lockType === LockType.Custoday) {
-      [depositTokenRecord] = getMetadataAccount_(args.nft.mint, {
-        __kind: "token_record",
-        tokenAccount: depositAccount,
-      });
-    }
-  }
-
   // Create the transaction instruction for staking the NFT
-  const instructions = [
-    web3.ComputeBudgetProgram.setComputeUnitLimit({
-      units: 400_000,
-    }),
-    createStakeInstruction(
-      {
-        project: args.stakingPool.project().address,
-        vault: VAULT,
-        stakingPool: args.stakingPool.address,
-        nft,
-        nftMint: args.nft.mint,
-        nftAccount,
-        nftMetadata,
-        nftEdition,
-        nftTokenRecord: nftTokenRecord || programId,
-        depositAccount: depositAccount || programId,
-        depositTokenRecord: depositTokenRecord || programId,
-        staker,
-        wallet: honeycomb.identity().address,
-        associatedTokenProgram: splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
-        tokenMetadataProgram: METADATA_PROGRAM_ID,
-        clock: web3.SYSVAR_CLOCK_PUBKEY,
-        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-        authorizationRulesProgram: args.nft.programmableConfig?.ruleSet
-          ? AUTHORIZATION_PROGRAM_ID
-          : programId,
-        authorizationRules: args.nft.programmableConfig?.ruleSet || programId,
-        logWrapper: SPL_NOOP_PROGRAM_ID,
-      },
-      programId
-    ),
-  ];
+  const instructions = [];
+
+  if (args.nft && args.nft.isCompressed) {
+    const [treeAuthority] = web3.PublicKey.findProgramAddressSync(
+      [args.nft.compression.tree.toBuffer()],
+      BUBBLEGUM_PROGRAM_ID
+    );
+
+    const proof = await fetchAssetProof(args.nft.mint);
+
+    instructions.push(
+      createStakeCnftInstruction(
+        {
+          project: args.stakingPool.project().address,
+          vault: VAULT,
+          stakingPool: args.stakingPool.address,
+          nft,
+          merkleTree: args.nft.compression.tree,
+          treeAuthority,
+          staker,
+          wallet: honeycomb.identity().address,
+          bubblegumProgram: BUBBLEGUM_PROGRAM_ID,
+          compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+          logWrapper: SPL_NOOP_PROGRAM_ID,
+          clock: web3.SYSVAR_CLOCK_PUBKEY,
+          instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+          anchorRemainingAccounts: proof.proof.map((p) => ({
+            pubkey: p,
+            isSigner: false,
+            isWritable: false,
+          })),
+        },
+        {
+          args: {
+            root: proof.root.toBuffer().toJSON().data,
+            nonce: args.nft.compression.leafId,
+            index: args.nft.compression.leafId,
+            dataHash: args.nft.compression.dataHash.toBuffer().toJSON().data,
+            creatorHash: args.nft.compression.creatorHash.toBuffer().toJSON()
+              .data,
+          },
+        },
+        programId
+      )
+    );
+  } else {
+    // Get the associated token address for the NFT account
+    const nftAccount = splToken.getAssociatedTokenAddressSync(
+      args.nft.mint,
+      honeycomb.identity().address
+    );
+
+    // Get metadata accounts for NFT
+    const [nftMetadata] = getMetadataAccount_(args.nft.mint);
+    const [nftEdition] = getMetadataAccount_(args.nft.mint, {
+      __kind: "edition",
+    });
+
+    let nftTokenRecord: web3.PublicKey | undefined,
+      depositAccount: web3.PublicKey | undefined,
+      depositTokenRecord: web3.PublicKey | undefined;
+
+    if (args.stakingPool.lockType === LockType.Custoday) {
+      [depositAccount] = getDepositPda(nft);
+    }
+
+    if (args.nft.tokenStandard === TokenStandard.ProgrammableNonFungible) {
+      [nftTokenRecord] = getMetadataAccount_(args.nft.mint, {
+        __kind: "token_record",
+        tokenAccount: nftAccount,
+      });
+      if (depositAccount && args.stakingPool.lockType === LockType.Custoday) {
+        [depositTokenRecord] = getMetadataAccount_(args.nft.mint, {
+          __kind: "token_record",
+          tokenAccount: depositAccount,
+        });
+      }
+    }
+
+    instructions.push(
+      createStakeInstruction(
+        {
+          project: args.stakingPool.project().address,
+          vault: VAULT,
+          stakingPool: args.stakingPool.address,
+          nft,
+          nftMint: args.nft.mint,
+          nftAccount,
+          nftMetadata,
+          nftEdition,
+          nftTokenRecord: nftTokenRecord || programId,
+          depositAccount: depositAccount || programId,
+          depositTokenRecord: depositTokenRecord || programId,
+          staker,
+          wallet: honeycomb.identity().address,
+          associatedTokenProgram: splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
+          tokenMetadataProgram: METADATA_PROGRAM_ID,
+          clock: web3.SYSVAR_CLOCK_PUBKEY,
+          instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+          authorizationRulesProgram: args.nft.programmableConfig?.ruleSet
+            ? AUTHORIZATION_PROGRAM_ID
+            : programId,
+          authorizationRules: args.nft.programmableConfig?.ruleSet || programId,
+          logWrapper: SPL_NOOP_PROGRAM_ID,
+        },
+        programId
+      )
+    );
+  }
 
   if (args.isFirst) {
+    instructions.unshift(
+      web3.ComputeBudgetProgram.setComputeUnitLimit({
+        units: 800_000,
+      })
+    );
+
     try {
-      await args.stakingPool
-        .fetch()
-        .staker({ wallet: honeycomb.identity().address });
+      await args.stakingPool.staker({ wallet: honeycomb.identity().address });
     } catch {
       createInitStakerOperation(honeycomb, {
         stakingPool: args.stakingPool,
@@ -167,7 +225,7 @@ export async function createStakeOperation(
   } catch {
     await createInitNFTOperation(honeycomb, {
       stakingPool: args.stakingPool,
-      nftMint: args.nft.mint,
+      nft: args.nft,
       programId: args.programId,
     }).then(({ operation }) => instructions.unshift(...operation.instructions));
   }

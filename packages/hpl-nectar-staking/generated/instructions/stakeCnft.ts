@@ -38,7 +38,7 @@ export const stakeCnftStruct = new beet.BeetArgsStruct<
  *
  * @property [_writable_] stakingPool
  * @property [_writable_] nft
- * @property [] merkleTree
+ * @property [_writable_] merkleTree
  * @property [] treeAuthority
  * @property [_writable_] staker
  * @property [_writable_, **signer**] wallet
@@ -107,7 +107,7 @@ export function createStakeCnftInstruction(
     },
     {
       pubkey: accounts.merkleTree,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {

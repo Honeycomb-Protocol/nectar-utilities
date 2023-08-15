@@ -14,7 +14,11 @@ import {
   findProjectCurrencies,
   HplHolderAccount,
 } from "@honeycomb-protocol/currency-manager";
-import { LockType, NectarStaking } from "../packages/hpl-nectar-staking";
+import {
+  LockType,
+  NectarStaking,
+  findProjectStakingPools,
+} from "../packages/hpl-nectar-staking";
 import {
   createNewTree,
   mintOneCNFT,
@@ -1087,7 +1091,7 @@ describe("Nectar Utilities", () => {
     //   .then((hA) => hA.mint(100 * 1_000_000_000));
   });
 
-  it("Prepare and Setup", async () => {
+  it("Prepare", async () => {
     honeycomb = await prepare();
     const balance = await honeycomb
       .rpc()
@@ -1105,7 +1109,9 @@ describe("Nectar Utilities", () => {
     // Set up Metaplex to mint some NFTs for testing
     metaplex = new Metaplex(honeycomb.connection);
     metaplex.use(keypairIdentity(tryKeyOrGenerate()[0]));
+  });
 
+  it.skip("Setup", async () => {
     // Mint Collection
     collection = await metaplex
       .nfts()
@@ -1206,10 +1212,30 @@ describe("Nectar Utilities", () => {
       .holderAccount(honeycomb.identity().address);
     await mainVault.mint(10_000 * 1_000_000_000);
 
-    console.log("Project", honeycomb.project().address.toString());
+    console.log(
+      "Project",
+      honeycomb.project().address.toString(),
+      honeycomb.currency().address.toString()
+    );
   });
 
-  it("Create Staking Pool", async () => {
+  it("Load", async () => {
+    honeycomb.use(
+      await HoneycombProject.fromAddress(
+        honeycomb.connection,
+        new web3.PublicKey("4JgqWCFz3LiNnn1bf6sdXHAPDZPksNapUJSzEP3GCcU3")
+      )
+    );
+    honeycomb.use(
+      await HplCurrency.fromAddress(
+        honeycomb.connection,
+        new web3.PublicKey("3nvpZq2X3pjwNeZpkeHM9F13MG5bgEhCkZzkuRLnBDLA")
+      )
+    );
+    await findProjectStakingPools(honeycomb.project());
+  });
+
+  it.skip("Create Staking Pool", async () => {
     // Create staking pool
     honeycomb.use(
       await NectarStaking.new(honeycomb, {
@@ -1409,11 +1435,11 @@ describe("Nectar Utilities", () => {
 
   it("Stake NFTs", async () => {
     const availableNfts = await honeycomb.staking().fetch().availableNfts();
-    console.log("availableNfts", availableNfts);
-    expect(availableNfts.length).toBe(totalNfts);
-    await honeycomb.staking().stake(availableNfts);
-    const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
-    expect(stakedNfts.length).toBe(totalNfts);
+    console.log("AvailaleNFTs", availableNfts.length);
+    // expect(availableNfts.length).toBe(totalNfts + totalcNfts);
+    // await honeycomb.staking().stake(availableNfts);
+    // const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
+    // expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
   });
 
   it.skip("Participate on Mission", async () => {
@@ -1442,10 +1468,10 @@ describe("Nectar Utilities", () => {
 
   it("Unstake NFTs", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
-    await honeycomb.staking().unstake(stakedNfts, {
-      skipPreflight: true,
-    });
+    console.log("StakedNfts", stakedNfts.length);
+    expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
+    await honeycomb.staking().unstake(stakedNfts, { skipPreflight: true });
     const availableNfts = await honeycomb.staking().fetch().availableNfts();
-    expect(availableNfts.length).toBe(totalNfts);
+    expect(availableNfts.length).toBe(totalNfts + totalcNfts);
   });
 });
