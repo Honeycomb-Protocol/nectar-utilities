@@ -8,6 +8,7 @@ import {
 import { Honeycomb, Operation, VAULT } from "@honeycomb-protocol/hive-control";
 import {
   PROGRAM_ID as HPL_CURRENCY_MANAGER_PROGRAM,
+  createFixHolderAccountInstruction,
   holderAccountPdas,
 } from "@honeycomb-protocol/currency-manager";
 import {
@@ -23,6 +24,7 @@ import {
 import { participationPda } from "../utils";
 import { NectarMission } from "../NectarMissions";
 import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
+import { ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 /**
  * Represents the arguments needed to create a participate operation.
@@ -41,6 +43,9 @@ type CreateParticipateOperationArgs = {
    * The StakedNft to use for participation.
    */
   nft: StakedNft;
+
+  isFirst?: boolean;
+
   /**
    * (Optional) The program ID associated with the participate operation.
    * If not provided, the default PROGRAM_ID will be used.
@@ -95,9 +100,6 @@ export async function createParticipateOperation(
   );
 
   const instructions = [
-    ComputeBudgetProgram.setComputeUnitLimit({
-      units: 400_000,
-    }),
     createParticipateInstruction(
       {
         project: args.mission.pool().project().address,
@@ -128,6 +130,38 @@ export async function createParticipateOperation(
       programId
     ),
   ];
+
+  if (args.isFirst) {
+    instructions.unshift(
+      ComputeBudgetProgram.setComputeUnitLimit({
+        units: 500_000,
+      })
+    );
+
+    try {
+      const holderAccountT = await args.mission.requirements.cost
+        .currency()
+        .holderAccount(honeycomb.identity().address);
+
+      if (!holderAccountT.tokenAccount.equals(tokenAccount)) {
+        instructions.unshift(
+          createFixHolderAccountInstruction({
+            project: holderAccountT.currency().project().address,
+            currency: holderAccountT.currency().address,
+            mint: holderAccountT.currency().mint.address,
+            holderAccount,
+            tokenAccount: holderAccountT.tokenAccount,
+            newTokenAccount: tokenAccount,
+            owner: holderAccountT.owner,
+            payer: honeycomb.identity().address,
+            vault: VAULT,
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+            instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+          })
+        );
+      }
+    } catch {}
+  }
 
   return {
     operation: new Operation(honeycomb, instructions),

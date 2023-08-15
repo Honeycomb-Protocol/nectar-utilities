@@ -5,6 +5,8 @@ import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import {
   Honeycomb,
   HoneycombProject,
+  Operation,
+  VAULT,
   identityModule,
   toHoneycombFile,
 } from "@honeycomb-protocol/hive-control";
@@ -13,6 +15,7 @@ import {
   HplCurrency,
   findProjectCurrencies,
   HplHolderAccount,
+  CURRENCY_MANAGER_ID,
 } from "@honeycomb-protocol/currency-manager";
 import {
   LockType,
@@ -29,8 +32,13 @@ import {
 import {
   MerkleTree,
   NectarMissions,
+  createFixVaultInstruction,
   findProjectMissionPools,
 } from "../packages/hpl-nectar-missions";
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  getAssociatedTokenAddressSync,
+} from "@solana/spl-token";
 
 jest.setTimeout(2000000);
 
@@ -593,7 +601,7 @@ describe("Nectar Utilities", () => {
 
     // await operation.send({ skipPreflight: true });
 
-    // await findProjectMissionPools(honeycomb.project());
+    await findProjectMissionPools(honeycomb.project());
     // if (!honeycomb._missions) {
     //   const collections = [];
     //   honeycomb.use(
@@ -1066,37 +1074,60 @@ describe("Nectar Utilities", () => {
     // const vault = new web3.PublicKey(
     //   "7LUbP4BZQiopPposQUW7JBrKJ2vgrv7drjbTeFRAb5TS"
     // );
-    const vault = honeycomb.staking().address;
-    // const vault = honeycomb.missions().address;
+    // const vault = honeycomb.staking().address;
+    const vault = honeycomb.missions().address;
     // await bail
     //   .fetch()
     //   .holderAccount(vault)
     //   .catch((_) => (bail as HplCurrency).create().holderAccount(vault))
     //   .then((hA) => hA.fund(10_000 * 1_000_000_000, { skipPreflight: true }));
 
-    await bounty
-      .fetch()
-      .holderAccount(vault)
-      .catch((_) => (bounty as HplCurrency).create().holderAccount(vault))
-      .then((hA) => hA.mint(1_000_000 * 1_000_000_000));
+    // await bounty
+    //   .fetch()
+    //   .holderAccount(vault)
+    //   .catch((_) => (bounty as HplCurrency).create().holderAccount(vault))
+    //   .then((hA) => hA.mint(1_000_000 * 1_000_000_000));
 
     // await ammo
     //   .fetch()
     //   .holderAccount(vault)
     //   .catch((_) => (ammo as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.mint(10_000 * 1_000_000_000));
+    //   .then((hA) => hA.mint(1_000_000 * 1_000_000_000));
 
     // await food
     //   .fetch()
     //   .holderAccount(vault)
     //   .catch((_) => (food as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.mint(10_000 * 1_000_000_000));
+    //   .then((hA) => hA.mint(1_000_000 * 1_000_000_000));
 
     // await gems
     //   .fetch()
     //   .holderAccount(vault)
     //   .catch((_) => (gems as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.mint(100 * 1_000_000_000));
+    //   .then((hA) => hA.mint(1_000_000 * 1_000_000_000));
+
+    let bailHolderAccount = await bail.fetch().holderAccount(vault);
+
+    await new Operation(honeycomb, [
+      createFixVaultInstruction({
+        project: honeycomb.project().address,
+        missionPool: vault,
+        currency: bailHolderAccount.currency().address,
+        mint: bailHolderAccount.currency().mint.address,
+        vaultHolderAccount: bailHolderAccount.address,
+        vaultTokenAccount: bailHolderAccount.tokenAccount,
+        newTokenAccount: getAssociatedTokenAddressSync(
+          bailHolderAccount.currency().mint.address,
+          vault,
+          true
+        ),
+        authority: honeycomb.identity().address,
+        vault: VAULT,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        currencyManagerProgram: CURRENCY_MANAGER_ID,
+        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+      }),
+    ]).send({ skipPreflight: true });
   });
 
   it.skip("Prepare", async () => {

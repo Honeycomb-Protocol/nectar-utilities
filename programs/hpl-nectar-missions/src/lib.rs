@@ -130,4 +130,8 @@ pub mod hpl_nectar_missions {
 
         instructions::recall(ctx)
     }
+
+    pub fn fix_vault(ctx: Context<FixVault>) -> Result<()> {
+        instructions::fix_vault(ctx)
+    }
 }

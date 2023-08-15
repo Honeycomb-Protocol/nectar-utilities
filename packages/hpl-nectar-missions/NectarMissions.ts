@@ -887,6 +887,7 @@ export class NectarMission {
           args: nft.args,
           mission: this,
           nft,
+          isFirst: i === 0,
           programId: this.pool().programId,
         })
       )
