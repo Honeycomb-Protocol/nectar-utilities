@@ -48,7 +48,7 @@ impl Reward {
     pub const LEN: usize = 8 + 56;
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, Eq, PartialEq)]
 pub enum RewardType {
     Xp,
     Currency { address: Pubkey },

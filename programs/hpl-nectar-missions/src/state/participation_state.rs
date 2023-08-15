@@ -4,7 +4,7 @@ use {super::RewardType, anchor_lang::prelude::*, hpl_utils::Default};
 /// PDA: ['participation', nft]
 /// Category: participation_state
 #[account]
-#[derive(Default, Debug)]
+#[derive(Default, PartialEq, Eq, Debug)]
 pub struct Participation {
     pub bump: u8,
     pub wallet: Pubkey,
@@ -30,7 +30,7 @@ impl Default for Participation {
     }
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+#[derive(AnchorSerialize, AnchorDeserialize, PartialEq, Eq, Clone, Debug)]
 pub struct EarnedReward {
     pub amount: u64,
     pub reward_type: RewardType,
