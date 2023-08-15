@@ -67,9 +67,6 @@ export async function createClaimRewardsOperation(
   );
 
   const instructions = [
-    web3.ComputeBudgetProgram.setComputeUnitLimit({
-      units: 400_000,
-    }),
     createClaimRewardsInstruction(
       {
         project: args.stakingPool.project().address,
@@ -96,6 +93,12 @@ export async function createClaimRewardsOperation(
   ];
 
   if (args.isFirst) {
+    instructions.unshift(
+      web3.ComputeBudgetProgram.setComputeUnitLimit({
+        units: 500_000,
+      })
+    );
+
     try {
       const holderAccountT = await args.stakingPool
         .currency()
