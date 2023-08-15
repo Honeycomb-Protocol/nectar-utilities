@@ -182,6 +182,14 @@ export async function createUnstakeOperation(
     );
   }
 
+  if (args.isFirst) {
+    instructions.unshift(
+      web3.ComputeBudgetProgram.setComputeUnitLimit({
+        units: 500_000,
+      })
+    );
+  }
+
   return {
     operation: new Operation(honeycomb, instructions),
   };

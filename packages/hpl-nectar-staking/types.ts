@@ -55,6 +55,10 @@ export type Metadata = {
     tree: web3.PublicKey;
   } | null;
   isCompressed: boolean;
+
+  links?: {
+    [key: string]: string;
+  } | null;
 };
 
 /**

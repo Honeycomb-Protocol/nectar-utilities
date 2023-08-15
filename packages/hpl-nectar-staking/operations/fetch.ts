@@ -61,6 +61,7 @@ const parseAsset = (asset: any): Metadata => {
       assetHash: new web3.PublicKey(asset.compression.asset_hash),
       tree: new web3.PublicKey(asset.compression.tree),
     },
+    links: asset.content.links,
   };
 };
 
@@ -76,6 +77,7 @@ const parseMetaplexMetadata = (metadata: MetaplexMetadata): Metadata => {
     collection: metadata.collection,
     isCompressed: false,
     frozen: false,
+    links: {},
   };
 };
 
@@ -126,7 +128,7 @@ export function fetchStaker(honeycomb: Honeycomb, args: FetchStakerArgs) {
  * });
  */
 export async function fetchCNfts(
-  honeycomb: Honeycomb,
+  _honeycomb: Honeycomb,
   args:
     | {
         walletAddress: web3.PublicKey;
