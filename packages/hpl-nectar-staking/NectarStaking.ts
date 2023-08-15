@@ -509,7 +509,7 @@ export class NectarStaking extends Module {
       operation.accounts
     );
     if (!lookupTable) throw new Error("Failed to create lookup table");
-    console.log("operation.instructions", operation.instructions);
+
     const latestBlockhash = await this.honeycomb().rpc().getLatestBlockhash();
     const tx = new web3.VersionedTransaction(
       new web3.TransactionMessage({

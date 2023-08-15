@@ -25,7 +25,7 @@ import { Honeycomb } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
 
 const HELIUS_RPC_URL =
-  "https://devnet.helius-rpc.com/?api-key=16d6d941-9f05-4bcf-a326-30d6cbfaa310";
+  "https://devnet.helius-rpc.com/?api-key=014b4690-ef6d-4cab-b9e9-d3ec73610d52";
 
 const parseAsset = (asset: any): Metadata => {
   let collection: any = null;
@@ -295,14 +295,21 @@ export async function fetchStakedNfts(
     .fetch()
     .nftsByWallet(args.walletAddress);
 
+  const normal = nfts.filter((n) => !n.isCompressed);
+  const compressed = nfts.filter((n) => n.isCompressed);
+
   let ownedNfts: StakedNft[] = [
-    ...(await fetchNftsByMintList(
-      honeycomb,
-      nfts.filter((n) => !n.isCompressed).map((x) => x.mint)
-    )),
-    ...(await fetchCNfts(honeycomb, {
-      mintList: nfts.filter((n) => n.isCompressed).map((x) => x.mint),
-    })),
+    ...(normal.length
+      ? await fetchNftsByMintList(
+          honeycomb,
+          normal.map((x) => x.mint)
+        )
+      : []),
+    ...(compressed.length
+      ? await fetchCNfts(honeycomb, {
+          mintList: compressed.map((x) => x.mint),
+        })
+      : []),
   ].map((nft) => ({
     ...nft,
     ...nfts.find((x) => x.mint.equals(nft.mint)),

@@ -53,8 +53,8 @@ export function bytesOf(input: any): number {
 }
 
 describe("Nectar Utilities", () => {
-  const totalNfts = 0;
-  const totalcNfts = 2;
+  const totalNfts = 1;
+  const totalcNfts = 1;
 
   let honeycomb: Honeycomb;
   let metaplex: Metaplex;
@@ -1111,7 +1111,7 @@ describe("Nectar Utilities", () => {
     metaplex.use(keypairIdentity(tryKeyOrGenerate()[0]));
   });
 
-  it.skip("Setup", async () => {
+  it("Setup", async () => {
     // Mint Collection
     collection = await metaplex
       .nfts()
@@ -1219,7 +1219,7 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it("Load", async () => {
+  it.skip("Load", async () => {
     honeycomb.use(
       await HoneycombProject.fromAddress(
         honeycomb.connection,
@@ -1235,7 +1235,7 @@ describe("Nectar Utilities", () => {
     await findProjectStakingPools(honeycomb.project());
   });
 
-  it.skip("Create Staking Pool", async () => {
+  it("Create Staking Pool", async () => {
     // Create staking pool
     honeycomb.use(
       await NectarStaking.new(honeycomb, {
@@ -1279,7 +1279,7 @@ describe("Nectar Utilities", () => {
       .currency()
       .create()
       .holderAccount(honeycomb.staking().address);
-    await stakingVault.mint(10_000 * 1_000_000_000);
+    await stakingVault.mint(1_000_000 * 1_000_000_000);
     console.log(
       "Stakinng",
       honeycomb.staking().address.toString(),
@@ -1287,7 +1287,7 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it.skip("Create Mission Pool", async () => {
+  it("Create Mission Pool", async () => {
     honeycomb.use(
       await NectarMissions.new(honeycomb, {
         args: {
@@ -1302,7 +1302,7 @@ describe("Nectar Utilities", () => {
       .currency()
       .create()
       .holderAccount(honeycomb.missions().address);
-    await missionsVault.mint(10_000 * 1_000_000_000);
+    await missionsVault.mint(1_000_000 * 1_000_000_000);
     console.log(
       "Missions",
       honeycomb.missions().address.toString(),
@@ -1310,7 +1310,7 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it.skip("Create Mission", async () => {
+  it("Create Mission", async () => {
     const currentCurrency = honeycomb.currency();
 
     const bounty = await HplCurrency.new(honeycomb, {
@@ -1404,7 +1404,7 @@ describe("Nectar Utilities", () => {
       });
   });
 
-  it.skip("Fetch or Create user/profile", async () => {
+  it("Fetch or Create user/profile", async () => {
     await honeycomb
       .identity()
       .user()
@@ -1436,17 +1436,16 @@ describe("Nectar Utilities", () => {
   it("Stake NFTs", async () => {
     const availableNfts = await honeycomb.staking().fetch().availableNfts();
     console.log("AvailaleNFTs", availableNfts.length);
-    // expect(availableNfts.length).toBe(totalNfts + totalcNfts);
-    // await honeycomb.staking().stake(availableNfts);
-    // const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
-    // expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
+    expect(availableNfts.length).toBe(totalNfts + totalcNfts);
+    await honeycomb.staking().stake(availableNfts);
+    const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
+    expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
   });
 
-  it.skip("Participate on Mission", async () => {
+  it("Participate on Mission", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     const mission = await honeycomb.missions().mission("Quick Patrol");
     await mission.participate(
-      //@ts-ignore
       stakedNfts.map((x) => ({
         ...x,
         args: {
@@ -1459,7 +1458,7 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it.skip("Recall from missions", async () => {
+  it("Recall from missions", async () => {
     await wait(1);
     const participations = await honeycomb.missions().fetch().participations();
     const mission = await honeycomb.missions().mission("Quick Patrol");
