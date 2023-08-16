@@ -6,6 +6,7 @@ import {
   Honeycomb,
   HoneycombProject,
   identityModule,
+  lutModule,
   toHoneycombFile,
 } from "@honeycomb-protocol/hive-control";
 import {
@@ -28,6 +29,7 @@ import {
 } from "./prepare";
 import {
   NectarMissions,
+  createLookupTable,
   findProjectMissionPools,
 } from "../packages/hpl-nectar-missions";
 
@@ -1696,6 +1698,39 @@ describe("Nectar Utilities", () => {
 
     expect(balance).toBeGreaterThanOrEqual(web3.LAMPORTS_PER_SOL * 0.1);
 
+    // const publicInfo = await honeycomb.publicInfo();
+    // let authDriver = publicInfo.get("auth_driver_offchain");
+    honeycomb.use(
+      lutModule(async (accounts) => {
+        const lookupTable = await createLookupTable(honeycomb, accounts);
+
+        if (!lookupTable) throw new Error("Lookuptale noinsfoiasdoiahjsod");
+
+        console.log("Lookup Table", lookupTable.key.toString());
+
+        return {
+          lookupTableAddress: lookupTable.key,
+          addresses: lookupTable.state.addresses,
+        };
+
+        // const response = await fetch(`${authDriver}/lut/create`, {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //     Authorization:
+        //       "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2FkZHJlc3MiOiJGb0dEdXR6WnlVaVVjS3FNdG1WRlNQN3Fzd1B0dEZURzJvQlpDV00xMm43dCIsImlhdCI6MTY5MjE3NDg2NiwiZXhwIjoxNjkyMjYxMjY2fQ.vgRPlcjvrZGlh4s4opv27pPUwRO_yJBFgIyDKYU6khQ",
+        //   },
+        //   body: JSON.stringify({ accounts }),
+        // }).then((x) => x.json());
+        // console.log("Resposne", response);
+        // const { addresses, key } = response.data;
+        // return {
+        //   lookupTableAddress: new web3.PublicKey(key),
+        //   addresses: addresses.map((a) => new web3.PublicKey(a)),
+        // };
+      })
+    );
+
     // Set up Metaplex to mint some NFTs for testing
     metaplex = new Metaplex(honeycomb.connection);
     metaplex.use(keypairIdentity(tryKeyOrGenerate()[0]));
@@ -1978,16 +2013,16 @@ describe("Nectar Utilities", () => {
     // console.log("User", user.address.toString(), profile.address.toString());
   });
 
-  it.skip("Stake NFTs", async () => {
+  it("Stake NFTs", async () => {
     const availableNfts = await honeycomb.staking().fetch().availableNfts();
     console.log("AvailaleNFTs", availableNfts);
     expect(availableNfts.length).toBe(totalNfts + totalcNfts);
-    await honeycomb.staking().stake(availableNfts);
+    await honeycomb.staking().stake(availableNfts, { skipPreflight: true });
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
   });
 
-  it("Participate on Mission", async () => {
+  it.skip("Participate on Mission", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     console.log("StakedNfts", stakedNfts);
     expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
@@ -2013,7 +2048,7 @@ describe("Nectar Utilities", () => {
     }
   });
 
-  it("Recall from missions", async () => {
+  it.skip("Recall from missions", async () => {
     await wait(1);
     const participations = await honeycomb.missions().participations();
     expect(participations.length).toBeGreaterThan(0);

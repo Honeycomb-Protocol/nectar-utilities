@@ -3,7 +3,6 @@ import {
   Honeycomb,
   HoneycombProject,
   Module,
-  Operation,
 } from "@honeycomb-protocol/hive-control";
 import {
   AddMultiplierArgs,
@@ -33,7 +32,6 @@ import {
 import { AvailableNft, StakedNft } from "./types";
 import { getMultipliersPda, getNftPda, getStakerPda } from "./pdas";
 import { HplCurrency } from "@honeycomb-protocol/currency-manager";
-import { createLookupTable } from "./utils";
 
 declare module "@honeycomb-protocol/hive-control" {
   interface Honeycomb {
@@ -496,80 +494,80 @@ export class NectarStaking extends Module {
     nfts: AvailableNft[],
     confirmOptions?: web3.ConfirmOptions
   ) {
-    const operations = (
-      await Promise.all(
-        nfts.map((nft, i) =>
-          createStakeOperation(this.honeycomb(), {
-            stakingPool: this,
-            nft,
-            isFirst: i == 0,
-            programId: this.programId,
-          }).then(({ operation }) => operation)
-        )
-      )
-    ).flat();
-
-    const operation = Operation.concat(operations);
-    const lookupTable = await createLookupTable(
-      this.honeycomb(),
-      operation.accounts
-    );
-    if (!lookupTable) throw new Error("Failed to create lookup table");
-
-    const latestBlockhash = await this.honeycomb().rpc().getLatestBlockhash();
-    const tx = new web3.VersionedTransaction(
-      new web3.TransactionMessage({
-        payerKey: this.honeycomb().identity().address,
-        recentBlockhash: latestBlockhash.blockhash,
-        instructions: operation.instructions,
-      }).compileToV0Message([lookupTable])
-    );
-    const signedTx = await this.honeycomb().identity().signTransaction(tx);
-    const signature = await this.honeycomb().connection.sendRawTransaction(
-      signedTx.serialize(),
-      confirmOptions
-    );
-    await this.honeycomb().connection.confirmTransaction(
-      {
-        signature,
-        blockhash: latestBlockhash.blockhash,
-        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-      },
-      confirmOptions?.commitment
-    );
-    return signature;
-
-    // const operations = await Promise.all(
-    //   nfts.map((nft, i) =>
-    //     createStakeOperation(this.honeycomb(), {
-    //       stakingPool: this,
-    //       nft,
-    //       isFirst: i == 0,
-    //       programId: this.programId,
-    //     })
+    // const operations = (
+    //   await Promise.all(
+    //     nfts.map((nft, i) =>
+    //       createStakeOperation(this.honeycomb(), {
+    //         stakingPool: this,
+    //         nft,
+    //         isFirst: i == 0,
+    //         programId: this.programId,
+    //       }).then(({ operation }) => operation)
+    //     )
     //   )
+    // ).flat();
+
+    // const operation = Operation.concat(operations);
+    // const lookupTable = await createLookupTable(
+    //   this.honeycomb(),
+    //   operation.accounts
     // );
+    // if (!lookupTable) throw new Error("Failed to create lookup table");
 
-    // const preparedOperations = await this.honeycomb()
-    //   .rpc()
-    //   .prepareTransactions(
-    //     operations.map(({ operation }) => operation.context)
-    //   );
+    // const latestBlockhash = await this.honeycomb().rpc().getLatestBlockhash();
+    // const tx = new web3.VersionedTransaction(
+    //   new web3.TransactionMessage({
+    //     payerKey: this.honeycomb().identity().address,
+    //     recentBlockhash: latestBlockhash.blockhash,
+    //     instructions: operation.instructions,
+    //   }).compileToV0Message([lookupTable])
+    // );
+    // const signedTx = await this.honeycomb().identity().signTransaction(tx);
+    // const signature = await this.honeycomb().connection.sendRawTransaction(
+    //   signedTx.serialize(),
+    //   confirmOptions
+    // );
+    // await this.honeycomb().connection.confirmTransaction(
+    //   {
+    //     signature,
+    //     blockhash: latestBlockhash.blockhash,
+    //     lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+    //   },
+    //   confirmOptions?.commitment
+    // );
+    // return signature;
 
-    // const firstTxResponse = await this.honeycomb()
-    //   .rpc()
-    //   .sendAndConfirmTransaction(preparedOperations.shift(), {
-    //     commitment: "processed",
-    //     ...confirmOptions,
-    //   });
+    const operations = await Promise.all(
+      nfts.map((nft, i) =>
+        createStakeOperation(this.honeycomb(), {
+          stakingPool: this,
+          nft,
+          isFirst: i == 0,
+          programId: this.programId,
+        })
+      )
+    );
 
-    // const responses = await this.honeycomb()
-    //   .rpc()
-    //   .sendAndConfirmTransactionsInBatches(preparedOperations, {
-    //     commitment: "processed",
-    //     ...confirmOptions,
-    //   });
-    // return [firstTxResponse, ...responses];
+    const preparedOperations = await this.honeycomb()
+      .rpc()
+      .prepareTransactions(
+        operations.map(({ operation }) => operation.context)
+      );
+
+    const firstTxResponse = await this.honeycomb()
+      .rpc()
+      .sendAndConfirmTransaction(preparedOperations.shift(), {
+        commitment: "processed",
+        ...confirmOptions,
+      });
+
+    const responses = await this.honeycomb()
+      .rpc()
+      .sendAndConfirmTransactionsInBatches(preparedOperations, {
+        commitment: "processed",
+        ...confirmOptions,
+      });
+    return [firstTxResponse, ...responses];
   }
 
   /**

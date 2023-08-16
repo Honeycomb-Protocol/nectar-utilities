@@ -114,6 +114,12 @@ pub fn stake_cnft<'info>(
     );
     cpi_ctx.accounts.leaf_owner.is_signer = true;
 
+    msg!("{:?}", args.root.clone());
+    msg!("{:?}", args.data_hash.clone());
+    msg!("{:?}", args.creator_hash.clone());
+    msg!("{:?}", args.nonce.clone());
+    msg!("{:?}", args.index.clone());
+
     mpl_bubblegum::cpi::transfer(
         cpi_ctx,
         args.root,
@@ -232,6 +238,12 @@ pub fn unstake_cnft<'info>(
         &[staker.bump],
     ];
     let staker_signer = &[&staker_seeds[..]];
+
+    msg!("{:?}", args.root.clone());
+    msg!("{:?}", args.data_hash.clone());
+    msg!("{:?}", args.creator_hash.clone());
+    msg!("{:?}", args.nonce.clone());
+    msg!("{:?}", args.index.clone());
 
     let cpi_ctx = CpiContext::new_with_signer(
         ctx.accounts.bubblegum_program.to_account_info(),

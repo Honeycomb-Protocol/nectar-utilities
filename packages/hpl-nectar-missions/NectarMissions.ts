@@ -16,7 +16,6 @@ import {
   Honeycomb,
   HoneycombProject,
   Module,
-  Operation,
 } from "@honeycomb-protocol/hive-control";
 import { StakedNft, getNftPda } from "@honeycomb-protocol/nectar-staking";
 import {
@@ -27,11 +26,7 @@ import {
   createUpdateMissionOperation,
   createUpdateMissionPoolOperation,
 } from "./operations";
-import {
-  createLookupTable,
-  missionPda,
-  removeDuplicateFromArrayOf,
-} from "./utils";
+import { missionPda, removeDuplicateFromArrayOf } from "./utils";
 
 /**
  * The `ItemOrArray` type represents a value that can either be a single item of type `T`
@@ -531,34 +526,59 @@ export class NectarMissions extends Module {
       )
     ).flat();
 
-    const operation = Operation.concat(operations);
-    const lookupTable = await createLookupTable(
-      this.honeycomb(),
-      operation.accounts
-    );
-    if (!lookupTable) throw new Error("Failed to create lookup table");
-    const latestBlockhash = await this.honeycomb().rpc().getLatestBlockhash();
-    const tx = new web3.VersionedTransaction(
-      new web3.TransactionMessage({
-        payerKey: this.honeycomb().identity().address,
-        recentBlockhash: latestBlockhash.blockhash,
-        instructions: operation.instructions,
-      }).compileToV0Message([lookupTable])
-    );
-    const signedTx = await this.honeycomb().identity().signTransaction(tx);
-    const signature = await this.honeycomb().connection.sendRawTransaction(
-      signedTx.serialize(),
-      confirmOptions
-    );
-    await this.honeycomb().connection.confirmTransaction(
-      {
-        signature,
-        blockhash: latestBlockhash.blockhash,
-        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-      },
-      confirmOptions?.commitment
-    );
-    return signature;
+    // const operation = Operation.concat(operations);
+
+    // const lookupTable = await createLookupTable(
+    //   this.pool().honeycomb(),
+    //   operation.accounts
+    // );
+    // if (!lookupTable) throw new Error("Failed to create lookup table");
+    // const latestBlockhash = await this.pool()
+    //   .honeycomb()
+    //   .rpc()
+    //   .getLatestBlockhash();
+    // const tx = new web3.VersionedTransaction(
+    //   new web3.TransactionMessage({
+    //     payerKey: this.pool().honeycomb().identity().address,
+    //     recentBlockhash: latestBlockhash.blockhash,
+    //     instructions: operation.instructions,
+    //   }).compileToV0Message([lookupTable])
+    // );
+    // const signedTx = await this.pool()
+    //   .honeycomb()
+    //   .identity()
+    //   .signTransaction(tx);
+    // const signature = await this.pool()
+    //   .honeycomb()
+    //   .connection.sendRawTransaction(signedTx.serialize(), confirmOptions);
+    // await this.pool().honeycomb().connection.confirmTransaction(
+    //   {
+    //     signature,
+    //     blockhash: latestBlockhash.blockhash,
+    //     lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+    //   },
+    //   confirmOptions?.commitment
+    // );
+    // return signature;
+
+    const preparedOperations = await this.honeycomb()
+      .rpc()
+      .prepareTransactions(operations.map((operation) => operation.context));
+
+    const firstTxResponse = await this.honeycomb()
+      .rpc()
+      .sendAndConfirmTransaction(preparedOperations.shift(), {
+        commitment: "processed",
+        ...confirmOptions,
+      });
+
+    const responses = await this.honeycomb()
+      .rpc()
+      .sendAndConfirmTransactionsInBatches(preparedOperations, {
+        commitment: "processed",
+        ...confirmOptions,
+      });
+    return [firstTxResponse, ...responses];
   }
 
   /**
@@ -965,73 +985,7 @@ export class NectarMission {
     participations: NectarMissionParticipation[],
     confirmOptions?: web3.ConfirmOptions
   ) {
-    const operations = (
-      await Promise.all(
-        participations.map((participation, i) =>
-          creatRecallOperation(this.pool().honeycomb(), {
-            participation,
-            programId: this.pool().programId,
-          }).then(({ operations }) => operations)
-        )
-      )
-    ).flat();
-
-    const operation = Operation.concat(operations);
-
-    const lookupTable = await createLookupTable(
-      this.pool().honeycomb(),
-      operation.accounts
-    );
-    if (!lookupTable) throw new Error("Failed to create lookup table");
-    const latestBlockhash = await this.pool()
-      .honeycomb()
-      .rpc()
-      .getLatestBlockhash();
-    const tx = new web3.VersionedTransaction(
-      new web3.TransactionMessage({
-        payerKey: this.pool().honeycomb().identity().address,
-        recentBlockhash: latestBlockhash.blockhash,
-        instructions: operation.instructions,
-      }).compileToV0Message([lookupTable])
-    );
-    const signedTx = await this.pool()
-      .honeycomb()
-      .identity()
-      .signTransaction(tx);
-    const signature = await this.pool()
-      .honeycomb()
-      .connection.sendRawTransaction(signedTx.serialize(), confirmOptions);
-    await this.pool().honeycomb().connection.confirmTransaction(
-      {
-        signature,
-        blockhash: latestBlockhash.blockhash,
-        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-      },
-      confirmOptions?.commitment
-    );
-    return signature;
-
-    // const preparedOperations = await this.pool()
-    //   .honeycomb()
-    //   .rpc()
-    //   .prepareTransactions(operations.map((operation) => operation.context));
-
-    // const firstTxResponse = await this.pool()
-    //   .honeycomb()
-    //   .rpc()
-    //   .sendAndConfirmTransaction(preparedOperations.shift(), {
-    //     commitment: "processed",
-    //     ...confirmOptions,
-    //   });
-
-    // const responses = await this.pool()
-    //   .honeycomb()
-    //   .rpc()
-    //   .sendAndConfirmTransactionsInBatches(preparedOperations, {
-    //     commitment: "processed",
-    //     ...confirmOptions,
-    //   });
-    // return [firstTxResponse, ...responses];
+    return this.pool().recall(participations, confirmOptions);
   }
 }
 
@@ -1158,7 +1112,7 @@ export class NectarMissionParticipation {
    * const recallResult = await nectarMissionParticipation.recall();
    * console.log(recallResult); // Output: Transaction signature
    */
-  public recall(confirmOptions?: web3.ConfirmOptions): Promise<string> {
+  public recall(confirmOptions?: web3.ConfirmOptions) {
     return this._mission.recall([this], confirmOptions);
   }
 }
