@@ -36,6 +36,13 @@ const parseHelius = (asset: HeluisAsset): Metadata => {
       address: new web3.PublicKey(creator.address),
     })),
     collection,
+    isProgrammableNft:
+      asset.interface === "Custom" && !asset.compression.compressed,
+    programmableConfig: {
+      ruleSet: new web3.PublicKey(
+        "eBJLFYPxJmMGKuFwpDWkzxZeUrad92kZRC5BJLpzyT9"
+      ),
+    },
     isCompressed: asset.compression.compressed,
     frozen: asset.ownership.delegated,
     compression: !asset.compression.compressed

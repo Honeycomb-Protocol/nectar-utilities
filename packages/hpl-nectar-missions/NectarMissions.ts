@@ -740,6 +740,7 @@ class NectarMissionsFetch {
                 await this._missions.mission(participation.mission),
                 p.pubkey,
                 participation,
+                //@ts-ignore
                 stakedNft
               );
             } catch {

@@ -1,10 +1,6 @@
 import * as web3 from "@solana/web3.js";
 import { NFTv1Args } from "./generated";
-import {
-  ProgrammableConfig,
-  TokenRecord,
-  TokenStandard,
-} from "@metaplex-foundation/mpl-token-metadata";
+import { TokenRecord } from "@metaplex-foundation/mpl-token-metadata";
 
 /**
  * Represents the asset data responded by helius RPC.
@@ -105,8 +101,8 @@ export type Metadata = {
   } | null;
   frozen: boolean;
 
-  tokenStandard?: TokenStandard | null;
-  programmableConfig?: ProgrammableConfig | null;
+  isProgrammableNft?: boolean | null;
+  programmableConfig?: { ruleSet: web3.PublicKey } | null;
 
   compression?: {
     leafId: number;

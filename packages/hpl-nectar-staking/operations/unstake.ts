@@ -14,7 +14,6 @@ import {
   getStakerPda,
   METADATA_PROGRAM_ID,
 } from "../pdas";
-import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import { VAULT, Honeycomb, Operation } from "@honeycomb-protocol/hive-control";
 import { PROGRAM_ID as BUBBLEGUM_PROGRAM_ID } from "@metaplex-foundation/mpl-bubblegum";
 import { PROGRAM_ID as AUTHORIZATION_PROGRAM_ID } from "@metaplex-foundation/mpl-token-auth-rules";
@@ -141,7 +140,7 @@ export async function createUnstakeOperation(
       [depositAccount] = getDepositPda(args.nft.mint);
     }
 
-    if (args.nft.tokenStandard === TokenStandard.ProgrammableNonFungible) {
+    if (args.nft.isProgrammableNft) {
       [nftTokenRecord] = getMetadataAccount_(args.nft.mint, {
         __kind: "token_record",
         tokenAccount: nftAccount,
