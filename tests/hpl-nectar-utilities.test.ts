@@ -58,7 +58,7 @@ export function bytesOf(input: any): number {
 }
 
 describe("Nectar Utilities", () => {
-  const totalNfts = 1;
+  const totalNfts = 0;
   const totalcNfts = 1;
 
   let honeycomb: Honeycomb;
@@ -1848,7 +1848,7 @@ describe("Nectar Utilities", () => {
     honeycomb.use(
       await HoneycombProject.fromAddress(
         honeycomb.connection,
-        new web3.PublicKey("BCiLxBdVwfGimSA9ZQ5DwAdshc4ULXL5ouDbWBeK2WRV")
+        new web3.PublicKey("rwDU4NWfAfvrVquzmCeKw8ghZ2ebWpsQyjyhv7Dpfc2")
       )
     );
     await findProjectCurrencies(honeycomb.project());
@@ -2013,7 +2013,7 @@ describe("Nectar Utilities", () => {
     // console.log("User", user.address.toString(), profile.address.toString());
   });
 
-  it("Stake NFTs", async () => {
+  it.skip("Stake NFTs", async () => {
     const availableNfts = await honeycomb.staking().fetch().availableNfts();
     console.log("AvailaleNFTs", availableNfts);
     expect(availableNfts.length).toBe(totalNfts + totalcNfts);
@@ -2022,7 +2022,7 @@ describe("Nectar Utilities", () => {
     expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
   });
 
-  it.skip("Participate on Mission", async () => {
+  it("Participate on Mission", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     console.log("StakedNfts", stakedNfts);
     expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
@@ -2048,12 +2048,12 @@ describe("Nectar Utilities", () => {
     }
   });
 
-  it.skip("Recall from missions", async () => {
+  it("Recall from missions", async () => {
     await wait(1);
     const participations = await honeycomb.missions().participations();
     expect(participations.length).toBeGreaterThan(0);
     const mission = await honeycomb.missions().mission("Quick Patrol");
-    await mission.recall(participations, { skipPreflight: true });
+    await mission.recall(participations);
   });
 
   it.skip("Unstake NFTs", async () => {

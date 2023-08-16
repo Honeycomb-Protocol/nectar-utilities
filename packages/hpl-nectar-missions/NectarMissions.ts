@@ -515,16 +515,14 @@ export class NectarMissions extends Module {
     participations: NectarMissionParticipation[],
     confirmOptions?: web3.ConfirmOptions
   ) {
-    const operations = (
-      await Promise.all(
-        participations.map((participation, i) =>
-          creatRecallOperation(this.honeycomb(), {
-            participation,
-            programId: this.programId,
-          }).then(({ operations }) => operations)
-        )
+    const operations = await Promise.all(
+      participations.map((participation, i) =>
+        creatRecallOperation(this.honeycomb(), {
+          participation,
+          programId: this.programId,
+        }).then(({ operation }) => operation)
       )
-    ).flat();
+    );
 
     // const operation = Operation.concat(operations);
 
