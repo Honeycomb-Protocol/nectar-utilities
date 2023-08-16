@@ -15,6 +15,7 @@ import {
 import {
   PROGRAM_ID as CURRENCY_MANAGER_PROGRAM_ID,
   createCreateHolderAccountOperation,
+  createFixHolderAccountInstruction,
   holderAccountPdas,
 } from "@honeycomb-protocol/currency-manager";
 import {
@@ -26,7 +27,10 @@ import {
   NectarMissionParticipation,
   ParticipationReward,
 } from "../NectarMissions";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
 import {
   SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
   SPL_NOOP_PROGRAM_ID,
@@ -154,6 +158,39 @@ export async function createCollectRewardsOperation(
         units: 400_000,
       })
     );
+  }
+
+  if (args.reward.isCurrency()) {
+    try {
+      const holderAccountT = await args.reward
+        .currency()
+        .holderAccount(honeycomb.identity().address);
+
+      if (!holderAccountT.tokenAccount.equals(tokenAccount)) {
+        instructions.unshift(
+          createFixHolderAccountInstruction({
+            project: holderAccountT.currency().project().address,
+            currency: holderAccountT.currency().address,
+            mint: holderAccountT.currency().mint.address,
+            holderAccount,
+            tokenAccount: holderAccountT.tokenAccount,
+            newTokenAccount: tokenAccount,
+            owner: holderAccountT.owner,
+            payer: honeycomb.identity().address,
+            vault: VAULT,
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+            instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+          })
+        );
+      }
+    } catch {
+      instructions.push(
+        ...(await createCreateHolderAccountOperation(honeycomb, {
+          currency: args.reward.currency(),
+          owner: honeycomb.identity().address,
+        }).then((x) => x.operation.instructions))
+      );
+    }
   }
 
   return {

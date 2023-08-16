@@ -145,7 +145,11 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
                 ctx.accounts.clock.slot,
                 reward.min,
                 reward.max,
-            ),
+            ) * if ctx.accounts.nft.is_compressed {
+                1
+            } else {
+                10
+            },
             reward_type: reward.reward_type.clone(),
             collected: false,
         })
@@ -232,7 +236,12 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
                 token_program: ctx.accounts.token_program.to_account_info(),
             },
         ),
-        ctx.accounts.mission.cost.amount,
+        ctx.accounts.mission.cost.amount
+            * if ctx.accounts.nft.is_compressed {
+                1
+            } else {
+                10
+            },
     )?;
 
     use_nft(
@@ -446,7 +455,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                     AddProfileDataArgs {
                         label: String::from("nectar_missions_xp"),
                         value: Some(AddProfileDataArgsValue::SingleValue {
-                            value: String::from(reward.amount.to_string()),
+                            value: String::from((reward.amount).to_string()),
                         }),
                     },
                 )

@@ -369,7 +369,9 @@ pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
         total_multipliers += collection_multiplier;
     }
 
-    rewards_amount = (rewards_amount * total_multipliers) / multplier_decimals;
+    if !nft.is_compressed {
+        rewards_amount = (rewards_amount * total_multipliers) / multplier_decimals;
+    }
 
     let pool_seeds = &[
         b"staking_pool".as_ref(),

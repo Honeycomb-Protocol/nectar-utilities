@@ -116,7 +116,7 @@ pub mod hpl_nectar_missions {
 
     pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
         hpl_hive_control::instructions::platform_gate_fn(
-            hpl_hive_control::constants::ACTIONS.public_high,
+            hpl_hive_control::constants::ACTIONS.fee_exempt,
             None,
             &ctx.accounts.project,
             ctx.accounts.wallet.key(),
@@ -132,7 +132,7 @@ pub mod hpl_nectar_missions {
 
     pub fn recall(ctx: Context<Recall>) -> Result<()> {
         hpl_hive_control::instructions::platform_gate_fn(
-            hpl_hive_control::constants::ACTIONS.public_high,
+            hpl_hive_control::constants::ACTIONS.fee_exempt,
             None,
             &ctx.accounts.project,
             ctx.accounts.wallet.key(),

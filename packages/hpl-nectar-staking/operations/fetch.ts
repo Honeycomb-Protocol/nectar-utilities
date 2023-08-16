@@ -131,8 +131,16 @@ export async function fetchHeliusAssets(
         body: JSON.stringify(batch),
       })
         .then((r) => r.json())
+        .then((r) => {
+          console.log("R", r);
+          return r;
+        })
         .then(
-          (r) => r.map(({ result }) => result).map(parseHelius) as Metadata[]
+          (r) =>
+            r
+              .map(({ result }) => result)
+              .filter((x) => !!x)
+              .map(parseHelius) as Metadata[]
         );
     } catch (e) {
       console.error(e);
