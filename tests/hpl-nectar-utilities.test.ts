@@ -5,8 +5,6 @@ import { TokenStandard } from "@metaplex-foundation/mpl-token-metadata";
 import {
   Honeycomb,
   HoneycombProject,
-  Operation,
-  VAULT,
   identityModule,
   toHoneycombFile,
 } from "@honeycomb-protocol/hive-control";
@@ -15,7 +13,6 @@ import {
   HplCurrency,
   findProjectCurrencies,
   HplHolderAccount,
-  CURRENCY_MANAGER_ID,
 } from "@honeycomb-protocol/currency-manager";
 import {
   LockType,
@@ -30,15 +27,9 @@ import {
   wait,
 } from "./prepare";
 import {
-  MerkleTree,
   NectarMissions,
-  createFixVaultInstruction,
   findProjectMissionPools,
 } from "../packages/hpl-nectar-missions";
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  getAssociatedTokenAddressSync,
-} from "@solana/spl-token";
 
 jest.setTimeout(2000000);
 
@@ -66,18 +57,18 @@ export function bytesOf(input: any): number {
 
 describe("Nectar Utilities", () => {
   const totalNfts = 1;
-  const totalcNfts = 0;
+  const totalcNfts = 1;
 
   let honeycomb: Honeycomb;
   let metaplex: Metaplex;
   let collection: Nft;
   let nfts: Nft[] = [];
   // let cNfts: Metadata[];
-  let factionsArray: { faction: string; mint: web3.PublicKey }[] = [];
-  let factionsMerkleTree: MerkleTree;
+  // let factionsArray: { faction: string; mint: web3.PublicKey }[] = [];
+  // let factionsMerkleTree: MerkleTree;
   let mainVault: HplHolderAccount;
 
-  it("Temp", async () => {
+  it.skip("Temp", async () => {
     const connection = new web3.Connection(
       "https://rpc.hellomoon.io/40f1e769-beb0-4a00-8f11-e9f19e1a576d"
       // "https://lingering-newest-sheet.solana-devnet.quiknode.pro/fb6e6465df3955a06fd5ddec2e5b003896f56adb/"
@@ -1071,11 +1062,594 @@ describe("Nectar Utilities", () => {
     //     });
     // }
 
+    // for (let mission of await honeycomb.missions().missions()) {
+    //   const config = (() => {
+    //     switch (mission.name) {
+    //       case "Quick Patrol":
+    //         return {
+    //           skip: false,
+    //           costAmount: 1,
+    //           minXp: 0,
+    //           duration: 15 * 60,
+    //           bounty: { skip: false, min: 0, max: 1 },
+    //           ammo: { skip: false, min: 1, max: 1 },
+    //           food: { skip: false, min: 1, max: 1 },
+    //           gems: { skip: false, min: 0, max: 0 },
+    //           bail: { skip: false, min: 0, max: 0 },
+    //         };
+    //       case "Casino Heist":
+    //         return {
+    //           skip: false,
+    //           costAmount: 0,
+    //           minXp: 0,
+    //           duration: 1 * 3600,
+    //           bounty: { skip: false, min: 0, max: 1 },
+    //           ammo: { skip: false, min: 1, max: 1 },
+    //           food: { skip: false, min: 0, max: 0 },
+    //           gems: { skip: false, min: 0, max: 0 },
+    //           bail: { skip: false, min: 0, max: 0 },
+    //         };
+    //       case "Night Patrol":
+    //         return {
+    //           skip: false,
+    //           costAmount: 0,
+    //           minXp: 0,
+    //           duration: 3 * 3600,
+    //           bounty: { skip: false, min: 2, max: 2 },
+    //           ammo: { skip: false, min: 1, max: 1 },
+    //           food: { skip: false, min: 1, max: 1 },
+    //           gems: { skip: false, min: 0, max: 0 },
+    //           bail: { skip: false, min: 0, max: 0 },
+    //         };
+    //       case "Investigate":
+    //         return {
+    //           skip: false,
+    //           costAmount: 3,
+    //           minXp: 0,
+    //           duration: 12 * 3600,
+    //           bounty: { skip: false, min: 2, max: 10 },
+    //           ammo: { skip: false, min: 2, max: 2 },
+    //           food: { skip: false, min: 5, max: 5 },
+    //           gems: { skip: false, min: 0, max: 0 },
+    //           bail: { skip: false, min: 0, max: 100 },
+    //         };
+    //       case "Arrest":
+    //         return {
+    //           skip: false,
+    //           costAmount: 3,
+    //           minXp: 0,
+    //           duration: 12 * 3600,
+    //           bounty: { skip: false, min: 1, max: 10 },
+    //           ammo: { skip: false, min: 3, max: 3 },
+    //           food: { skip: false, min: 3, max: 3 },
+    //           gems: { skip: false, min: 0, max: 0 },
+    //           bail: { skip: false, min: 0, max: 100 },
+    //         };
+    //       case "Combat":
+    //         return {
+    //           skip: false,
+    //           costAmount: 10,
+    //           minXp: 0,
+    //           duration: 48 * 3600,
+    //           bounty: { skip: false, min: 10, max: 30 },
+    //           ammo: { skip: false, min: 15, max: 15 },
+    //           food: { skip: false, min: 25, max: 25 },
+    //           gems: { skip: false, min: 1, max: 1 },
+    //           bail: { skip: false, min: 50, max: 300 },
+    //         };
+
+    //       default:
+    //         return { skip: true, costAmount: 0, minXp: 0, duration: 0 };
+    //     }
+    //   })();
+
+    //   if (config.skip) continue;
+
+    //   // await mission.update({
+    //   //   name: null,
+    //   //   minXp: config.minXp,
+    //   //   cost: {
+    //   //     address: bounty.address,
+    //   //     amount: config.costAmount * 10 ** bounty.mint.decimals,
+    //   //   },
+    //   //   duration: config.duration,
+    //   //   addReward: null,
+    //   //   removeRewardIndex: null,
+    //   // });
+
+    //   // console.log(mission.name, "Rewards", mission.rewards.length);
+
+    //   // const coins = {
+    //   //   bail: bail,
+    //   //   bounty: bounty,
+    //   //   ammo: ammo,
+    //   //   food: food,
+    //   //   gems: gems,
+    //   // };
+    //   // const { signature } = await new Operation(honeycomb, [
+    //   //   // ComputeBudgetProgram.setComputeUnitLimit({
+    //   //   //   units: 400_000,
+    //   //   // }),
+    //   //   createUpdateMissionInstruction(
+    //   //     {
+    //   //       project: mission.pool().project().address,
+    //   //       missionPool: mission.pool().address,
+    //   //       mission: mission.address,
+    //   //       delegateAuthority: HPL_NECTAR_MISSIONS_PROGRAM,
+    //   //       authority: honeycomb.identity().address,
+    //   //       payer: honeycomb.identity().address,
+    //   //       vault: VAULT,
+    //   //       rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+    //   //       instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //   //     },
+    //   //     {
+    //   //       args: {
+    //   //         name: null,
+    //   //         minXp: null,
+    //   //         cost: null,
+    //   //         duration: null,
+    //   //         removeAllRewards: true,
+    //   //         addRewards: Object.entries(coins).map(([name, coin]) => ({
+    //   //           rewardType: {
+    //   //             __kind: "Currency",
+    //   //             address: coin.address,
+    //   //           },
+    //   //           min: config[name].min * 10 ** coin.mint.decimals,
+    //   //           max: config[name].max * 10 ** coin.mint.decimals,
+    //   //         })),
+    //   //         removeRewardIndices: null,
+    //   //       },
+    //   //     }
+    //   //   ),
+    //   // ]).send();
+    //   // console.log("Set Rewards from", mission.name, signature);
+
+    //   // if (mission.rewards.length) {
+    //   //   const { signature: removeSignature } = await new Operation(honeycomb, [
+    //   //     // ComputeBudgetProgram.setComputeUnitLimit({
+    //   //     //   units: 400_000,
+    //   //     // }),
+    //   //     ...mission.rewards.map((_, i) =>
+    //   //       createUpdateMissionInstruction(
+    //   //         {
+    //   //           project: mission.pool().project().address,
+    //   //           missionPool: mission.pool().address,
+    //   //           mission: mission.address,
+    //   //           delegateAuthority: HPL_NECTAR_MISSIONS_PROGRAM,
+    //   //           authority: honeycomb.identity().address,
+    //   //           payer: honeycomb.identity().address,
+    //   //           vault: VAULT,
+    //   //           rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+    //   //           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //   //         },
+    //   //         {
+    //   //           args: {
+    //   //             name: null,
+    //   //             minXp: null,
+    //   //             cost: null,
+    //   //             duration: null,
+    //   //             addReward: null,
+    //   //             removeRewardIndex: i,
+    //   //           },
+    //   //         }
+    //   //       )
+    //   //     ),
+    //   //   ]).send();
+    //   //   console.log("Removed All Rewards from", mission.name, removeSignature);
+    //   // }
+
+    //   // if (mission.rewards.length === 0) {
+    //   //   const coins = {
+    //   //     bail: bail,
+    //   //     bounty: bounty,
+    //   //     ammo: ammo,
+    //   //     food: food,
+    //   //     gems: gems,
+    //   //   };
+    //   //   const { signature: addSignature } = await new Operation(honeycomb, [
+    //   //     // ComputeBudgetProgram.setComputeUnitLimit({
+    //   //     //   units: 400_000,
+    //   //     // }),
+    //   //     ...Object.entries(coins).map(([name, coin]) =>
+    //   //       createUpdateMissionInstruction(
+    //   //         {
+    //   //           project: mission.pool().project().address,
+    //   //           missionPool: mission.pool().address,
+    //   //           mission: mission.address,
+    //   //           delegateAuthority: HPL_NECTAR_MISSIONS_PROGRAM,
+    //   //           authority: honeycomb.identity().address,
+    //   //           payer: honeycomb.identity().address,
+    //   //           vault: VAULT,
+    //   //           rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+    //   //           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //   //         },
+    //   //         {
+    //   //           args: {
+    //   //             name: null,
+    //   //             minXp: null,
+    //   //             cost: null,
+    //   //             duration: null,
+    //   //             addReward: {
+    //   //               rewardType: {
+    //   //                 __kind: "Currency",
+    //   //                 address: coin.address,
+    //   //               },
+    //   //               min: config[name].min * 10 ** coin.mint.decimals,
+    //   //               max: config[name].max * 10 ** coin.mint.decimals,
+    //   //             },
+    //   //             removeRewardIndex: null,
+    //   //           },
+    //   //         }
+    //   //       )
+    //   //     ),
+    //   //   ]).send();
+    //   //   console.log("Added All Rewards to", mission.name, addSignature);
+    //   // }
+
+    //   // if (config.bail && !config.bail.skip) {
+    //   //   const bailT = bail;
+    //   //   const bailIndex = mission.rewards.findIndex(
+    //   //     (r) => r.isCurrency() && r.currency().address.equals(bailT.address)
+    //   //   );
+
+    //   //   if (bailIndex >= 0) {
+    //   //     const { signature } = await new Operation(honeycomb, [
+    //   //       // ComputeBudgetProgram.setComputeUnitLimit({
+    //   //       //   units: 400_000,
+    //   //       // }),
+    //   //       createUpdateMissionInstruction(
+    //   //         {
+    //   //           project: mission.pool().project().address,
+    //   //           missionPool: mission.pool().address,
+    //   //           mission: mission.address,
+    //   //           delegateAuthority: HPL_NECTAR_MISSIONS_PROGRAM,
+    //   //           authority: honeycomb.identity().address,
+    //   //           payer: honeycomb.identity().address,
+    //   //           vault: VAULT,
+    //   //           rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+    //   //           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //   //         },
+    //   //         {
+    //   //           args: {
+    //   //             name: null,
+    //   //             minXp: null,
+    //   //             cost: null,
+    //   //             duration: null,
+    //   //             addReward: null,
+    //   //             removeRewardIndex: bailIndex,
+    //   //           },
+    //   //         }
+    //   //       ),
+
+    //   //       createUpdateMissionInstruction(
+    //   //         {
+    //   //           project: mission.pool().project().address,
+    //   //           missionPool: mission.pool().address,
+    //   //           mission: mission.address,
+    //   //           delegateAuthority: HPL_NECTAR_MISSIONS_PROGRAM,
+    //   //           authority: honeycomb.identity().address,
+    //   //           payer: honeycomb.identity().address,
+    //   //           vault: VAULT,
+    //   //           rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+    //   //           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //   //         },
+    //   //         {
+    //   //           args: {
+    //   //             name: null,
+    //   //             minXp: null,
+    //   //             cost: null,
+    //   //             duration: null,
+    //   //             addReward: {
+    //   //               rewardType: {
+    //   //                 __kind: "Currency",
+    //   //                 address: bailT.address,
+    //   //               },
+    //   //               min: config.bail.min * 10 ** bail.mint.decimals,
+    //   //               max: config.bail.max * 10 ** bail.mint.decimals,
+    //   //             },
+    //   //             removeRewardIndex: null,
+    //   //           },
+    //   //         }
+    //   //       ),
+    //   //     ]).send();
+    //   //     console.log("Bail update for", mission.name, signature);
+    //   //   }
+    //   // }
+
+    //   // if (config.bounty && !config.bounty.skip) {
+    //   //   const bountyT = bounty;
+    //   //   const bountyIndex = mission.rewards.findIndex(
+    //   //     (r) => r.isCurrency() && r.currency().address.equals(bountyT.address)
+    //   //   );
+
+    //   //   if (bountyIndex >= 0) {
+    //   //     const { signature } = await new Operation(honeycomb, [
+    //   //       // ComputeBudgetProgram.setComputeUnitLimit({
+    //   //       //   units: 400_000,
+    //   //       // }),
+    //   //       createUpdateMissionInstruction(
+    //   //         {
+    //   //           project: mission.pool().project().address,
+    //   //           missionPool: mission.pool().address,
+    //   //           mission: mission.address,
+    //   //           delegateAuthority: HPL_NECTAR_MISSIONS_PROGRAM,
+    //   //           authority: honeycomb.identity().address,
+    //   //           payer: honeycomb.identity().address,
+    //   //           vault: VAULT,
+    //   //           rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+    //   //           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //   //         },
+    //   //         {
+    //   //           args: {
+    //   //             name: null,
+    //   //             minXp: null,
+    //   //             cost: null,
+    //   //             duration: null,
+    //   //             addReward: null,
+    //   //             removeRewardIndex: bountyIndex,
+    //   //           },
+    //   //         }
+    //   //       ),
+
+    //   //       createUpdateMissionInstruction(
+    //   //         {
+    //   //           project: mission.pool().project().address,
+    //   //           missionPool: mission.pool().address,
+    //   //           mission: mission.address,
+    //   //           delegateAuthority: HPL_NECTAR_MISSIONS_PROGRAM,
+    //   //           authority: honeycomb.identity().address,
+    //   //           payer: honeycomb.identity().address,
+    //   //           vault: VAULT,
+    //   //           rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+    //   //           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //   //         },
+    //   //         {
+    //   //           args: {
+    //   //             name: null,
+    //   //             minXp: null,
+    //   //             cost: null,
+    //   //             duration: null,
+    //   //             addReward: {
+    //   //               rewardType: {
+    //   //                 __kind: "Currency",
+    //   //                 address: bountyT.address,
+    //   //               },
+    //   //               min: config.bounty.min * 10 ** bounty.mint.decimals,
+    //   //               max: config.bounty.max * 10 ** bounty.mint.decimals,
+    //   //             },
+    //   //             removeRewardIndex: null,
+    //   //           },
+    //   //         }
+    //   //       ),
+    //   //     ]).send();
+    //   //     console.log("Bounty update for", mission.name, signature);
+    //   //   }
+    //   // }
+
+    //   // if (config.ammo && !config.ammo.skip) {
+    //   //   const ammoT = ammo;
+    //   //   const ammoIndex = mission.rewards.findIndex(
+    //   //     (r) => r.isCurrency() && r.currency().address.equals(ammoT.address)
+    //   //   );
+
+    //   //   if (ammoIndex >= 0) {
+    //   //     const { signature } = await new Operation(honeycomb, [
+    //   //       // ComputeBudgetProgram.setComputeUnitLimit({
+    //   //       //   units: 400_000,
+    //   //       // }),
+    //   //       createUpdateMissionInstruction(
+    //   //         {
+    //   //           project: mission.pool().project().address,
+    //   //           missionPool: mission.pool().address,
+    //   //           mission: mission.address,
+    //   //           delegateAuthority: HPL_NECTAR_MISSIONS_PROGRAM,
+    //   //           authority: honeycomb.identity().address,
+    //   //           payer: honeycomb.identity().address,
+    //   //           vault: VAULT,
+    //   //           rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+    //   //           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //   //         },
+    //   //         {
+    //   //           args: {
+    //   //             name: null,
+    //   //             minXp: null,
+    //   //             cost: null,
+    //   //             duration: null,
+    //   //             addReward: null,
+    //   //             removeRewardIndex: ammoIndex,
+    //   //           },
+    //   //         }
+    //   //       ),
+
+    //   //       createUpdateMissionInstruction(
+    //   //         {
+    //   //           project: mission.pool().project().address,
+    //   //           missionPool: mission.pool().address,
+    //   //           mission: mission.address,
+    //   //           delegateAuthority: HPL_NECTAR_MISSIONS_PROGRAM,
+    //   //           authority: honeycomb.identity().address,
+    //   //           payer: honeycomb.identity().address,
+    //   //           vault: VAULT,
+    //   //           rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+    //   //           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //   //         },
+    //   //         {
+    //   //           args: {
+    //   //             name: null,
+    //   //             minXp: null,
+    //   //             cost: null,
+    //   //             duration: null,
+    //   //             addReward: {
+    //   //               rewardType: {
+    //   //                 __kind: "Currency",
+    //   //                 address: ammoT.address,
+    //   //               },
+    //   //               min: config.ammo.min * 10 ** ammo.mint.decimals,
+    //   //               max: config.ammo.max * 10 ** ammo.mint.decimals,
+    //   //             },
+    //   //             removeRewardIndex: null,
+    //   //           },
+    //   //         }
+    //   //       ),
+    //   //     ]).send();
+    //   //     console.log("Ammo update for", mission.name, signature);
+    //   //   }
+    //   // }
+
+    //   // if (config.food && !config.food.skip) {
+    //   //   const foodT = food;
+    //   //   const foodIndex = mission.rewards.findIndex(
+    //   //     (r) => r.isCurrency() && r.currency().address.equals(foodT.address)
+    //   //   );
+
+    //   //   if (foodIndex >= 0) {
+    //   //     const { signature } = await new Operation(honeycomb, [
+    //   //       // ComputeBudgetProgram.setComputeUnitLimit({
+    //   //       //   units: 400_000,
+    //   //       // }),
+    //   //       createUpdateMissionInstruction(
+    //   //         {
+    //   //           project: mission.pool().project().address,
+    //   //           missionPool: mission.pool().address,
+    //   //           mission: mission.address,
+    //   //           delegateAuthority: HPL_NECTAR_MISSIONS_PROGRAM,
+    //   //           authority: honeycomb.identity().address,
+    //   //           payer: honeycomb.identity().address,
+    //   //           vault: VAULT,
+    //   //           rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+    //   //           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //   //         },
+    //   //         {
+    //   //           args: {
+    //   //             name: null,
+    //   //             minXp: null,
+    //   //             cost: null,
+    //   //             duration: null,
+    //   //             addReward: null,
+    //   //             removeRewardIndex: foodIndex < 0 ? null : foodIndex,
+    //   //           },
+    //   //         }
+    //   //       ),
+
+    //   //       createUpdateMissionInstruction(
+    //   //         {
+    //   //           project: mission.pool().project().address,
+    //   //           missionPool: mission.pool().address,
+    //   //           mission: mission.address,
+    //   //           delegateAuthority: HPL_NECTAR_MISSIONS_PROGRAM,
+    //   //           authority: honeycomb.identity().address,
+    //   //           payer: honeycomb.identity().address,
+    //   //           vault: VAULT,
+    //   //           rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+    //   //           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //   //         },
+    //   //         {
+    //   //           args: {
+    //   //             name: null,
+    //   //             minXp: null,
+    //   //             cost: null,
+    //   //             duration: null,
+    //   //             addReward:
+    //   //               foodIndex >= 0 && config.food
+    //   //                 ? {
+    //   //                     rewardType: {
+    //   //                       __kind: "Currency",
+    //   //                       address: foodT.address,
+    //   //                     },
+    //   //                     min: config.food.min * 10 ** food.mint.decimals,
+    //   //                     max: config.food.max * 10 ** food.mint.decimals,
+    //   //                   }
+    //   //                 : null,
+    //   //             removeRewardIndex: null,
+    //   //           },
+    //   //         }
+    //   //       ),
+    //   //     ]).send();
+    //   //     console.log("Food update for", mission.name, signature);
+    //   //   }
+    //   // }
+
+    //   // if (config.gems && config.gems.skip) {
+    //   //   const gemsT = gems;
+    //   //   const gemsIndex = mission.rewards.findIndex(
+    //   //     (r) => r.isCurrency() && r.currency().address.equals(gemsT.address)
+    //   //   );
+
+    //   //   if (gemsIndex >= 0) {
+    //   //     const { signature } = await new Operation(honeycomb, [
+    //   //       // ComputeBudgetProgram.setComputeUnitLimit({
+    //   //       //   units: 400_000,
+    //   //       // }),
+    //   //       createUpdateMissionInstruction(
+    //   //         {
+    //   //           project: mission.pool().project().address,
+    //   //           missionPool: mission.pool().address,
+    //   //           mission: mission.address,
+    //   //           delegateAuthority: HPL_NECTAR_MISSIONS_PROGRAM,
+    //   //           authority: honeycomb.identity().address,
+    //   //           payer: honeycomb.identity().address,
+    //   //           vault: VAULT,
+    //   //           rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+    //   //           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //   //         },
+    //   //         {
+    //   //           args: {
+    //   //             name: null,
+    //   //             minXp: null,
+    //   //             cost: null,
+    //   //             duration: null,
+    //   //             addReward: null,
+    //   //             removeRewardIndex: gemsIndex < 0 ? null : gemsIndex,
+    //   //           },
+    //   //         }
+    //   //       ),
+
+    //   //       createUpdateMissionInstruction(
+    //   //         {
+    //   //           project: mission.pool().project().address,
+    //   //           missionPool: mission.pool().address,
+    //   //           mission: mission.address,
+    //   //           delegateAuthority: HPL_NECTAR_MISSIONS_PROGRAM,
+    //   //           authority: honeycomb.identity().address,
+    //   //           payer: honeycomb.identity().address,
+    //   //           vault: VAULT,
+    //   //           rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+    //   //           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    //   //         },
+    //   //         {
+    //   //           args: {
+    //   //             name: null,
+    //   //             minXp: null,
+    //   //             cost: null,
+    //   //             duration: null,
+    //   //             addReward:
+    //   //               gemsIndex >= 0 && config.gems
+    //   //                 ? {
+    //   //                     rewardType: {
+    //   //                       __kind: "Currency",
+    //   //                       address: gemsT.address,
+    //   //                     },
+    //   //                     min: config.gems.min * 10 ** gems.mint.decimals,
+    //   //                     max: config.gems.max * 10 ** gems.mint.decimals,
+    //   //                   }
+    //   //                 : null,
+    //   //             removeRewardIndex: null,
+    //   //           },
+    //   //         }
+    //   //       ),
+    //   //     ]).send();
+    //   //     console.log("Gems update for", mission.name, signature);
+    //   //   }
+    //   // }
+
+    //   // console.log("Done", mission.name);
+    // }
+
     // const vault = new web3.PublicKey(
     //   "7LUbP4BZQiopPposQUW7JBrKJ2vgrv7drjbTeFRAb5TS"
     // );
     // const vault = honeycomb.staking().address;
-    const vault = honeycomb.missions().address;
+    // const vault = honeycomb.missions().address;
     // await bail
     //   .fetch()
     //   .holderAccount(vault)
@@ -1105,32 +1679,9 @@ describe("Nectar Utilities", () => {
     //   .holderAccount(vault)
     //   .catch((_) => (gems as HplCurrency).create().holderAccount(vault))
     //   .then((hA) => hA.mint(1_000_000 * 1_000_000_000));
-
-    let bailHolderAccount = await bail.fetch().holderAccount(vault);
-
-    await new Operation(honeycomb, [
-      createFixVaultInstruction({
-        project: honeycomb.project().address,
-        missionPool: vault,
-        currency: bailHolderAccount.currency().address,
-        mint: bailHolderAccount.currency().mint.address,
-        vaultHolderAccount: bailHolderAccount.address,
-        vaultTokenAccount: bailHolderAccount.tokenAccount,
-        newTokenAccount: getAssociatedTokenAddressSync(
-          bailHolderAccount.currency().mint.address,
-          vault,
-          true
-        ),
-        authority: honeycomb.identity().address,
-        vault: VAULT,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-        currencyManagerProgram: CURRENCY_MANAGER_ID,
-        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-      }),
-    ]).send({ skipPreflight: true });
   });
 
-  it.skip("Prepare", async () => {
+  it("Prepare", async () => {
     honeycomb = await prepare();
     const balance = await honeycomb
       .rpc()
@@ -1202,20 +1753,20 @@ describe("Nectar Utilities", () => {
     //   collectionAddress: collection.mint.address,
     // });
 
-    factionsArray = nfts.map((nft) => ({
-      faction: "faction",
-      mint: nft.mint.address,
-    }));
-    factionsMerkleTree = new MerkleTree(
-      factionsArray.map(({ faction, mint }) =>
-        Buffer.from([...Buffer.from(faction), ...mint.toBuffer()])
-      )
-    );
+    // factionsArray = nfts.map((nft) => ({
+    //   faction: "faction",
+    //   mint: nft.mint.address,
+    // }));
+    // factionsMerkleTree = new MerkleTree(
+    //   factionsArray.map(({ faction, mint }) =>
+    //     Buffer.from([...Buffer.from(faction), ...mint.toBuffer()])
+    //   )
+    // );
 
-    console.log(
-      "FactionsTree",
-      factionsArray.map((x) => ({ ...x, mint: x.mint.toString() }))
-    );
+    // console.log(
+    //   "FactionsTree",
+    //   factionsArray.map((x) => ({ ...x, mint: x.mint.toString() }))
+    // );
 
     // Create Project
     honeycomb.use(
@@ -1258,71 +1809,70 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it.skip("Load", async () => {
+  it("Load Project", async () => {
     honeycomb.use(
       await HoneycombProject.fromAddress(
         honeycomb.connection,
-        new web3.PublicKey("4HqEkPavPrEHT5m3FmxuhjmFA4veazmEgXfVAdPrevva")
+        new web3.PublicKey("BCiLxBdVwfGimSA9ZQ5DwAdshc4ULXL5ouDbWBeK2WRV")
       )
     );
-    honeycomb.use(
-      await HplCurrency.fromAddress(
-        honeycomb.connection,
-        new web3.PublicKey("GfGuZBFFEoubbhargPhEpYDYfM4ZzkcWvmfsj6maNSdU")
-      )
-    );
-    await findProjectStakingPools(honeycomb.project());
-    await honeycomb.staking().availableNfts();
-    await honeycomb.staking().stakedNfts();
-    await findProjectMissionPools(honeycomb.project());
-    await honeycomb.missions().missions();
+    await findProjectCurrencies(honeycomb.project());
   });
 
-  it.skip("Create Staking Pool", async () => {
-    // Create staking pool
-    honeycomb.use(
-      await NectarStaking.new(honeycomb, {
-        args: {
-          name: "Staking3.0",
-          rewardsPerDuration: 1 * 1_000_000_000,
-          rewardsDuration: 1,
-          maxRewardsDuration: null,
-          minStakeDuration: null,
-          cooldownDuration: null,
-          resetStakeDuration: false,
-          startTime: Date.now(),
-          endTime: null,
-          lockType: LockType.Freeze,
-        },
-        project: honeycomb.project(),
-        currency: honeycomb.currency(),
-        collections: [collection.mint.address],
-        multipliersDecimals: 3,
-        multipliers: [
-          {
-            multiplierType: {
-              __kind: "NFTCount",
-              minCount: 3,
-            },
-            value: 1400,
-          },
-          {
-            multiplierType: {
-              __kind: "NFTCount",
-              minCount: 5,
-            },
-            value: 1800,
-          },
-        ],
-      })
-    );
+  it("Load/Create Staking Pool", async () => {
+    await findProjectStakingPools(honeycomb.project());
 
+    if (!honeycomb.staking) {
+      // Create staking pool
+      honeycomb.use(
+        await NectarStaking.new(honeycomb, {
+          args: {
+            name: "Staking3.0",
+            rewardsPerDuration: 1 * 1_000_000_000,
+            rewardsDuration: 1,
+            maxRewardsDuration: null,
+            minStakeDuration: null,
+            cooldownDuration: null,
+            resetStakeDuration: false,
+            startTime: Date.now(),
+            endTime: null,
+            lockType: LockType.Freeze,
+          },
+          project: honeycomb.project(),
+          currency: honeycomb.currency(),
+          collections: [collection.mint.address],
+          multipliersDecimals: 3,
+          multipliers: [
+            {
+              multiplierType: {
+                __kind: "NFTCount",
+                minCount: 3,
+              },
+              value: 1400,
+            },
+            {
+              multiplierType: {
+                __kind: "NFTCount",
+                minCount: 5,
+              },
+              value: 1800,
+            },
+          ],
+        })
+      );
+    }
+
+    (honeycomb.staking() as unknown as NectarStaking).helius_rpc =
+      "https://devnet.helius-rpc.com/?api-key=014b4690-ef6d-4cab-b9e9-d3ec73610d52";
     // Fund Staking pool vault
     const stakingVault = await honeycomb
       .currency()
-      .create()
-      .holderAccount(honeycomb.staking().address);
-    await stakingVault.mint(1_000_000 * 1_000_000_000);
+      .fetch()
+      .holderAccount(honeycomb.staking().address)
+      .catch(() =>
+        honeycomb.currency().create().holderAccount(honeycomb.staking().address)
+      );
+    await stakingVault.mint(1_000 * 1_000_000_000);
     console.log(
       "Stakinng",
       honeycomb.staking().address.toString(),
@@ -1330,21 +1880,31 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it.skip("Create Mission Pool", async () => {
-    honeycomb.use(
-      await NectarMissions.new(honeycomb, {
-        args: {
-          name: "Missions2.0",
-          factionsMerkleRoot: factionsMerkleTree.getRootArray(),
-          collections: [collection.mint.address],
-        },
-      })
-    );
+  it("Load/Create Mission Pool", async () => {
+    await findProjectMissionPools(honeycomb.project());
+
+    if (!honeycomb.missions) {
+      honeycomb.use(
+        await NectarMissions.new(honeycomb, {
+          args: {
+            name: "Missions2.0",
+            factionsMerkleRoot: new Array(32).fill(0),
+            collections: [collection.mint.address],
+          },
+        })
+      );
+    }
 
     const missionsVault = await honeycomb
       .currency()
-      .create()
-      .holderAccount(honeycomb.missions().address);
+      .fetch()
+      .holderAccount(honeycomb.missions().address)
+      .catch(() =>
+        honeycomb
+          .currency()
+          .create()
+          .holderAccount(honeycomb.missions().address)
+      );
     await missionsVault.mint(1_000_000 * 1_000_000_000);
     console.log(
       "Missions",
@@ -1353,39 +1913,43 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it.skip("Create Mission", async () => {
-    await honeycomb
-      .missions()
-      .create()
-      .mission({
-        name: "Quick Patrol",
-        cost: {
-          address: honeycomb.currency().address,
-          amount: 10 * 1_000_000_000,
-        },
-        duration: 1,
-        minXp: 0,
-        rewards: [
-          {
-            min: 100,
-            max: 200,
-            rewardType: {
-              __kind: "Xp",
-            },
+  it("Load/Create Mission", async () => {
+    const missions = await honeycomb.missions().missions();
+
+    if (!missions.length) {
+      await honeycomb
+        .missions()
+        .create()
+        .mission({
+          name: "Quick Patrol",
+          cost: {
+            address: honeycomb.currency().address,
+            amount: 10 * 1_000_000_000,
           },
-          {
-            min: 0 * 1_000_000_000,
-            max: 20 * 1_000_000_000,
-            rewardType: {
-              __kind: "Currency",
-              address: honeycomb.currency().address,
+          duration: 1,
+          minXp: 0,
+          rewards: [
+            {
+              min: 100,
+              max: 200,
+              rewardType: {
+                __kind: "Xp",
+              },
             },
-          },
-        ],
-      });
+            {
+              min: 0 * 1_000_000_000,
+              max: 20 * 1_000_000_000,
+              rewardType: {
+                __kind: "Currency",
+                address: honeycomb.currency().address,
+              },
+            },
+          ],
+        });
+    }
   });
 
-  it.skip("Fetch or Create user/profile", async () => {
+  it("Fetch or Create user/profile", async () => {
     await honeycomb
       .identity()
       .user()
@@ -1416,40 +1980,49 @@ describe("Nectar Utilities", () => {
 
   it.skip("Stake NFTs", async () => {
     const availableNfts = await honeycomb.staking().fetch().availableNfts();
-    console.log("AvailaleNFTs", availableNfts.length);
+    console.log("AvailaleNFTs", availableNfts);
     expect(availableNfts.length).toBe(totalNfts + totalcNfts);
     await honeycomb.staking().stake(availableNfts);
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
   });
 
-  it.skip("Participate on Mission", async () => {
+  it("Participate on Mission", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
-    const mission = await honeycomb.missions().mission("Quick Patrol");
-    await mission.participate(
-      stakedNfts.map((x) => ({
-        ...x,
-        args: {
-          faction: null,
-          merkleProof: null,
-        },
-      }))
-    );
-  });
+    console.log("StakedNfts", stakedNfts);
+    expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
 
-  it.skip("Recall from missions", async () => {
-    await wait(1);
-    console.log("START");
     const participations = await honeycomb.missions().fetch().participations();
     console.log("Participations", participations.length);
+
+    const nfts = stakedNfts.filter(
+      (nft) => !participations.find((p) => p.nft.mint.equals(nft.mint))
+    );
+
+    if (nfts.length) {
+      const mission = await honeycomb.missions().mission("Quick Patrol");
+      await mission.participate(
+        nfts.map((x) => ({
+          ...x,
+          args: {
+            faction: null,
+            merkleProof: null,
+          },
+        }))
+      );
+    }
+  });
+
+  it("Recall from missions", async () => {
+    await wait(1);
+    const participations = await honeycomb.missions().participations();
     expect(participations.length).toBeGreaterThan(0);
     const mission = await honeycomb.missions().mission("Quick Patrol");
-    await mission.recall(participations);
+    await mission.recall(participations, { skipPreflight: true });
   });
 
   it.skip("Unstake NFTs", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
-    console.log("StakedNfts", stakedNfts.length);
     expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
     await honeycomb.staking().unstake(stakedNfts);
     const availableNfts = await honeycomb.staking().fetch().availableNfts();

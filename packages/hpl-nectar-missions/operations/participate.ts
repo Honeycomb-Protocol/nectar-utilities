@@ -100,6 +100,9 @@ export async function createParticipateOperation(
   );
 
   const instructions = [
+    ComputeBudgetProgram.setComputeUnitLimit({
+      units: 500_000,
+    }),
     createParticipateInstruction(
       {
         project: args.mission.pool().project().address,
@@ -132,12 +135,6 @@ export async function createParticipateOperation(
   ];
 
   if (args.isFirst) {
-    instructions.unshift(
-      ComputeBudgetProgram.setComputeUnitLimit({
-        units: 500_000,
-      })
-    );
-
     try {
       const holderAccountT = await args.mission.requirements.cost
         .currency()

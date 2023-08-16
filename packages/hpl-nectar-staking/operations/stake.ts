@@ -98,7 +98,10 @@ export async function createStakeOperation(
       BUBBLEGUM_PROGRAM_ID
     );
 
-    const proof = await fetchAssetProof(args.nft.mint);
+    const proof = await fetchAssetProof(
+      args.stakingPool.helius_rpc,
+      args.nft.mint
+    );
 
     instructions.push(
       createStakeCnftInstruction(

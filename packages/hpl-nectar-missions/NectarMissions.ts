@@ -9,6 +9,7 @@ import {
   ParticipateArgs,
   Participation,
   Reward,
+  UpdateMissionArgs,
   UpdateMissionPoolArgs,
 } from "./generated";
 import {
@@ -23,6 +24,7 @@ import {
   createCreateMissionOperation,
   createCreateMissionPoolOperation,
   createParticipateOperation,
+  createUpdateMissionOperation,
   createUpdateMissionPoolOperation,
 } from "./operations";
 import {
@@ -689,13 +691,20 @@ class NectarMissionsFetch {
    */
   public async participations(
     walletAddress?: web3.PublicKey,
-    mission?: web3.PublicKey
+    mission?: web3.PublicKey,
+    stakingPool?: web3.PublicKey
   ): Promise<NectarMissionParticipation[]> {
     const gpa = Participation.gpaBuilder().addFilter(
       "wallet",
       walletAddress || this._missions.honeycomb().identity().address
     );
     if (mission) gpa.addFilter("mission", mission);
+
+    const stakedNfts = await this._missions
+      .honeycomb()
+      .staking(stakingPool)
+      .stakedNfts();
+
     return gpa
       .run(this._missions.honeycomb().connection)
       .then((participations) =>
@@ -703,23 +712,16 @@ class NectarMissionsFetch {
           participations.map(async (p) => {
             try {
               const participation = Participation.fromAccountInfo(p.account)[0];
-              const stakedNft = await this._missions
-                .honeycomb()
-                .staking()
-                .stakedNfts()
-                .then((x) =>
-                  x.find((y) =>
-                    getNftPda(
-                      this._missions.honeycomb().staking().address,
-                      y.mint
-                    )[0].equals(participation.nft)
-                  )
-                );
+              const stakedNft = stakedNfts.find((y) =>
+                getNftPda(
+                  this._missions.honeycomb().staking().address,
+                  y.mint
+                )[0].equals(participation.nft)
+              );
               return new NectarMissionParticipation(
                 await this._missions.mission(participation.mission),
                 p.pubkey,
                 participation,
-                //@ts-ignore
                 stakedNft
               );
             } catch {
@@ -859,6 +861,35 @@ export class NectarMission {
         }
       })()
     );
+  }
+
+  /**
+   * Updates this missions config.
+   * @param args - The arguments to update the mission.
+   * @param confirmOptions - Optional transaction confirmation options.
+   * @returns A promise that resolves to the operation context.
+   * @async
+   * @example
+   * // Update mission
+   * const updateMissionArgs = {
+   *   name: "MissionABC",
+   * };
+   * const { signature } = await mission.update(updateMissionArgs);
+   * console.log(signature); // Output: Transaction signature
+   */
+  public async update(
+    args: UpdateMissionArgs,
+    confirmOptions?: web3.ConfirmOptions
+  ) {
+    const { operation } = await createUpdateMissionOperation(
+      this.pool().honeycomb(),
+      {
+        args,
+        mission: this,
+        programId: this.pool().programId,
+      }
+    );
+    return operation.send(confirmOptions);
   }
 
   /**

@@ -92,6 +92,12 @@ export class NectarStaking extends Module {
   private _stakedNfts: StakedNft[] | null = null;
 
   /**
+   * TODO: move helius rpc to hive-control
+   */
+  public helius_rpc: string =
+    "https://rpc.helius.xyz/?api-key=014b4690-ef6d-4cab-b9e9-d3ec73610d52";
+
+  /**
    * Create a new instance of NectarStaking based on the provided address.
    * @param poolAddress - The address of the staking pool.
    * @param pool - The staking pool details.

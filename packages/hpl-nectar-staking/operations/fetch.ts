@@ -1,33 +1,17 @@
-import {
-  Metaplex,
-  Metadata as MetaplexMetadata,
-} from "@metaplex-foundation/js";
-import {
-  TokenStandard,
-  TokenRecord,
-  TokenState,
-} from "@metaplex-foundation/mpl-token-metadata";
-import {
-  TOKEN_PROGRAM_ID,
-  getAssociatedTokenAddressSync,
-} from "@solana/spl-token";
 import * as web3 from "@solana/web3.js";
 import {
   AssetProof,
   AvailableNft,
+  HeluisAsset,
   Metadata,
   StakedNft,
-  TokenAccountInfo,
 } from "../types";
 import { NFT, Staker } from "../generated";
-import { getMetadataAccount_, getStakerPda } from "../pdas";
+import { getStakerPda } from "../pdas";
 import { Honeycomb } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
 
-const HELIUS_RPC_URL =
-  "https://rpc.helius.xyz/?api-key=014b4690-ef6d-4cab-b9e9-d3ec73610d52";
-
-const parseAsset = (asset: any): Metadata => {
+const parseHelius = (asset: HeluisAsset): Metadata => {
   let collection: any = null;
   const foundCollection = asset.grouping.find(
     (g) => g.group_key === "collection"
@@ -52,32 +36,18 @@ const parseAsset = (asset: any): Metadata => {
       address: new web3.PublicKey(creator.address),
     })),
     collection,
-    isCompressed: true,
+    isCompressed: asset.compression.compressed,
     frozen: asset.ownership.frozen,
-    compression: {
-      leafId: asset.compression.leaf_id,
-      dataHash: new web3.PublicKey(asset.compression.data_hash),
-      creatorHash: new web3.PublicKey(asset.compression.creator_hash),
-      assetHash: new web3.PublicKey(asset.compression.asset_hash),
-      tree: new web3.PublicKey(asset.compression.tree),
-    },
+    compression: !asset.compression.compressed
+      ? null
+      : {
+          leafId: asset.compression.leaf_id,
+          dataHash: new web3.PublicKey(asset.compression.data_hash),
+          creatorHash: new web3.PublicKey(asset.compression.creator_hash),
+          assetHash: new web3.PublicKey(asset.compression.asset_hash),
+          tree: new web3.PublicKey(asset.compression.tree),
+        },
     links: asset.content.links,
-  };
-};
-
-const parseMetaplexMetadata = (metadata: MetaplexMetadata): Metadata => {
-  return {
-    mint: metadata.mintAddress,
-    json: metadata.json,
-    jsonLoaded: metadata.jsonLoaded,
-    name: metadata.name,
-    symbol: metadata.symbol,
-    uri: metadata.uri,
-    creators: metadata.creators,
-    collection: metadata.collection,
-    isCompressed: false,
-    frozen: false,
-    links: {},
   };
 };
 
@@ -127,8 +97,8 @@ export function fetchStaker(honeycomb: Honeycomb, args: FetchStakerArgs) {
  *   collectionAddress: 'COLLECTION_ADDRESS',
  * });
  */
-export async function fetchCNfts(
-  _honeycomb: Honeycomb,
+export async function fetchHeliusAssets(
+  heliusRpc: string,
   args:
     | {
         walletAddress: web3.PublicKey;
@@ -146,7 +116,7 @@ export async function fetchCNfts(
       },
     }));
     try {
-      return fetch(HELIUS_RPC_URL, {
+      return fetch(heliusRpc, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -155,7 +125,7 @@ export async function fetchCNfts(
       })
         .then((r) => r.json())
         .then(
-          (r) => r.map(({ result }) => result).map(parseAsset) as Metadata[]
+          (r) => r.map(({ result }) => result).map(parseHelius) as Metadata[]
         );
     } catch (e) {
       console.error(e);
@@ -168,7 +138,7 @@ export async function fetchCNfts(
   let assetList: any = [];
   while (page > 0) {
     try {
-      const { result } = await fetch(HELIUS_RPC_URL, {
+      const { result } = await fetch(heliusRpc, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -180,7 +150,6 @@ export async function fetchCNfts(
           params: {
             ownerAddress: args.walletAddress.toString(),
             grouping: ["collection", args.collectionAddress.toString()],
-            compressed: true,
             page: page,
             limit: 1000,
           },
@@ -198,7 +167,7 @@ export async function fetchCNfts(
       break;
     }
   }
-  return assetList.map(parseAsset) as Metadata[];
+  return assetList.map(parseHelius) as Metadata[];
 }
 
 /**
@@ -211,9 +180,10 @@ export async function fetchCNfts(
  * const assetProof = await getAssetProof(new web3.PulicKey(...));
  */
 export async function fetchAssetProof(
+  heliusRpc: string,
   mint: web3.PublicKey
 ): Promise<AssetProof> {
-  const response = await fetch(HELIUS_RPC_URL as string, {
+  const response = await fetch(heliusRpc as string, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -236,30 +206,6 @@ export async function fetchAssetProof(
     leaf: new web3.PublicKey(result.root),
     tree_id: new web3.PublicKey(result.root),
   };
-}
-
-/**
- * Fetches metadata of the provided mints
- *
- * @param args Arguements containing mint list
- * @returns A promise that resolves to metadata objects of NFTs
- *
- * @example
- * const nfts = await fetchNftsByMintList([...]);
- */
-export async function fetchNftsByMintList(
-  honeycomb: Honeycomb,
-  mints: web3.PublicKey[]
-) {
-  const mx = new Metaplex(honeycomb.connection);
-  return mx
-    .nfts()
-    .findAllByMintList({ mints })
-    .then(
-      (nfts) =>
-        nfts.filter((x) => !!x && x.model === "metadata") as MetaplexMetadata[]
-    )
-    .then((nfts) => nfts.map(parseMetaplexMetadata));
 }
 
 /**
@@ -290,24 +236,13 @@ export async function fetchStakedNfts(
   honeycomb: Honeycomb,
   args?: FetchStakedNftsArgs
 ) {
-  const nfts = await honeycomb
-    .staking()
-    .fetch()
-    .nftsByWallet(args.walletAddress);
-
-  const normal = nfts.filter((n) => !n.isCompressed);
-  const compressed = nfts.filter((n) => n.isCompressed);
+  const staking = honeycomb.staking();
+  const nfts = await staking.fetch().nftsByWallet(args.walletAddress);
 
   let ownedNfts: StakedNft[] = [
-    ...(normal.length
-      ? await fetchNftsByMintList(
-          honeycomb,
-          normal.map((x) => x.mint)
-        )
-      : []),
-    ...(compressed.length
-      ? await fetchCNfts(honeycomb, {
-          mintList: compressed.map((x) => x.mint),
+    ...(nfts.length
+      ? await fetchHeliusAssets(staking.helius_rpc, {
+          mintList: nfts.map((x) => x.mint),
         })
       : []),
   ].map((nft) => ({
@@ -371,24 +306,8 @@ export async function fetchAvailableNfts(
   args?: FetchAvailableNfts
 ) {
   const wallet = args?.walletAddress || honeycomb.identity().address;
-  const ownedTokenAccounts: TokenAccountInfo[] = await honeycomb.connection
-    .getParsedTokenAccountsByOwner(wallet, {
-      programId: TOKEN_PROGRAM_ID,
-    })
-    .then((x) =>
-      x.value
-        .map((x) => ({
-          ...x.account.data.parsed.info,
-          tokenMint: new web3.PublicKey(x.account.data.parsed.info.mint),
-        }))
-        .filter((x) => x.tokenAmount.uiAmount > 0)
-    );
 
   let ownedNfts: AvailableNft[] = [
-    ...(await fetchNftsByMintList(
-      honeycomb,
-      ownedTokenAccounts.map((x) => x.tokenMint)
-    )),
     ...(await Promise.all(
       (args.stakingPool
         ? honeycomb.staking(args.stakingPool).collections
@@ -396,7 +315,7 @@ export async function fetchAvailableNfts(
         ? honeycomb.project(args.project).collections
         : []
       ).map((collection) =>
-        fetchCNfts(honeycomb, {
+        fetchHeliusAssets(honeycomb.staking(args.stakingPool).helius_rpc, {
           walletAddress: wallet,
           collectionAddress: collection,
         })
@@ -404,50 +323,26 @@ export async function fetchAvailableNfts(
     ).then((x) => x.flat())),
   ];
 
-  ownedNfts = await Promise.all(
-    ownedNfts.map(async (nft) => {
-      const tokenAccount = ownedTokenAccounts.find((tokenAccount) =>
-        tokenAccount.tokenMint.equals(nft.mint)
-      );
-      if (tokenAccount) {
-        nft.frozen = tokenAccount.state === "frozen";
-      }
+  ownedNfts = ownedNfts.filter((x) => !!x && !x.frozen);
 
-      if (nft.tokenStandard === TokenStandard.ProgrammableNonFungible) {
-        const tokenAccount = getAssociatedTokenAddressSync(nft.mint, wallet);
-        const [tokenRecord] = getMetadataAccount_(nft.mint, {
-          __kind: "token_record",
-          tokenAccount,
-        });
-        nft.tokenRecord = await TokenRecord.fromAccountAddress(
-          honeycomb.connection,
-          tokenRecord
-        );
-
-        if (nft.tokenRecord && nft.tokenRecord.state !== TokenState.Unlocked) {
-          return null;
-        }
-      } else {
-        if (nft.frozen) return null;
-      }
-
-      // if (!nft.jsonLoaded) {
-      //   if (!nft.json) {
-      //     nft.json = await honeycomb
-      //       .http()
-      //       .request(nft.uri, {
-      //         method: "GET",
-      //         redirect: "follow",
-      //         maxRedirects: 2,
-      //       })
-      //       .catch();
-      //   }
-      //   nft.jsonLoaded = !!nft.json;
-      // }
-
-      return nft;
-    })
-  ).then((nfts) => nfts.filter((x) => !!x));
+  // ownedNfts = await Promise.all(
+  //   ownedNfts.map(async (nft) => {
+  //     if (!nft.jsonLoaded) {
+  //       if (!nft.json) {
+  //         nft.json = await honeycomb
+  //           .http()
+  //           .request(nft.uri, {
+  //             method: "GET",
+  //             redirect: "follow",
+  //             maxRedirects: 2,
+  //           })
+  //           .catch();
+  //       }
+  //       nft.jsonLoaded = !!nft.json;
+  //     }
+  //     return nft;
+  //   })
+  // )
 
   let filteredNfts: AvailableNft[] = [];
 

@@ -59,7 +59,10 @@ export async function createInitNFTOperation(
   const instructions: web3.TransactionInstruction[] = [];
 
   if (args.nft.isCompressed) {
-    const proof = await fetchAssetProof(args.nft.mint);
+    const proof = await fetchAssetProof(
+      args.stakingPool.helius_rpc,
+      args.nft.mint
+    );
 
     instructions.push(
       createInitCnftInstruction(

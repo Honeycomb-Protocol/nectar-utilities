@@ -83,6 +83,21 @@ pub mod hpl_nectar_missions {
         instructions::create_mission(ctx, args)
     }
 
+    pub fn update_mission(ctx: Context<UpdateMission>, args: UpdateMissionArgs) -> Result<()> {
+        hpl_hive_control::instructions::platform_gate_fn(
+            hpl_hive_control::constants::ACTIONS.manage_mission_pool,
+            None,
+            &ctx.accounts.project,
+            ctx.accounts.authority.key(),
+            ctx.accounts.payer.to_account_info(),
+            ctx.accounts.vault.to_account_info(),
+            &ctx.accounts.delegate_authority,
+            ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
+        )?;
+        instructions::update_mission(ctx, args)
+    }
+
     pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<()> {
         hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.public_high,

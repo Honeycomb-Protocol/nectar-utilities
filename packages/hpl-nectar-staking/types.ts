@@ -7,20 +7,81 @@ import {
 } from "@metaplex-foundation/mpl-token-metadata";
 
 /**
- * Represents the information about a token account.
+ * Represents the asset data responded by helius RPC.
  * @category Types
  */
-export type TokenAccountInfo = {
-  tokenMint: web3.PublicKey;
-  owner: string;
-  state: "frozen" | string;
-  tokenAmount: {
-    amount: string;
-    decimals: number;
-    uiAmount: number;
-    uiAmountString: string;
+export interface HeluisAsset {
+  interface: string;
+  id: string;
+  content: {
+    $schema: string;
+    json_uri: string;
+    files: {
+      uri: string;
+      cdn_uri: string;
+      mime: string;
+    }[];
+    metadata: {
+      name: string;
+      symbol: string;
+      attributes?: {
+        value: string;
+        trait_type: string;
+      }[];
+      description?: string;
+      [key: string]: unknown;
+    };
+    links: {
+      image?: string;
+      [key: string]: string;
+    };
   };
-};
+  authorities: {
+    address: string;
+    scopes: string[];
+  }[];
+  compression: {
+    eligible: boolean;
+    compressed: boolean;
+    data_hash: string;
+    creator_hash: string;
+    asset_hash: string;
+    tree: string;
+    seq: number;
+    leaf_id: number;
+  };
+  grouping: {
+    group_key: string;
+    group_value: string;
+  }[];
+  royalty: {
+    royalty_model: string;
+    target: any;
+    percent: number;
+    basis_points: number;
+    primary_sale_happened: boolean;
+    locked: boolean;
+  };
+  creators: {
+    address: string;
+    share: number;
+    verified: boolean;
+  }[];
+  ownership: {
+    frozen: boolean;
+    delegated: boolean;
+    delegate?: string;
+    ownership_model: string;
+    owner: string;
+  };
+  supply?: {
+    print_max_supply: number;
+    print_current_supply: number;
+    edition_nonce: any;
+  };
+  mutable: boolean;
+  burnt: boolean;
+}
 
 /**
  * Represents the metadata of an NFT.

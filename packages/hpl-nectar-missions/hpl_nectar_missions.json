@@ -1,5 +1,5 @@
 {
-  "version": "0.0.44",
+  "version": "0.0.46",
   "name": "hpl_nectar_missions",
   "instructions": [
     {
@@ -270,6 +270,94 @@
           "name": "args",
           "type": {
             "defined": "CreateMissionArgs"
+          }
+        }
+      ]
+    },
+    {
+      "name": "updateMission",
+      "accounts": [
+        {
+          "name": "project",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "missionPool",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Missions pool account"
+          ]
+        },
+        {
+          "name": "mission",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Mission state account"
+          ]
+        },
+        {
+          "name": "delegateAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "[Option] Project delegate authority"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The wallet that holds the authority over the assembler"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The wallet that pays for the rent"
+          ]
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SYSTEM PROGRAM"
+          ]
+        },
+        {
+          "name": "rentSysvar",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "RENT SYSVAR"
+          ]
+        },
+        {
+          "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": "UpdateMissionArgs"
           }
         }
       ]
@@ -902,6 +990,65 @@
               "vec": {
                 "defined": "Reward"
               }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateMissionArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "minXp",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "cost",
+            "type": {
+              "option": {
+                "defined": "Currency"
+              }
+            }
+          },
+          {
+            "name": "duration",
+            "docs": [
+              "The duration of the mission in seconds"
+            ],
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "removeAllRewards",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "addRewards",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "Reward"
+                }
+              }
+            }
+          },
+          {
+            "name": "removeRewardIndices",
+            "type": {
+              "option": "bytes"
             }
           }
         ]
