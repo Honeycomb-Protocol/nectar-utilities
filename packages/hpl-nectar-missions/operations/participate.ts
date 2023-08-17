@@ -100,9 +100,6 @@ export async function createParticipateOperation(
   );
 
   const instructions = [
-    ComputeBudgetProgram.setComputeUnitLimit({
-      units: 500_000,
-    }),
     createParticipateInstruction(
       {
         project: args.mission.pool().project().address,
@@ -157,6 +154,12 @@ export async function createParticipateOperation(
           })
         );
       }
+
+      instructions.unshift(
+        ComputeBudgetProgram.setComputeUnitLimit({
+          units: 500_000,
+        })
+      );
     } catch {}
   }
 

@@ -152,14 +152,6 @@ export async function createCollectRewardsOperation(
     ),
   ];
 
-  if (args.isFirst) {
-    instructions.push(
-      ComputeBudgetProgram.setComputeUnitLimit({
-        units: 400_000,
-      })
-    );
-  }
-
   return {
     operation: new Operation(honeycomb, instructions),
   };
@@ -206,7 +198,13 @@ export async function creatRecallOperation(
 ) {
   const programId = args.programId || PROGRAM_ID;
 
-  const operations: Operation[] = [];
+  const operations: Operation[] = [
+    new Operation(honeycomb, [
+      ComputeBudgetProgram.setComputeUnitLimit({
+        units: 500_000,
+      }),
+    ]),
+  ];
 
   const holderAccounts: { [key: string]: boolean } = {};
   for (let i = 0; i < args.participation.rewards.length; i++) {

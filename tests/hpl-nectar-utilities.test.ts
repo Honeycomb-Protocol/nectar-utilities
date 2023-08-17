@@ -100,11 +100,15 @@ describe("Nectar Utilities", () => {
       honeycomb.connection.rpcEndpoint
     );
 
-    // const newCollection = new web3.PublicKey(
-    //   "BwwjnxTHeVWdFieDWmoezta19q1NiwcNNyoon9S38bkM"
-    // );
+    const newCollection = new web3.PublicKey(
+      "SoLPr7zxggXh9JUt8NGKyxLZGJmyWqgawcs9N9hmatP"
+    );
+    const newMerkleTree = new web3.PublicKey(
+      "BXMBo3FKjihFk5F7Mj8UdByNrufmzhfC4Ng6qcUA5VDs"
+    );
     // await honeycomb.project().addCriteria({
     //   collection: newCollection,
+    //   merkleTree: newMerkleTree,
     // });
 
     await findProjectCurrencies(honeycomb.project());
@@ -311,21 +315,24 @@ describe("Nectar Utilities", () => {
     //   );
     // }
 
-    // await staking.updatePool({
-    //   args: {
-    //     name: null,
-    //     rewardsPerDuration: null,
-    //     rewardsDuration: null,
-    //     maxRewardsDuration: null,
-    //     minStakeDuration: null,
-    //     cooldownDuration: null,
-    //     resetStakeDuration: null,
-    //     startTime: null,
-    //     endTime: null,
-    //   },
-    //   currency: bounty.address,
-    //   collection: newCollection,
-    // });
+    await staking.updatePool(
+      {
+        args: {
+          name: null,
+          rewardsPerDuration: null,
+          rewardsDuration: null,
+          maxRewardsDuration: null,
+          minStakeDuration: null,
+          cooldownDuration: null,
+          resetStakeDuration: null,
+          startTime: null,
+          endTime: null,
+        },
+        collection: newCollection,
+        merkleTree: newMerkleTree,
+      },
+      { skipPreflight: true }
+    );
 
     // const multipliers = (await staking.multipliers()).address;
     // await new Operation(honeycomb, [
@@ -1634,38 +1641,38 @@ describe("Nectar Utilities", () => {
 
     expect(balance).toBeGreaterThanOrEqual(web3.LAMPORTS_PER_SOL * 0.1);
 
-    // const publicInfo = await honeycomb.publicInfo();
-    // let authDriver = publicInfo.get("auth_driver_offchain");
-    honeycomb.use(
-      lutModule(async (accounts) => {
-        const lookupTable = await createLookupTable(honeycomb, accounts);
+    // // const publicInfo = await honeycomb.publicInfo();
+    // // let authDriver = publicInfo.get("auth_driver_offchain");
+    // honeycomb.use(
+    //   lutModule(async (accounts) => {
+    //     const lookupTable = await createLookupTable(honeycomb, accounts);
 
-        if (!lookupTable) throw new Error("Lookuptale noinsfoiasdoiahjsod");
+    //     if (!lookupTable) throw new Error("Lookuptale noinsfoiasdoiahjsod");
 
-        console.log("Lookup Table", lookupTable.key.toString());
+    //     console.log("Lookup Table", lookupTable.key.toString());
 
-        return {
-          lookupTableAddress: lookupTable.key,
-          addresses: lookupTable.state.addresses,
-        };
+    //     return {
+    //       lookupTableAddress: lookupTable.key,
+    //       addresses: lookupTable.state.addresses,
+    //     };
 
-        // const response = await fetch(`${authDriver}/lut/create`, {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //     Authorization:
-        //       "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2FkZHJlc3MiOiJGb0dEdXR6WnlVaVVjS3FNdG1WRlNQN3Fzd1B0dEZURzJvQlpDV00xMm43dCIsImlhdCI6MTY5MjE3NDg2NiwiZXhwIjoxNjkyMjYxMjY2fQ.vgRPlcjvrZGlh4s4opv27pPUwRO_yJBFgIyDKYU6khQ",
-        //   },
-        //   body: JSON.stringify({ accounts }),
-        // }).then((x) => x.json());
-        // console.log("Resposne", response);
-        // const { addresses, key } = response.data;
-        // return {
-        //   lookupTableAddress: new web3.PublicKey(key),
-        //   addresses: addresses.map((a) => new web3.PublicKey(a)),
-        // };
-      })
-    );
+    //     // const response = await fetch(`${authDriver}/lut/create`, {
+    //     //   method: "POST",
+    //     //   headers: {
+    //     //     "Content-Type": "application/json",
+    //     //     Authorization:
+    //     //       "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2FkZHJlc3MiOiJGb0dEdXR6WnlVaVVjS3FNdG1WRlNQN3Fzd1B0dEZURzJvQlpDV00xMm43dCIsImlhdCI6MTY5MjE3NDg2NiwiZXhwIjoxNjkyMjYxMjY2fQ.vgRPlcjvrZGlh4s4opv27pPUwRO_yJBFgIyDKYU6khQ",
+    //     //   },
+    //     //   body: JSON.stringify({ accounts }),
+    //     // }).then((x) => x.json());
+    //     // console.log("Resposne", response);
+    //     // const { addresses, key } = response.data;
+    //     // return {
+    //     //   lookupTableAddress: new web3.PublicKey(key),
+    //     //   addresses: addresses.map((a) => new web3.PublicKey(a)),
+    //     // };
+    //   })
+    // );
 
     // Set up Metaplex to mint some NFTs for testing
     metaplex = new Metaplex(honeycomb.connection);
