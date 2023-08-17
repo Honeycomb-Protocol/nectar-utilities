@@ -2,7 +2,7 @@
 name = "hpl-nectar-staking"
 description = "Honeycomb protocol library nectar utilities staking program"
 author = ['Sultan Nadeem <sultanndilaram@gmail.com>']
-version = "0.0.83"
+version = "0.0.84"
 edition = "2021"
 license = "MIT"
 

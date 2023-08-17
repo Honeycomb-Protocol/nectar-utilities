@@ -3,6 +3,7 @@ import {
   Honeycomb,
   HoneycombProject,
   Module,
+  Operation,
 } from "@honeycomb-protocol/hive-control";
 import {
   AddMultiplierArgs,
@@ -576,7 +577,12 @@ export class NectarStaking extends Module {
    * @param confirmOptions - Optional transaction confirmation options.
    * @returns A promise that resolves with an array of responses for the transactions.
    */
-  public async claim(nfts: StakedNft[], confirmOptions?: web3.ConfirmOptions) {
+  public async claim(
+    nfts: StakedNft[],
+    options: web3.ConfirmOptions & { doNotSendInBatches?: boolean } = {
+      doNotSendInBatches: false,
+    }
+  ) {
     const operations = await Promise.all(
       nfts.map((nft, i) =>
         createClaimRewardsOperation(this.honeycomb(), {
@@ -584,30 +590,14 @@ export class NectarStaking extends Module {
           nft,
           isFirst: i == 0,
           programId: this.programId,
-        })
+        }).then(({ operation }) => operation)
       )
     );
 
-    const preparedOperations = await this.honeycomb()
-      .rpc()
-      .prepareTransactions(
-        operations.map(({ operation }) => operation.context)
-      );
-
-    const firstTxResponse = await this.honeycomb()
-      .rpc()
-      .sendAndConfirmTransaction(preparedOperations.shift(), {
-        commitment: "processed",
-        ...confirmOptions,
-      });
-
-    const responses = await this.honeycomb()
-      .rpc()
-      .sendAndConfirmTransactionsInBatches(preparedOperations, {
-        commitment: "processed",
-        ...confirmOptions,
-      });
-    return [firstTxResponse, ...responses];
+    return Operation.sendBulk(this.honeycomb(), operations, {
+      ...options,
+      sendInBatches: !options.doNotSendInBatches,
+    });
   }
 
   /**
@@ -618,7 +608,9 @@ export class NectarStaking extends Module {
    */
   public async unstake(
     nfts: StakedNft[],
-    confirmOptions?: web3.ConfirmOptions
+    options: web3.ConfirmOptions & { doNotSendInBatches?: boolean } = {
+      doNotSendInBatches: false,
+    }
   ) {
     const operations = await Promise.all(
       nfts.map((nft, i) =>
@@ -627,30 +619,13 @@ export class NectarStaking extends Module {
           nft,
           isFirst: i == 0,
           programId: this.programId,
-        })
+        }).then(({ operation }) => operation)
       )
     );
-
-    const preparedOperations = await this.honeycomb()
-      .rpc()
-      .prepareTransactions(
-        operations.map(({ operation }) => operation.context)
-      );
-
-    const firstTxResponse = await this.honeycomb()
-      .rpc()
-      .sendAndConfirmTransaction(preparedOperations.shift(), {
-        commitment: "processed",
-        ...confirmOptions,
-      });
-
-    const responses = await this.honeycomb()
-      .rpc()
-      .sendAndConfirmTransactionsInBatches(preparedOperations, {
-        commitment: "processed",
-        ...confirmOptions,
-      });
-    return [firstTxResponse, ...responses];
+    return Operation.sendBulk(this.honeycomb(), operations, {
+      ...options,
+      sendInBatches: !options.doNotSendInBatches,
+    });
   }
 
   /**

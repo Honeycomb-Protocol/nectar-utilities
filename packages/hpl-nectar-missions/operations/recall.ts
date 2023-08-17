@@ -160,39 +160,6 @@ export async function createCollectRewardsOperation(
     );
   }
 
-  if (args.reward.isCurrency()) {
-    try {
-      const holderAccountT = await args.reward
-        .currency()
-        .holderAccount(honeycomb.identity().address);
-
-      if (!holderAccountT.tokenAccount.equals(tokenAccount)) {
-        instructions.unshift(
-          createFixHolderAccountInstruction({
-            project: holderAccountT.currency().project().address,
-            currency: holderAccountT.currency().address,
-            mint: holderAccountT.currency().mint.address,
-            holderAccount,
-            tokenAccount: holderAccountT.tokenAccount,
-            newTokenAccount: tokenAccount,
-            owner: holderAccountT.owner,
-            payer: honeycomb.identity().address,
-            vault: VAULT,
-            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-            instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
-          })
-        );
-      }
-    } catch {
-      instructions.push(
-        ...(await createCreateHolderAccountOperation(honeycomb, {
-          currency: args.reward.currency(),
-          owner: honeycomb.identity().address,
-        }).then((x) => x.operation.instructions))
-      );
-    }
-  }
-
   return {
     operation: new Operation(honeycomb, instructions),
   };
@@ -251,10 +218,35 @@ export async function creatRecallOperation(
       !holderAccounts[reward.currency().address.toString()]
     ) {
       try {
-        await reward
+        const holderAccountT = await reward
           .currency()
-          .fetch()
           .holderAccount(honeycomb.identity().address);
+
+        const { holderAccount, tokenAccount } = holderAccountPdas(
+          honeycomb.identity().address,
+          reward.currency().mint.address,
+          reward.currency().kind
+        );
+
+        if (!holderAccountT.tokenAccount.equals(tokenAccount)) {
+          operations.unshift(
+            new Operation(honeycomb, [
+              createFixHolderAccountInstruction({
+                project: holderAccountT.currency().project().address,
+                currency: holderAccountT.currency().address,
+                mint: holderAccountT.currency().mint.address,
+                holderAccount,
+                tokenAccount: holderAccountT.tokenAccount,
+                newTokenAccount: tokenAccount,
+                owner: holderAccountT.owner,
+                payer: honeycomb.identity().address,
+                vault: VAULT,
+                associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+                instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+              }),
+            ])
+          );
+        }
       } catch {
         operations.push(
           await createCreateHolderAccountOperation(honeycomb, {
