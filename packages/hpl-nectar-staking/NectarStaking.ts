@@ -10,6 +10,7 @@ import {
   CreateStakingPoolArgs,
   Multipliers,
   MultipliersArgs,
+  NFTUsedBy,
   NFTv1,
   PROGRAM_ID,
   Staker,
@@ -605,7 +606,8 @@ export class NectarStaking extends Module {
  */
 export class NectarStakingFetch {
   constructor(private nectarStaking: NectarStaking) {}
-
+  private _stakedNfts = new Map<web3.PublicKey, Promise<StakedNft[]>>();
+  private _availableNfts = new Map<web3.PublicKey, Promise<AvailableNft[]>>();
   /**
    * Fetch the multipliers associated with the staking pool.
    * @returns A Promise that resolves with the multipliers data.
@@ -663,7 +665,7 @@ export class NectarStakingFetch {
     gpa.addFilter("staker", staker);
 
     return gpa
-      .run(this.nectarStaking.honeycomb().connection)
+      .run(this.nectarStaking.honeycomb().processedConnection)
       .then((nfts) =>
         nfts.map(({ account }) => NFTv1.fromAccountInfo(account)[0])
       );
@@ -699,11 +701,16 @@ export class NectarStakingFetch {
    * @returns A Promise that resolves with an array of staked NFTs.
    */
   public stakedNfts(walletAddress?: web3.PublicKey) {
-    return fetchStakedNfts(this.nectarStaking.honeycomb(), {
-      walletAddress:
-        walletAddress || this.nectarStaking.honeycomb().identity().address,
+    if (!walletAddress)
+      walletAddress = this.nectarStaking.honeycomb().identity().address;
+    const promise = fetchStakedNfts(this.nectarStaking.honeycomb(), {
+      walletAddress,
       programId: this.nectarStaking.programId,
     });
+
+    this._stakedNfts.set(walletAddress, promise);
+
+    return promise;
   }
 
   /**
@@ -712,12 +719,32 @@ export class NectarStakingFetch {
    * @returns A Promise that resolves with an array of available NFTs.
    */
   public availableNfts(walletAddress?: web3.PublicKey) {
-    return fetchAvailableNfts(this.nectarStaking.honeycomb(), {
+    if (!walletAddress)
+      walletAddress = this.nectarStaking.honeycomb().identity().address;
+    const promise = fetchAvailableNfts(this.nectarStaking.honeycomb(), {
       stakingPool: this.nectarStaking.address,
-      walletAddress:
-        walletAddress || this.nectarStaking.honeycomb().identity().address,
+      walletAddress,
       programId: this.nectarStaking.programId,
     });
+
+    this._availableNfts.set(walletAddress, promise);
+
+    return promise;
+  }
+
+  /**
+   * Fetch all available NFTs that can be staked in the staking pool.
+   * @param walletAddress - The address of the wallet to fetch available NFTs for.
+   * @returns A Promise that resolves with an array of available NFTs.
+   */
+  public usableNfts(walletAddress?: web3.PublicKey) {
+    if (!walletAddress)
+      walletAddress = this.nectarStaking.honeycomb().identity().address;
+    const promise =
+      this._stakedNfts.get(walletAddress) || this.stakedNfts(walletAddress);
+    return promise.then((nfts) =>
+      nfts.filter((nft) => nft.usedBy == NFTUsedBy.None)
+    );
   }
 
   /**
@@ -764,7 +791,7 @@ export const nectarStakingModule = (
 export const findProjectStakingPools = (project: HoneycombProject) =>
   StakingPool.gpaBuilder()
     .addFilter("project", project.address)
-    .run(project.honeycomb().connection)
+    .run(project.honeycomb().processedConnection)
     .then((currencies) =>
       currencies.map((c) => {
         try {

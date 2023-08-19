@@ -584,7 +584,7 @@ class NectarMissionsFetch {
   public async missions(): Promise<NectarMission[]> {
     return Mission.gpaBuilder()
       .addFilter("missionPool", this._missions.address)
-      .run(this._missions.honeycomb().connection)
+      .run(this._missions.honeycomb().processedConnection)
       .then((missions) =>
         missions
           .map((m) => {
@@ -678,7 +678,7 @@ class NectarMissionsFetch {
       .stakedNfts();
 
     return gpa
-      .run(this._missions.honeycomb().connection)
+      .run(this._missions.honeycomb().processedConnection)
       .then((participations) =>
         Promise.all(
           participations.map(async (p) => {
@@ -1289,7 +1289,7 @@ export const nectarMissionsModule = (
 export const findProjectMissionPools = (project: HoneycombProject) =>
   MissionPool.gpaBuilder()
     .addFilter("project", project.address)
-    .run(project.honeycomb().connection)
+    .run(project.honeycomb().processedConnection)
     .then((currencies) =>
       currencies.map((c) => {
         try {

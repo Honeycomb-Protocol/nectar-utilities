@@ -367,7 +367,7 @@ export async function fetchAvailableNfts(
       (await NFT.gpaBuilder(args.programId)
         .addFilter("stakingPool", honeycomb.staking().poolAddress)
         .addFilter("staker", null)
-        .run(honeycomb.connection)
+        .run(honeycomb.processedConnection)
         .then((nfts) =>
           nfts.map(({ account }) => NFT.fromAccountInfo(account)[0].mint)
         ));
@@ -404,11 +404,12 @@ export async function fetchAvailableNfts(
             .merkleTrees.find((x) => x.equals(nft.compression.tree)))
     ),
   ];
-
-  filteredNfts = filteredNfts.filter(
-    (nft, index, self) =>
-      self.findIndex((t) => t.mint.equals(nft.mint)) === index
-  );
+  let tempFilterSet = new Set();
+  filteredNfts = filteredNfts.filter((nft, index, self) => {
+    if (tempFilterSet.has(nft.mint)) return false;
+    tempFilterSet.add(nft.mint);
+    return true;
+  });
 
   return filteredNfts;
 }
