@@ -198,13 +198,8 @@ export async function creatRecallOperation(
 ) {
   const programId = args.programId || PROGRAM_ID;
 
-  const operations: Operation[] = [
-    new Operation(honeycomb, [
-      ComputeBudgetProgram.setComputeUnitLimit({
-        units: 500_000,
-      }),
-    ]),
-  ];
+  let units = 500_000;
+  const operations: Operation[] = [];
 
   const holderAccounts: { [key: string]: boolean } = {};
   for (let i = 0; i < args.participation.rewards.length; i++) {
@@ -244,6 +239,7 @@ export async function creatRecallOperation(
               }),
             ])
           );
+          units += 10_000;
         }
       } catch {
         operations.push(
@@ -252,6 +248,7 @@ export async function creatRecallOperation(
             owner: honeycomb.identity().address,
           }).then(({ operation }) => operation)
         );
+        units += 10_000;
       }
       holderAccounts[reward.currency().address.toString()] = true;
     }
@@ -292,7 +289,13 @@ export async function creatRecallOperation(
       ),
     ])
   );
-
+  operations.unshift(
+    new Operation(honeycomb, [
+      ComputeBudgetProgram.setComputeUnitLimit({
+        units,
+      }),
+    ])
+  );
   return {
     operation: Operation.concat(operations),
   };

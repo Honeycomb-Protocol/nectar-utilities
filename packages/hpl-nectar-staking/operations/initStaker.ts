@@ -35,7 +35,7 @@ type CreateInitStakerOperationArgs = {
  * const operationResult = await createInitStakerOperation(honeycomb, createInitArgs);
  * console.log("Created operation:", operationResult.operation);
  */
-export async function createInitStakerOperation(
+export function createInitStakerOperation(
   honeycomb: Honeycomb,
   args: CreateInitStakerOperationArgs
 ) {

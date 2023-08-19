@@ -66,6 +66,7 @@ export async function createClaimRewardsOperation(
     args.stakingPool.currency().kind
   );
 
+  let units = 500_000;
   const instructions = [
     createClaimRewardsInstruction(
       {
@@ -91,14 +92,8 @@ export async function createClaimRewardsOperation(
       programId
     ),
   ];
-
   if (args.isFirst) {
-    instructions.unshift(
-      web3.ComputeBudgetProgram.setComputeUnitLimit({
-        units: 500_000,
-      })
-    );
-
+    units = 1_000_000;
     try {
       const holderAccountT = await args.stakingPool
         .currency()
@@ -132,7 +127,11 @@ export async function createClaimRewardsOperation(
       );
     }
   }
-
+  instructions.unshift(
+    web3.ComputeBudgetProgram.setComputeUnitLimit({
+      units,
+    })
+  );
   return {
     operation: new Operation(honeycomb, instructions),
   };

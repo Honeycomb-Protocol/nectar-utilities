@@ -85,7 +85,6 @@ export async function createParticipateOperation(
 
   const [nft] = getNftPda(args.nft.stakingPool, args.nft.mint);
   const [participation] = participationPda(nft, programId);
-
   const { holderAccount: vaultHolderAccount, tokenAccount: vaultTokenAccount } =
     holderAccountPdas(
       args.mission.pool().address,
@@ -99,6 +98,7 @@ export async function createParticipateOperation(
     args.mission.requirements.cost.currency().kind
   );
 
+  let units = 500_000;
   const instructions = [
     createParticipateInstruction(
       {
@@ -132,6 +132,7 @@ export async function createParticipateOperation(
   ];
 
   if (args.isFirst) {
+    units += 100_000;
     try {
       const holderAccountT = await args.mission.requirements.cost
         .currency()
@@ -154,15 +155,13 @@ export async function createParticipateOperation(
           })
         );
       }
-
-      instructions.unshift(
-        ComputeBudgetProgram.setComputeUnitLimit({
-          units: 500_000,
-        })
-      );
     } catch {}
   }
-
+  instructions.unshift(
+    ComputeBudgetProgram.setComputeUnitLimit({
+      units,
+    })
+  );
   return {
     operation: new Operation(honeycomb, instructions),
   };

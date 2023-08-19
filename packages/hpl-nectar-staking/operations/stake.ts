@@ -89,9 +89,11 @@ export async function createStakeOperation(
   );
 
   // Create the transaction instruction for staking the NFT
+  let units = 500_000;
   const instructions = [];
 
   if (args.nft && args.nft.isCompressed) {
+    units += 100_000;
     const [treeAuthority] = web3.PublicKey.findProgramAddressSync(
       [args.nft.compression.tree.toBuffer()],
       BUBBLEGUM_PROGRAM_ID
@@ -159,6 +161,8 @@ export async function createStakeOperation(
     }
 
     if (args.nft.isProgrammableNft) {
+      units += 500_000;
+
       [nftTokenRecord] = getMetadataAccount_(args.nft.mint, {
         __kind: "token_record",
         tokenAccount: nftAccount,
@@ -203,20 +207,15 @@ export async function createStakeOperation(
   }
 
   if (args.isFirst) {
-    instructions.unshift(
-      web3.ComputeBudgetProgram.setComputeUnitLimit({
-        units: 800_000,
-      })
-    );
-
     try {
       await args.stakingPool.staker({ wallet: honeycomb.identity().address });
     } catch {
-      createInitStakerOperation(honeycomb, {
-        stakingPool: args.stakingPool,
-        programId: args.programId,
-      }).then(({ operation }) =>
-        instructions.unshift(...operation.instructions)
+      units += 100_000;
+      instructions.unshift(
+        ...createInitStakerOperation(honeycomb, {
+          stakingPool: args.stakingPool,
+          programId: args.programId,
+        }).operation.instructions
       );
     }
   }
@@ -231,7 +230,11 @@ export async function createStakeOperation(
       programId: args.programId,
     }).then(({ operation }) => instructions.unshift(...operation.instructions));
   }
-
+  instructions.unshift(
+    web3.ComputeBudgetProgram.setComputeUnitLimit({
+      units,
+    })
+  );
   return {
     operation: new Operation(honeycomb, instructions),
   };
