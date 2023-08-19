@@ -4,6 +4,7 @@ import {
   HoneycombProject,
   Module,
   Operation,
+  SendBulkOptions,
 } from "@honeycomb-protocol/hive-control";
 import {
   AddMultiplierArgs,
@@ -494,10 +495,13 @@ export class NectarStaking extends Module {
    */
   public async stake(
     nfts: AvailableNft[],
-    options: web3.ConfirmOptions & { doNotSendInBatches?: boolean } = {
-      doNotSendInBatches: false,
+    options: web3.ConfirmOptions & SendBulkOptions = {
+      sendInBatches: true,
     }
   ) {
+    if (typeof options.sendInBatches !== "boolean")
+      options.sendInBatches = true;
+
     const operations = await Promise.all(
       nfts.map((nft, i) =>
         createStakeOperation(this.honeycomb(), {
@@ -509,10 +513,7 @@ export class NectarStaking extends Module {
       )
     );
 
-    return Operation.sendBulk(this.honeycomb(), operations, {
-      ...options,
-      sendInBatches: !options.doNotSendInBatches,
-    });
+    return Operation.sendBulk(this.honeycomb(), operations, options);
   }
 
   /**
@@ -523,10 +524,13 @@ export class NectarStaking extends Module {
    */
   public async claim(
     nfts: StakedNft[],
-    options: web3.ConfirmOptions & { doNotSendInBatches?: boolean } = {
-      doNotSendInBatches: false,
+    options: web3.ConfirmOptions & SendBulkOptions = {
+      sendInBatches: true,
     }
   ) {
+    if (typeof options.sendInBatches !== "boolean")
+      options.sendInBatches = true;
+
     const operations = await Promise.all(
       nfts.map((nft, i) =>
         createClaimRewardsOperation(this.honeycomb(), {
@@ -538,10 +542,7 @@ export class NectarStaking extends Module {
       )
     );
 
-    return Operation.sendBulk(this.honeycomb(), operations, {
-      ...options,
-      sendInBatches: !options.doNotSendInBatches,
-    });
+    return Operation.sendBulk(this.honeycomb(), operations, options);
   }
 
   /**
@@ -552,10 +553,13 @@ export class NectarStaking extends Module {
    */
   public async unstake(
     nfts: StakedNft[],
-    options: web3.ConfirmOptions & { doNotSendInBatches?: boolean } = {
-      doNotSendInBatches: false,
+    options: web3.ConfirmOptions & SendBulkOptions = {
+      sendInBatches: true,
     }
   ) {
+    if (typeof options.sendInBatches !== "boolean")
+      options.sendInBatches = true;
+
     const operations = await Promise.all(
       nfts.map((nft, i) =>
         createUnstakeOperation(this.honeycomb(), {
@@ -566,10 +570,7 @@ export class NectarStaking extends Module {
         }).then(({ operation }) => operation)
       )
     );
-    return Operation.sendBulk(this.honeycomb(), operations, {
-      ...options,
-      sendInBatches: !options.doNotSendInBatches,
-    });
+    return Operation.sendBulk(this.honeycomb(), operations, options);
   }
 
   /**

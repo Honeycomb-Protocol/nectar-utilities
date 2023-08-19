@@ -17,6 +17,7 @@ import {
   HoneycombProject,
   Module,
   Operation,
+  SendBulkOptions,
 } from "@honeycomb-protocol/hive-control";
 import { StakedNft, getNftPda } from "@honeycomb-protocol/nectar-staking";
 import {
@@ -514,10 +515,13 @@ export class NectarMissions extends Module {
    */
   public async recall(
     participations: NectarMissionParticipation[],
-    options: web3.ConfirmOptions & { doNotSendInBatches?: boolean } = {
-      doNotSendInBatches: false,
+    options: web3.ConfirmOptions & SendBulkOptions = {
+      sendInBatches: true,
     }
   ) {
+    if (typeof options.sendInBatches !== "boolean")
+      options.sendInBatches = true;
+
     const operations = await Promise.all(
       participations.map((participation, i) =>
         creatRecallOperation(this.honeycomb(), {
@@ -527,10 +531,7 @@ export class NectarMissions extends Module {
       )
     );
 
-    return Operation.sendBulk(this.honeycomb(), operations, {
-      ...options,
-      sendInBatches: !options.doNotSendInBatches,
-    });
+    return Operation.sendBulk(this.honeycomb(), operations, options);
   }
 
   /**
@@ -883,10 +884,12 @@ export class NectarMission {
    */
   public async participate(
     nfts: (StakedNft & { args: ParticipateArgs })[],
-    options: web3.ConfirmOptions & { doNotSendInBatches?: boolean } = {
-      doNotSendInBatches: false,
+    options: web3.ConfirmOptions & SendBulkOptions = {
+      sendInBatches: true,
     }
   ) {
+    if (typeof options.sendInBatches !== "boolean")
+      options.sendInBatches = true;
     const operations = await Promise.all(
       nfts.map((nft, i) =>
         createParticipateOperation(this.pool().honeycomb(), {
@@ -899,10 +902,7 @@ export class NectarMission {
       )
     );
 
-    return Operation.sendBulk(this.pool().honeycomb(), operations, {
-      ...options,
-      sendInBatches: !options.doNotSendInBatches,
-    });
+    return Operation.sendBulk(this.pool().honeycomb(), operations, options);
   }
 
   /**
