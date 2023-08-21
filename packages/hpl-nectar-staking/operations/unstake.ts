@@ -104,6 +104,7 @@ export async function createUnstakeOperation(
           merkleTree: args.nft.compression.tree,
           staker,
           wallet: honeycomb.identity().address,
+          creatorHash: args.nft.compression.creatorHash,
           bubblegumProgram: BUBBLEGUM_PROGRAM_ID,
           compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
           logWrapper: SPL_NOOP_PROGRAM_ID,
@@ -116,8 +117,6 @@ export async function createUnstakeOperation(
             nonce: args.nft.compression.leafId,
             index: args.nft.compression.leafId,
             dataHash: args.nft.compression.dataHash.toBuffer().toJSON().data,
-            creatorHash: args.nft.compression.creatorHash.toBuffer().toJSON()
-              .data,
           },
         },
         programId

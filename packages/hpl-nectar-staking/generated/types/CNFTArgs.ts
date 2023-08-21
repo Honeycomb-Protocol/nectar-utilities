@@ -9,7 +9,6 @@ import * as beet from '@metaplex-foundation/beet'
 export type CNFTArgs = {
   root: number[] /* size: 32 */
   dataHash: number[] /* size: 32 */
-  creatorHash: number[] /* size: 32 */
   nonce: beet.bignum
   index: number
 }
@@ -22,7 +21,6 @@ export const cNFTArgsBeet = new beet.BeetArgsStruct<CNFTArgs>(
   [
     ['root', beet.uniformFixedSizeArray(beet.u8, 32)],
     ['dataHash', beet.uniformFixedSizeArray(beet.u8, 32)],
-    ['creatorHash', beet.uniformFixedSizeArray(beet.u8, 32)],
     ['nonce', beet.u64],
     ['index', beet.u32],
   ],

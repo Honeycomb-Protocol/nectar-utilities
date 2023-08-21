@@ -186,6 +186,9 @@ pub struct InitCNFT<'info> {
     /// CHECK: unsafe
     pub merkle_tree: UncheckedAccount<'info>,
 
+    /// CHECK: unsafe
+    pub creator_hash: UncheckedAccount<'info>,
+
     /// The wallet ownning the cNFT
     #[account(mut)]
     pub wallet: Signer<'info>,
@@ -219,7 +222,7 @@ pub struct InitCNFT<'info> {
 pub struct CNFTArgs {
     pub root: [u8; 32],
     pub data_hash: [u8; 32],
-    pub creator_hash: [u8; 32],
+    // pub creator_hash: [u8; 32],
     pub nonce: u64,
     pub index: u32,
 }
@@ -238,6 +241,7 @@ pub fn init_cnft<'info>(
     nft.criteria = NFTCriteria::MerkleTree {
         address: ctx.accounts.merkle_tree.key(),
     };
+    let creator_hash: [u8; 32] = ctx.accounts.creator_hash.key().to_bytes();
 
     // Verify merkle tree leaf
 
@@ -247,7 +251,7 @@ pub fn init_cnft<'info>(
         ctx.accounts.wallet.key(),
         args.nonce,
         args.data_hash,
-        args.creator_hash,
+        creator_hash,
     );
 
     let cpi_ctx = CpiContext::new(

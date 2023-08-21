@@ -24,6 +24,9 @@ pub struct StakeCNFT<'info> {
     /// CHECK: unsafe
     pub tree_authority: UncheckedAccount<'info>,
 
+    /// CHECK: unsafe
+    pub creator_hash: UncheckedAccount<'info>,
+
     /// Staker state account
     #[account(mut, has_one = staking_pool, has_one = wallet)]
     pub staker: Box<Account<'info, Staker>>,
@@ -113,10 +116,11 @@ pub fn stake_cnft<'info>(
         cpi_ctx.accounts.leaf_owner.is_signer
     );
     cpi_ctx.accounts.leaf_owner.is_signer = true;
+    let creator_hash: [u8; 32] = ctx.accounts.creator_hash.key().to_bytes();
 
     msg!("{:?}", args.root.clone());
     msg!("{:?}", args.data_hash.clone());
-    msg!("{:?}", args.creator_hash.clone());
+    msg!("{:?}", creator_hash.clone());
     msg!("{:?}", args.nonce.clone());
     msg!("{:?}", args.index.clone());
 
@@ -124,7 +128,7 @@ pub fn stake_cnft<'info>(
         cpi_ctx,
         args.root,
         args.data_hash,
-        args.creator_hash,
+        creator_hash,
         args.nonce,
         args.index,
     )?;
@@ -163,6 +167,9 @@ pub struct UnstakeCNFT<'info> {
 
     /// CHECK: unsafe
     pub tree_authority: UncheckedAccount<'info>,
+
+    /// CHECK: unsafe
+    pub creator_hash: UncheckedAccount<'info>,
 
     /// Staker state account
     #[account(mut, has_one = staking_pool, has_one = wallet)]
@@ -238,10 +245,10 @@ pub fn unstake_cnft<'info>(
         &[staker.bump],
     ];
     let staker_signer = &[&staker_seeds[..]];
-
+    let creator_hash: [u8; 32] = ctx.accounts.creator_hash.key().to_bytes();
     msg!("{:?}", args.root.clone());
     msg!("{:?}", args.data_hash.clone());
-    msg!("{:?}", args.creator_hash.clone());
+    msg!("{:?}", creator_hash.clone());
     msg!("{:?}", args.nonce.clone());
     msg!("{:?}", args.index.clone());
 
@@ -264,7 +271,7 @@ pub fn unstake_cnft<'info>(
         cpi_ctx,
         args.root,
         args.data_hash,
-        args.creator_hash,
+        creator_hash,
         args.nonce,
         args.index,
     )?;

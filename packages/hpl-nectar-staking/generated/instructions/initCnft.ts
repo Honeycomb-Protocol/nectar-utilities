@@ -41,6 +41,7 @@ export const initCnftStruct = new beet.BeetArgsStruct<
  * @property [_writable_] nft
  * @property [] assetId
  * @property [] merkleTree
+ * @property [] creatorHash
  * @property [_writable_, **signer**] wallet
  * @property [] compressionProgram
  * @property [] logWrapper
@@ -58,6 +59,7 @@ export type InitCnftInstructionAccounts = {
   nft: web3.PublicKey
   assetId: web3.PublicKey
   merkleTree: web3.PublicKey
+  creatorHash: web3.PublicKey
   wallet: web3.PublicKey
   systemProgram?: web3.PublicKey
   compressionProgram: web3.PublicKey
@@ -120,6 +122,11 @@ export function createInitCnftInstruction(
     },
     {
       pubkey: accounts.merkleTree,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.creatorHash,
       isWritable: false,
       isSigner: false,
     },

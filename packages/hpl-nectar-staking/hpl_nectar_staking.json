@@ -1,5 +1,5 @@
 {
-  "version": "0.0.83",
+  "version": "0.0.88",
   "name": "hpl_nectar_staking",
   "instructions": [
     {
@@ -530,6 +530,11 @@
         },
         {
           "name": "merkleTree",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "creatorHash",
           "isMut": false,
           "isSigner": false
         },
@@ -1141,6 +1146,11 @@
           "isSigner": false
         },
         {
+          "name": "creatorHash",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "staker",
           "isMut": true,
           "isSigner": false,
@@ -1250,6 +1260,11 @@
         },
         {
           "name": "treeAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "creatorHash",
           "isMut": false,
           "isSigner": false
         },
@@ -2230,15 +2245,6 @@
           },
           {
             "name": "dataHash",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "creatorHash",
             "type": {
               "array": [
                 "u8",

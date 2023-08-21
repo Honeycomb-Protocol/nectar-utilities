@@ -40,6 +40,7 @@ export const unstakeCnftStruct = new beet.BeetArgsStruct<
  * @property [_writable_] nft
  * @property [_writable_] merkleTree
  * @property [] treeAuthority
+ * @property [] creatorHash
  * @property [_writable_] staker
  * @property [_writable_, **signer**] wallet
  * @property [] bubblegumProgram
@@ -58,6 +59,7 @@ export type UnstakeCnftInstructionAccounts = {
   nft: web3.PublicKey
   merkleTree: web3.PublicKey
   treeAuthority: web3.PublicKey
+  creatorHash: web3.PublicKey
   staker: web3.PublicKey
   wallet: web3.PublicKey
   systemProgram?: web3.PublicKey
@@ -112,6 +114,11 @@ export function createUnstakeCnftInstruction(
     },
     {
       pubkey: accounts.treeAuthority,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.creatorHash,
       isWritable: false,
       isSigner: false,
     },
