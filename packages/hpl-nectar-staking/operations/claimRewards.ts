@@ -42,7 +42,8 @@ type CreateClaimRewardsOperationArgs = {
  */
 export async function createClaimRewardsOperation(
   honeycomb: Honeycomb,
-  args: CreateClaimRewardsOperationArgs
+  args: CreateClaimRewardsOperationArgs,
+  luts: web3.AddressLookupTableAccount[] = []
 ) {
   const programId = args.programId || PROGRAM_ID;
 
@@ -132,7 +133,9 @@ export async function createClaimRewardsOperation(
       units,
     })
   );
+  const operation = new Operation(honeycomb, instructions);
+  if (luts.length > 0) operation.add_lut(...luts);
   return {
-    operation: new Operation(honeycomb, instructions),
+    operation,
   };
 }

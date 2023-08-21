@@ -83,7 +83,7 @@ type StakingMultipliers = MultipliersArgs & {
  * Allows users to interact with staking pools, claim rewards, and manage staked NFTs.
  * @category Modules
  */
-export class NectarStaking extends Module {
+export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
   readonly programId: web3.PublicKey = PROGRAM_ID;
   private _fetch: NectarStakingFetch;
 
@@ -504,12 +504,16 @@ export class NectarStaking extends Module {
 
     const operations = await Promise.all(
       nfts.map((nft, i) =>
-        createStakeOperation(this.honeycomb(), {
-          stakingPool: this,
-          nft,
-          isFirst: i == 0,
-          programId: this.programId,
-        }).then(({ operation }) => operation)
+        createStakeOperation(
+          this.honeycomb(),
+          {
+            stakingPool: this,
+            nft,
+            isFirst: i == 0,
+            programId: this.programId,
+          },
+          this.getLuts("stake")
+        ).then(({ operation }) => operation)
       )
     );
 
@@ -533,12 +537,16 @@ export class NectarStaking extends Module {
 
     const operations = await Promise.all(
       nfts.map((nft, i) =>
-        createClaimRewardsOperation(this.honeycomb(), {
-          stakingPool: this,
-          nft,
-          isFirst: i == 0,
-          programId: this.programId,
-        }).then(({ operation }) => operation)
+        createClaimRewardsOperation(
+          this.honeycomb(),
+          {
+            stakingPool: this,
+            nft,
+            isFirst: i == 0,
+            programId: this.programId,
+          },
+          this.getLuts("claim")
+        ).then(({ operation }) => operation)
       )
     );
 
@@ -562,12 +570,16 @@ export class NectarStaking extends Module {
 
     const operations = await Promise.all(
       nfts.map((nft, i) =>
-        createUnstakeOperation(this.honeycomb(), {
-          stakingPool: this,
-          nft,
-          isFirst: i == 0,
-          programId: this.programId,
-        }).then(({ operation }) => operation)
+        createUnstakeOperation(
+          this.honeycomb(),
+          {
+            stakingPool: this,
+            nft,
+            isFirst: i == 0,
+            programId: this.programId,
+          },
+          this.getLuts("unstake")
+        ).then(({ operation }) => operation)
       )
     );
     return Operation.sendBulk(this.honeycomb(), operations, options);

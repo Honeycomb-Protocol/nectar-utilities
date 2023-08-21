@@ -1,4 +1,5 @@
 import {
+  AddressLookupTableAccount,
   ComputeBudgetProgram,
   PublicKey,
   SYSVAR_CLOCK_PUBKEY,
@@ -79,7 +80,8 @@ type CreateParticipateOperationArgs = {
  */
 export async function createParticipateOperation(
   honeycomb: Honeycomb,
-  args: CreateParticipateOperationArgs
+  args: CreateParticipateOperationArgs,
+  luts: AddressLookupTableAccount[] = []
 ) {
   const programId = args.programId || PROGRAM_ID;
 
@@ -162,7 +164,11 @@ export async function createParticipateOperation(
       units,
     })
   );
+
+  const operation = new Operation(honeycomb, instructions);
+  if (luts.length > 0) operation.add_lut(...luts);
+
   return {
-    operation: new Operation(honeycomb, instructions),
+    operation: operation,
   };
 }

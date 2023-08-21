@@ -1,4 +1,5 @@
 import {
+  AddressLookupTableAccount,
   ComputeBudgetProgram,
   PublicKey,
   SYSVAR_CLOCK_PUBKEY,
@@ -194,7 +195,8 @@ type CreateRecallOperationnArgs = {
  */
 export async function creatRecallOperation(
   honeycomb: Honeycomb,
-  args: CreateRecallOperationnArgs
+  args: CreateRecallOperationnArgs,
+  luts: AddressLookupTableAccount[] = []
 ) {
   const programId = args.programId || PROGRAM_ID;
 
@@ -296,7 +298,10 @@ export async function creatRecallOperation(
       }),
     ])
   );
+  const operation = Operation.concat(operations);
+  if (luts.length > 0) operation.add_lut(...luts);
+
   return {
-    operation: Operation.concat(operations),
+    operation,
   };
 }

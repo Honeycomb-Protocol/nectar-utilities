@@ -61,7 +61,8 @@ type CreateUnstakeOperationArgs = {
  */
 export async function createUnstakeOperation(
   honeycomb: Honeycomb,
-  args: CreateUnstakeOperationArgs
+  args: CreateUnstakeOperationArgs,
+  luts: web3.AddressLookupTableAccount[] = []
 ) {
   const programId = args.programId || PROGRAM_ID;
 
@@ -183,8 +184,10 @@ export async function createUnstakeOperation(
       )
     );
   }
+  const operation = new Operation(honeycomb, instructions);
+  if (luts.length > 0) operation.add_lut(...luts);
 
   return {
-    operation: new Operation(honeycomb, instructions),
+    operation,
   };
 }

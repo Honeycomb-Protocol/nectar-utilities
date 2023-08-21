@@ -112,7 +112,7 @@ declare module "@honeycomb-protocol/hive-control" {
  * such as creating new missions, updating existing missions, fetching missions, etc.
  * @category Module
  */
-export class NectarMissions extends Module {
+export class NectarMissions extends Module<"recall" | "participate"> {
   /**
    * The program ID associated with the NectarMissions module.
    */
@@ -524,10 +524,14 @@ export class NectarMissions extends Module {
 
     const operations = await Promise.all(
       participations.map((participation, i) =>
-        creatRecallOperation(this.honeycomb(), {
-          participation,
-          programId: this.programId,
-        }).then(({ operation }) => operation)
+        creatRecallOperation(
+          this.honeycomb(),
+          {
+            participation,
+            programId: this.programId,
+          },
+          this.getLuts("recall")
+        ).then(({ operation }) => operation)
       )
     );
 
@@ -892,13 +896,17 @@ export class NectarMission {
       options.sendInBatches = true;
     const operations = await Promise.all(
       nfts.map((nft, i) =>
-        createParticipateOperation(this.pool().honeycomb(), {
-          args: nft.args,
-          mission: this,
-          nft,
-          isFirst: i === 0,
-          programId: this.pool().programId,
-        }).then(({ operation }) => operation)
+        createParticipateOperation(
+          this.pool().honeycomb(),
+          {
+            args: nft.args,
+            mission: this,
+            nft,
+            isFirst: i === 0,
+            programId: this.pool().programId,
+          },
+          this.pool().getLuts("participate")
+        ).then(({ operation }) => operation)
       )
     );
 
