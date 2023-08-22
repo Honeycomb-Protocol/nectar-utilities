@@ -329,3 +329,36 @@ pub fn use_nft<'info>(ctx: Context<UseNft>, used_by: NFTUsedBy) -> Result<()> {
 
     Ok(())
 }
+
+/// Accounts used in use NFT instruction
+#[derive(Accounts)]
+pub struct CloseNft<'info> {
+    // Hive Control Project
+    #[account()]
+    pub project: Box<Account<'info, Project>>,
+
+    /// NFT state account
+    #[account(mut, constraint = nft.staker.is_none(), close = authority)]
+    pub nft: Account<'info, NFTv1>,
+
+    /// The wallet ownning the cNFT
+    #[account(mut)]
+    pub authority: Signer<'info>,
+
+    /// NATIVE SYSTEM PROGRAM
+    pub system_program: Program<'info, System>,
+
+    /// NATIVE INSTRUCTIONS SYSVAR
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
+
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
+    pub vault: AccountInfo<'info>,
+}
+
+/// Close NFT
+pub fn close_nft<'info>(_ctx: Context<CloseNft>) -> Result<()> {
+    Ok(())
+}

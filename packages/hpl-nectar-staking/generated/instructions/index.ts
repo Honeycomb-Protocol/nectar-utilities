@@ -1,5 +1,6 @@
 export * from './addMultiplier'
 export * from './claimRewards'
+export * from './closeNft'
 export * from './createStakingPool'
 export * from './distributeRewards'
 export * from './initCnft'

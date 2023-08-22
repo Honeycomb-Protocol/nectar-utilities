@@ -152,6 +152,22 @@ pub mod hpl_nectar_staking {
         instructions::use_nft(ctx, used_by)
     }
 
+    pub fn close_nft(ctx: Context<CloseNft>) -> Result<()> {
+        hpl_hive_control::instructions::platform_gate_fn(
+            hpl_hive_control::constants::ACTIONS.manage_staking_pool,
+            None,
+            &ctx.accounts.project,
+            ctx.accounts.authority.key(),
+            ctx.accounts.authority.to_account_info(),
+            ctx.accounts.vault.to_account_info(),
+            &None,
+            ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
+        )?;
+
+        instructions::close_nft(ctx)
+    }
+
     pub fn init_staker(ctx: Context<InitStaker>) -> Result<()> {
         hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.public_low,
@@ -271,6 +287,18 @@ pub mod hpl_nectar_staking {
     }
 
     pub fn distribute_rewards(ctx: Context<DistriuteRewards>) -> Result<()> {
+        hpl_hive_control::instructions::platform_gate_fn(
+            hpl_hive_control::constants::ACTIONS.manage_staking_pool,
+            None,
+            &ctx.accounts.project,
+            ctx.accounts.authority.key(),
+            ctx.accounts.authority.to_account_info(),
+            ctx.accounts.vault.to_account_info(),
+            &None,
+            ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
+        )?;
+
         instructions::distribute_rewards(ctx)
     }
 

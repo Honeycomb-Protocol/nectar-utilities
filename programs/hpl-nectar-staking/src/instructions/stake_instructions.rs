@@ -262,7 +262,7 @@ pub struct Unstake<'info> {
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// NFT state account
-    #[account(mut, has_one = staking_pool, constraint = nft.staker.is_some() && nft.staker.unwrap().eq(&staker.key()))]
+    #[account(mut, has_one = staking_pool, constraint = nft.staker.is_some() && nft.staker.unwrap().eq(&staker.key()), close = wallet)]
     pub nft: Box<Account<'info, NFTv1>>,
 
     /// Mint address of the NFT
