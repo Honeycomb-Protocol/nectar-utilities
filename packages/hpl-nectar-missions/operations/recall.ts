@@ -200,7 +200,7 @@ export async function creatRecallOperation(
 ) {
   const programId = args.programId || PROGRAM_ID;
 
-  let units = 2_000_000;
+  let units = 200_000;
   const operations: Operation[] = [];
 
   const holderAccounts: { [key: string]: boolean } = {};
@@ -260,6 +260,8 @@ export async function creatRecallOperation(
         programId: args.programId,
       }).then(({ operation }) => operation)
     );
+
+    units += 220_00;
   }
 
   const [nft] = getNftPda(
