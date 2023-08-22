@@ -200,7 +200,7 @@ export async function creatRecallOperation(
 ) {
   const programId = args.programId || PROGRAM_ID;
 
-  let units = 500_000;
+  let units = 2_000_000;
   const operations: Operation[] = [];
 
   const holderAccounts: { [key: string]: boolean } = {};
