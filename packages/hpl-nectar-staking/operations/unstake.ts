@@ -110,13 +110,13 @@ export async function createUnstakeOperation(
           logWrapper: SPL_NOOP_PROGRAM_ID,
           clock: web3.SYSVAR_CLOCK_PUBKEY,
           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+          dataHash: args.nft.compression.dataHash,
+          root: proof.root,
         },
         {
           args: {
-            root: proof.root.toBuffer().toJSON().data,
             nonce: args.nft.compression.leafId,
             index: args.nft.compression.leafId,
-            dataHash: args.nft.compression.dataHash.toBuffer().toJSON().data,
           },
         },
         programId

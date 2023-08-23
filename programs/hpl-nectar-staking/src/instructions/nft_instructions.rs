@@ -187,6 +187,12 @@ pub struct InitCNFT<'info> {
     pub merkle_tree: UncheckedAccount<'info>,
 
     /// CHECK: unsafe
+    pub data_hash: UncheckedAccount<'info>,
+
+    /// CHECK: unsafe
+    pub root: UncheckedAccount<'info>,
+
+    /// CHECK: unsafe
     pub creator_hash: UncheckedAccount<'info>,
 
     /// The wallet ownning the cNFT
@@ -220,8 +226,8 @@ pub struct InitCNFT<'info> {
 
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct CNFTArgs {
-    pub root: [u8; 32],
-    pub data_hash: [u8; 32],
+    // pub root: [u8; 32],
+    // pub data_hash: [u8; 32],
     // pub creator_hash: [u8; 32],
     pub nonce: u64,
     pub index: u32,
@@ -242,6 +248,8 @@ pub fn init_cnft<'info>(
         address: ctx.accounts.merkle_tree.key(),
     };
     let creator_hash: [u8; 32] = ctx.accounts.creator_hash.key().to_bytes();
+    let data_hash: [u8; 32] = ctx.accounts.data_hash.key().to_bytes();
+    let root: [u8; 32] = ctx.accounts.root.key().to_bytes();
 
     // Verify merkle tree leaf
 
@@ -250,7 +258,7 @@ pub fn init_cnft<'info>(
         ctx.accounts.wallet.key(),
         ctx.accounts.wallet.key(),
         args.nonce,
-        args.data_hash,
+        data_hash,
         creator_hash,
     );
 
@@ -261,7 +269,7 @@ pub fn init_cnft<'info>(
         },
     )
     .with_remaining_accounts(ctx.remaining_accounts.to_vec());
-    spl_account_compression::cpi::verify_leaf(cpi_ctx, args.root, leaf.to_node(), args.index)?;
+    spl_account_compression::cpi::verify_leaf(cpi_ctx, root, leaf.to_node(), args.index)?;
 
     Event::new_nft(nft.key(), &nft, &ctx.accounts.clock)
         .wrap(ctx.accounts.log_wrapper.to_account_info())?;

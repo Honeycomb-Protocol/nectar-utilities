@@ -86,13 +86,13 @@ export async function createInitNFTOperation(
             isSigner: false,
             isWritable: false,
           })),
+          dataHash: args.nft.compression.dataHash,
+          root: proof.root,
         },
         {
           args: {
-            root: proof.root.toBuffer().toJSON().data,
             nonce: args.nft.compression.leafId,
             index: args.nft.compression.leafId,
-            dataHash: args.nft.compression.dataHash.toBuffer().toJSON().data,
           },
         },
         programId

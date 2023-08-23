@@ -495,13 +495,8 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
    */
   public async stake(
     nfts: AvailableNft[],
-    options: web3.ConfirmOptions & SendBulkOptions = {
-      sendInBatches: true,
-    }
+    options: web3.ConfirmOptions & SendBulkOptions
   ) {
-    if (typeof options.sendInBatches !== "boolean")
-      options.sendInBatches = true;
-
     const operations = await Promise.all(
       nfts.map((nft, i) =>
         createStakeOperation(
@@ -528,13 +523,8 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
    */
   public async claim(
     nfts: StakedNft[],
-    options: web3.ConfirmOptions & SendBulkOptions = {
-      sendInBatches: true,
-    }
+    options: web3.ConfirmOptions & SendBulkOptions
   ) {
-    if (typeof options.sendInBatches !== "boolean")
-      options.sendInBatches = true;
-
     const operations = await Promise.all(
       nfts.map((nft, i) =>
         createClaimRewardsOperation(
@@ -561,13 +551,8 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
    */
   public async unstake(
     nfts: StakedNft[],
-    options: web3.ConfirmOptions & SendBulkOptions = {
-      sendInBatches: true,
-    }
+    options: web3.ConfirmOptions & SendBulkOptions
   ) {
-    if (typeof options.sendInBatches !== "boolean")
-      options.sendInBatches = true;
-
     const operations = await Promise.all(
       nfts.map((nft, i) =>
         createUnstakeOperation(

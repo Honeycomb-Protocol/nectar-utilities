@@ -27,6 +27,12 @@ pub struct StakeCNFT<'info> {
     /// CHECK: unsafe
     pub creator_hash: UncheckedAccount<'info>,
 
+    /// CHECK: unsafe
+    pub data_hash: UncheckedAccount<'info>,
+
+    /// CHECK: unsafe
+    pub root: UncheckedAccount<'info>,
+
     /// Staker state account
     #[account(mut, has_one = staking_pool, has_one = wallet)]
     pub staker: Box<Account<'info, Staker>>,
@@ -117,17 +123,19 @@ pub fn stake_cnft<'info>(
     );
     cpi_ctx.accounts.leaf_owner.is_signer = true;
     let creator_hash: [u8; 32] = ctx.accounts.creator_hash.key().to_bytes();
+    let data_hash: [u8; 32] = ctx.accounts.data_hash.key().to_bytes();
+    let root: [u8; 32] = ctx.accounts.root.key().to_bytes();
 
-    msg!("{:?}", args.root.clone());
-    msg!("{:?}", args.data_hash.clone());
+    msg!("{:?}", root.clone());
+    msg!("{:?}", data_hash.clone());
     msg!("{:?}", creator_hash.clone());
     msg!("{:?}", args.nonce.clone());
     msg!("{:?}", args.index.clone());
 
     mpl_bubblegum::cpi::transfer(
         cpi_ctx,
-        args.root,
-        args.data_hash,
+        root,
+        data_hash,
         creator_hash,
         args.nonce,
         args.index,
@@ -170,6 +178,12 @@ pub struct UnstakeCNFT<'info> {
 
     /// CHECK: unsafe
     pub creator_hash: UncheckedAccount<'info>,
+
+    /// CHECK: unsafe
+    pub data_hash: UncheckedAccount<'info>,
+
+    /// CHECK: unsafe
+    pub root: UncheckedAccount<'info>,
 
     /// Staker state account
     #[account(mut, has_one = staking_pool, has_one = wallet)]
@@ -246,8 +260,10 @@ pub fn unstake_cnft<'info>(
     ];
     let staker_signer = &[&staker_seeds[..]];
     let creator_hash: [u8; 32] = ctx.accounts.creator_hash.key().to_bytes();
-    msg!("{:?}", args.root.clone());
-    msg!("{:?}", args.data_hash.clone());
+    let data_hash: [u8; 32] = ctx.accounts.data_hash.key().to_bytes();
+    let root: [u8; 32] = ctx.accounts.root.key().to_bytes();
+    msg!("{:?}", root.clone());
+    msg!("{:?}", data_hash.clone());
     msg!("{:?}", creator_hash.clone());
     msg!("{:?}", args.nonce.clone());
     msg!("{:?}", args.index.clone());
@@ -269,8 +285,8 @@ pub fn unstake_cnft<'info>(
     .with_remaining_accounts(ctx.remaining_accounts.to_vec());
     mpl_bubblegum::cpi::transfer(
         cpi_ctx,
-        args.root,
-        args.data_hash,
+        root,
+        data_hash,
         creator_hash,
         args.nonce,
         args.index,

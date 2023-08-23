@@ -1,5 +1,5 @@
 {
-  "version": "0.0.88",
+  "version": "0.0.98",
   "name": "hpl_nectar_staking",
   "instructions": [
     {
@@ -530,6 +530,16 @@
         },
         {
           "name": "merkleTree",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "dataHash",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "root",
           "isMut": false,
           "isSigner": false
         },
@@ -1199,6 +1209,16 @@
           "isSigner": false
         },
         {
+          "name": "dataHash",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "root",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "staker",
           "isMut": true,
           "isSigner": false,
@@ -1313,6 +1333,16 @@
         },
         {
           "name": "creatorHash",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "dataHash",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "root",
           "isMut": false,
           "isSigner": false
         },
@@ -2282,24 +2312,6 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "root",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "dataHash",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
           {
             "name": "nonce",
             "type": "u64"
