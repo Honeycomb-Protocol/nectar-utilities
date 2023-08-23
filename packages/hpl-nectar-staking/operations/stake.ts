@@ -79,6 +79,8 @@ export async function createStakeOperation(
   luts: web3.AddressLookupTableAccount[] = []
 ) {
   const programId = args.programId || PROGRAM_ID;
+  const operation = new Operation(honeycomb, []);
+  if (luts.length > 0) operation.add_lut(...luts);
 
   // Get the PDA account for the NFT
   const [nft] = getNftPda(args.stakingPool.address, args.nft.mint, programId);
@@ -91,7 +93,6 @@ export async function createStakeOperation(
 
   // Create the transaction instruction for staking the NFT
   let units = 500_000;
-  const instructions = [];
 
   if (args.nft && args.nft.isCompressed) {
     units += 100_000;
@@ -105,7 +106,7 @@ export async function createStakeOperation(
       args.nft.mint
     );
 
-    instructions.push(
+    operation.add(
       createStakeCnftInstruction(
         {
           project: args.stakingPool.project().address,
@@ -175,7 +176,7 @@ export async function createStakeOperation(
       }
     }
 
-    instructions.push(
+    operation.add(
       createStakeInstruction(
         {
           project: args.stakingPool.project().address,
@@ -211,11 +212,11 @@ export async function createStakeOperation(
       await args.stakingPool.staker({ wallet: honeycomb.identity().address });
     } catch {
       units += 100_000;
-      instructions.unshift(
-        ...createInitStakerOperation(honeycomb, {
+      operation.addPreOperations(
+        createInitStakerOperation(honeycomb, {
           stakingPool: args.stakingPool,
           programId: args.programId,
-        }).operation.instructions
+        }).operation
       );
     }
   }
@@ -224,19 +225,23 @@ export async function createStakeOperation(
     const nft = await args.stakingPool.fetch().nft(args.nft.mint).catch();
     if (!nft) throw new Error("NFT not initialized");
   } catch {
-    await createInitNFTOperation(honeycomb, {
-      stakingPool: args.stakingPool,
-      nft: args.nft,
-      programId: args.programId,
-    }).then(({ operation }) => instructions.unshift(...operation.instructions));
+    operation.addPreOperations(
+      await createInitNFTOperation(
+        honeycomb,
+        {
+          stakingPool: args.stakingPool,
+          nft: args.nft,
+          programId: args.programId,
+        },
+        luts
+      ).then(({ operation }) => operation)
+    );
   }
-  instructions.unshift(
+  operation.addToStart(
     web3.ComputeBudgetProgram.setComputeUnitLimit({
       units,
     })
   );
-  const operation = new Operation(honeycomb, instructions);
-  if (luts.length > 0) operation.add_lut(...luts);
   return {
     operation,
   };

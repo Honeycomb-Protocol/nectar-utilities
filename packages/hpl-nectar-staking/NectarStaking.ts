@@ -512,7 +512,10 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
       )
     );
 
-    return Operation.sendBulk(this.honeycomb(), operations, options);
+    return Operation.sendBulk(this.honeycomb(), operations, {
+      prepareAllAtOnce: nfts.length < 11,
+      ...options,
+    });
   }
 
   /**
@@ -540,7 +543,10 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
       )
     );
 
-    return Operation.sendBulk(this.honeycomb(), operations, options);
+    return Operation.sendBulk(this.honeycomb(), operations, {
+      prepareAllAtOnce: nfts.length < 11,
+      ...options,
+    });
   }
 
   /**
@@ -567,7 +573,10 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
         ).then(({ operation }) => operation)
       )
     );
-    return Operation.sendBulk(this.honeycomb(), operations, options);
+    return Operation.sendBulk(this.honeycomb(), operations, {
+      prepareAllAtOnce: nfts.length < 6,
+      ...options,
+    });
   }
 
   /**

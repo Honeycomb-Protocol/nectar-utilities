@@ -49,7 +49,8 @@ type CreateInitNftOperationArgs = {
  */
 export async function createInitNFTOperation(
   honeycomb: Honeycomb,
-  args: CreateInitNftOperationArgs
+  args: CreateInitNftOperationArgs,
+  luts: web3.AddressLookupTableAccount[] = []
 ) {
   const programId = args.programId || PROGRAM_ID;
 
@@ -120,9 +121,10 @@ export async function createInitNFTOperation(
       )
     );
   }
-
+  const operation = new Operation(honeycomb, instructions);
+  if (luts.length > 0) operation.add_lut(...luts);
   // Return the operation as an object
   return {
-    operation: new Operation(honeycomb, instructions),
+    operation,
   };
 }

@@ -16,7 +16,6 @@ import {
 import {
   PROGRAM_ID as CURRENCY_MANAGER_PROGRAM_ID,
   createCreateHolderAccountOperation,
-  createFixHolderAccountInstruction,
   holderAccountPdas,
 } from "@honeycomb-protocol/currency-manager";
 import {
@@ -28,10 +27,7 @@ import {
   NectarMissionParticipation,
   ParticipationReward,
 } from "../NectarMissions";
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import {
   SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
   SPL_NOOP_PROGRAM_ID,
@@ -199,14 +195,24 @@ export async function creatRecallOperation(
   luts: AddressLookupTableAccount[] = []
 ) {
   const programId = args.programId || PROGRAM_ID;
+  const operation = new Operation(honeycomb, [
+    ComputeBudgetProgram.setComputeUnitLimit({
+      units: 250_000,
+    }),
+  ]);
+  if (luts.length > 0) operation.add_lut(...luts);
 
   let units = 200_000;
-  const operations: Operation[] = [];
 
   const holderAccounts: { [key: string]: boolean } = {};
   for (let i = 0; i < args.participation.rewards.length; i++) {
     const reward = args.participation.rewards[i];
     if (reward.collected) continue;
+    const preOperation = new Operation(honeycomb, [
+      ComputeBudgetProgram.setComputeUnitLimit({
+        units: 250_000,
+      }),
+    ]);
 
     if (
       reward.isCurrency() &&
@@ -214,54 +220,26 @@ export async function creatRecallOperation(
     ) {
       try {
         await reward.currency().holderAccount(honeycomb.identity().address);
-
-        // const { holderAccount, tokenAccount } = holderAccountPdas(
-        //   honeycomb.identity().address,
-        //   reward.currency().mint.address,
-        //   reward.currency().kind
-        // );
-
-        // if (!holderAccountT.tokenAccount.equals(tokenAccount)) {
-        //   operations.unshift(
-        //     new Operation(honeycomb, [
-        //       createFixHolderAccountInstruction({
-        //         project: holderAccountT.currency().project().address,
-        //         currency: holderAccountT.currency().address,
-        //         mint: holderAccountT.currency().mint.address,
-        //         holderAccount,
-        //         tokenAccount: holderAccountT.tokenAccount,
-        //         newTokenAccount: tokenAccount,
-        //         owner: holderAccountT.owner,
-        //         payer: honeycomb.identity().address,
-        //         vault: VAULT,
-        //         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-        //         instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
-        //       }),
-        //     ])
-        //   );
-        //   units += 10_000;
-        // }
       } catch {
-        operations.push(
-          await createCreateHolderAccountOperation(honeycomb, {
+        preOperation.add(
+          ...(await createCreateHolderAccountOperation(honeycomb, {
             currency: reward.currency(),
             owner: honeycomb.identity().address,
-          }).then(({ operation }) => operation)
+          }).then(({ operation }) => operation.instructions))
         );
         units += 10_000;
       }
       holderAccounts[reward.currency().address.toString()] = true;
     }
 
-    operations.push(
-      await createCollectRewardsOperation(honeycomb, {
+    preOperation.add(
+      ...(await createCollectRewardsOperation(honeycomb, {
         reward,
         wallet: honeycomb.identity().address,
         programId: args.programId,
-      }).then(({ operation }) => operation)
+      }).then(({ operation }) => operation.instructions))
     );
-
-    units += 220_00;
+    operation.addPreOperations(preOperation);
   }
 
   const [nft] = getNftPda(
@@ -269,37 +247,26 @@ export async function creatRecallOperation(
     args.participation.nft.mint
   );
 
-  operations.push(
-    new Operation(honeycomb, [
-      createRecallInstruction(
-        {
-          project: args.participation.mission().pool().project().address,
-          stakingPool: args.participation.nft.stakingPool,
-          missionPool: args.participation.mission().pool().address,
-          nft,
-          staker: args.participation.nft.staker,
-          mission: args.participation.mission().address,
-          participation: args.participation.address,
-          wallet: honeycomb.identity().address,
-          vault: VAULT,
-          nectarStakingProgram: HPL_NECTAR_STAKING_PROGRAM,
-          logWrapper: SPL_NOOP_PROGRAM_ID,
-          clock: SYSVAR_CLOCK_PUBKEY,
-          instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
-        },
-        programId
-      ),
-    ])
+  operation.add(
+    createRecallInstruction(
+      {
+        project: args.participation.mission().pool().project().address,
+        stakingPool: args.participation.nft.stakingPool,
+        missionPool: args.participation.mission().pool().address,
+        nft,
+        staker: args.participation.nft.staker,
+        mission: args.participation.mission().address,
+        participation: args.participation.address,
+        wallet: honeycomb.identity().address,
+        vault: VAULT,
+        nectarStakingProgram: HPL_NECTAR_STAKING_PROGRAM,
+        logWrapper: SPL_NOOP_PROGRAM_ID,
+        clock: SYSVAR_CLOCK_PUBKEY,
+        instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+      },
+      programId
+    )
   );
-  operations.unshift(
-    new Operation(honeycomb, [
-      ComputeBudgetProgram.setComputeUnitLimit({
-        units,
-      }),
-    ])
-  );
-  const operation = Operation.concat(operations);
-  if (luts.length > 0) operation.add_lut(...luts);
 
   return {
     operation,

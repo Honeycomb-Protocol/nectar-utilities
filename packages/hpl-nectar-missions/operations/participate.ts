@@ -84,6 +84,8 @@ export async function createParticipateOperation(
   luts: AddressLookupTableAccount[] = []
 ) {
   const programId = args.programId || PROGRAM_ID;
+  const operation = new Operation(honeycomb, []);
+  if (luts.length > 0) operation.add_lut(...luts);
 
   const [nft] = getNftPda(args.nft.stakingPool, args.nft.mint);
   const [participation] = participationPda(nft, programId);
@@ -101,7 +103,7 @@ export async function createParticipateOperation(
   );
 
   let units = 500_000;
-  const instructions = [
+  operation.add(
     createParticipateInstruction(
       {
         project: args.mission.pool().project().address,
@@ -130,8 +132,8 @@ export async function createParticipateOperation(
         args: args.args,
       },
       programId
-    ),
-  ];
+    )
+  );
 
   if (args.isFirst) {
     units += 100_000;
@@ -141,7 +143,7 @@ export async function createParticipateOperation(
         .holderAccount(honeycomb.identity().address);
 
       if (!holderAccountT.tokenAccount.equals(tokenAccount)) {
-        instructions.unshift(
+        operation.addToStart(
           createFixHolderAccountInstruction({
             project: holderAccountT.currency().project().address,
             currency: holderAccountT.currency().address,
@@ -159,14 +161,11 @@ export async function createParticipateOperation(
       }
     } catch {}
   }
-  instructions.unshift(
+  operation.addToStart(
     ComputeBudgetProgram.setComputeUnitLimit({
       units,
     })
   );
-
-  const operation = new Operation(honeycomb, instructions);
-  if (luts.length > 0) operation.add_lut(...luts);
 
   return {
     operation: operation,

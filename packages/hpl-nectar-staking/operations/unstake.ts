@@ -6,7 +6,7 @@ import {
   LockType,
   PROGRAM_ID,
 } from "../generated";
-import { StakedNft } from "../types";
+import { AssetProof, StakedNft } from "../types";
 import {
   getMetadataAccount_,
   getDepositPda,
@@ -32,6 +32,7 @@ import { fetchAssetProof } from "./fetch";
 type CreateUnstakeOperationArgs = {
   stakingPool: NectarStaking;
   nft: StakedNft;
+  proof?: AssetProof;
   isFirst?: boolean;
   programId?: web3.PublicKey;
 };
@@ -65,6 +66,8 @@ export async function createUnstakeOperation(
   luts: web3.AddressLookupTableAccount[] = []
 ) {
   const programId = args.programId || PROGRAM_ID;
+  const operation = new Operation(honeycomb, []);
+  if (luts.length > 0) operation.add_lut(...luts);
 
   const [nft] = getNftPda(args.stakingPool.address, args.nft.mint);
   const [staker] = getStakerPda(
@@ -73,14 +76,18 @@ export async function createUnstakeOperation(
   );
 
   // Create the transaction instructions for claiming rewards and unstaking the NFT
-  const instructions = [
-    ...(await createClaimRewardsOperation(honeycomb, {
-      stakingPool: honeycomb.staking(),
-      nft: args.nft,
-      isFirst: args.isFirst,
-      programId: args.programId,
-    }).then(({ operation }) => operation.instructions)),
-  ];
+  operation.addPreOperations(
+    await createClaimRewardsOperation(
+      honeycomb,
+      {
+        stakingPool: honeycomb.staking(),
+        nft: args.nft,
+        isFirst: args.isFirst,
+        programId: args.programId,
+      },
+      luts
+    ).then(({ operation }) => operation)
+  );
 
   if (args.nft.isCompressed) {
     const [treeAuthority] = web3.PublicKey.findProgramAddressSync(
@@ -88,12 +95,14 @@ export async function createUnstakeOperation(
       BUBBLEGUM_PROGRAM_ID
     );
 
-    const proof = await fetchAssetProof(
-      args.stakingPool.helius_rpc,
-      args.nft.mint
-    );
+    const proof =
+      args.proof ||
+      (await fetchAssetProof(args.stakingPool.helius_rpc, args.nft.mint));
 
-    instructions.push(
+    operation.add(
+      web3.ComputeBudgetProgram.setComputeUnitLimit({
+        units: 1_000_000,
+      }),
       createUnstakeCnftInstruction(
         {
           project: args.stakingPool.project().address,
@@ -153,7 +162,10 @@ export async function createUnstakeOperation(
       }
     }
 
-    instructions.push(
+    operation.add(
+      web3.ComputeBudgetProgram.setComputeUnitLimit({
+        units: 1_000_000,
+      }),
       createUnstakeInstruction(
         {
           project: args.stakingPool.project().address,
@@ -183,8 +195,6 @@ export async function createUnstakeOperation(
       )
     );
   }
-  const operation = new Operation(honeycomb, instructions);
-  if (luts.length > 0) operation.add_lut(...luts);
 
   return {
     operation,

@@ -530,7 +530,10 @@ export class NectarMissions extends Module<"recall" | "participate"> {
       )
     );
 
-    return Operation.sendBulk(this.honeycomb(), operations, options);
+    return Operation.sendBulk(this.honeycomb(), operations, {
+      prepareAllAtOnce: participations.length < 2,
+      ...options,
+    });
   }
 
   /**
@@ -901,7 +904,10 @@ export class NectarMission {
       )
     );
 
-    return Operation.sendBulk(this.pool().honeycomb(), operations, options);
+    return Operation.sendBulk(this.pool().honeycomb(), operations, {
+      prepareAllAtOnce: nfts.length < 5,
+      ...options,
+    });
   }
 
   /**
