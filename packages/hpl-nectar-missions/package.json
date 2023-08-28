@@ -1,6 +1,6 @@
 {
   "name": "@honeycomb-protocol/nectar-missions",
-  "version": "0.0.67",
+  "version": "0.0.68",
   "private": false,
   "peerDependencies": {
     "@honeycomb-protocol/currency-manager": "^0.0.53",
