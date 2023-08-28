@@ -94,10 +94,11 @@ export async function createUnstakeOperation(
       [args.nft.compression.tree.toBuffer()],
       BUBBLEGUM_PROGRAM_ID
     );
-
-    const proof =
-      args.proof ||
-      (await fetchAssetProof(args.stakingPool.helius_rpc, args.nft.mint));
+    if (!args.proof)
+      args.proof = await fetchAssetProof(
+        args.stakingPool.helius_rpc,
+        args.nft.mint
+      );
 
     operation.add(
       web3.ComputeBudgetProgram.setComputeUnitLimit({
@@ -120,7 +121,12 @@ export async function createUnstakeOperation(
           clock: web3.SYSVAR_CLOCK_PUBKEY,
           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
           dataHash: args.nft.compression.dataHash,
-          root: proof.root,
+          root: args.proof.root,
+          anchorRemainingAccounts: args.proof.proof.map((p) => ({
+            pubkey: p,
+            isSigner: false,
+            isWritable: false,
+          })),
         },
         {
           args: {
