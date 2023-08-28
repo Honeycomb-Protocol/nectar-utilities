@@ -11,7 +11,7 @@ import {
   SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
   SPL_NOOP_PROGRAM_ID,
 } from "@solana/spl-account-compression";
-import { AvailableNft } from "../types";
+import { AssetProof, AvailableNft } from "../types";
 import { fetchAssetProof } from "./fetch";
 
 /**
@@ -21,6 +21,7 @@ import { fetchAssetProof } from "./fetch";
 type CreateInitNftOperationArgs = {
   stakingPool: NectarStaking;
   nft: AvailableNft;
+  proof?: AssetProof;
   programId?: web3.PublicKey;
 };
 
@@ -60,10 +61,11 @@ export async function createInitNFTOperation(
   const instructions: web3.TransactionInstruction[] = [];
 
   if (args.nft.isCompressed) {
-    const proof = await fetchAssetProof(
-      args.stakingPool.helius_rpc,
-      args.nft.mint
-    );
+    if (!args.proof)
+      args.proof = await fetchAssetProof(
+        args.stakingPool.helius_rpc,
+        args.nft.mint
+      );
 
     instructions.push(
       createInitCnftInstruction(
@@ -82,13 +84,13 @@ export async function createInitNFTOperation(
           clock: web3.SYSVAR_CLOCK_PUBKEY,
           creatorHash: args.nft.compression.creatorHash,
           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-          anchorRemainingAccounts: proof.proof.map((p) => ({
+          anchorRemainingAccounts: args.proof.proof.map((p) => ({
             pubkey: p,
             isSigner: false,
             isWritable: false,
           })),
           dataHash: args.nft.compression.dataHash,
-          root: proof.root,
+          root: args.proof.root,
         },
         {
           args: {

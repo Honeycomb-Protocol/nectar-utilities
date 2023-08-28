@@ -32,7 +32,7 @@ import {
   fetchRewards,
   fetchStakedNfts,
 } from "./operations";
-import { AvailableNft, StakedNft } from "./types";
+import { AssetProof, AvailableNft, StakedNft } from "./types";
 import { getMultipliersPda, getNftPda, getStakerPda } from "./pdas";
 import { HplCurrency } from "@honeycomb-protocol/currency-manager";
 
@@ -495,7 +495,8 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
    */
   public async stake(
     nfts: AvailableNft[],
-    options: web3.ConfirmOptions & SendBulkOptions
+    options: web3.ConfirmOptions & SendBulkOptions,
+    proofs: AssetProof[] = []
   ) {
     const operations = await Promise.all(
       nfts.map((nft, i) =>
@@ -504,6 +505,7 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
           {
             stakingPool: this,
             nft,
+            proof: proofs[i],
             isFirst: i == 0,
             programId: this.programId,
           },
@@ -557,7 +559,8 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
    */
   public async unstake(
     nfts: StakedNft[],
-    options: web3.ConfirmOptions & SendBulkOptions
+    options: web3.ConfirmOptions & SendBulkOptions,
+    proofs: AssetProof[] = []
   ) {
     const operations = await Promise.all(
       nfts.map((nft, i) =>
@@ -566,6 +569,7 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
           {
             stakingPool: this,
             nft,
+            proof: proofs[i],
             isFirst: i == 0,
             programId: this.programId,
           },
@@ -574,7 +578,7 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
       )
     );
     return Operation.sendBulk(this.honeycomb(), operations, {
-      prepareAllAtOnce: nfts.length < 6,
+      prepareAllAtOnce: nfts.length < 11,
       ...options,
     });
   }

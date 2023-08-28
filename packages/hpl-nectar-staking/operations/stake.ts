@@ -6,7 +6,7 @@ import {
   LockType,
   PROGRAM_ID,
 } from "../generated";
-import { AvailableNft } from "../types";
+import { AssetProof, AvailableNft } from "../types";
 import { PROGRAM_ID as BUBBLEGUM_PROGRAM_ID } from "@metaplex-foundation/mpl-bubblegum";
 import { PROGRAM_ID as AUTHORIZATION_PROGRAM_ID } from "@metaplex-foundation/mpl-token-auth-rules";
 import {
@@ -33,6 +33,7 @@ import { fetchAssetProof } from "./fetch";
 type CreateStakeOperationArgs = {
   stakingPool: NectarStaking;
   nft: AvailableNft;
+  proof?: AssetProof;
   isFirst?: boolean;
   programId?: web3.PublicKey;
 };
@@ -100,11 +101,11 @@ export async function createStakeOperation(
       [args.nft.compression.tree.toBuffer()],
       BUBBLEGUM_PROGRAM_ID
     );
-
-    const proof = await fetchAssetProof(
-      args.stakingPool.helius_rpc,
-      args.nft.mint
-    );
+    if (!args.proof)
+      args.proof = await fetchAssetProof(
+        args.stakingPool.helius_rpc,
+        args.nft.mint
+      );
 
     operation.add(
       createStakeCnftInstruction(
@@ -124,8 +125,8 @@ export async function createStakeOperation(
           clock: web3.SYSVAR_CLOCK_PUBKEY,
           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
           dataHash: args.nft.compression.dataHash,
-          root: proof.root,
-          anchorRemainingAccounts: proof.proof.map((p) => ({
+          root: args.proof.root,
+          anchorRemainingAccounts: args.proof.proof.map((p) => ({
             pubkey: p,
             isSigner: false,
             isWritable: false,
@@ -225,17 +226,17 @@ export async function createStakeOperation(
     const nft = await args.stakingPool.fetch().nft(args.nft.mint).catch();
     if (!nft) throw new Error("NFT not initialized");
   } catch {
-    operation.addPreOperations(
-      await createInitNFTOperation(
-        honeycomb,
-        {
-          stakingPool: args.stakingPool,
-          nft: args.nft,
-          programId: args.programId,
-        },
-        luts
-      ).then(({ operation }) => operation)
-    );
+    let op = await createInitNFTOperation(
+      honeycomb,
+      {
+        stakingPool: args.stakingPool,
+        nft: args.nft,
+        proof: args.proof,
+        programId: args.programId,
+      },
+      luts
+    ).then(({ operation }) => operation);
+    op.addToStart(...op.items);
   }
   operation.addToStart(
     web3.ComputeBudgetProgram.setComputeUnitLimit({
