@@ -29,7 +29,11 @@ export type EventRecord = {
     state: Uint8Array
     timestamp: beet.bignum
   }
-  RecallParticipation: { address: web3.PublicKey; timestamp: beet.bignum }
+  RecallParticipation: {
+    address: web3.PublicKey
+    state: Uint8Array
+    timestamp: beet.bignum
+  }
 }
 
 /**
@@ -90,9 +94,10 @@ export const eventBeet = beet.dataEnum<EventRecord>([
 
   [
     'RecallParticipation',
-    new beet.BeetArgsStruct<EventRecord['RecallParticipation']>(
+    new beet.FixableBeetArgsStruct<EventRecord['RecallParticipation']>(
       [
         ['address', beetSolana.publicKey],
+        ['state', beet.bytes],
         ['timestamp', beet.i64],
       ],
       'EventRecord["RecallParticipation"]'
