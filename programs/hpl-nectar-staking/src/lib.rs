@@ -102,6 +102,7 @@ pub mod hpl_nectar_staking {
     }
 
     pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
+        msg!("Initializing NFT");
         hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.public_low,
             None,
@@ -121,6 +122,7 @@ pub mod hpl_nectar_staking {
         ctx: Context<'_, '_, '_, 'info, InitCNFT<'info>>,
         args: CNFTArgs,
     ) -> Result<()> {
+        msg!("Initializing cNFT");
         hpl_hive_control::instructions::platform_gate_fn(
             hpl_hive_control::constants::ACTIONS.public_low,
             None,

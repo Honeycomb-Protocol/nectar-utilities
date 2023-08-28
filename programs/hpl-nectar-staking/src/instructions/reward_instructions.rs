@@ -411,7 +411,7 @@ pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
         rewards_amount,
         &ctx.accounts.clock,
     )
-    .wrap(ctx.accounts.log_wrapper.to_account_info())?;
+    .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
 
     Ok(())
 }
@@ -619,7 +619,7 @@ pub fn distribute_rewards(ctx: Context<DistriuteRewards>) -> Result<()> {
     //     rewards_amount,
     //     &ctx.accounts.clock,
     // )
-    // .wrap(ctx.accounts.log_wrapper.to_account_info())?;
+    // .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
 
     Ok(())
 }

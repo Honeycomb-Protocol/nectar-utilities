@@ -58,6 +58,6 @@ pub fn init_staker(ctx: Context<InitStaker>) -> Result<()> {
     staker.wallet = ctx.accounts.wallet.key();
 
     Event::new_staker(staker.key(), &staker, &ctx.accounts.clock)
-        .wrap(ctx.accounts.log_wrapper.to_account_info())?;
+        .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
     Ok(())
 }

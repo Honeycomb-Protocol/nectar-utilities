@@ -149,116 +149,7 @@ describe("Nectar Utilities", () => {
     await findProjectStakingPools(honeycomb.project());
     const staking = honeycomb.staking() as unknown as NectarStaking;
     console.log("Staking", staking.address);
-    await findProjectMissionPools(honeycomb.project());
-    const hcMissions = honeycomb.missions() as unknown as NectarMissions;
-    console.log("Staking", hcMissions.address);
 
-    const missions = {
-      "Quick Patrol": {
-        skip: false,
-        costAmount: 1,
-        minXp: 0,
-        duration: 15 * 60,
-        ammo: { skip: false, min: 1, max: 1 },
-        food: { skip: false, min: 1, max: 1 },
-      },
-      "Casino Heist": {
-        skip: false,
-        costAmount: 0,
-        minXp: 0,
-        duration: 1 * 3600,
-        ammo: { skip: false, min: 1, max: 1 },
-      },
-      "Night Patrol": {
-        skip: false,
-        costAmount: 0,
-        minXp: 0,
-        duration: 3 * 3600,
-        ammo: { skip: false, min: 1, max: 1 },
-        food: { skip: false, min: 1, max: 1 },
-      },
-      Investigate: {
-        skip: false,
-        costAmount: 3,
-        minXp: 0,
-        duration: 12 * 3600,
-        ammo: { skip: false, min: 2, max: 2 },
-        food: { skip: false, min: 5, max: 5 },
-      },
-      Arrest: {
-        skip: false,
-        costAmount: 3,
-        minXp: 0,
-        duration: 12 * 3600,
-        ammo: { skip: false, min: 3, max: 3 },
-        food: { skip: false, min: 3, max: 3 },
-      },
-      Combat: {
-        skip: false,
-        costAmount: 10,
-        minXp: 0,
-        duration: 48 * 3600,
-        gems: { skip: false, min: 1, max: 1 },
-      },
-    };
-    for (let mission of await hcMissions.missions()) {
-      const config = missions[mission.name];
-      // await staking.updatePool(
-      //   {
-      //     args: {
-      //       name: null,
-      //       rewardsPerDuration: null,
-      //       rewardsDuration: null,
-      //       maxRewardsDuration: null,
-      //       minStakeDuration: null,
-      //       cooldownDuration: null,
-      //       resetStakeDuration: null,
-      //       startTime: null,
-      //       endTime: null,
-      //     },
-      //     collection: newCollection,
-      //     merkleTree: newMerkleTree,
-      //   },
-      //   { skipPreflight: true }
-      // );
-
-      if (config.skip) continue;
-
-      const coins = {
-        bail: bail,
-        bounty: bounty,
-        ammo: ammo,
-        food: food,
-        gems: gems,
-      };
-
-      await mission.update({
-        name: null,
-        minXp: config.minXp,
-        cost: {
-          address: bounty.address,
-          amount: config.costAmount * 10 ** bounty.mint.decimals,
-        },
-        duration: config.duration,
-        addRewards: Object.entries(coins)
-          .map(
-            ([name, coin]) =>
-              config[name] && {
-                rewardType: {
-                  __kind: "Currency",
-                  address: coin.address,
-                } as RewardType,
-                min: config[name].min * 10 ** coin.mint.decimals,
-                max: config[name].max * 10 ** coin.mint.decimals,
-              }
-          )
-          .filter((a) => a),
-        removeRewardIndices: null,
-        removeAllRewards: true,
-      });
-
-      console.log(mission.name, "Rewards", mission.rewards.length);
-    }
     // // Migrate NFT to NFTv1
     // const nftsRaw = await NFT.gpaBuilder()
     //   .run(honeycomb.connection)
@@ -464,6 +355,8 @@ describe("Nectar Utilities", () => {
     // await operation.send({ skipPreflight: true });
 
     await findProjectMissionPools(honeycomb.project());
+    const hcMissions = honeycomb.missions() as unknown as NectarMissions;
+    console.log("Missions", hcMissions.address);
     // if (!honeycomb._missions) {
     //   const collections = [];
     //   honeycomb.use(
@@ -485,6 +378,113 @@ describe("Nectar Utilities", () => {
     //   },
     //   { skipPreflight: true }
     // );
+
+    // const missions = {
+    //   "Quick Patrol": {
+    //     skip: false,
+    //     costAmount: 1,
+    //     minXp: 0,
+    //     duration: 15 * 60,
+    //     ammo: { skip: false, min: 1, max: 1 },
+    //     food: { skip: false, min: 1, max: 1 },
+    //   },
+    //   "Casino Heist": {
+    //     skip: false,
+    //     costAmount: 0,
+    //     minXp: 0,
+    //     duration: 1 * 3600,
+    //     ammo: { skip: false, min: 1, max: 1 },
+    //   },
+    //   "Night Patrol": {
+    //     skip: false,
+    //     costAmount: 0,
+    //     minXp: 0,
+    //     duration: 3 * 3600,
+    //     ammo: { skip: false, min: 1, max: 1 },
+    //     food: { skip: false, min: 1, max: 1 },
+    //   },
+    //   Investigate: {
+    //     skip: false,
+    //     costAmount: 3,
+    //     minXp: 0,
+    //     duration: 12 * 3600,
+    //     ammo: { skip: false, min: 2, max: 2 },
+    //     food: { skip: false, min: 5, max: 5 },
+    //   },
+    //   Arrest: {
+    //     skip: false,
+    //     costAmount: 3,
+    //     minXp: 0,
+    //     duration: 12 * 3600,
+    //     ammo: { skip: false, min: 3, max: 3 },
+    //     food: { skip: false, min: 3, max: 3 },
+    //   },
+    //   Combat: {
+    //     skip: false,
+    //     costAmount: 10,
+    //     minXp: 0,
+    //     duration: 48 * 3600,
+    //     gems: { skip: false, min: 1, max: 1 },
+    //   },
+    // };
+    // for (let mission of await hcMissions.missions()) {
+    //   const config = missions[mission.name];
+    //   // await staking.updatePool(
+    //   //   {
+    //   //     args: {
+    //   //       name: null,
+    //   //       rewardsPerDuration: null,
+    //   //       rewardsDuration: null,
+    //   //       maxRewardsDuration: null,
+    //   //       minStakeDuration: null,
+    //   //       cooldownDuration: null,
+    //   //       resetStakeDuration: null,
+    //   //       startTime: null,
+    //   //       endTime: null,
+    //   //     },
+    //   //     collection: newCollection,
+    //   //     merkleTree: newMerkleTree,
+    //   //   },
+    //   //   { skipPreflight: true }
+    //   // );
+
+    //   if (config.skip) continue;
+
+    //   const coins = {
+    //     bail: bail,
+    //     bounty: bounty,
+    //     ammo: ammo,
+    //     food: food,
+    //     gems: gems,
+    //   };
+
+    //   await mission.update({
+    //     name: null,
+    //     minXp: config.minXp,
+    //     cost: {
+    //       address: bounty.address,
+    //       amount: config.costAmount * 10 ** bounty.mint.decimals,
+    //     },
+    //     duration: config.duration,
+    //     addRewards: Object.entries(coins)
+    //       .map(
+    //         ([name, coin]) =>
+    //           config[name] && {
+    //             rewardType: {
+    //               __kind: "Currency",
+    //               address: coin.address,
+    //             } as RewardType,
+    //             min: config[name].min * 10 ** coin.mint.decimals,
+    //             max: config[name].max * 10 ** coin.mint.decimals,
+    //           }
+    //       )
+    //       .filter((a) => a),
+    //     removeRewardIndices: null,
+    //     removeAllRewards: true,
+    //   });
+
+    //   console.log(mission.name, "Rewards", mission.rewards.length);
+    // }
 
     // console.log("StakingCollectionn", staking.collections, staking.creators);
     // console.log(
@@ -1538,9 +1538,9 @@ describe("Nectar Utilities", () => {
     //   );
     // console.log("Recalled Participations", participationsRaw.length);
 
-    // const vault = new web3.PublicKey(
-    //   "7LUbP4BZQiopPposQUW7JBrKJ2vgrv7drjbTeFRAb5TS"
-    // );
+    const vault = new web3.PublicKey(
+      "232Z5QNvQ4wRyraGWFpC5i3HEbqozEWgBCV95eWASaG1"
+    );
     // const vault = honeycomb.staking().address;
     // const vault = honeycomb.missions().address;
     // await bail
@@ -1549,29 +1549,29 @@ describe("Nectar Utilities", () => {
     //   .catch((_) => (bail as HplCurrency).create().holderAccount(vault))
     //   .then((hA) => hA.fund(10_000 * 1_000_000_000, { skipPreflight: true }));
 
-    // await bounty
-    //   .fetch()
-    //   .holderAccount(vault)
-    //   .catch((_) => (bounty as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.mint(1_000_000 * 1_000_000_000));
+    await bounty
+      .fetch()
+      .holderAccount(vault)
+      .catch((_) => (bounty as HplCurrency).create().holderAccount(vault))
+      .then((hA) => hA.mint(1_000_000 * 1_000_000_000));
 
-    // await ammo
-    //   .fetch()
-    //   .holderAccount(vault)
-    //   .catch((_) => (ammo as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.mint(1_000_000 * 1_000_000_000));
+    await ammo
+      .fetch()
+      .holderAccount(vault)
+      .catch((_) => (ammo as HplCurrency).create().holderAccount(vault))
+      .then((hA) => hA.mint(1_000_000 * 1_000_000_000));
 
-    // await food
-    //   .fetch()
-    //   .holderAccount(vault)
-    //   .catch((_) => (food as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.mint(1_000_000 * 1_000_000_000));
+    await food
+      .fetch()
+      .holderAccount(vault)
+      .catch((_) => (food as HplCurrency).create().holderAccount(vault))
+      .then((hA) => hA.mint(1_000_000 * 1_000_000_000));
 
-    // await gems
-    //   .fetch()
-    //   .holderAccount(vault)
-    //   .catch((_) => (gems as HplCurrency).create().holderAccount(vault))
-    //   .then((hA) => hA.mint(1_000_000 * 1_000_000_000));
+    await gems
+      .fetch()
+      .holderAccount(vault)
+      .catch((_) => (gems as HplCurrency).create().holderAccount(vault))
+      .then((hA) => hA.mint(1_000_000 * 1_000_000_000));
   });
 
   it.skip("Prepare", async () => {
@@ -1934,7 +1934,8 @@ describe("Nectar Utilities", () => {
             faction: null,
             merkleProof: null,
           },
-        }))
+        })),
+        {}
       );
     }
   });
@@ -1950,7 +1951,7 @@ describe("Nectar Utilities", () => {
   it.skip("Unstake NFTs", async () => {
     const stakedNfts = await honeycomb.staking().fetch().stakedNfts();
     expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
-    await honeycomb.staking().unstake(stakedNfts);
+    await honeycomb.staking().unstake(stakedNfts, {});
     const availableNfts = await honeycomb.staking().fetch().availableNfts();
     expect(availableNfts.length).toBe(totalNfts + totalcNfts);
   });

@@ -248,7 +248,7 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
     staker.total_staked += 1;
 
     Event::stake(nft.key(), &nft, staker.key(), &staker, &ctx.accounts.clock)
-        .wrap(ctx.accounts.log_wrapper.to_account_info())?;
+        .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
 
     // msg!("JSON NFT: {:?}", nft);
     Ok(())
@@ -483,7 +483,7 @@ pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
     }
 
     Event::unstake(nft.key(), &nft, staker.key(), &staker, &ctx.accounts.clock)
-        .wrap(ctx.accounts.log_wrapper.to_account_info())?;
+        .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
     // msg!("JSON NFT: {:?}", nft);
     Ok(())
 }

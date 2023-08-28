@@ -154,7 +154,7 @@ pub fn stake_cnft<'info>(
     staker.total_staked += 1;
 
     Event::stake(nft.key(), &nft, staker.key(), &staker, &ctx.accounts.clock)
-        .wrap(ctx.accounts.log_wrapper.to_account_info())?;
+        .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
     Ok(())
 }
 
@@ -293,7 +293,7 @@ pub fn unstake_cnft<'info>(
     )?;
 
     Event::stake(nft.key(), &nft, staker.key(), &staker, &ctx.accounts.clock)
-        .wrap(ctx.accounts.log_wrapper.to_account_info())?;
+        .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
 
     Ok(())
 }

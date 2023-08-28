@@ -265,7 +265,7 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
 
     let event =
         events::Event::new_participation(participation.key(), &participation, &ctx.accounts.clock);
-    event.wrap(ctx.accounts.log_wrapper.to_account_info())?;
+    event.wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
 
     Ok(())
 }
@@ -508,7 +508,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
         &reward,
         &ctx.accounts.clock,
     );
-    event.wrap(ctx.accounts.log_wrapper.to_account_info())?;
+    event.wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
     res
 }
 
@@ -593,6 +593,6 @@ pub fn recall(ctx: Context<Recall>) -> Result<()> {
     )?;
 
     let event = events::Event::recall_participation(participation.key(), &ctx.accounts.clock);
-    event.wrap(ctx.accounts.log_wrapper.to_account_info())?;
+    event.wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
     Ok(())
 }

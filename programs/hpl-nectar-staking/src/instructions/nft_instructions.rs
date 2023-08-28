@@ -125,7 +125,7 @@ pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
     let validation_out = hpl_utils::validate_collection_creator(metadata, &collections, &creators);
 
     Event::new_nft(nft.key(), &nft, &ctx.accounts.clock)
-        .wrap(ctx.accounts.log_wrapper.to_account_info())?;
+        .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
 
     match validation_out {
         Ok(x) => {
@@ -251,7 +251,7 @@ pub fn init_cnft<'info>(
     let data_hash: [u8; 32] = ctx.accounts.data_hash.key().to_bytes();
     let root: [u8; 32] = ctx.accounts.root.key().to_bytes();
 
-    // Verify merkle tree leaf
+    msg!("Creating Leaf");
 
     let leaf = mpl_bubblegum::state::leaf_schema::LeafSchema::new_v0(
         ctx.accounts.asset_id.key(),
@@ -262,6 +262,8 @@ pub fn init_cnft<'info>(
         creator_hash,
     );
 
+    msg!("Verifying Leaf {} bytes", leaf.to_node().len());
+
     let cpi_ctx = CpiContext::new(
         ctx.accounts.compression_program.to_account_info(),
         spl_account_compression::cpi::accounts::VerifyLeaf {
@@ -271,8 +273,32 @@ pub fn init_cnft<'info>(
     .with_remaining_accounts(ctx.remaining_accounts.to_vec());
     spl_account_compression::cpi::verify_leaf(cpi_ctx, root, leaf.to_node(), args.index)?;
 
+    msg!("Verified Leaf");
+
+    msg!(
+        "Verifying Merkle tree: {:?}",
+        ctx.accounts.merkle_tree.key()
+    );
+
+    let found = ctx
+        .accounts
+        .staking_pool
+        .merkle_trees
+        .iter()
+        .find(|i| ctx.accounts.project.merkle_trees[**i as usize].eq(ctx.accounts.merkle_tree.key))
+        .is_some();
+    if !found {
+        return Err(ErrorCode::InvalidNFT.into());
+    }
+
+    msg!("Verified Merkle tree");
+
+    msg!("Emittinng Event");
+
     Event::new_nft(nft.key(), &nft, &ctx.accounts.clock)
-        .wrap(ctx.accounts.log_wrapper.to_account_info())?;
+        .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
+
+    msg!("Emitted Event");
 
     Ok(())
 }
@@ -333,7 +359,7 @@ pub fn use_nft<'info>(ctx: Context<UseNft>, used_by: NFTUsedBy) -> Result<()> {
         &ctx.accounts.nft,
         &ctx.accounts.clock,
     )
-    .wrap(ctx.accounts.log_wrapper.to_account_info())?;
+    .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
 
     Ok(())
 }

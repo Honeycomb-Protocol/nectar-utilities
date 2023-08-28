@@ -166,7 +166,7 @@ export async function createNewTree(honeycomb: Honeycomb) {
     [merkleTree]
   );
 
-  const { signature, blockhashWithBlockHeight: latestBlockhash } =
+  const [{ signature, blockhashWithBlockHeight: latestBlockhash }] =
     await operation.send();
 
   console.log(
@@ -273,7 +273,7 @@ export async function mintOneCNFT(
       ),
     ]);
 
-    const { signature } = await operation.send();
+    const [{ signature }] = await operation.send();
 
     console.log(
       colors.green(
