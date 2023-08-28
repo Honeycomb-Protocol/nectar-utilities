@@ -592,7 +592,11 @@ pub fn recall(ctx: Context<Recall>) -> Result<()> {
         NFTUsedBy::None,
     )?;
 
-    let event = events::Event::recall_participation(participation.key(), &ctx.accounts.clock);
+    let event = events::Event::recall_participation(
+        participation.key(),
+        participation,
+        &ctx.accounts.clock,
+    );
     event.wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
     Ok(())
 }

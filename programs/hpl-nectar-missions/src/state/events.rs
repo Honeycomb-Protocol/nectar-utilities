@@ -19,6 +19,7 @@ pub enum Event {
     },
     RecallParticipation {
         address: Pubkey,
+        state: Vec<u8>,
         timestamp: i64,
     },
 }
@@ -46,9 +47,10 @@ impl Event {
         }
     }
 
-    pub fn recall_participation(address: Pubkey, clock: &Clock) -> Self {
+    pub fn recall_participation(address: Pubkey, state: &Participation, clock: &Clock) -> Self {
         Self::RecallParticipation {
             address,
+            state: state.try_to_vec().unwrap(),
             timestamp: clock.unix_timestamp,
         }
     }
