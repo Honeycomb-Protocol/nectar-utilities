@@ -236,7 +236,7 @@ export async function createStakeOperation(
       },
       luts
     ).then(({ operation }) => operation);
-    op.addToStart(...op.items);
+    operation.addToStart(...op.items);
   }
   operation.addToStart(
     web3.ComputeBudgetProgram.setComputeUnitLimit({

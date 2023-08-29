@@ -29,6 +29,7 @@ import {
   Participation,
   RewardType,
   findProjectMissionPools,
+  participationBeet,
 } from "../packages/hpl-nectar-missions";
 
 jest.setTimeout(2000000);
@@ -68,7 +69,28 @@ describe("Nectar Utilities", () => {
   // let factionsMerkleTree: MerkleTree;
   let mainVault: HplHolderAccount;
 
-  it("Temp", async () => {
+  it("TEMP", () => {
+    const stateRaw = Buffer.from([
+      255, 15, 96, 154, 196, 189, 192, 17, 203, 90, 158, 8, 254, 177, 98, 6, 8,
+      211, 184, 70, 110, 139, 66, 107, 227, 57, 125, 62, 4, 4, 243, 200, 226,
+      183, 226, 238, 203, 92, 53, 177, 53, 250, 179, 14, 79, 36, 171, 211, 42,
+      41, 217, 191, 218, 28, 139, 10, 225, 124, 152, 151, 153, 183, 31, 114,
+      189, 225, 168, 211, 33, 243, 232, 132, 54, 30, 139, 210, 116, 173, 164,
+      135, 76, 201, 174, 186, 177, 157, 214, 30, 5, 119, 71, 232, 141, 68, 127,
+      125, 198, 246, 176, 237, 100, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 202, 154, 59,
+      0, 0, 0, 0, 1, 209, 52, 217, 84, 215, 47, 117, 201, 27, 55, 94, 49, 38,
+      208, 231, 124, 130, 48, 28, 189, 102, 8, 75, 167, 55, 18, 86, 66, 108, 20,
+      218, 30, 1, 0, 202, 154, 59, 0, 0, 0, 0, 1, 5, 245, 164, 130, 155, 87,
+      134, 240, 94, 29, 205, 201, 189, 0, 243, 78, 86, 192, 44, 5, 208, 59, 218,
+      190, 251, 42, 112, 89, 78, 173, 188, 147, 1,
+    ]);
+    console.log(
+      "participationBeet.deserialize(stateRaw)[0]",
+      participationBeet.deserialize(stateRaw)[0]
+    );
+  });
+
+  it.skip("Temp", async () => {
     const connection = new web3.Connection(
       "https://rpc.helius.xyz/?api-key=1f580922-6600-4db7-bf2d-94363b0b5626"
       // "https://lingering-newest-sheet.solana-devnet.quiknode.pro/fb6e6465df3955a06fd5ddec2e5b003896f56adb/"
@@ -1539,7 +1561,7 @@ describe("Nectar Utilities", () => {
     // console.log("Recalled Participations", participationsRaw.length);
 
     const vault = new web3.PublicKey(
-      "232Z5QNvQ4wRyraGWFpC5i3HEbqozEWgBCV95eWASaG1"
+      "8sN1LJDUhTgJJZ7zkq3WGjgd7MjwHJaBMGD6zF7DNEEi"
     );
     // const vault = honeycomb.staking().address;
     // const vault = honeycomb.missions().address;
