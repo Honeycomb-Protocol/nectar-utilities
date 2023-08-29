@@ -94,6 +94,7 @@ export async function createStakeOperation(
 
   // Create the transaction instruction for staking the NFT
   let units = 500_000;
+  const instructions: web3.TransactionInstruction[] = [];
 
   if (args.nft && args.nft.isCompressed) {
     units += 100_000;
@@ -107,7 +108,7 @@ export async function createStakeOperation(
         args.nft.mint
       );
 
-    operation.add(
+    instructions.push(
       createStakeCnftInstruction(
         {
           project: args.stakingPool.project().address,
@@ -177,7 +178,7 @@ export async function createStakeOperation(
       }
     }
 
-    operation.add(
+    instructions.push(
       createStakeInstruction(
         {
           project: args.stakingPool.project().address,
@@ -236,13 +237,14 @@ export async function createStakeOperation(
       },
       luts
     ).then(({ operation }) => operation);
-    operation.addToStart(...op.items);
+    instructions.unshift(...op.instructions);
   }
-  operation.addToStart(
+  instructions.unshift(
     web3.ComputeBudgetProgram.setComputeUnitLimit({
       units,
     })
   );
+  operation.add(...instructions);
   return {
     operation,
   };
