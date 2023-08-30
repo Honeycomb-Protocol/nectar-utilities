@@ -291,85 +291,87 @@ pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
 
     nft.last_claim = ctx.accounts.clock.unix_timestamp;
 
-    let rewards_per_second = staking_pool.rewards_per_duration / staking_pool.rewards_duration;
+    let rewards_per_second = staking_pool.rewards_per_duration
+        / staking_pool.rewards_duration
+        / (if nft.is_compressed { 10 } else { 1 });
+
     let mut rewards_amount = rewards_per_second * seconds_elapsed;
 
-    let mut multplier_decimals: u64 = 1;
-    let mut total_multipliers: u64 = multplier_decimals;
-    if let Some(multipliers) = &ctx.accounts.multipliers {
-        multplier_decimals = 10u64.pow(multipliers.decimals.into());
-        total_multipliers = multplier_decimals;
-
-        let mut duration_multiplier = multplier_decimals;
-        for multiplier in multipliers.duration_multipliers.iter() {
-            match multiplier.multiplier_type {
-                MultiplierType::StakeDuration { min_duration } => {
-                    if seconds_elapsed < min_duration {
-                        duration_multiplier = multiplier.value;
-                    } else {
-                        break;
-                    }
-                }
-                _ => {}
-            }
-        }
-        duration_multiplier -= multplier_decimals;
-        total_multipliers += duration_multiplier;
-
-        let mut count_multiplier = multplier_decimals;
-        for multiplier in multipliers.count_multipliers.iter() {
-            match multiplier.multiplier_type {
-                MultiplierType::NFTCount { min_count } => {
-                    if min_count <= ctx.accounts.staker.total_staked {
-                        count_multiplier = multiplier.value;
-                    } else {
-                        break;
-                    }
-                }
-                _ => {}
-            }
-        }
-        count_multiplier -= multplier_decimals;
-        total_multipliers += count_multiplier;
-
-        let mut creator_multiplier = multplier_decimals;
-        for multiplier in multipliers.creator_multipliers.iter() {
-            match multiplier.multiplier_type {
-                MultiplierType::Creator { creator } => match nft.criteria {
-                    NFTCriteria::Creator { address } => {
-                        if address.eq(&creator) {
-                            creator_multiplier = multiplier.value;
-                            break;
-                        }
-                    }
-                    _ => {}
-                },
-                _ => {}
-            }
-        }
-        creator_multiplier -= multplier_decimals;
-        total_multipliers += creator_multiplier;
-
-        let mut collection_multiplier = multplier_decimals;
-        for multiplier in multipliers.collection_multipliers.iter() {
-            match multiplier.multiplier_type {
-                MultiplierType::Collection { collection } => match nft.criteria {
-                    NFTCriteria::Collection { address } => {
-                        if collection.eq(&address) {
-                            collection_multiplier = multiplier.value;
-                            break;
-                        }
-                    }
-                    _ => {}
-                },
-                _ => {}
-            }
-        }
-        collection_multiplier -= multplier_decimals;
-        total_multipliers += collection_multiplier;
-    }
-
     if !nft.is_compressed {
+        let mut multplier_decimals: u64 = 1;
+        let mut total_multipliers: u64 = multplier_decimals;
+        if let Some(multipliers) = &ctx.accounts.multipliers {
+            multplier_decimals = 10u64.pow(multipliers.decimals.into());
+            total_multipliers = multplier_decimals;
+
+            let mut duration_multiplier = multplier_decimals;
+            for multiplier in multipliers.duration_multipliers.iter() {
+                match multiplier.multiplier_type {
+                    MultiplierType::StakeDuration { min_duration } => {
+                        if seconds_elapsed < min_duration {
+                            duration_multiplier = multiplier.value;
+                        } else {
+                            break;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            duration_multiplier -= multplier_decimals;
+            total_multipliers += duration_multiplier;
+
+            let mut count_multiplier = multplier_decimals;
+            for multiplier in multipliers.count_multipliers.iter() {
+                match multiplier.multiplier_type {
+                    MultiplierType::NFTCount { min_count } => {
+                        if min_count <= ctx.accounts.staker.total_staked {
+                            count_multiplier = multiplier.value;
+                        } else {
+                            break;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            count_multiplier -= multplier_decimals;
+            total_multipliers += count_multiplier;
+
+            let mut creator_multiplier = multplier_decimals;
+            for multiplier in multipliers.creator_multipliers.iter() {
+                match multiplier.multiplier_type {
+                    MultiplierType::Creator { creator } => match nft.criteria {
+                        NFTCriteria::Creator { address } => {
+                            if address.eq(&creator) {
+                                creator_multiplier = multiplier.value;
+                                break;
+                            }
+                        }
+                        _ => {}
+                    },
+                    _ => {}
+                }
+            }
+            creator_multiplier -= multplier_decimals;
+            total_multipliers += creator_multiplier;
+
+            let mut collection_multiplier = multplier_decimals;
+            for multiplier in multipliers.collection_multipliers.iter() {
+                match multiplier.multiplier_type {
+                    MultiplierType::Collection { collection } => match nft.criteria {
+                        NFTCriteria::Collection { address } => {
+                            if collection.eq(&address) {
+                                collection_multiplier = multiplier.value;
+                                break;
+                            }
+                        }
+                        _ => {}
+                    },
+                    _ => {}
+                }
+            }
+            collection_multiplier -= multplier_decimals;
+            total_multipliers += collection_multiplier;
+        }
         rewards_amount = (rewards_amount * total_multipliers) / multplier_decimals;
     }
 
