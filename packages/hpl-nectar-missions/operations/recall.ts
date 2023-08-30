@@ -202,18 +202,14 @@ export async function creatRecallOperation(
   ]);
   if (luts.length > 0) operation.add_lut(...luts);
 
-  let units = 200_000;
-
   const holderAccounts: { [key: string]: boolean } = {};
+  let units = 100_000;
+  const preOperation = new Operation(honeycomb, []);
   for (let i = 0; i < args.participation.rewards.length; i++) {
     const reward = args.participation.rewards[i];
     if (reward.collected) continue;
-    const preOperation = new Operation(honeycomb, [
-      ComputeBudgetProgram.setComputeUnitLimit({
-        units: 250_000,
-      }),
-    ]);
 
+    units += 220_000;
     if (
       reward.isCurrency() &&
       !holderAccounts[reward.currency().address.toString()]
@@ -227,7 +223,7 @@ export async function creatRecallOperation(
             owner: honeycomb.identity().address,
           }).then(({ operation }) => operation.instructions))
         );
-        units += 10_000;
+        units += 150_000;
       }
       holderAccounts[reward.currency().address.toString()] = true;
     }
@@ -239,9 +235,17 @@ export async function creatRecallOperation(
         programId: args.programId,
       }).then(({ operation }) => operation.instructions))
     );
-    operation.addPreOperations(preOperation);
   }
 
+  if (preOperation.items.length > 0) {
+    preOperation.addToStart(
+      ComputeBudgetProgram.setComputeUnitLimit({
+        units,
+      })
+    );
+    if (luts.length > 0) preOperation.add_lut(...luts);
+    operation.addPreOperations(preOperation);
+  }
   const [nft] = getNftPda(
     args.participation.nft.stakingPool,
     args.participation.nft.mint
