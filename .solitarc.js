@@ -50,7 +50,7 @@ const configs = {
   ),
 };
 
-const defaultProgram = "nectar-missions" || Object.keys(configs)[0];
+const defaultProgram = "nectar-staking" || Object.keys(configs)[0];
 const activeConfig =
   configs[process.env.SOLITA_HPL_PROGRAM || defaultProgram] ||
   configs[defaultProgram];

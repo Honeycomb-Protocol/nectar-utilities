@@ -16,8 +16,8 @@
     "test": "jest --verbose"
   },
   "dependencies": {
-    "@honeycomb-protocol/currency-manager": "^0.0.51",
-    "@honeycomb-protocol/hive-control": "^0.1.50",
+    "@honeycomb-protocol/currency-manager": "^0.0.56",
+    "@honeycomb-protocol/hive-control": "^0.1.62",
     "@honeycomb-protocol/nectar-staking": "^0.1.0",
     "@metaplex-foundation/js": "^0.18.1",
     "@metaplex-foundation/mpl-bubblegum": "^0.7.0",
