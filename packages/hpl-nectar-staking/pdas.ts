@@ -1,5 +1,6 @@
 import * as web3 from "@solana/web3.js";
 import { PROGRAM_ID } from "./generated";
+import { findProgramAddressSyncWithSeeds } from "@honeycomb-protocol/hive-control";
 
 /**
  * The `MetadataPDaType` type represents different types of Program Derived Accounts (PDAs)
@@ -66,7 +67,7 @@ export const getMetadataAccount_ = (
     }
   }
 
-  return web3.PublicKey.findProgramAddressSync(seeds, programId);
+  return findProgramAddressSyncWithSeeds(seeds, programId);
 };
 
 /**
@@ -86,7 +87,7 @@ export const getStakingPoolPda = (
   key: web3.PublicKey,
   programId: web3.PublicKey = PROGRAM_ID
 ) => {
-  return web3.PublicKey.findProgramAddressSync(
+  return findProgramAddressSyncWithSeeds(
     [Buffer.from("staking_pool"), project.toBuffer(), key.toBuffer()],
     programId
   );
@@ -109,7 +110,7 @@ export const getStakerPda = (
   wallet: web3.PublicKey,
   programId: web3.PublicKey = PROGRAM_ID
 ) => {
-  return web3.PublicKey.findProgramAddressSync(
+  return findProgramAddressSyncWithSeeds(
     [Buffer.from("staker"), wallet.toBuffer(), pool.toBuffer()],
     programId
   );
@@ -132,7 +133,7 @@ export const getNftPda = (
   mint: web3.PublicKey,
   programId: web3.PublicKey = PROGRAM_ID
 ) => {
-  return web3.PublicKey.findProgramAddressSync(
+  return findProgramAddressSyncWithSeeds(
     [Buffer.from("nft"), mint.toBuffer(), pool.toBuffer()],
     programId
   );
@@ -152,7 +153,7 @@ export const getDepositPda = (
   nftMint: web3.PublicKey,
   programId = PROGRAM_ID
 ) => {
-  return web3.PublicKey.findProgramAddressSync(
+  return findProgramAddressSyncWithSeeds(
     [Buffer.from("deposit"), nftMint.toBuffer()],
     programId
   );
@@ -172,7 +173,7 @@ export const getMultipliersPda = (
   pool: web3.PublicKey,
   programId = PROGRAM_ID
 ) =>
-  web3.PublicKey.findProgramAddressSync(
+  findProgramAddressSyncWithSeeds(
     [Buffer.from("multipliers"), pool.toBuffer()],
     programId
   );
