@@ -1,6 +1,7 @@
 use {
     crate::{errors::ErrorCode, state::*},
     anchor_lang::prelude::*,
+    hpl_events::HplEvents,
     hpl_hive_control::state::Project,
     mpl_bubblegum::program::Bubblegum,
     spl_account_compression::{program::SplAccountCompression, Noop},
@@ -50,7 +51,10 @@ pub struct StakeCNFT<'info> {
     /// SPL Compression Program
     pub compression_program: Program<'info, SplAccountCompression>,
 
-    /// SPL NO OP PROGRAM
+    /// HPL Events Program
+    pub hpl_events: Program<'info, HplEvents>,
+
+    /// SPL NOOP Program
     pub log_wrapper: Program<'info, Noop>,
 
     /// NATIVE CLOCK SYSVAR
@@ -153,8 +157,14 @@ pub fn stake_cnft<'info>(
 
     staker.total_staked += 1;
 
-    Event::stake(nft.key(), &nft, staker.key(), &staker, &ctx.accounts.clock)
-        .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
+    Event::stake(
+        nft.key(),
+        nft.try_to_vec().unwrap(),
+        staker.key(),
+        staker.try_to_vec().unwrap(),
+        &ctx.accounts.clock,
+    )
+    .emit(ctx.accounts.hpl_events.to_account_info())?;
     Ok(())
 }
 
@@ -202,7 +212,10 @@ pub struct UnstakeCNFT<'info> {
     /// SPL Compression Program
     pub compression_program: Program<'info, SplAccountCompression>,
 
-    /// SPL NO OP PROGRAM
+    /// HPL Events Program
+    pub hpl_events: Program<'info, HplEvents>,
+
+    /// SPL NOOP Program
     pub log_wrapper: Program<'info, Noop>,
 
     /// NATIVE CLOCK SYSVAR
@@ -292,8 +305,14 @@ pub fn unstake_cnft<'info>(
         args.index,
     )?;
 
-    Event::stake(nft.key(), &nft, staker.key(), &staker, &ctx.accounts.clock)
-        .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
+    Event::stake(
+        nft.key(),
+        nft.try_to_vec().unwrap(),
+        staker.key(),
+        staker.try_to_vec().unwrap(),
+        &ctx.accounts.clock,
+    )
+    .emit(ctx.accounts.hpl_events.to_account_info())?;
 
     Ok(())
 }

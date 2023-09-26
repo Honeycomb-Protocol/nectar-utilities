@@ -2,12 +2,12 @@ use {
     crate::state::MissionPool,
     anchor_lang::prelude::*,
     anchor_spl::token::Mint,
+    hpl_events::HplEvents,
     hpl_hive_control::{
         program::HplHiveControl,
         state::{DelegateAuthority, Project},
     },
     hpl_utils::traits::Default,
-    spl_account_compression::Noop,
 };
 
 /// Accounts used in create mission_pool instruction
@@ -47,7 +47,7 @@ pub struct CreateMissionPool<'info> {
 
     /// SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
-    pub log_wrapper: Program<'info, Noop>,
+    pub hpl_events: Program<'info, HplEvents>,
     pub clock_sysvar: Sysvar<'info, Clock>,
     pub rent_sysvar: Sysvar<'info, Rent>,
     /// NATIVE INSTRUCTIONS SYSVAR

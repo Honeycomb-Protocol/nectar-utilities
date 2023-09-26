@@ -10,8 +10,8 @@ use {
         program::HplCurrencyManager,
         state::{Currency, HolderAccount},
     },
+    hpl_events::HplEvents,
     hpl_hive_control::state::{DelegateAuthority, Project},
-    spl_account_compression::Noop,
 };
 
 /// Accounts used in withdraw rewards instruction
@@ -250,8 +250,8 @@ pub struct ClaimRewards<'info> {
     /// NATIVE TOKEN PROGRAM
     pub token_program: Program<'info, Token>,
 
-    /// SPL NO OP PROGRAM
-    pub log_wrapper: Program<'info, Noop>,
+    /// HPL Events Program
+    pub hpl_events: Program<'info, HplEvents>,
 
     /// SYSVAR CLOCK
     pub clock: Sysvar<'info, Clock>,
@@ -408,12 +408,12 @@ pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
 
     Event::claim_rewards(
         nft.key(),
-        &nft,
+        nft.try_to_vec().unwrap(),
         ctx.accounts.staker.key(),
         rewards_amount,
         &ctx.accounts.clock,
     )
-    .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
+    .emit(ctx.accounts.hpl_events.to_account_info())?;
 
     Ok(())
 }
@@ -468,8 +468,8 @@ pub struct DistriuteRewards<'info> {
     /// NATIVE TOKEN PROGRAM
     pub token_program: Program<'info, Token>,
 
-    /// SPL NO OP PROGRAM
-    pub log_wrapper: Program<'info, Noop>,
+    /// HPL Events Program
+    pub hpl_events: Program<'info, HplEvents>,
 
     /// SYSVAR CLOCK
     pub clock: Sysvar<'info, Clock>,
@@ -621,7 +621,7 @@ pub fn distribute_rewards(ctx: Context<DistriuteRewards>) -> Result<()> {
     //     rewards_amount,
     //     &ctx.accounts.clock,
     // )
-    // .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
+    // .emit(ctx.accounts.hpl_events.to_account_info())?;
 
     Ok(())
 }

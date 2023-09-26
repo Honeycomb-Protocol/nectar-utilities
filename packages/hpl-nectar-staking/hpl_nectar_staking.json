@@ -1,5 +1,5 @@
 {
-  "version": "0.1.19",
+  "version": "0.1.20",
   "name": "hpl_nectar_staking",
   "instructions": [
     {
@@ -70,11 +70,11 @@
           ]
         },
         {
-          "name": "logWrapper",
+          "name": "hplEvents",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "SPL NO OP PROGRAM"
+            "HPL Events Program"
           ]
         },
         {
@@ -454,11 +454,11 @@
           ]
         },
         {
-          "name": "logWrapper",
+          "name": "hplEvents",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "SPL NO OP PROGRAM"
+            "HPL Events Program"
           ]
         },
         {
@@ -573,11 +573,11 @@
           ]
         },
         {
-          "name": "logWrapper",
+          "name": "hplEvents",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "SPL NO OP PROGRAM"
+            "HPL Events Program"
           ]
         },
         {
@@ -666,11 +666,11 @@
           ]
         },
         {
-          "name": "logWrapper",
+          "name": "hplEvents",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "SPL NO OP PROGRAM"
+            "HPL Events Program"
           ]
         },
         {
@@ -788,11 +788,11 @@
           ]
         },
         {
-          "name": "logWrapper",
+          "name": "hplEvents",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "SPL NO OP PROGRAM"
+            "HPL Events Program"
           ]
         },
         {
@@ -951,11 +951,11 @@
           ]
         },
         {
-          "name": "logWrapper",
+          "name": "hplEvents",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "SPL NO OP PROGRAM"
+            "HPL Events Program"
           ]
         },
         {
@@ -1126,11 +1126,11 @@
           ]
         },
         {
-          "name": "logWrapper",
+          "name": "hplEvents",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "SPL NO OP PROGRAM"
+            "HPL Events Program"
           ]
         },
         {
@@ -1259,11 +1259,19 @@
           ]
         },
         {
+          "name": "hplEvents",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Events Program"
+          ]
+        },
+        {
           "name": "logWrapper",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "SPL NO OP PROGRAM"
+            "SPL NOOP Program"
           ]
         },
         {
@@ -1387,11 +1395,19 @@
           ]
         },
         {
+          "name": "hplEvents",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Events Program"
+          ]
+        },
+        {
           "name": "logWrapper",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "SPL NO OP PROGRAM"
+            "SPL NOOP Program"
           ]
         },
         {
@@ -1631,11 +1647,11 @@
           ]
         },
         {
-          "name": "logWrapper",
+          "name": "hplEvents",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "SPL NO OP PROGRAM"
+            "HPL Events Program"
           ]
         },
         {
@@ -1771,11 +1787,11 @@
           ]
         },
         {
-          "name": "logWrapper",
+          "name": "hplEvents",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "SPL NO OP PROGRAM"
+            "HPL Events Program"
           ]
         },
         {
@@ -2484,10 +2500,6 @@
               {
                 "name": "state",
                 "type": "bytes"
-              },
-              {
-                "name": "timestamp",
-                "type": "i64"
               }
             ]
           },
@@ -2501,10 +2513,6 @@
               {
                 "name": "state",
                 "type": "bytes"
-              },
-              {
-                "name": "timestamp",
-                "type": "i64"
               }
             ]
           },
@@ -2518,10 +2526,6 @@
               {
                 "name": "state",
                 "type": "bytes"
-              },
-              {
-                "name": "timestamp",
-                "type": "i64"
               }
             ]
           },
@@ -2543,10 +2547,6 @@
               {
                 "name": "staker",
                 "type": "bytes"
-              },
-              {
-                "name": "timestamp",
-                "type": "i64"
               }
             ]
           },
@@ -2568,10 +2568,6 @@
               {
                 "name": "staker",
                 "type": "bytes"
-              },
-              {
-                "name": "timestamp",
-                "type": "i64"
               }
             ]
           },
@@ -2593,10 +2589,6 @@
               {
                 "name": "amount",
                 "type": "u64"
-              },
-              {
-                "name": "timestamp",
-                "type": "i64"
               }
             ]
           }

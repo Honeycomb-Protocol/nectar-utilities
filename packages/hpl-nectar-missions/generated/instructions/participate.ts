@@ -54,7 +54,7 @@ export const participateStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] vault
  * @property [] currencyManagerProgram
  * @property [] nectarStakingProgram
- * @property [] logWrapper
+ * @property [] hplEvents
  * @property [] clock
  * @property [] rentSysvar
  * @property [] instructionsSysvar
@@ -82,7 +82,7 @@ export type ParticipateInstructionAccounts = {
   tokenProgram?: web3.PublicKey
   currencyManagerProgram: web3.PublicKey
   nectarStakingProgram: web3.PublicKey
-  logWrapper: web3.PublicKey
+  hplEvents: web3.PublicKey
   clock: web3.PublicKey
   rentSysvar: web3.PublicKey
   instructionsSysvar: web3.PublicKey
@@ -106,7 +106,7 @@ export const participateInstructionDiscriminator = [
 export function createParticipateInstruction(
   accounts: ParticipateInstructionAccounts,
   args: ParticipateInstructionArgs,
-  programId = new web3.PublicKey('HUNTopv9dHDdTPPMV1SfKZAxjXtuM4ic2PVEWPbsi9Z2')
+  programId = new web3.PublicKey('HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj')
 ) {
   const [data] = participateStruct.serialize({
     instructionDiscriminator: participateInstructionDiscriminator,
@@ -209,7 +209,7 @@ export function createParticipateInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.logWrapper,
+      pubkey: accounts.hplEvents,
       isWritable: false,
       isSigner: false,
     },

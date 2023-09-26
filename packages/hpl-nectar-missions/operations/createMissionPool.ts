@@ -5,7 +5,7 @@ import {
   SYSVAR_RENT_PUBKEY,
 } from "@solana/web3.js";
 import {
-  HIVECONTROL_PROGRAM_ID,
+  HPL_HIVE_CONTROL_PROGRAM,
   Honeycomb,
   HoneycombProject,
   Operation,
@@ -18,7 +18,7 @@ import {
 } from "../generated";
 import { missionPoolPda } from "../utils";
 import { createUpdateMissionPoolOperation } from "./updateMissionPool";
-import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
+import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
 
 /**
  * Represents the arguments needed to create a new mission pool operation.
@@ -92,8 +92,8 @@ export async function createCreateMissionPoolOperation(
         authority: honeycomb.identity().address,
         payer: honeycomb.identity().address,
         vault: VAULT,
-        hiveControl: HIVECONTROL_PROGRAM_ID,
-        logWrapper: SPL_NOOP_PROGRAM_ID,
+        hiveControl: HPL_HIVE_CONTROL_PROGRAM,
+        hplEvents: HPL_EVENTS_PROGRAM,
         clockSysvar: SYSVAR_CLOCK_PUBKEY,
         rentSysvar: SYSVAR_RENT_PUBKEY,
         instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,

@@ -24,7 +24,7 @@ import {
 } from "../generated";
 import { participationPda } from "../utils";
 import { NectarMission } from "../NectarMissions";
-import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
+import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 /**
@@ -126,7 +126,7 @@ export async function createParticipateOperation(
         clock: SYSVAR_CLOCK_PUBKEY,
         currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM,
         nectarStakingProgram: HPL_NECTAR_STAKING_PROGRAM,
-        logWrapper: SPL_NOOP_PROGRAM_ID,
+        hplEvents: HPL_EVENTS_PROGRAM,
       },
       {
         args: args.args,

@@ -18,37 +18,26 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  * @private
  */
 export type EventRecord = {
-  NewNft: { address: web3.PublicKey; state: Uint8Array; timestamp: beet.bignum }
-  NftUsed: {
-    address: web3.PublicKey
-    state: Uint8Array
-    timestamp: beet.bignum
-  }
-  NewStaker: {
-    address: web3.PublicKey
-    state: Uint8Array
-    timestamp: beet.bignum
-  }
+  NewNft: { address: web3.PublicKey; state: Uint8Array }
+  NftUsed: { address: web3.PublicKey; state: Uint8Array }
+  NewStaker: { address: web3.PublicKey; state: Uint8Array }
   Stake: {
     nftAddress: web3.PublicKey
     nft: Uint8Array
     stakerAddress: web3.PublicKey
     staker: Uint8Array
-    timestamp: beet.bignum
   }
   Unstake: {
     nftAddress: web3.PublicKey
     nft: Uint8Array
     stakerAddress: web3.PublicKey
     staker: Uint8Array
-    timestamp: beet.bignum
   }
   ClaimRewards: {
     nftAddress: web3.PublicKey
     nft: Uint8Array
     stakerAddress: web3.PublicKey
     amount: beet.bignum
-    timestamp: beet.bignum
   }
 }
 
@@ -91,7 +80,6 @@ export const eventBeet = beet.dataEnum<EventRecord>([
       [
         ['address', beetSolana.publicKey],
         ['state', beet.bytes],
-        ['timestamp', beet.i64],
       ],
       'EventRecord["NewNft"]'
     ),
@@ -103,7 +91,6 @@ export const eventBeet = beet.dataEnum<EventRecord>([
       [
         ['address', beetSolana.publicKey],
         ['state', beet.bytes],
-        ['timestamp', beet.i64],
       ],
       'EventRecord["NftUsed"]'
     ),
@@ -115,7 +102,6 @@ export const eventBeet = beet.dataEnum<EventRecord>([
       [
         ['address', beetSolana.publicKey],
         ['state', beet.bytes],
-        ['timestamp', beet.i64],
       ],
       'EventRecord["NewStaker"]'
     ),
@@ -129,7 +115,6 @@ export const eventBeet = beet.dataEnum<EventRecord>([
         ['nft', beet.bytes],
         ['stakerAddress', beetSolana.publicKey],
         ['staker', beet.bytes],
-        ['timestamp', beet.i64],
       ],
       'EventRecord["Stake"]'
     ),
@@ -143,7 +128,6 @@ export const eventBeet = beet.dataEnum<EventRecord>([
         ['nft', beet.bytes],
         ['stakerAddress', beetSolana.publicKey],
         ['staker', beet.bytes],
-        ['timestamp', beet.i64],
       ],
       'EventRecord["Unstake"]'
     ),
@@ -157,7 +141,6 @@ export const eventBeet = beet.dataEnum<EventRecord>([
         ['nft', beet.bytes],
         ['stakerAddress', beetSolana.publicKey],
         ['amount', beet.u64],
-        ['timestamp', beet.i64],
       ],
       'EventRecord["ClaimRewards"]'
     ),

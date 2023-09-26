@@ -24,6 +24,7 @@ import {
   SPL_NOOP_PROGRAM_ID,
 } from "@solana/spl-account-compression";
 import { fetchAssetProof } from "./fetch";
+import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
 
 /**
  * Represents the arguments required to create an unstake operation.
@@ -117,6 +118,7 @@ export async function createUnstakeOperation(
           creatorHash: args.nft.compression.creatorHash,
           bubblegumProgram: BUBBLEGUM_PROGRAM_ID,
           compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+          hplEvents: HPL_EVENTS_PROGRAM,
           logWrapper: SPL_NOOP_PROGRAM_ID,
           clock: web3.SYSVAR_CLOCK_PUBKEY,
           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
@@ -195,7 +197,7 @@ export async function createUnstakeOperation(
             ? AUTHORIZATION_PROGRAM_ID
             : programId,
           authorizationRules: args.nft.programmableConfig?.ruleSet || programId,
-          logWrapper: SPL_NOOP_PROGRAM_ID,
+          hplEvents: HPL_EVENTS_PROGRAM,
         },
         programId
       )

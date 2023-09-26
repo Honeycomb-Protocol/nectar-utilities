@@ -517,6 +517,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f3ad85c1f65dc7b37604eb0e89748faf0b9653065f2a8ef69f96a687ec1e9279"
 
 [[package]]
+name = "convert_case"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec182b0ca2f35d8fc196cf3404988fd8b8c739a4d270ff118a398feb0cbec1ca"
+dependencies = [
+ "unicode-segmentation",
+]
+
+[[package]]
 name = "cpufeatures"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -823,56 +832,56 @@ dependencies = [
 
 [[package]]
 name = "hpl-attribute-event"
-version = "0.1.6"
+version = "0.1.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "666cac4426e10d923fdd1c9defaad782b04d8103dd34fed6a3b875cf79d74870"
+checksum = "6f838de98ff9bf14e16a8a8257dcb68c4420578be79ed3764f5f98b1a2177e99"
 dependencies = [
+ "convert_case",
  "proc-macro2",
  "quote",
  "syn 2.0.28",
 ]
 
 [[package]]
-name = "hpl-compression"
-version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f29fabb12a787a7473929e923f1da5ec229a6ad51ac22370d0acb31ae8c58303"
-dependencies = [
- "borsh",
- "hpl-attribute-event",
- "solana-program",
- "spl-noop",
-]
-
-[[package]]
 name = "hpl-currency-manager"
-version = "0.0.56"
+version = "0.0.63"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de3f6e871cf3909548b4b3c885d059996d7bfc2ffaae580fabf9724d127f0f0d"
+checksum = "41bbe01b8b5efbe58a522fe12b8368ad84d14e16d36222c11c421c573494dcb8"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
  "getrandom 0.2.9",
- "hpl-compression",
+ "hpl-events",
  "hpl-hive-control",
  "hpl-utils",
  "mpl-token-metadata",
  "solana-program",
- "spl-account-compression",
  "toml_datetime 0.6.1",
  "winnow",
 ]
 
 [[package]]
-name = "hpl-hive-control"
-version = "0.1.62"
+name = "hpl-events"
+version = "0.1.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ba0532f288e29852fdaa30a7099701414b198b67f9b59f25916e45b38135306"
+checksum = "5d25d4a888802e4f884889e1b1df540966cf2e643ada7067301b3d2cf541f7b3"
+dependencies = [
+ "anchor-lang",
+ "borsh",
+ "hpl-attribute-event",
+ "solana-program",
+]
+
+[[package]]
+name = "hpl-hive-control"
+version = "0.1.70"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fef44c2a70a61e10e74bc427d885a49a991c36e23948732afd944518e3d255f9"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
  "getrandom 0.2.9",
- "hpl-compression",
+ "hpl-events",
  "hpl-utils",
  "mpl-token-metadata",
  "sol-did",
@@ -884,13 +893,13 @@ dependencies = [
 
 [[package]]
 name = "hpl-nectar-missions"
-version = "0.0.73"
+version = "0.1.20"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
  "getrandom 0.2.9",
- "hpl-compression",
  "hpl-currency-manager",
+ "hpl-events",
  "hpl-hive-control",
  "hpl-nectar-staking",
  "hpl-utils",
@@ -902,13 +911,13 @@ dependencies = [
 
 [[package]]
 name = "hpl-nectar-staking"
-version = "0.1.19"
+version = "0.1.20"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
  "getrandom 0.2.9",
- "hpl-compression",
  "hpl-currency-manager",
+ "hpl-events",
  "hpl-hive-control",
  "hpl-utils",
  "mpl-bubblegum",

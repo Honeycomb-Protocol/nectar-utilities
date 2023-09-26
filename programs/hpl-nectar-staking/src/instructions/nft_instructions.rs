@@ -2,10 +2,11 @@ use {
     crate::{errors::ErrorCode, state::*},
     anchor_lang::prelude::*,
     anchor_spl::token::Mint,
+    hpl_events::HplEvents,
     hpl_hive_control::state::{DelegateAuthority, Project},
     hpl_utils::traits::Default,
     mpl_token_metadata::state::{Metadata, TokenMetadataAccount},
-    spl_account_compression::{program::SplAccountCompression, Noop},
+    spl_account_compression::program::SplAccountCompression,
 };
 
 /// Accounts used in init NFT instruction
@@ -44,8 +45,8 @@ pub struct InitNFT<'info> {
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
 
-    /// SPL NO OP PROGRAM
-    pub log_wrapper: Program<'info, Noop>,
+    /// HPL Events Program
+    pub hpl_events: Program<'info, HplEvents>,
 
     /// NATIVE CLOCK SYSVAR
     pub clock: Sysvar<'info, Clock>,
@@ -124,8 +125,8 @@ pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
 
     let validation_out = hpl_utils::validate_collection_creator(metadata, &collections, &creators);
 
-    Event::new_nft(nft.key(), &nft, &ctx.accounts.clock)
-        .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
+    Event::new_nft(nft.key(), nft.try_to_vec().unwrap(), &ctx.accounts.clock)
+        .emit(ctx.accounts.hpl_events.to_account_info())?;
 
     match validation_out {
         Ok(x) => {
@@ -205,8 +206,8 @@ pub struct InitCNFT<'info> {
     /// SPL Compression Program
     pub compression_program: Program<'info, SplAccountCompression>,
 
-    /// SPL NO OP PROGRAM
-    pub log_wrapper: Program<'info, Noop>,
+    /// HPL Events Program
+    pub hpl_events: Program<'info, HplEvents>,
 
     /// NATIVE CLOCK SYSVAR
     pub clock: Sysvar<'info, Clock>,
@@ -295,8 +296,8 @@ pub fn init_cnft<'info>(
 
     msg!("Emittinng Event");
 
-    Event::new_nft(nft.key(), &nft, &ctx.accounts.clock)
-        .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
+    Event::new_nft(nft.key(), nft.try_to_vec().unwrap(), &ctx.accounts.clock)
+        .emit(ctx.accounts.hpl_events.to_account_info())?;
 
     msg!("Emitted Event");
 
@@ -329,8 +330,8 @@ pub struct UseNft<'info> {
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
 
-    /// SPL NO OP PROGRAM
-    pub log_wrapper: Program<'info, Noop>,
+    /// HPL Events Program
+    pub hpl_events: Program<'info, HplEvents>,
 
     /// NATIVE CLOCK SYSVAR
     pub clock: Sysvar<'info, Clock>,
@@ -356,10 +357,10 @@ pub fn use_nft<'info>(ctx: Context<UseNft>, used_by: NFTUsedBy) -> Result<()> {
 
     Event::nft_used(
         ctx.accounts.nft.key(),
-        &ctx.accounts.nft,
+        ctx.accounts.nft.try_to_vec().unwrap(),
         &ctx.accounts.clock,
     )
-    .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
+    .emit(ctx.accounts.hpl_events.to_account_info())?;
 
     Ok(())
 }

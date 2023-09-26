@@ -8,7 +8,7 @@ import {
 import { getStakingPoolPda } from "../pdas";
 import {
   VAULT,
-  HIVECONTROL_PROGRAM_ID,
+  HPL_HIVE_CONTROL_PROGRAM,
   Honeycomb,
   Operation,
   HoneycombProject,
@@ -17,7 +17,7 @@ import { createUpdatePoolOperation } from "./updateStakingPool";
 import { createInitMultiplierOperation } from "./initMultipliers";
 import { createAddMultiplierOperation } from "./addMultiplier";
 import { HplCurrency } from "@honeycomb-protocol/currency-manager";
-import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
+import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
 
 /**
  * Represents the context arguments for creating the CreateStakingPool operation.
@@ -92,8 +92,8 @@ export async function createCreateStakingPoolOperation(
           honeycomb.identity().delegateAuthority()?.address || programId,
         authority: honeycomb.identity().address,
         payer: honeycomb.identity().address,
-        hiveControl: HIVECONTROL_PROGRAM_ID,
-        logWrapper: SPL_NOOP_PROGRAM_ID,
+        hiveControl: HPL_HIVE_CONTROL_PROGRAM,
+        hplEvents: HPL_EVENTS_PROGRAM,
         clockSysvar: web3.SYSVAR_CLOCK_PUBKEY,
         rentSysvar: web3.SYSVAR_RENT_PUBKEY,
         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,

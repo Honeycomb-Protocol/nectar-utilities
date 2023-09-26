@@ -3,12 +3,12 @@ use {
     anchor_lang::prelude::*,
     anchor_spl::token::{self, Mint, Token},
     hpl_currency_manager::state::Currency,
+    hpl_events::HplEvents,
     hpl_hive_control::{
         program::HplHiveControl,
         state::{DelegateAuthority, Project},
     },
     hpl_utils::traits::Default,
-    spl_account_compression::Noop,
 };
 
 /// Accounts used in create staking_pool instruction
@@ -54,8 +54,8 @@ pub struct CreateStakingPool<'info> {
     /// SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
 
-    /// SPL NO OP PROGRAM
-    pub log_wrapper: Program<'info, Noop>,
+    /// HPL Events Program
+    pub hpl_events: Program<'info, HplEvents>,
 
     /// SYSVAR CLOCK
     pub clock_sysvar: Sysvar<'info, Clock>,

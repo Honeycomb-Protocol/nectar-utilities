@@ -45,7 +45,7 @@ export const createMissionPoolStruct = new beet.FixableBeetArgsStruct<
  * @property [**signer**] authority
  * @property [_writable_, **signer**] payer
  * @property [_writable_] vault
- * @property [] logWrapper
+ * @property [] hplEvents
  * @property [] clockSysvar
  * @property [] rentSysvar
  * @property [] instructionsSysvar
@@ -62,7 +62,7 @@ export type CreateMissionPoolInstructionAccounts = {
   payer: web3.PublicKey
   vault: web3.PublicKey
   systemProgram?: web3.PublicKey
-  logWrapper: web3.PublicKey
+  hplEvents: web3.PublicKey
   clockSysvar: web3.PublicKey
   rentSysvar: web3.PublicKey
   instructionsSysvar: web3.PublicKey
@@ -92,7 +92,7 @@ export const createMissionPoolInstructionDiscriminator = [
 export function createCreateMissionPoolInstruction(
   accounts: CreateMissionPoolInstructionAccounts,
   args: CreateMissionPoolInstructionArgs,
-  programId = new web3.PublicKey('HUNTopv9dHDdTPPMV1SfKZAxjXtuM4ic2PVEWPbsi9Z2')
+  programId = new web3.PublicKey('HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj')
 ) {
   const [data] = createMissionPoolStruct.serialize({
     instructionDiscriminator: createMissionPoolInstructionDiscriminator,
@@ -139,7 +139,7 @@ export function createCreateMissionPoolInstruction(
     isSigner: false,
   })
   keys.push({
-    pubkey: accounts.logWrapper,
+    pubkey: accounts.hplEvents,
     isWritable: false,
     isSigner: false,
   })

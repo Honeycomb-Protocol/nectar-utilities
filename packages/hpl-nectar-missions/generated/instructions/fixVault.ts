@@ -71,7 +71,7 @@ export const fixVaultInstructionDiscriminator = [
  */
 export function createFixVaultInstruction(
   accounts: FixVaultInstructionAccounts,
-  programId = new web3.PublicKey('HUNTopv9dHDdTPPMV1SfKZAxjXtuM4ic2PVEWPbsi9Z2')
+  programId = new web3.PublicKey('HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj')
 ) {
   const [data] = fixVaultStruct.serialize({
     instructionDiscriminator: fixVaultInstructionDiscriminator,

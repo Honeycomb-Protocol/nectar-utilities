@@ -10,7 +10,7 @@ import {
 import { getNftPda, getStakerPda } from "../pdas";
 import { StakedNft } from "../types";
 import { NectarStaking } from "../NectarStaking";
-import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
+import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 /**
@@ -88,7 +88,7 @@ export async function createClaimRewardsOperation(
         clock: web3.SYSVAR_CLOCK_PUBKEY,
         currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-        logWrapper: SPL_NOOP_PROGRAM_ID,
+        hplEvents: HPL_EVENTS_PROGRAM,
       },
       programId
     ),

@@ -5,13 +5,13 @@ use {
         associated_token::AssociatedToken,
         token::{self, CloseAccount, Mint, Token, TokenAccount},
     },
+    hpl_events::HplEvents,
     hpl_hive_control::state::Project,
     hpl_utils::traits::Default,
     mpl_token_metadata::{
         instruction::{DelegateArgs, RevokeArgs},
         state::{Metadata, TokenMetadataAccount},
     },
-    spl_account_compression::Noop,
 };
 
 /// Accounts used in stake instruction
@@ -90,8 +90,8 @@ pub struct Stake<'info> {
     #[account(address = mpl_token_metadata::ID)]
     pub token_metadata_program: AccountInfo<'info>,
 
-    /// SPL NO OP PROGRAM
-    pub log_wrapper: Program<'info, Noop>,
+    /// HPL Events Program
+    pub hpl_events: Program<'info, HplEvents>,
 
     /// NATIVE CLOCK SYSVAR
     pub clock: Sysvar<'info, Clock>,
@@ -247,8 +247,14 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
 
     staker.total_staked += 1;
 
-    Event::stake(nft.key(), &nft, staker.key(), &staker, &ctx.accounts.clock)
-        .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
+    Event::stake(
+        nft.key(),
+        nft.try_to_vec().unwrap(),
+        staker.key(),
+        staker.try_to_vec().unwrap(),
+        &ctx.accounts.clock,
+    )
+    .emit(ctx.accounts.hpl_events.to_account_info())?;
 
     // msg!("JSON NFT: {:?}", nft);
     Ok(())
@@ -324,8 +330,8 @@ pub struct Unstake<'info> {
     #[account(address = mpl_token_metadata::ID)]
     pub token_metadata_program: AccountInfo<'info>,
 
-    /// SPL NO OP PROGRAM
-    pub log_wrapper: Program<'info, Noop>,
+    /// HPL Events Program
+    pub hpl_events: Program<'info, HplEvents>,
 
     /// NATIVE CLOCK SYSVAR
     pub clock: Sysvar<'info, Clock>,
@@ -482,8 +488,14 @@ pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
         }
     }
 
-    Event::unstake(nft.key(), &nft, staker.key(), &staker, &ctx.accounts.clock)
-        .wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
+    Event::unstake(
+        nft.key(),
+        nft.try_to_vec().unwrap(),
+        staker.key(),
+        staker.try_to_vec().unwrap(),
+        &ctx.accounts.clock,
+    )
+    .emit(ctx.accounts.hpl_events.to_account_info())?;
     // msg!("JSON NFT: {:?}", nft);
     Ok(())
 }

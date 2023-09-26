@@ -14,22 +14,15 @@ import {
 } from "@honeycomb-protocol/currency-manager";
 import {
   LockType,
+  NFTv1,
   NectarStaking,
   findProjectStakingPools,
+  nFTv1Discriminator,
 } from "../packages/hpl-nectar-staking";
-import {
-  createNewTree,
-  mintOneCNFT,
-  prepare,
-  tryKeyOrGenerate,
-  wait,
-} from "./prepare";
+import { createNewTree, getHoneycomb, mintOneCNFT, wait } from "./prepare";
 import {
   NectarMissions,
-  Participation,
-  RewardType,
   findProjectMissionPools,
-  participationBeet,
 } from "../packages/hpl-nectar-missions";
 
 jest.setTimeout(2000000);
@@ -69,25 +62,41 @@ describe("Nectar Utilities", () => {
   // let factionsMerkleTree: MerkleTree;
   let mainVault: HplHolderAccount;
 
-  it("TEMP", () => {
-    const stateRaw = Buffer.from([
-      255, 15, 96, 154, 196, 189, 192, 17, 203, 90, 158, 8, 254, 177, 98, 6, 8,
-      211, 184, 70, 110, 139, 66, 107, 227, 57, 125, 62, 4, 4, 243, 200, 226,
-      183, 226, 238, 203, 92, 53, 177, 53, 250, 179, 14, 79, 36, 171, 211, 42,
-      41, 217, 191, 218, 28, 139, 10, 225, 124, 152, 151, 153, 183, 31, 114,
-      189, 225, 168, 211, 33, 243, 232, 132, 54, 30, 139, 210, 116, 173, 164,
-      135, 76, 201, 174, 186, 177, 157, 214, 30, 5, 119, 71, 232, 141, 68, 127,
-      125, 198, 246, 176, 237, 100, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 202, 154, 59,
-      0, 0, 0, 0, 1, 209, 52, 217, 84, 215, 47, 117, 201, 27, 55, 94, 49, 38,
-      208, 231, 124, 130, 48, 28, 189, 102, 8, 75, 167, 55, 18, 86, 66, 108, 20,
-      218, 30, 1, 0, 202, 154, 59, 0, 0, 0, 0, 1, 5, 245, 164, 130, 155, 87,
-      134, 240, 94, 29, 205, 201, 189, 0, 243, 78, 86, 192, 44, 5, 208, 59, 218,
-      190, 251, 42, 112, 89, 78, 173, 188, 147, 1,
-    ]);
-    console.log(
-      "participationBeet.deserialize(stateRaw)[0]",
-      participationBeet.deserialize(stateRaw)[0]
+  it.skip("TEMPP", async () => {
+    const connection = new web3.Connection(
+      "https://rpc.helius.xyz/?api-key=1f580922-6600-4db7-bf2d-94363b0b5626"
+      // "https://lingering-newest-sheet.solana-devnet.quiknode.pro/fb6e6465df3955a06fd5ddec2e5b003896f56adb/"
     );
+    const honeycomb = new Honeycomb(connection, { env: "main" }).use(
+      await HoneycombProject.fromAddress(
+        connection,
+        new web3.PublicKey("7CKTHsJ3EZqChNf3XGt9ytdZXvSzDFWmrQJL3BCe4Ppw")
+        // new web3.PublicKey("B73zK97zv3WQfvF1o4tZF23oWo7rBGqj5kd9k51mMhdk")
+      )
+    );
+    console.log(honeycomb.project().authority.toString());
+    // let a: any = "";
+    // if (!a) return;
+    honeycomb.use(identityModule(tryKeyOrGenerate()[0]));
+
+    console.log(honeycomb.identity().address.toString());
+
+    const nfts = (
+      await NFTv1.gpaBuilder()
+        .addFilter("accountDiscriminator", nFTv1Discriminator)
+        .run(connection)
+    )
+      .map((n) => {
+        try {
+          return [n.pubkey, NFTv1.fromAccountInfo(n.account)[0]];
+        } catch {
+          return null;
+        }
+      })
+      .filter((n) => !!n) as [web3.PublicKey, NFTv1][];
+    console.log("Staked", nfts.length);
+    console.log("pNFTs", nfts.filter((n) => !n[1].isCompressed).length);
+    console.log("cNFTs", nfts.filter((n) => n[1].isCompressed).length);
   });
 
   it.skip("Temp", async () => {
@@ -1597,7 +1606,7 @@ describe("Nectar Utilities", () => {
   });
 
   it.skip("Prepare", async () => {
-    honeycomb = await prepare();
+    const temp = getHoneycomb();
     const balance = await honeycomb
       .rpc()
       .getBalance(honeycomb.identity().address);

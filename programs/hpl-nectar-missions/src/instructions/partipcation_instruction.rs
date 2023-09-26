@@ -7,6 +7,7 @@ use {
         program::HplCurrencyManager,
         state::{Currency, HolderAccount},
     },
+    hpl_events::HplEvents,
     hpl_hive_control::{
         cpi::{accounts::ManageProfileData, add_profile_data, modify_profile_data},
         instructions::{
@@ -22,7 +23,7 @@ use {
         state::{NFTCriteria, NFTUsedBy, NFTv1, Staker, StakingPool},
     },
     hpl_utils::traits::Default,
-    spl_account_compression::{program::SplAccountCompression, Noop},
+    spl_account_compression::program::SplAccountCompression,
 };
 
 /// Accounts used in participate instruction
@@ -87,7 +88,7 @@ pub struct Participate<'info> {
     pub token_program: Program<'info, Token>,
     pub currency_manager_program: Program<'info, HplCurrencyManager>,
     pub nectar_staking_program: Program<'info, HplNectarStaking>,
-    pub log_wrapper: Program<'info, Noop>,
+    pub hpl_events: Program<'info, HplEvents>,
     pub clock: Sysvar<'info, Clock>,
     pub rent_sysvar: Sysvar<'info, Rent>,
     /// CHECK: This is not dangerous because we don't read or write from this account
@@ -254,7 +255,7 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
                 nft: ctx.accounts.nft.to_account_info(),
                 wallet: ctx.accounts.wallet.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
-                log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+                hpl_events: ctx.accounts.hpl_events.to_account_info(),
                 clock: ctx.accounts.clock.to_account_info(),
                 instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),
@@ -263,9 +264,12 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
         NFTUsedBy::Missions,
     )?;
 
-    let event =
-        events::Event::new_participation(participation.key(), &participation, &ctx.accounts.clock);
-    event.wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
+    events::Event::new_participation(
+        participation.key(),
+        participation.try_to_vec().unwrap(),
+        &ctx.accounts.clock,
+    )
+    .emit(ctx.accounts.hpl_events.to_account_info())?;
 
     Ok(())
 }
@@ -313,7 +317,7 @@ pub struct CollectRewards<'info> {
     pub system_program: Program<'info, System>,
     pub hive_control_program: Program<'info, HplHiveControl>,
     pub currency_manager_program: Program<'info, HplCurrencyManager>,
-    pub log_wrapper: Program<'info, Noop>,
+    pub hpl_events: Program<'info, HplEvents>,
     pub compression_program: Program<'info, SplAccountCompression>,
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
@@ -445,7 +449,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                             payer: ctx.accounts.wallet.to_account_info(),
                             rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
                             system_program: ctx.accounts.system_program.to_account_info(),
-                            log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+                            hpl_events: ctx.accounts.hpl_events.to_account_info(),
                             clock: ctx.accounts.clock.to_account_info(),
                             compression_program: ctx.accounts.compression_program.to_account_info(),
                             vault: ctx.accounts.vault.to_account_info(),
@@ -475,7 +479,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                                     payer: ctx.accounts.wallet.to_account_info(),
                                     rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
                                     system_program: ctx.accounts.system_program.to_account_info(),
-                                    log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+                                    hpl_events: ctx.accounts.hpl_events.to_account_info(),
                                     clock: ctx.accounts.clock.to_account_info(),
                                     compression_program: ctx
                                         .accounts
@@ -502,13 +506,13 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
         }
     };
 
-    let event = events::Event::collect_participation_reward(
+    events::Event::collect_participation_reward(
         participation_key,
         reward_serial_no - 1,
-        &reward,
+        reward.try_to_vec().unwrap(),
         &ctx.accounts.clock,
-    );
-    event.wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
+    )
+    .emit(ctx.accounts.hpl_events.to_account_info())?;
     res
 }
 
@@ -547,7 +551,7 @@ pub struct Recall<'info> {
 
     pub system_program: Program<'info, System>,
     pub nectar_staking_program: Program<'info, HplNectarStaking>,
-    pub log_wrapper: Program<'info, Noop>,
+    pub hpl_events: Program<'info, HplEvents>,
     pub clock: Sysvar<'info, Clock>,
     /// NATIVE INSTRUCTIONS SYSVAR
     /// CHECK: This is not dangerous because we don't read or write from this account
@@ -583,7 +587,7 @@ pub fn recall(ctx: Context<Recall>) -> Result<()> {
                 nft: ctx.accounts.nft.to_account_info(),
                 wallet: ctx.accounts.wallet.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
-                log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+                hpl_events: ctx.accounts.hpl_events.to_account_info(),
                 clock: ctx.accounts.clock.to_account_info(),
                 instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),
@@ -592,11 +596,11 @@ pub fn recall(ctx: Context<Recall>) -> Result<()> {
         NFTUsedBy::None,
     )?;
 
-    let event = events::Event::recall_participation(
+    events::Event::recall_participation(
         participation.key(),
-        participation,
+        participation.try_to_vec().unwrap(),
         &ctx.accounts.clock,
-    );
-    event.wrap(ctx.accounts.log_wrapper.to_account_info(), crate::id())?;
+    )
+    .emit(ctx.accounts.hpl_events.to_account_info())?;
     Ok(())
 }

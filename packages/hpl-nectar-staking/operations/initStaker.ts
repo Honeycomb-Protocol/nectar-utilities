@@ -3,7 +3,7 @@ import { createInitStakerInstruction, PROGRAM_ID } from "../generated";
 import { getStakerPda } from "../pdas";
 import { VAULT, Operation, Honeycomb } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
-import { SPL_NOOP_PROGRAM_ID } from "@solana/spl-account-compression";
+import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
 
 /**
  * Represents the arguments required to create an initialization staker operation.
@@ -57,7 +57,7 @@ export function createInitStakerOperation(
         stakingPool: args.stakingPool.address,
         staker,
         wallet: honeycomb.identity().address,
-        logWrapper: SPL_NOOP_PROGRAM_ID,
+        hplEvents: HPL_EVENTS_PROGRAM,
         clock: web3.SYSVAR_CLOCK_PUBKEY,
         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
       },

@@ -88,7 +88,7 @@ export const updateMissionInstructionDiscriminator = [
 export function createUpdateMissionInstruction(
   accounts: UpdateMissionInstructionAccounts,
   args: UpdateMissionInstructionArgs,
-  programId = new web3.PublicKey('HUNTopv9dHDdTPPMV1SfKZAxjXtuM4ic2PVEWPbsi9Z2')
+  programId = new web3.PublicKey('HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj')
 ) {
   const [data] = updateMissionStruct.serialize({
     instructionDiscriminator: updateMissionInstructionDiscriminator,

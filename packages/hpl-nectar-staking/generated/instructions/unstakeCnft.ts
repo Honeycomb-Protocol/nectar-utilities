@@ -47,6 +47,7 @@ export const unstakeCnftStruct = new beet.BeetArgsStruct<
  * @property [_writable_, **signer**] wallet
  * @property [] bubblegumProgram
  * @property [] compressionProgram
+ * @property [] hplEvents
  * @property [] logWrapper
  * @property [] clock
  * @property [] instructionsSysvar
@@ -69,6 +70,7 @@ export type UnstakeCnftInstructionAccounts = {
   systemProgram?: web3.PublicKey
   bubblegumProgram: web3.PublicKey
   compressionProgram: web3.PublicKey
+  hplEvents: web3.PublicKey
   logWrapper: web3.PublicKey
   clock: web3.PublicKey
   instructionsSysvar: web3.PublicKey
@@ -158,6 +160,11 @@ export function createUnstakeCnftInstruction(
     },
     {
       pubkey: accounts.compressionProgram,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.hplEvents,
       isWritable: false,
       isSigner: false,
     },

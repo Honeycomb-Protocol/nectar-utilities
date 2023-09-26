@@ -7,7 +7,7 @@ import {
   SYSVAR_RENT_PUBKEY,
 } from "@solana/web3.js";
 import {
-  HIVECONTROL_PROGRAM_ID,
+  HPL_HIVE_CONTROL_PROGRAM,
   Honeycomb,
   Operation,
   VAULT,
@@ -28,14 +28,12 @@ import {
   ParticipationReward,
 } from "../NectarMissions";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import {
-  SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-  SPL_NOOP_PROGRAM_ID,
-} from "@solana/spl-account-compression";
+import { SPL_ACCOUNT_COMPRESSION_PROGRAM_ID } from "@solana/spl-account-compression";
 import {
   HPL_NECTAR_STAKING_PROGRAM,
   getNftPda,
 } from "@honeycomb-protocol/nectar-staking";
+import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
 
 /**
  * Represents the arguments needed to create a collect rewards operation.
@@ -136,10 +134,10 @@ export async function createCollectRewardsOperation(
         tokenAccount: tokenAccount || programId,
         wallet: args.wallet,
         vault: VAULT,
-        hiveControlProgram: HIVECONTROL_PROGRAM_ID,
+        hiveControlProgram: HPL_HIVE_CONTROL_PROGRAM,
         currencyManagerProgram: CURRENCY_MANAGER_PROGRAM_ID,
         compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-        logWrapper: SPL_NOOP_PROGRAM_ID,
+        hplEvents: HPL_EVENTS_PROGRAM,
         rentSysvar: SYSVAR_RENT_PUBKEY,
         instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
         tokenProgram: TOKEN_PROGRAM_ID,
@@ -264,7 +262,7 @@ export async function creatRecallOperation(
         wallet: honeycomb.identity().address,
         vault: VAULT,
         nectarStakingProgram: HPL_NECTAR_STAKING_PROGRAM,
-        logWrapper: SPL_NOOP_PROGRAM_ID,
+        hplEvents: HPL_EVENTS_PROGRAM,
         clock: SYSVAR_CLOCK_PUBKEY,
         instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
       },

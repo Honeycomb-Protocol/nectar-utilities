@@ -5,7 +5,7 @@ pub mod instructions;
 pub mod state;
 pub mod utils;
 
-declare_id!("HUNTopv9dHDdTPPMV1SfKZAxjXtuM4ic2PVEWPbsi9Z2");
+declare_id!("HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj");
 
 use instructions::*;
 
@@ -32,7 +32,7 @@ pub mod hpl_nectar_missions {
                     authority: ctx.accounts.authority.to_account_info(),
                     payer: ctx.accounts.payer.to_account_info(),
                     system_program: ctx.accounts.system_program.to_account_info(),
-                    log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+                    hpl_events: ctx.accounts.hpl_events.to_account_info(),
                     clock: ctx.accounts.clock_sysvar.to_account_info(),
                     rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
                     instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),

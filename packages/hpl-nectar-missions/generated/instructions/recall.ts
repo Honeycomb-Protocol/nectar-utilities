@@ -31,7 +31,7 @@ export const recallStruct = new beet.BeetArgsStruct<{
  * @property [_writable_] participation
  * @property [_writable_, **signer**] wallet
  * @property [] nectarStakingProgram
- * @property [] logWrapper
+ * @property [] hplEvents
  * @property [] clock
  * @property [] instructionsSysvar
  * @property [_writable_] vault
@@ -50,7 +50,7 @@ export type RecallInstructionAccounts = {
   wallet: web3.PublicKey
   systemProgram?: web3.PublicKey
   nectarStakingProgram: web3.PublicKey
-  logWrapper: web3.PublicKey
+  hplEvents: web3.PublicKey
   clock: web3.PublicKey
   instructionsSysvar: web3.PublicKey
   vault: web3.PublicKey
@@ -71,7 +71,7 @@ export const recallInstructionDiscriminator = [
  */
 export function createRecallInstruction(
   accounts: RecallInstructionAccounts,
-  programId = new web3.PublicKey('HUNTopv9dHDdTPPMV1SfKZAxjXtuM4ic2PVEWPbsi9Z2')
+  programId = new web3.PublicKey('HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj')
 ) {
   const [data] = recallStruct.serialize({
     instructionDiscriminator: recallInstructionDiscriminator,
@@ -128,7 +128,7 @@ export function createRecallInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.logWrapper,
+      pubkey: accounts.hplEvents,
       isWritable: false,
       isSigner: false,
     },

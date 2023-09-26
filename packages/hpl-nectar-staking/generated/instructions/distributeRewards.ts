@@ -35,7 +35,7 @@ export const distributeRewardsStruct = new beet.BeetArgsStruct<{
  * @property [_writable_] staker
  * @property [_writable_] wallet
  * @property [**signer**] authority
- * @property [] logWrapper
+ * @property [] hplEvents
  * @property [] clock
  * @property [] instructionsSysvar
  * @property [_writable_] project
@@ -60,7 +60,7 @@ export type DistributeRewardsInstructionAccounts = {
   authority: web3.PublicKey
   systemProgram?: web3.PublicKey
   tokenProgram?: web3.PublicKey
-  logWrapper: web3.PublicKey
+  hplEvents: web3.PublicKey
   clock: web3.PublicKey
   instructionsSysvar: web3.PublicKey
   project: web3.PublicKey
@@ -169,7 +169,7 @@ export function createDistributeRewardsInstruction(
     isSigner: false,
   })
   keys.push({
-    pubkey: accounts.logWrapper,
+    pubkey: accounts.hplEvents,
     isWritable: false,
     isSigner: false,
   })

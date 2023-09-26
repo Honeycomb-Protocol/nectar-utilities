@@ -6,8 +6,8 @@
  */
 
 import * as web3 from '@solana/web3.js'
-import * as beet from '@metaplex-foundation/beet'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
+import * as beet from '@metaplex-foundation/beet'
 /**
  * This type is used to derive the {@link Event} type as well as the de/serializer.
  * However don't refer to it in your code but use the {@link Event} type instead.
@@ -18,22 +18,13 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  * @private
  */
 export type EventRecord = {
-  NewParticipation: {
-    address: web3.PublicKey
-    state: Uint8Array
-    timestamp: beet.bignum
-  }
+  NewParticipation: { address: web3.PublicKey; state: Uint8Array }
   CollectParticipationReward: {
     address: web3.PublicKey
     index: number
     state: Uint8Array
-    timestamp: beet.bignum
   }
-  RecallParticipation: {
-    address: web3.PublicKey
-    state: Uint8Array
-    timestamp: beet.bignum
-  }
+  RecallParticipation: { address: web3.PublicKey; state: Uint8Array }
 }
 
 /**
@@ -73,7 +64,6 @@ export const eventBeet = beet.dataEnum<EventRecord>([
       [
         ['address', beetSolana.publicKey],
         ['state', beet.bytes],
-        ['timestamp', beet.i64],
       ],
       'EventRecord["NewParticipation"]'
     ),
@@ -86,7 +76,6 @@ export const eventBeet = beet.dataEnum<EventRecord>([
         ['address', beetSolana.publicKey],
         ['index', beet.u8],
         ['state', beet.bytes],
-        ['timestamp', beet.i64],
       ],
       'EventRecord["CollectParticipationReward"]'
     ),
@@ -98,7 +87,6 @@ export const eventBeet = beet.dataEnum<EventRecord>([
       [
         ['address', beetSolana.publicKey],
         ['state', beet.bytes],
-        ['timestamp', beet.i64],
       ],
       'EventRecord["RecallParticipation"]'
     ),

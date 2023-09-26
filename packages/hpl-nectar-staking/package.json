@@ -11,8 +11,9 @@
   "peerDependencies": {
     "@solana/spl-token": "^0.3.8",
     "@solana/web3.js": "^1.78.0",
-    "@honeycomb-protocol/currency-manager": "^0.0.56",
-    "@honeycomb-protocol/hive-control": "^0.1.67",
+    "@honeycomb-protocol/events": "^0.1.17",
+    "@honeycomb-protocol/currency-manager": "^0.0.63",
+    "@honeycomb-protocol/hive-control": "^0.1.70",
     "@solana/spl-account-compression": "^0.1.8"
   }
 }

@@ -34,7 +34,7 @@ export const claimRewardsStruct = new beet.BeetArgsStruct<{
  * @property [_writable_] tokenAccount
  * @property [_writable_] staker
  * @property [_writable_, **signer**] wallet
- * @property [] logWrapper
+ * @property [] hplEvents
  * @property [] clock
  * @property [] instructionsSysvar
  * @property [_writable_] project
@@ -58,7 +58,7 @@ export type ClaimRewardsInstructionAccounts = {
   wallet: web3.PublicKey
   systemProgram?: web3.PublicKey
   tokenProgram?: web3.PublicKey
-  logWrapper: web3.PublicKey
+  hplEvents: web3.PublicKey
   clock: web3.PublicKey
   instructionsSysvar: web3.PublicKey
   project: web3.PublicKey
@@ -162,7 +162,7 @@ export function createClaimRewardsInstruction(
     isSigner: false,
   })
   keys.push({
-    pubkey: accounts.logWrapper,
+    pubkey: accounts.hplEvents,
     isWritable: false,
     isSigner: false,
   })

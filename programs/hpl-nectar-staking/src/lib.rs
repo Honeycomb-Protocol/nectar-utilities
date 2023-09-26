@@ -4,7 +4,7 @@ pub mod state;
 
 use {anchor_lang::prelude::*, instructions::*, state::NFTUsedBy};
 
-declare_id!("STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L");
+declare_id!("MiNESdRXUSmWY7NkAKdW9nMkjJZCaucguY3MDvkSmr6");
 
 #[program]
 pub mod hpl_nectar_staking {
@@ -28,7 +28,7 @@ pub mod hpl_nectar_staking {
                     },
                     authority: ctx.accounts.authority.to_account_info(),
                     system_program: ctx.accounts.system_program.to_account_info(),
-                    log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+                    hpl_events: ctx.accounts.hpl_events.to_account_info(),
                     clock: ctx.accounts.clock_sysvar.to_account_info(),
                     rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
                     instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
