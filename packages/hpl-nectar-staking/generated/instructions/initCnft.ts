@@ -97,7 +97,7 @@ export const initCnftInstructionDiscriminator = [
 export function createInitCnftInstruction(
   accounts: InitCnftInstructionAccounts,
   args: InitCnftInstructionArgs,
-  programId = new web3.PublicKey('STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L')
+  programId = new web3.PublicKey('MiNESdRXUSmWY7NkAKdW9nMkjJZCaucguY3MDvkSmr6')
 ) {
   const [data] = initCnftStruct.serialize({
     instructionDiscriminator: initCnftInstructionDiscriminator,

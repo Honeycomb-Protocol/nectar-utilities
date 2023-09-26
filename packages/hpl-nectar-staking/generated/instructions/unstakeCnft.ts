@@ -96,7 +96,7 @@ export const unstakeCnftInstructionDiscriminator = [
 export function createUnstakeCnftInstruction(
   accounts: UnstakeCnftInstructionAccounts,
   args: UnstakeCnftInstructionArgs,
-  programId = new web3.PublicKey('STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L')
+  programId = new web3.PublicKey('MiNESdRXUSmWY7NkAKdW9nMkjJZCaucguY3MDvkSmr6')
 ) {
   const [data] = unstakeCnftStruct.serialize({
     instructionDiscriminator: unstakeCnftInstructionDiscriminator,

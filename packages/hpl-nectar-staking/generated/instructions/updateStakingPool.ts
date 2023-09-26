@@ -93,7 +93,7 @@ export const updateStakingPoolInstructionDiscriminator = [
 export function createUpdateStakingPoolInstruction(
   accounts: UpdateStakingPoolInstructionAccounts,
   args: UpdateStakingPoolInstructionArgs,
-  programId = new web3.PublicKey('STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L')
+  programId = new web3.PublicKey('MiNESdRXUSmWY7NkAKdW9nMkjJZCaucguY3MDvkSmr6')
 ) {
   const [data] = updateStakingPoolStruct.serialize({
     instructionDiscriminator: updateStakingPoolInstructionDiscriminator,

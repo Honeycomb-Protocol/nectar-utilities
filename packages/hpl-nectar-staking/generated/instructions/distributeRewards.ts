@@ -88,7 +88,7 @@ export const distributeRewardsInstructionDiscriminator = [
  */
 export function createDistributeRewardsInstruction(
   accounts: DistributeRewardsInstructionAccounts,
-  programId = new web3.PublicKey('STAkY8Zx3rfY2MUyTJkdLB5jaM47mnDpKUUWzkj5d3L')
+  programId = new web3.PublicKey('MiNESdRXUSmWY7NkAKdW9nMkjJZCaucguY3MDvkSmr6')
 ) {
   const [data] = distributeRewardsStruct.serialize({
     instructionDiscriminator: distributeRewardsInstructionDiscriminator,
