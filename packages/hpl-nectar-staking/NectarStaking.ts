@@ -495,7 +495,7 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
    */
   public async stake(
     nfts: AvailableNft[],
-    options: web3.ConfirmOptions & SendBulkOptions,
+    options: web3.ConfirmOptions & SendBulkOptions = {},
     proofs: AssetProof[] = []
   ) {
     const operations = await Promise.all(
@@ -528,7 +528,7 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
    */
   public async claim(
     nfts: StakedNft[],
-    options: web3.ConfirmOptions & SendBulkOptions
+    options: web3.ConfirmOptions & SendBulkOptions = {}
   ) {
     const operations = await Promise.all(
       nfts.map((nft, i) =>

@@ -63,7 +63,9 @@ export const getHoneycomb = async () => {
   userHC.use(identityModule(user));
 
   return {
+    admin,
     adminHC,
+    user,
     userHC,
   };
 };
