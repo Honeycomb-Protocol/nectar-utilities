@@ -5,7 +5,12 @@ import {
   PROGRAM_ID,
 } from "../generated";
 import { getMultipliersPda } from "../pdas";
-import { Honeycomb, Operation, VAULT } from "@honeycomb-protocol/hive-control";
+import {
+  HPL_HIVE_CONTROL_PROGRAM,
+  Honeycomb,
+  Operation,
+  VAULT,
+} from "@honeycomb-protocol/hive-control";
 
 /**
  * Represents the context arguments for creating the AddMultiplier operation.
@@ -62,6 +67,7 @@ export async function createAddMultiplierOperation(
           honeycomb.identity().delegateAuthority()?.address || programId,
         authority: honeycomb.identity().address,
         payer: honeycomb.identity().address,
+        hiveControl: HPL_HIVE_CONTROL_PROGRAM,
         rentSysvar: web3.SYSVAR_RENT_PUBKEY,
         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
       },

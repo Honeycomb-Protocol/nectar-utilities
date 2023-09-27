@@ -1,6 +1,11 @@
 import * as web3 from "@solana/web3.js";
 import { createClaimRewardsInstruction, PROGRAM_ID } from "../generated";
-import { Honeycomb, Operation, VAULT } from "@honeycomb-protocol/hive-control";
+import {
+  Honeycomb,
+  HPL_HIVE_CONTROL_PROGRAM,
+  Operation,
+  VAULT,
+} from "@honeycomb-protocol/hive-control";
 import {
   PROGRAM_ID as HPL_CURRENCY_MANAGER_PROGRAM_ID,
   holderAccountPdas,
@@ -85,6 +90,7 @@ export async function createClaimRewardsOperation(
         tokenAccount,
         staker,
         wallet: honeycomb.identity().address,
+        hiveControl: HPL_HIVE_CONTROL_PROGRAM,
         clock: web3.SYSVAR_CLOCK_PUBKEY,
         currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
@@ -112,6 +118,7 @@ export async function createClaimRewardsOperation(
             owner: holderAccountT.owner,
             payer: honeycomb.identity().address,
             vault: VAULT,
+            hiveControl: HPL_HIVE_CONTROL_PROGRAM,
             associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
             instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
           })

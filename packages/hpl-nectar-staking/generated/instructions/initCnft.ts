@@ -45,6 +45,7 @@ export const initCnftStruct = new beet.BeetArgsStruct<
  * @property [] root
  * @property [] creatorHash
  * @property [_writable_, **signer**] wallet
+ * @property [] hiveControl
  * @property [] compressionProgram
  * @property [] hplEvents
  * @property [] clock
@@ -66,6 +67,7 @@ export type InitCnftInstructionAccounts = {
   creatorHash: web3.PublicKey
   wallet: web3.PublicKey
   systemProgram?: web3.PublicKey
+  hiveControl: web3.PublicKey
   compressionProgram: web3.PublicKey
   hplEvents: web3.PublicKey
   clock: web3.PublicKey
@@ -151,6 +153,11 @@ export function createInitCnftInstruction(
     },
     {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.hiveControl,
       isWritable: false,
       isSigner: false,
     },

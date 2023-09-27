@@ -2,7 +2,7 @@ use {
     crate::{errors::ErrorCode, state::*},
     anchor_lang::prelude::*,
     hpl_events::HplEvents,
-    hpl_hive_control::state::Project,
+    hpl_hive_control::{program::HplHiveControl, state::Project},
     mpl_bubblegum::program::Bubblegum,
     spl_account_compression::{program::SplAccountCompression, Noop},
 };
@@ -44,6 +44,9 @@ pub struct StakeCNFT<'info> {
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
 
     /// MPL Bubblegum program for cNFTs
     pub bubblegum_program: Program<'info, Bubblegum>,
@@ -205,6 +208,9 @@ pub struct UnstakeCNFT<'info> {
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
 
     /// MPL Bubblegum program for cNFTs
     pub bubblegum_program: Program<'info, Bubblegum>,

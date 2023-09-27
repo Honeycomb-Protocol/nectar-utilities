@@ -6,7 +6,12 @@ import {
   SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY,
 } from "@solana/web3.js";
-import { Honeycomb, Operation, VAULT } from "@honeycomb-protocol/hive-control";
+import {
+  HPL_HIVE_CONTROL_PROGRAM,
+  Honeycomb,
+  Operation,
+  VAULT,
+} from "@honeycomb-protocol/hive-control";
 import {
   PROGRAM_ID as HPL_CURRENCY_MANAGER_PROGRAM,
   createFixHolderAccountInstruction,
@@ -121,6 +126,7 @@ export async function createParticipateOperation(
         participation,
         wallet: honeycomb.identity().address,
         vault: VAULT,
+        hiveControl: HPL_HIVE_CONTROL_PROGRAM,
         rentSysvar: SYSVAR_RENT_PUBKEY,
         instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
         clock: SYSVAR_CLOCK_PUBKEY,
@@ -154,6 +160,7 @@ export async function createParticipateOperation(
             owner: holderAccountT.owner,
             payer: honeycomb.identity().address,
             vault: VAULT,
+            hiveControl: HPL_HIVE_CONTROL_PROGRAM,
             associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
             instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
           })

@@ -84,6 +84,10 @@ pub struct Participate<'info> {
     #[account(mut)]
     pub vault: AccountInfo<'info>,
     pub system_program: Program<'info, System>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
+
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
     pub currency_manager_program: Program<'info, HplCurrencyManager>,
@@ -234,6 +238,7 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
                 instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
+                hive_control: ctx.accounts.hive_control.to_account_info(),
                 token_program: ctx.accounts.token_program.to_account_info(),
             },
         ),
@@ -255,6 +260,7 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
                 nft: ctx.accounts.nft.to_account_info(),
                 wallet: ctx.accounts.wallet.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
+                hive_control: ctx.accounts.hive_control.to_account_info(),
                 hpl_events: ctx.accounts.hpl_events.to_account_info(),
                 clock: ctx.accounts.clock.to_account_info(),
                 instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
@@ -315,7 +321,10 @@ pub struct CollectRewards<'info> {
     #[account(mut)]
     pub vault: AccountInfo<'info>,
     pub system_program: Program<'info, System>,
-    pub hive_control_program: Program<'info, HplHiveControl>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
+
     pub currency_manager_program: Program<'info, HplCurrencyManager>,
     pub hpl_events: Program<'info, HplEvents>,
     pub compression_program: Program<'info, SplAccountCompression>,
@@ -421,6 +430,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                         instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                         vault: ctx.accounts.vault.to_account_info(),
                         system_program: ctx.accounts.system_program.to_account_info(),
+                        hive_control: ctx.accounts.hive_control.to_account_info(),
                         token_program: ctx.accounts.token_program.to_account_info(),
                     },
                     signer,
@@ -439,7 +449,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
             if current_xp.is_none() {
                 add_profile_data(
                     CpiContext::new(
-                        ctx.accounts.hive_control_program.to_account_info(),
+                        ctx.accounts.hive_control.to_account_info(),
                         ManageProfileData {
                             project: ctx.accounts.project.to_account_info(),
                             profile: profile.to_account_info(),
@@ -469,7 +479,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
                         let current_amount = value.parse::<u64>().unwrap();
                         modify_profile_data(
                             CpiContext::new(
-                                ctx.accounts.hive_control_program.to_account_info(),
+                                ctx.accounts.hive_control.to_account_info(),
                                 ManageProfileData {
                                     project: ctx.accounts.project.to_account_info(),
                                     profile: profile.to_account_info(),
@@ -550,6 +560,10 @@ pub struct Recall<'info> {
     pub wallet: Signer<'info>,
 
     pub system_program: Program<'info, System>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
+
     pub nectar_staking_program: Program<'info, HplNectarStaking>,
     pub hpl_events: Program<'info, HplEvents>,
     pub clock: Sysvar<'info, Clock>,
@@ -587,6 +601,7 @@ pub fn recall(ctx: Context<Recall>) -> Result<()> {
                 nft: ctx.accounts.nft.to_account_info(),
                 wallet: ctx.accounts.wallet.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
+                hive_control: ctx.accounts.hive_control.to_account_info(),
                 hpl_events: ctx.accounts.hpl_events.to_account_info(),
                 clock: ctx.accounts.clock.to_account_info(),
                 instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),

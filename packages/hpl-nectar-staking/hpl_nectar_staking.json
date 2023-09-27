@@ -1,5 +1,5 @@
 {
-  "version": "0.1.21",
+  "version": "0.1.22",
   "name": "hpl_nectar_staking",
   "instructions": [
     {
@@ -199,6 +199,14 @@
           ]
         },
         {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
+          ]
+        },
+        {
           "name": "rent",
           "isMut": false,
           "isSigner": false,
@@ -284,6 +292,14 @@
           ]
         },
         {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
+          ]
+        },
+        {
           "name": "instructionsSysvar",
           "isMut": false,
           "isSigner": false,
@@ -358,6 +374,14 @@
           "isSigner": false,
           "docs": [
             "NATIVE SYSTEM PROGRAM"
+          ]
+        },
+        {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
           ]
         },
         {
@@ -451,6 +475,14 @@
           "isSigner": false,
           "docs": [
             "NATIVE SYSTEM PROGRAM"
+          ]
+        },
+        {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
           ]
         },
         {
@@ -565,6 +597,14 @@
           ]
         },
         {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
+          ]
+        },
+        {
           "name": "compressionProgram",
           "isMut": false,
           "isSigner": false,
@@ -666,6 +706,14 @@
           ]
         },
         {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
+          ]
+        },
+        {
           "name": "hplEvents",
           "isMut": false,
           "isSigner": false,
@@ -737,6 +785,14 @@
           ]
         },
         {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
+          ]
+        },
+        {
           "name": "instructionsSysvar",
           "isMut": false,
           "isSigner": false,
@@ -785,6 +841,14 @@
           "isSigner": false,
           "docs": [
             "NATIVE SYSTEM PROGRAM"
+          ]
+        },
+        {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
           ]
         },
         {
@@ -924,6 +988,14 @@
           "isSigner": false,
           "docs": [
             "NATIVE SYSTEM PROGRAM"
+          ]
+        },
+        {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
           ]
         },
         {
@@ -1102,6 +1174,14 @@
           ]
         },
         {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
+          ]
+        },
+        {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false,
@@ -1243,6 +1323,14 @@
           ]
         },
         {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
+          ]
+        },
+        {
           "name": "bubblegumProgram",
           "isMut": false,
           "isSigner": false,
@@ -1379,6 +1467,14 @@
           ]
         },
         {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
+          ]
+        },
+        {
           "name": "bubblegumProgram",
           "isMut": false,
           "isSigner": false,
@@ -1512,6 +1608,14 @@
           ]
         },
         {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
+          ]
+        },
+        {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false,
@@ -1636,6 +1740,14 @@
           "isSigner": false,
           "docs": [
             "NATIVE SYSTEM PROGRAM"
+          ]
+        },
+        {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
           ]
         },
         {
@@ -1776,6 +1888,14 @@
           "isSigner": false,
           "docs": [
             "NATIVE SYSTEM PROGRAM"
+          ]
+        },
+        {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
           ]
         },
         {
@@ -2277,22 +2397,6 @@
     }
   ],
   "types": [
-    {
-      "name": "MigrateArgs",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "stakedAt",
-            "type": "i64"
-          },
-          {
-            "name": "lastClaim",
-            "type": "i64"
-          }
-        ]
-      }
-    },
     {
       "name": "InitMultipliersArgs",
       "type": {

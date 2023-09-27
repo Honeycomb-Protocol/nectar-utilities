@@ -1,6 +1,9 @@
 use {
-    crate::state::*, anchor_lang::prelude::*, hpl_events::HplEvents,
-    hpl_hive_control::state::Project, hpl_utils::traits::Default,
+    crate::state::*,
+    anchor_lang::prelude::*,
+    hpl_events::HplEvents,
+    hpl_hive_control::{program::HplHiveControl, state::Project},
+    hpl_utils::traits::Default,
 };
 
 /// Accounts used in initialize staker instruction
@@ -29,6 +32,9 @@ pub struct InitStaker<'info> {
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
 
     /// HPL Events Program
     pub hpl_events: Program<'info, HplEvents>,

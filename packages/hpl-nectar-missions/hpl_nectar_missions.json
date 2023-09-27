@@ -1,5 +1,5 @@
 {
-  "version": "0.1.21",
+  "version": "0.1.22",
   "name": "hpl_nectar_missions",
   "instructions": [
     {
@@ -57,6 +57,14 @@
           ]
         },
         {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
+          ]
+        },
+        {
           "name": "hplEvents",
           "isMut": false,
           "isSigner": false
@@ -78,11 +86,6 @@
           "docs": [
             "NATIVE INSTRUCTIONS SYSVAR"
           ]
-        },
-        {
-          "name": "hiveControl",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": [
@@ -156,6 +159,14 @@
           "isSigner": false,
           "docs": [
             "NATIVE SYSTEM PROGRAM"
+          ]
+        },
+        {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
           ]
         },
         {
@@ -249,6 +260,14 @@
           ]
         },
         {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
+          ]
+        },
+        {
           "name": "rentSysvar",
           "isMut": false,
           "isSigner": false,
@@ -334,6 +353,14 @@
           "isSigner": false,
           "docs": [
             "SYSTEM PROGRAM"
+          ]
+        },
+        {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
           ]
         },
         {
@@ -462,6 +489,14 @@
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
+          ]
         },
         {
           "name": "tokenProgram",
@@ -594,9 +629,12 @@
           "isSigner": false
         },
         {
-          "name": "hiveControlProgram",
+          "name": "hiveControl",
           "isMut": false,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
+          ]
         },
         {
           "name": "currencyManagerProgram",
@@ -703,6 +741,14 @@
           "isSigner": false
         },
         {
+          "name": "hiveControl",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Hive Control Program"
+          ]
+        },
+        {
           "name": "nectarStakingProgram",
           "isMut": false,
           "isSigner": false
@@ -728,82 +774,6 @@
         {
           "name": "vault",
           "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "fixVault",
-      "accounts": [
-        {
-          "name": "project",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "missionPool",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "currency",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "mint",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "vaultHolderAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "vaultTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "newTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "currencyManagerProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "instructionsSysvar",
-          "isMut": false,
           "isSigner": false
         }
       ],

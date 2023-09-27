@@ -52,6 +52,7 @@ export const participateStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] participation
  * @property [_writable_, **signer**] wallet
  * @property [_writable_] vault
+ * @property [] hiveControl
  * @property [] currencyManagerProgram
  * @property [] nectarStakingProgram
  * @property [] hplEvents
@@ -79,6 +80,7 @@ export type ParticipateInstructionAccounts = {
   wallet: web3.PublicKey
   vault: web3.PublicKey
   systemProgram?: web3.PublicKey
+  hiveControl: web3.PublicKey
   tokenProgram?: web3.PublicKey
   currencyManagerProgram: web3.PublicKey
   nectarStakingProgram: web3.PublicKey
@@ -190,6 +192,11 @@ export function createParticipateInstruction(
     },
     {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.hiveControl,
       isWritable: false,
       isSigner: false,
     },

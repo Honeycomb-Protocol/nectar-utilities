@@ -34,6 +34,7 @@ export const unstakeStruct = new beet.BeetArgsStruct<{
  * @property [_writable_] depositTokenRecord (optional)
  * @property [_writable_] staker
  * @property [_writable_, **signer**] wallet
+ * @property [] hiveControl
  * @property [] associatedTokenProgram
  * @property [] tokenMetadataProgram
  * @property [] hplEvents
@@ -60,6 +61,7 @@ export type UnstakeInstructionAccounts = {
   staker: web3.PublicKey
   wallet: web3.PublicKey
   systemProgram?: web3.PublicKey
+  hiveControl: web3.PublicKey
   tokenProgram?: web3.PublicKey
   associatedTokenProgram: web3.PublicKey
   tokenMetadataProgram: web3.PublicKey
@@ -173,6 +175,11 @@ export function createUnstakeInstruction(
   })
   keys.push({
     pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.hiveControl,
     isWritable: false,
     isSigner: false,
   })

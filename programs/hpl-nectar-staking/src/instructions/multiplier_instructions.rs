@@ -1,7 +1,10 @@
 use {
     crate::state::*,
     anchor_lang::prelude::*,
-    hpl_hive_control::state::{DelegateAuthority, Project},
+    hpl_hive_control::{
+        program::HplHiveControl,
+        state::{DelegateAuthority, Project},
+    },
     hpl_utils::traits::Default,
 };
 
@@ -34,6 +37,9 @@ pub struct InitMultipliers<'info> {
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
 
     /// NATIVE INSTRUCTIONS SYSVAR
     /// CHECK: This is not dangerous because we don't read or write from this account
@@ -86,6 +92,9 @@ pub struct AddMultiplier<'info> {
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
 
     /// RENT SYSVAR
     pub rent_sysvar: Sysvar<'info, Rent>,

@@ -5,7 +5,12 @@ import {
   PROGRAM_ID,
 } from "../generated";
 import { getMultipliersPda } from "../pdas";
-import { VAULT, Honeycomb, Operation } from "@honeycomb-protocol/hive-control";
+import {
+  VAULT,
+  Honeycomb,
+  Operation,
+  HPL_HIVE_CONTROL_PROGRAM,
+} from "@honeycomb-protocol/hive-control";
 
 /**
  * Represents the arguments required to create an initialization multiplier operation.
@@ -70,6 +75,7 @@ export async function createInitMultiplierOperation(
         payer: honeycomb.identity().address,
         delegateAuthority:
           honeycomb.identity().delegateAuthority()?.address || programId,
+        hiveControl: HPL_HIVE_CONTROL_PROGRAM,
         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
       },
       { args: args.args },

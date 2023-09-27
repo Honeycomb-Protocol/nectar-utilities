@@ -4,7 +4,12 @@ import {
   SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY,
 } from "@solana/web3.js";
-import { Honeycomb, Operation, VAULT } from "@honeycomb-protocol/hive-control";
+import {
+  HPL_HIVE_CONTROL_PROGRAM,
+  Honeycomb,
+  Operation,
+  VAULT,
+} from "@honeycomb-protocol/hive-control";
 import {
   UpdateMissionArgs as UpdateMissionArgsSolita,
   PROGRAM_ID,
@@ -73,6 +78,7 @@ export async function createUpdateMissionOperation(
         authority: honeycomb.identity().address,
         payer: honeycomb.identity().address,
         vault: VAULT,
+        hiveControl: HPL_HIVE_CONTROL_PROGRAM,
         rentSysvar: SYSVAR_RENT_PUBKEY,
         instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
       },

@@ -9,6 +9,39 @@ declare_id!("HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj");
 
 use instructions::*;
 
+fn platform_gate_fn<'info>(
+    action: hpl_hive_control::state::SerializableActions,
+    service: Option<(u8, Pubkey)>,
+    project: AccountInfo<'info>,
+    signer: AccountInfo<'info>,
+    payer: AccountInfo<'info>,
+    vault: AccountInfo<'info>,
+    delegate_authority: &Option<Account<'info, hpl_hive_control::state::DelegateAuthority>>,
+    system_program: AccountInfo<'info>,
+    hive_control: AccountInfo<'info>,
+    instructions_sysvar: AccountInfo<'info>,
+) -> Result<()> {
+    hpl_hive_control::cpi::platform_gate(
+        CpiContext::new(
+            hive_control.to_account_info(),
+            hpl_hive_control::cpi::accounts::PlatformGate {
+                project: project,
+                delegate_authority: if let Some(delegate_authority) = &delegate_authority {
+                    Some(delegate_authority.to_account_info())
+                } else {
+                    Some(hive_control)
+                },
+                signer,
+                payer,
+                system_program,
+                instructions_sysvar,
+                vault: vault.to_account_info(),
+            },
+        ),
+        hpl_hive_control::instructions::PlatformGateArgs { action, service },
+    )
+}
+
 #[program]
 pub mod hpl_nectar_missions {
     use super::*;
@@ -54,60 +87,64 @@ pub mod hpl_nectar_missions {
         ctx: Context<UpdateMissionPool>,
         args: UpdateMissionPoolArgs,
     ) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate_fn(
-            hpl_hive_control::constants::ACTIONS.manage_mission_pool,
+        platform_gate_fn(
+            hpl_hive_control::state::SerializableActions::ManageMissionPool,
             None,
-            &ctx.accounts.project,
-            ctx.accounts.authority.key(),
+            ctx.accounts.project.to_account_info(),
+            ctx.accounts.authority.to_account_info(),
             ctx.accounts.payer.to_account_info(),
             ctx.accounts.vault.to_account_info(),
             &ctx.accounts.delegate_authority,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.hive_control.to_account_info(),
             ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
         instructions::update_mission_pool(ctx, args)
     }
 
     pub fn create_mission(ctx: Context<CreateMission>, args: CreateMissionArgs) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate_fn(
-            hpl_hive_control::constants::ACTIONS.manage_mission_pool,
+        platform_gate_fn(
+            hpl_hive_control::state::SerializableActions::ManageMissionPool,
             None,
-            &ctx.accounts.project,
-            ctx.accounts.authority.key(),
+            ctx.accounts.project.to_account_info(),
+            ctx.accounts.authority.to_account_info(),
             ctx.accounts.payer.to_account_info(),
             ctx.accounts.vault.to_account_info(),
             &ctx.accounts.delegate_authority,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.hive_control.to_account_info(),
             ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
         instructions::create_mission(ctx, args)
     }
 
     pub fn update_mission(ctx: Context<UpdateMission>, args: UpdateMissionArgs) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate_fn(
-            hpl_hive_control::constants::ACTIONS.manage_mission_pool,
+        platform_gate_fn(
+            hpl_hive_control::state::SerializableActions::ManageMissionPool,
             None,
-            &ctx.accounts.project,
-            ctx.accounts.authority.key(),
+            ctx.accounts.project.to_account_info(),
+            ctx.accounts.authority.to_account_info(),
             ctx.accounts.payer.to_account_info(),
             ctx.accounts.vault.to_account_info(),
             &ctx.accounts.delegate_authority,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.hive_control.to_account_info(),
             ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
         instructions::update_mission(ctx, args)
     }
 
     pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate_fn(
-            hpl_hive_control::constants::ACTIONS.public_high,
+        platform_gate_fn(
+            hpl_hive_control::state::SerializableActions::PublicHigh,
             None,
-            &ctx.accounts.project,
-            ctx.accounts.wallet.key(),
+            ctx.accounts.project.to_account_info(),
+            ctx.accounts.wallet.to_account_info(),
             ctx.accounts.wallet.to_account_info(),
             ctx.accounts.vault.to_account_info(),
             &None,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.hive_control.to_account_info(),
             ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
@@ -115,15 +152,16 @@ pub mod hpl_nectar_missions {
     }
 
     pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate_fn(
-            hpl_hive_control::constants::ACTIONS.fee_exempt,
+        platform_gate_fn(
+            hpl_hive_control::state::SerializableActions::FeeExempt,
             None,
-            &ctx.accounts.project,
-            ctx.accounts.wallet.key(),
+            ctx.accounts.project.to_account_info(),
+            ctx.accounts.wallet.to_account_info(),
             ctx.accounts.wallet.to_account_info(),
             ctx.accounts.vault.to_account_info(),
             &None,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.hive_control.to_account_info(),
             ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
@@ -131,22 +169,19 @@ pub mod hpl_nectar_missions {
     }
 
     pub fn recall(ctx: Context<Recall>) -> Result<()> {
-        hpl_hive_control::instructions::platform_gate_fn(
-            hpl_hive_control::constants::ACTIONS.fee_exempt,
+        platform_gate_fn(
+            hpl_hive_control::state::SerializableActions::FeeExempt,
             None,
-            &ctx.accounts.project,
-            ctx.accounts.wallet.key(),
+            ctx.accounts.project.to_account_info(),
+            ctx.accounts.wallet.to_account_info(),
             ctx.accounts.wallet.to_account_info(),
             ctx.accounts.vault.to_account_info(),
             &None,
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.hive_control.to_account_info(),
             ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
         instructions::recall(ctx)
-    }
-
-    pub fn fix_vault(ctx: Context<FixVault>) -> Result<()> {
-        instructions::fix_vault(ctx)
     }
 }

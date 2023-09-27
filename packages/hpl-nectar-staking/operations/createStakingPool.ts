@@ -29,6 +29,7 @@ type CreateCreateStakingOperationArgs = {
   args: CreateStakingPoolArgs;
   collections?: web3.PublicKey[];
   creators?: web3.PublicKey[];
+  merkleTrees?: web3.PublicKey[];
   multipliers?: AddMultiplierArgs[];
   multipliersDecimals?: number;
   programId?: web3.PublicKey;
@@ -145,6 +146,30 @@ export async function createCreateStakingPoolOperation(
           project: args.project.address,
           stakingPool: stakingPool,
           creator,
+          programId,
+        }).then(({ operation }) => instructions.push(...operation.instructions))
+      )
+    );
+  }
+
+  if (args.merkleTrees?.length) {
+    await Promise.all(
+      args.merkleTrees.map((merkleTree) =>
+        createUpdatePoolOperation(honeycomb, {
+          args: {
+            name: null,
+            rewardsPerDuration: null,
+            rewardsDuration: null,
+            maxRewardsDuration: null,
+            minStakeDuration: null,
+            cooldownDuration: null,
+            resetStakeDuration: null,
+            startTime: null,
+            endTime: null,
+          },
+          project: args.project.address,
+          stakingPool: stakingPool,
+          merkleTree,
           programId,
         }).then(({ operation }) => instructions.push(...operation.instructions))
       )

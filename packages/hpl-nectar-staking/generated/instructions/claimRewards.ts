@@ -34,6 +34,7 @@ export const claimRewardsStruct = new beet.BeetArgsStruct<{
  * @property [_writable_] tokenAccount
  * @property [_writable_] staker
  * @property [_writable_, **signer**] wallet
+ * @property [] hiveControl
  * @property [] hplEvents
  * @property [] clock
  * @property [] instructionsSysvar
@@ -57,6 +58,7 @@ export type ClaimRewardsInstructionAccounts = {
   staker: web3.PublicKey
   wallet: web3.PublicKey
   systemProgram?: web3.PublicKey
+  hiveControl: web3.PublicKey
   tokenProgram?: web3.PublicKey
   hplEvents: web3.PublicKey
   clock: web3.PublicKey
@@ -153,6 +155,11 @@ export function createClaimRewardsInstruction(
   })
   keys.push({
     pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.hiveControl,
     isWritable: false,
     isSigner: false,
   })

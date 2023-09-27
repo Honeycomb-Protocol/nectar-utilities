@@ -6,8 +6,7 @@ use {
         token::{self, CloseAccount, Mint, Token, TokenAccount},
     },
     hpl_events::HplEvents,
-    hpl_hive_control::state::Project,
-    hpl_utils::traits::Default,
+    hpl_hive_control::{program::HplHiveControl, state::Project},
     mpl_token_metadata::{
         instruction::{DelegateArgs, RevokeArgs},
         state::{Metadata, TokenMetadataAccount},
@@ -77,6 +76,9 @@ pub struct Stake<'info> {
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
 
     /// NATIVE TOKEN PROGRAM
     #[account(address = token::ID)]
@@ -318,6 +320,9 @@ pub struct Unstake<'info> {
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
 
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
+
     /// NATIVE TOKEN PROGRAM
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
@@ -497,123 +502,5 @@ pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
     )
     .emit(ctx.accounts.hpl_events.to_account_info())?;
     // msg!("JSON NFT: {:?}", nft);
-    Ok(())
-}
-
-/// Accounts used in unstake instruction
-#[derive(Accounts)]
-pub struct MigrateNFTPart1<'info> {
-    #[account(has_one = authority)]
-    pub project: Box<Account<'info, Project>>,
-
-    /// StakingPool state account
-    #[account(mut, has_one = project)]
-    pub staking_pool: Box<Account<'info, StakingPool>>,
-
-    /// NFT state account
-    #[account(mut, has_one = staking_pool, close = authority)]
-    pub nft: Box<Account<'info, NFT>>,
-
-    /// NFT state account
-    #[account(
-        init, payer = authority,
-        space = NFTv1::LEN,
-        seeds = [
-            b"nft-temp",
-            nft.mint.as_ref(),
-            staking_pool.key().as_ref(),
-        ],
-        bump,
-    )]
-    pub nft_temp: Account<'info, NFTv1>,
-
-    /// The authority of the project
-    #[account(mut)]
-    pub authority: Signer<'info>,
-
-    /// NATIVE SYSTEM PROGRAM
-    pub system_program: Program<'info, System>,
-}
-
-/// Unstake NFT
-pub fn migrate_nft_part1(ctx: Context<MigrateNFTPart1>) -> Result<()> {
-    let nft = &mut ctx.accounts.nft_temp;
-    nft.bump = ctx.bumps["nft_temp"];
-    nft.staking_pool = ctx.accounts.staking_pool.key();
-    nft.staker = if ctx.accounts.nft.staker.eq(&Pubkey::default()) {
-        None
-    } else {
-        Some(ctx.accounts.nft.staker)
-    };
-    nft.mint = ctx.accounts.nft.mint;
-    nft.last_claim = ctx.accounts.nft.last_claim;
-    nft.staked_at = ctx.accounts.nft.staked_at;
-    nft.last_staked_at = ctx.accounts.nft.last_staked_at;
-    nft.last_unstaked_at = ctx.accounts.nft.last_unstaked_at;
-    nft.is_compressed = false;
-    nft.criteria = if !ctx.accounts.nft.collection.eq(&Pubkey::default()) {
-        NFTCriteria::Collection {
-            address: ctx.accounts.nft.collection,
-        }
-    } else if !ctx.accounts.nft.creator.eq(&Pubkey::default()) {
-        NFTCriteria::Creator {
-            address: ctx.accounts.nft.creator,
-        }
-    } else {
-        NFTCriteria::None
-    };
-    nft.used_by = NFTUsedBy::None;
-    Ok(())
-}
-
-/// Accounts used in unstake instruction
-#[derive(Accounts)]
-pub struct MigrateNFTPart2<'info> {
-    #[account(has_one = authority)]
-    pub project: Box<Account<'info, Project>>,
-
-    /// StakingPool state account
-    #[account(mut, has_one = project)]
-    pub staking_pool: Box<Account<'info, StakingPool>>,
-
-    /// NFT state account
-    #[account(mut, has_one = staking_pool, close = authority)]
-    pub nft_temp: Box<Account<'info, NFTv1>>,
-
-    /// NFT state account
-    #[account(
-        init, payer = authority,
-        space = NFTv1::LEN,
-        seeds = [
-            b"nft",
-            nft_temp.mint.as_ref(),
-            staking_pool.key().as_ref(),
-        ],
-        bump,
-    )]
-    pub nft: Account<'info, NFTv1>,
-
-    /// The authority of the project
-    #[account(mut)]
-    pub authority: Signer<'info>,
-
-    /// NATIVE SYSTEM PROGRAM
-    pub system_program: Program<'info, System>,
-}
-
-/// Unstake NFT
-pub fn migrate_nft_part2(ctx: Context<MigrateNFTPart2>) -> Result<()> {
-    let nft = &mut ctx.accounts.nft;
-    nft.bump = ctx.bumps["nft"];
-    nft.staking_pool = ctx.accounts.staking_pool.key();
-    nft.staker = ctx.accounts.nft_temp.staker;
-    nft.mint = ctx.accounts.nft_temp.mint;
-    nft.last_claim = ctx.accounts.nft_temp.last_claim;
-    nft.staked_at = ctx.accounts.nft_temp.staked_at;
-    nft.last_staked_at = ctx.accounts.nft_temp.last_staked_at;
-    nft.last_unstaked_at = ctx.accounts.nft_temp.last_unstaked_at;
-    nft.is_compressed = false;
-    nft.criteria = ctx.accounts.nft_temp.criteria;
-    nft.used_by = NFTUsedBy::None;
     Ok(())
 }

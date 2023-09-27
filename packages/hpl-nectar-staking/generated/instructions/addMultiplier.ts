@@ -43,6 +43,7 @@ export const addMultiplierStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] multipliers
  * @property [_writable_, **signer**] authority
  * @property [_writable_, **signer**] payer
+ * @property [] hiveControl
  * @property [] rentSysvar
  * @property [] instructionsSysvar
  * @property [] project
@@ -58,6 +59,7 @@ export type AddMultiplierInstructionAccounts = {
   authority: web3.PublicKey
   payer: web3.PublicKey
   systemProgram?: web3.PublicKey
+  hiveControl: web3.PublicKey
   rentSysvar: web3.PublicKey
   instructionsSysvar: web3.PublicKey
   project: web3.PublicKey
@@ -117,6 +119,11 @@ export function createAddMultiplierInstruction(
     },
     {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.hiveControl,
       isWritable: false,
       isSigner: false,
     },

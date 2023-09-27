@@ -121,7 +121,7 @@ pub fn create_staking_pool(
 pub struct UpdateStakingPool<'info> {
     /// StakingPool state account
     #[account(mut, has_one = project)]
-    pub staking_pool: Account<'info, StakingPool>,
+    pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// Currency to be used for the staking_pool
     pub currency: Option<Account<'info, Currency>>,
@@ -147,6 +147,9 @@ pub struct UpdateStakingPool<'info> {
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
 
     /// SYSVAR RENT
     pub rent: Sysvar<'info, Rent>,

@@ -3,7 +3,10 @@ use {
     anchor_lang::prelude::*,
     anchor_spl::token::Mint,
     hpl_events::HplEvents,
-    hpl_hive_control::state::{DelegateAuthority, Project},
+    hpl_hive_control::{
+        program::HplHiveControl,
+        state::{DelegateAuthority, Project},
+    },
     hpl_utils::traits::Default,
     mpl_token_metadata::state::{Metadata, TokenMetadataAccount},
     spl_account_compression::program::SplAccountCompression,
@@ -44,6 +47,9 @@ pub struct InitNFT<'info> {
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
 
     /// HPL Events Program
     pub hpl_events: Program<'info, HplEvents>,
@@ -203,6 +209,9 @@ pub struct InitCNFT<'info> {
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
 
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
+
     /// SPL Compression Program
     pub compression_program: Program<'info, SplAccountCompression>,
 
@@ -330,6 +339,9 @@ pub struct UseNft<'info> {
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
 
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
+
     /// HPL Events Program
     pub hpl_events: Program<'info, HplEvents>,
 
@@ -382,6 +394,9 @@ pub struct CloseNft<'info> {
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
 
     /// NATIVE INSTRUCTIONS SYSVAR
     /// CHECK: This is not dangerous because we don't read or write from this account

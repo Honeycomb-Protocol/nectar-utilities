@@ -1,6 +1,11 @@
 import * as web3 from "@solana/web3.js";
 import { createWithdrawRewardsInstruction, PROGRAM_ID } from "../generated";
-import { Honeycomb, VAULT, Operation } from "@honeycomb-protocol/hive-control";
+import {
+  Honeycomb,
+  VAULT,
+  Operation,
+  HPL_HIVE_CONTROL_PROGRAM,
+} from "@honeycomb-protocol/hive-control";
 import {
   PROGRAM_ID as HPL_CURRENCY_MANAGER_PROGRAM_ID,
   holderAccountPdas,
@@ -83,6 +88,7 @@ export async function createWithdrawRewardsOperation(
         authority:
           honeycomb.identity().delegateAuthority()?.address || programId,
         payer: honeycomb.identity().delegateAuthority()?.address || programId,
+        hiveControl: HPL_HIVE_CONTROL_PROGRAM,
         tokenProgram: TOKEN_2022_PROGRAM_ID,
         currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,

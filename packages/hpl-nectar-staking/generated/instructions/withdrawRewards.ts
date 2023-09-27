@@ -45,6 +45,7 @@ export const withdrawRewardsStruct = new beet.BeetArgsStruct<
  * @property [_writable_] tokenAccount
  * @property [**signer**] authority
  * @property [_writable_, **signer**] payer
+ * @property [] hiveControl
  * @property [] instructionsSysvar
  * @property [_writable_] project
  * @property [] delegateAuthority (optional)
@@ -65,6 +66,7 @@ export type WithdrawRewardsInstructionAccounts = {
   authority: web3.PublicKey
   payer: web3.PublicKey
   systemProgram?: web3.PublicKey
+  hiveControl: web3.PublicKey
   tokenProgram?: web3.PublicKey
   instructionsSysvar: web3.PublicKey
   project: web3.PublicKey
@@ -150,6 +152,11 @@ export function createWithdrawRewardsInstruction(
     },
     {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.hiveControl,
       isWritable: false,
       isSigner: false,
     },

@@ -5,7 +5,12 @@ import {
   PROGRAM_ID,
 } from "../generated";
 import { getMetadataAccount_, getNftPda } from "../pdas";
-import { VAULT, Operation, Honeycomb } from "@honeycomb-protocol/hive-control";
+import {
+  VAULT,
+  Operation,
+  Honeycomb,
+  HPL_HIVE_CONTROL_PROGRAM,
+} from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
 import { SPL_ACCOUNT_COMPRESSION_PROGRAM_ID } from "@solana/spl-account-compression";
 import { AssetProof, AvailableNft } from "../types";
@@ -77,6 +82,7 @@ export async function createInitNFTOperation(
           wallet: honeycomb.identity().address,
           delegateAuthority:
             honeycomb.identity().delegateAuthority()?.address || programId,
+          hiveControl: HPL_HIVE_CONTROL_PROGRAM,
           compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
           hplEvents: HPL_EVENTS_PROGRAM,
           clock: web3.SYSVAR_CLOCK_PUBKEY,
@@ -113,6 +119,7 @@ export async function createInitNFTOperation(
           wallet: honeycomb.identity().address,
           delegateAuthority:
             honeycomb.identity().delegateAuthority()?.address || programId,
+          hiveControl: HPL_HIVE_CONTROL_PROGRAM,
           hplEvents: HPL_EVENTS_PROGRAM,
           clock: web3.SYSVAR_CLOCK_PUBKEY,
           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,

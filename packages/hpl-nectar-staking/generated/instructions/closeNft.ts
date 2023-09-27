@@ -25,6 +25,7 @@ export const closeNftStruct = new beet.BeetArgsStruct<{
  * @property [] project
  * @property [_writable_] nft
  * @property [_writable_, **signer**] authority
+ * @property [] hiveControl
  * @property [] instructionsSysvar
  * @property [_writable_] vault
  * @category Instructions
@@ -36,6 +37,7 @@ export type CloseNftInstructionAccounts = {
   nft: web3.PublicKey
   authority: web3.PublicKey
   systemProgram?: web3.PublicKey
+  hiveControl: web3.PublicKey
   instructionsSysvar: web3.PublicKey
   vault: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
@@ -78,6 +80,11 @@ export function createCloseNftInstruction(
     },
     {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.hiveControl,
       isWritable: false,
       isSigner: false,
     },

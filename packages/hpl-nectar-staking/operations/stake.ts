@@ -16,7 +16,12 @@ import {
   getStakerPda,
   METADATA_PROGRAM_ID,
 } from "../pdas";
-import { VAULT, Honeycomb, Operation } from "@honeycomb-protocol/hive-control";
+import {
+  VAULT,
+  Honeycomb,
+  Operation,
+  HPL_HIVE_CONTROL_PROGRAM,
+} from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
 import { createInitNFTOperation } from "./initNFT";
 import { createInitStakerOperation } from "./initStaker";
@@ -121,6 +126,7 @@ export async function createStakeOperation(
           staker,
           wallet: honeycomb.identity().address,
           creatorHash: args.nft.compression.creatorHash,
+          hiveControl: HPL_HIVE_CONTROL_PROGRAM,
           bubblegumProgram: BUBBLEGUM_PROGRAM_ID,
           compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
           hplEvents: HPL_EVENTS_PROGRAM,
@@ -196,6 +202,7 @@ export async function createStakeOperation(
           depositTokenRecord: depositTokenRecord || programId,
           staker,
           wallet: honeycomb.identity().address,
+          hiveControl: HPL_HIVE_CONTROL_PROGRAM,
           associatedTokenProgram: splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
           tokenMetadataProgram: METADATA_PROGRAM_ID,
           clock: web3.SYSVAR_CLOCK_PUBKEY,

@@ -45,6 +45,7 @@ export const stakeCnftStruct = new beet.BeetArgsStruct<
  * @property [] root
  * @property [_writable_] staker
  * @property [_writable_, **signer**] wallet
+ * @property [] hiveControl
  * @property [] bubblegumProgram
  * @property [] compressionProgram
  * @property [] hplEvents
@@ -68,6 +69,7 @@ export type StakeCnftInstructionAccounts = {
   staker: web3.PublicKey
   wallet: web3.PublicKey
   systemProgram?: web3.PublicKey
+  hiveControl: web3.PublicKey
   bubblegumProgram: web3.PublicKey
   compressionProgram: web3.PublicKey
   hplEvents: web3.PublicKey
@@ -150,6 +152,11 @@ export function createStakeCnftInstruction(
     },
     {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.hiveControl,
       isWritable: false,
       isSigner: false,
     },

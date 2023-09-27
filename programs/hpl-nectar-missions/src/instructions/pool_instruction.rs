@@ -47,6 +47,10 @@ pub struct CreateMissionPool<'info> {
 
     /// SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
+
     pub hpl_events: Program<'info, HplEvents>,
     pub clock_sysvar: Sysvar<'info, Clock>,
     pub rent_sysvar: Sysvar<'info, Rent>,
@@ -54,7 +58,6 @@ pub struct CreateMissionPool<'info> {
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
     pub instructions_sysvar: AccountInfo<'info>,
-    pub hive_control: Program<'info, HplHiveControl>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
@@ -109,6 +112,10 @@ pub struct UpdateMissionPool<'info> {
 
     /// NATIVE SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
+
     pub rent: Sysvar<'info, Rent>,
     /// NATIVE INSTRUCTIONS SYSVAR
     /// CHECK: This is not dangerous because we don't read or write from this account

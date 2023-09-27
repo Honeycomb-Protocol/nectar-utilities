@@ -37,7 +37,7 @@ export const collectRewardsStruct = new beet.BeetArgsStruct<{
  * @property [_writable_] tokenAccount (optional)
  * @property [_writable_, **signer**] wallet
  * @property [_writable_] vault
- * @property [] hiveControlProgram
+ * @property [] hiveControl
  * @property [] currencyManagerProgram
  * @property [] hplEvents
  * @property [] compressionProgram
@@ -64,7 +64,7 @@ export type CollectRewardsInstructionAccounts = {
   wallet: web3.PublicKey
   vault: web3.PublicKey
   systemProgram?: web3.PublicKey
-  hiveControlProgram: web3.PublicKey
+  hiveControl: web3.PublicKey
   currencyManagerProgram: web3.PublicKey
   hplEvents: web3.PublicKey
   compressionProgram: web3.PublicKey
@@ -244,7 +244,7 @@ export function createCollectRewardsInstruction(
     isSigner: false,
   })
   keys.push({
-    pubkey: accounts.hiveControlProgram,
+    pubkey: accounts.hiveControl,
     isWritable: false,
     isSigner: false,
   })

@@ -54,6 +54,7 @@ type NewStakingPoolArgs = {
   currency: HplCurrency;
   collections?: web3.PublicKey[];
   creators?: web3.PublicKey[];
+  merkleTrees?: web3.PublicKey[];
   multipliers?: AddMultiplierArgs[];
   multipliersDecimals?: number;
 };

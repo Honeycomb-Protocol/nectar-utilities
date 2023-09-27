@@ -1,7 +1,10 @@
 use {
     crate::state::*,
     anchor_lang::prelude::*,
-    hpl_hive_control::state::{DelegateAuthority, Project},
+    hpl_hive_control::{
+        program::HplHiveControl,
+        state::{DelegateAuthority, Project},
+    },
     hpl_utils::traits::Default,
 };
 
@@ -46,6 +49,9 @@ pub struct CreateMission<'info> {
 
     /// SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
 
     /// RENT SYSVAR
     pub rent_sysvar: Sysvar<'info, Rent>,
@@ -123,6 +129,9 @@ pub struct UpdateMission<'info> {
 
     /// SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
 
     /// RENT SYSVAR
     pub rent_sysvar: Sysvar<'info, Rent>,

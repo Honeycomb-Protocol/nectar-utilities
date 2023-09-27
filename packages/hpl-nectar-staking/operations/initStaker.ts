@@ -1,7 +1,12 @@
 import * as web3 from "@solana/web3.js";
 import { createInitStakerInstruction, PROGRAM_ID } from "../generated";
 import { getStakerPda } from "../pdas";
-import { VAULT, Operation, Honeycomb } from "@honeycomb-protocol/hive-control";
+import {
+  VAULT,
+  Operation,
+  Honeycomb,
+  HPL_HIVE_CONTROL_PROGRAM,
+} from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
 
@@ -57,6 +62,7 @@ export function createInitStakerOperation(
         stakingPool: args.stakingPool.address,
         staker,
         wallet: honeycomb.identity().address,
+        hiveControl: HPL_HIVE_CONTROL_PROGRAM,
         hplEvents: HPL_EVENTS_PROGRAM,
         clock: web3.SYSVAR_CLOCK_PUBKEY,
         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,

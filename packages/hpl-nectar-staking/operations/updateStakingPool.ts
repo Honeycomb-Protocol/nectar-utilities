@@ -4,7 +4,12 @@ import {
   createUpdateStakingPoolInstruction,
   PROGRAM_ID,
 } from "../generated";
-import { Honeycomb, VAULT, Operation } from "@honeycomb-protocol/hive-control";
+import {
+  Honeycomb,
+  VAULT,
+  Operation,
+  HPL_HIVE_CONTROL_PROGRAM,
+} from "@honeycomb-protocol/hive-control";
 
 /**
  * Represents the arguments required to create an update pool operation.
@@ -66,6 +71,7 @@ export async function createUpdatePoolOperation(
         payer: honeycomb.identity().address,
         delegateAuthority:
           honeycomb.identity().delegateAuthority()?.address || programId,
+        hiveControl: HPL_HIVE_CONTROL_PROGRAM,
         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
       },
       {

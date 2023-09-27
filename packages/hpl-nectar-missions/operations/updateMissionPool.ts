@@ -3,7 +3,12 @@ import {
   PublicKey,
   SYSVAR_INSTRUCTIONS_PUBKEY,
 } from "@solana/web3.js";
-import { Honeycomb, Operation, VAULT } from "@honeycomb-protocol/hive-control";
+import {
+  HPL_HIVE_CONTROL_PROGRAM,
+  Honeycomb,
+  Operation,
+  VAULT,
+} from "@honeycomb-protocol/hive-control";
 import {
   UpdateMissionPoolArgs as UpdateMissionPoolArgsSolita,
   PROGRAM_ID,
@@ -88,6 +93,7 @@ export async function createUpdateMissionPoolOperation(
           honeycomb.identity().delegateAuthority()?.address || programId,
         authority: honeycomb.identity().address,
         payer: honeycomb.identity().address,
+        hiveControl: HPL_HIVE_CONTROL_PROGRAM,
         instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
         vault: VAULT,
       },

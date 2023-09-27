@@ -46,6 +46,7 @@ export const updateMissionPoolStruct = new beet.FixableBeetArgsStruct<
  * @property [] delegateAuthority (optional)
  * @property [_writable_, **signer**] authority
  * @property [_writable_, **signer**] payer
+ * @property [] hiveControl
  * @property [] instructionsSysvar
  * @property [_writable_] vault
  * @category Instructions
@@ -61,6 +62,7 @@ export type UpdateMissionPoolInstructionAccounts = {
   authority: web3.PublicKey
   payer: web3.PublicKey
   systemProgram?: web3.PublicKey
+  hiveControl: web3.PublicKey
   rent?: web3.PublicKey
   instructionsSysvar: web3.PublicKey
   vault: web3.PublicKey
@@ -151,6 +153,11 @@ export function createUpdateMissionPoolInstruction(
   })
   keys.push({
     pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.hiveControl,
     isWritable: false,
     isSigner: false,
   })
