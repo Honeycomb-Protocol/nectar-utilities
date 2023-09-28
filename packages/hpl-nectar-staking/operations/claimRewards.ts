@@ -1,6 +1,7 @@
 import * as web3 from "@solana/web3.js";
 import { createClaimRewardsInstruction, PROGRAM_ID } from "../generated";
 import {
+  getDelegateAuthorityPda,
   Honeycomb,
   HPL_HIVE_CONTROL_PROGRAM,
   Operation,
@@ -52,6 +53,9 @@ export async function createClaimRewardsOperation(
 ) {
   const programId = args.programId || PROGRAM_ID;
 
+  const project = args.stakingPool.project().address;
+  const projectAuthority = args.stakingPool.project().authority;
+  const stakingPool = args.stakingPool.address;
   const [nft] = getNftPda(args.stakingPool.address, args.nft.mint, programId);
   const [staker] = getStakerPda(
     args.stakingPool.address,
@@ -59,33 +63,31 @@ export async function createClaimRewardsOperation(
     programId
   );
 
-  const { holderAccount: vaultHolderAccount, tokenAccount: vaultTokenAccount } =
-    holderAccountPdas(
-      args.stakingPool.address,
-      args.stakingPool.currency().mint.address,
-      args.stakingPool.currency().kind
-    );
-
   const { holderAccount, tokenAccount } = holderAccountPdas(
     honeycomb.identity().address,
     args.stakingPool.currency().mint.address,
     args.stakingPool.currency().kind
   );
 
+  const stakingPoolDelegate = getDelegateAuthorityPda(
+    project,
+    projectAuthority,
+    stakingPool
+  )[0];
+
   let units = 500_000;
   const instructions = [
     createClaimRewardsInstruction(
       {
-        project: args.stakingPool.project().address,
+        project,
         vault: VAULT,
-        stakingPool: args.stakingPool.address,
+        stakingPool,
+        stakingPoolDelegate,
         multipliers:
           (await args.stakingPool.multipliers()).address || programId,
         nft,
         currency: args.stakingPool.currency().address,
         mint: args.stakingPool.currency().mint.address,
-        vaultHolderAccount,
-        vaultTokenAccount,
         holderAccount,
         tokenAccount,
         staker,

@@ -11,6 +11,7 @@ import {
   Honeycomb,
   Operation,
   VAULT,
+  getDelegateAuthorityPda,
   getProfilePda,
 } from "@honeycomb-protocol/hive-control";
 import {
@@ -82,20 +83,23 @@ export async function createCollectRewardsOperation(
   args: CreateCollectRewardsOperationArgs
 ) {
   const programId = args.programId || PROGRAM_ID;
+  const project = args.reward
+    .participation()
+    .mission()
+    .pool()
+    .project().address;
+  const projectAuthority = args.reward
+    .participation()
+    .mission()
+    .pool()
+    .project().authority;
+  const missionPool = args.reward.participation().mission().pool().address;
+  const mission = args.reward.participation().mission().address;
 
-  let vaultHolderAccount: PublicKey | undefined = undefined,
-    vaultTokenAccount: PublicKey | undefined = undefined,
-    holderAccount: PublicKey | undefined = undefined,
-    tokenAccount: PublicKey | undefined = undefined;
+  let holderAccount: PublicKey = programId,
+    tokenAccount: PublicKey = programId,
+    missionPoolDelegate: PublicKey = programId;
   if (args.reward.isCurrency()) {
-    const vault = holderAccountPdas(
-      args.reward.participation().mission().pool().address,
-      args.reward.currency().mint.address,
-      args.reward.currency().kind
-    );
-    vaultHolderAccount = vault.holderAccount;
-    vaultTokenAccount = vault.tokenAccount;
-
     const user = holderAccountPdas(
       args.wallet,
       args.reward.currency().mint.address,
@@ -103,6 +107,12 @@ export async function createCollectRewardsOperation(
     );
     holderAccount = user.holderAccount;
     tokenAccount = user.tokenAccount;
+
+    missionPoolDelegate = getDelegateAuthorityPda(
+      project,
+      projectAuthority,
+      missionPool
+    )[0];
   }
 
   const user = await honeycomb.identity().user();
@@ -110,9 +120,10 @@ export async function createCollectRewardsOperation(
   const instructions = [
     createCollectRewardsInstruction(
       {
-        project: args.reward.participation().mission().pool().project().address,
-        missionPool: args.reward.participation().mission().pool().address,
-        mission: args.reward.participation().mission().address,
+        project,
+        missionPool,
+        mission,
+        missionPoolDelegate,
         participation: args.reward.participation().address,
         nft: args.reward.participation().nftAddress,
         profile: !args.reward.isCurrency()
@@ -128,10 +139,8 @@ export async function createCollectRewardsOperation(
         mint: args.reward.isCurrency()
           ? args.reward.currency().mint.address
           : programId,
-        vaultHolderAccount: vaultHolderAccount || programId,
-        vaultTokenAccount: vaultTokenAccount || programId,
-        holderAccount: holderAccount || programId,
-        tokenAccount: tokenAccount || programId,
+        holderAccount: holderAccount,
+        tokenAccount: tokenAccount,
         wallet: args.wallet,
         vault: VAULT,
         hiveControl: HPL_HIVE_CONTROL_PROGRAM,

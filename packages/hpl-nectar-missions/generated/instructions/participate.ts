@@ -39,15 +39,13 @@ export const participateStruct = new beet.FixableBeetArgsStruct<
  *
  * @property [_writable_] project
  * @property [] stakingPool
- * @property [_writable_] missionPool
+ * @property [] missionPool
  * @property [] mission
  * @property [_writable_] nft
  * @property [] staker
  * @property [] currency
- * @property [] mint
- * @property [] vaultHolderAccount
- * @property [_writable_] vaultTokenAccount
- * @property [_writable_] holderAccount
+ * @property [_writable_] mint
+ * @property [] holderAccount
  * @property [_writable_] tokenAccount
  * @property [_writable_] participation
  * @property [_writable_, **signer**] wallet
@@ -72,8 +70,6 @@ export type ParticipateInstructionAccounts = {
   staker: web3.PublicKey
   currency: web3.PublicKey
   mint: web3.PublicKey
-  vaultHolderAccount: web3.PublicKey
-  vaultTokenAccount: web3.PublicKey
   holderAccount: web3.PublicKey
   tokenAccount: web3.PublicKey
   participation: web3.PublicKey
@@ -127,7 +123,7 @@ export function createParticipateInstruction(
     },
     {
       pubkey: accounts.missionPool,
-      isWritable: true,
+      isWritable: false,
       isSigner: false,
     },
     {
@@ -152,22 +148,12 @@ export function createParticipateInstruction(
     },
     {
       pubkey: accounts.mint,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.vaultHolderAccount,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.vaultTokenAccount,
       isWritable: true,
       isSigner: false,
     },
     {
       pubkey: accounts.holderAccount,
-      isWritable: true,
+      isWritable: false,
       isSigner: false,
     },
     {

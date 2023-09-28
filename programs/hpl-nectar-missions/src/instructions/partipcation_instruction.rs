@@ -3,7 +3,10 @@ use {
     anchor_lang::prelude::*,
     anchor_spl::token::{self, Mint, Token, TokenAccount},
     hpl_currency_manager::{
-        cpi::{accounts::TransferCurrency, transfer_currency},
+        cpi::{
+            accounts::{BurnCurrency, MintCurrency},
+            burn_currency, mint_currency,
+        },
         program::HplCurrencyManager,
         state::{Currency, HolderAccount},
     },
@@ -15,7 +18,7 @@ use {
             ModifyProfileDataArgsValue,
         },
         program::HplHiveControl,
-        state::{Profile, ProfileData, ProfileIdentity, Project},
+        state::{DelegateAuthority, Profile, ProfileData, ProfileIdentity, Project},
     },
     hpl_nectar_staking::{
         cpi::{accounts::UseNft, use_nft},
@@ -37,7 +40,7 @@ pub struct Participate<'info> {
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// MissionPool account
-    #[account(mut, has_one = project)]
+    #[account(has_one = project)]
     pub mission_pool: Box<Account<'info, MissionPool>>,
 
     /// Mission state account
@@ -54,13 +57,9 @@ pub struct Participate<'info> {
 
     #[account(has_one = mint, constraint = mission.cost.address == currency.key())]
     pub currency: Box<Account<'info, Currency>>,
-    #[account()]
-    pub mint: Box<Account<'info, Mint>>,
-    #[account(has_one = currency, constraint = vault_holder_account.token_account == vault_token_account.key() && vault_holder_account.owner == mission_pool.key())]
-    pub vault_holder_account: Box<Account<'info, HolderAccount>>,
     #[account(mut)]
-    pub vault_token_account: Box<Account<'info, TokenAccount>>,
-    #[account(mut, has_one = currency, has_one = token_account, constraint = holder_account.owner == wallet.key())]
+    pub mint: Box<Account<'info, Mint>>,
+    #[account(has_one = currency, has_one = token_account, constraint = holder_account.owner == wallet.key())]
     pub holder_account: Box<Account<'info, HolderAccount>>,
     #[account(mut)]
     pub token_account: Box<Account<'info, TokenAccount>>,
@@ -222,17 +221,15 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
         _ => {}
     }
 
-    transfer_currency(
+    burn_currency(
         CpiContext::new(
             ctx.accounts.currency_manager_program.to_account_info(),
-            TransferCurrency {
+            BurnCurrency {
                 project: ctx.accounts.project.to_account_info(),
                 currency: ctx.accounts.currency.to_account_info(),
                 mint: ctx.accounts.mint.to_account_info(),
-                sender_holder_account: ctx.accounts.holder_account.to_account_info(),
-                sender_token_account: ctx.accounts.token_account.to_account_info(),
-                receiver_holder_account: ctx.accounts.vault_holder_account.to_account_info(),
-                receiver_token_account: ctx.accounts.vault_token_account.to_account_info(),
+                holder_account: ctx.accounts.holder_account.to_account_info(),
+                token_account: ctx.accounts.token_account.to_account_info(),
                 owner: ctx.accounts.wallet.to_account_info(),
                 payer: ctx.accounts.wallet.to_account_info(),
                 instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
@@ -283,17 +280,30 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
 /// Accounts used in recall instruction
 #[derive(Accounts)]
 pub struct CollectRewards<'info> {
-    #[account(mut)]
+    #[account()]
     pub project: Box<Account<'info, Project>>,
-    #[account(mut, has_one = project)]
+
+    #[account(has_one = project)]
     pub mission_pool: Box<Account<'info, MissionPool>>,
+
+    /// MissionsPool delegate account for this project
+    /// It is required to mint rewards
+    #[account(has_one = project, constraint = mission_pool_delegate.authority.eq(&mission_pool.key()))]
+    pub mission_pool_delegate: Option<Box<Account<'info, DelegateAuthority>>>,
+
+    /// Mission state account
     #[account(has_one = mission_pool)]
     pub mission: Box<Account<'info, Mission>>,
+
+    /// Participation state account
     #[account(mut, has_one = wallet, has_one = nft, has_one = mission)]
     pub participation: Box<Account<'info, Participation>>,
+
+    /// Staked NFT state account
     #[account()]
     pub nft: Box<Account<'info, NFTv1>>,
 
+    /// User profile account
     #[account(
         mut,
         constraint = (profile.project == mission_pool.project) && (
@@ -304,14 +314,13 @@ pub struct CollectRewards<'info> {
 
     #[account(has_one = mint)]
     pub currency: Option<Box<Account<'info, Currency>>>,
-    #[account()]
-    pub mint: Option<Box<Account<'info, Mint>>>,
-    #[account(mut, has_one = currency, constraint = vault_token_account.is_some() && vault_holder_account.token_account == vault_token_account.clone().unwrap().key() && vault_holder_account.owner == mission_pool.key())]
-    pub vault_holder_account: Option<Box<Account<'info, HolderAccount>>>,
+
     #[account(mut)]
-    pub vault_token_account: Option<Box<Account<'info, TokenAccount>>>,
+    pub mint: Option<Box<Account<'info, Mint>>>,
+
     #[account(has_one = currency, has_one = token_account, constraint = holder_account.owner == wallet.key())]
     pub holder_account: Option<Box<Account<'info, HolderAccount>>>,
+
     #[account(mut)]
     pub token_account: Option<Box<Account<'info, TokenAccount>>>,
 
@@ -320,20 +329,34 @@ pub struct CollectRewards<'info> {
     /// CHECK: This is just used to collect platform fee
     #[account(mut)]
     pub vault: AccountInfo<'info>,
+
+    /// Solana System Program
     pub system_program: Program<'info, System>,
 
     /// HPL Hive Control Program
     pub hive_control: Program<'info, HplHiveControl>,
 
+    /// HPL Currency Manager Program
     pub currency_manager_program: Program<'info, HplCurrencyManager>,
+
+    /// HPL Events Program
     pub hpl_events: Program<'info, HplEvents>,
+
+    /// SPL Compression Program
     pub compression_program: Program<'info, SplAccountCompression>,
-    #[account(address = token::ID)]
+
+    /// SPL Token Program
     pub token_program: Program<'info, Token>,
+
+    /// Solana Rent Sysvar
     pub rent_sysvar: Sysvar<'info, Rent>,
+
+    /// Solana Instructions Sysvar
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
     pub instructions_sysvar: AccountInfo<'info>,
+
+    /// Solana Clock Sysvar
     pub clock: Sysvar<'info, Clock>,
 }
 
@@ -380,8 +403,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
             if ctx.accounts.mint.is_none()
                 || ctx.accounts.holder_account.is_none()
                 || ctx.accounts.token_account.is_none()
-                || ctx.accounts.vault_holder_account.is_none()
-                || ctx.accounts.vault_token_account.is_none()
+                || ctx.accounts.mission_pool_delegate.is_none()
             {
                 return Err(ErrorCode::HolderAccountsNotProvided.into());
             }
@@ -394,38 +416,33 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
             ];
             let signer = &[&mission_pool_seeds[..]];
 
-            transfer_currency(
+            mint_currency(
                 CpiContext::new_with_signer(
                     ctx.accounts.currency_manager_program.to_account_info(),
-                    TransferCurrency {
+                    MintCurrency {
                         project: ctx.accounts.project.to_account_info(),
                         currency: ctx.accounts.currency.clone().unwrap().to_account_info(),
                         mint: ctx.accounts.mint.clone().unwrap().to_account_info(),
-                        sender_holder_account: ctx
-                            .accounts
-                            .vault_holder_account
-                            .clone()
-                            .unwrap()
-                            .to_account_info(),
-                        sender_token_account: ctx
-                            .accounts
-                            .vault_token_account
-                            .clone()
-                            .unwrap()
-                            .to_account_info(),
-                        receiver_holder_account: ctx
+                        holder_account: ctx
                             .accounts
                             .holder_account
                             .clone()
                             .unwrap()
                             .to_account_info(),
-                        receiver_token_account: ctx
+                        token_account: ctx
                             .accounts
                             .token_account
                             .clone()
                             .unwrap()
                             .to_account_info(),
-                        owner: ctx.accounts.mission_pool.to_account_info(),
+                        delegate_authority: Some(
+                            ctx.accounts
+                                .mission_pool_delegate
+                                .clone()
+                                .unwrap()
+                                .to_account_info(),
+                        ),
+                        authority: ctx.accounts.mission_pool.to_account_info(),
                         payer: ctx.accounts.wallet.to_account_info(),
                         instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                         vault: ctx.accounts.vault.to_account_info(),

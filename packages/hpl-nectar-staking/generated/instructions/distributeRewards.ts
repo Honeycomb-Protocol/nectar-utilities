@@ -23,7 +23,9 @@ export const distributeRewardsStruct = new beet.BeetArgsStruct<{
 /**
  * Accounts required by the _distributeRewards_ instruction
  *
+ * @property [_writable_] project
  * @property [_writable_] stakingPool
+ * @property [] stakingPoolDelegate
  * @property [] multipliers (optional)
  * @property [_writable_] nft
  * @property [] currency
@@ -35,19 +37,20 @@ export const distributeRewardsStruct = new beet.BeetArgsStruct<{
  * @property [_writable_] staker
  * @property [_writable_] wallet
  * @property [**signer**] authority
+ * @property [_writable_] vault
  * @property [] hiveControl
+ * @property [] currencyManagerProgram
  * @property [] hplEvents
  * @property [] clock
  * @property [] instructionsSysvar
- * @property [_writable_] project
- * @property [_writable_] vault
- * @property [] currencyManagerProgram
  * @category Instructions
  * @category DistributeRewards
  * @category generated
  */
 export type DistributeRewardsInstructionAccounts = {
+  project: web3.PublicKey
   stakingPool: web3.PublicKey
+  stakingPoolDelegate: web3.PublicKey
   multipliers?: web3.PublicKey
   nft: web3.PublicKey
   currency: web3.PublicKey
@@ -59,15 +62,14 @@ export type DistributeRewardsInstructionAccounts = {
   staker: web3.PublicKey
   wallet: web3.PublicKey
   authority: web3.PublicKey
+  vault: web3.PublicKey
   systemProgram?: web3.PublicKey
   hiveControl: web3.PublicKey
   tokenProgram?: web3.PublicKey
+  currencyManagerProgram: web3.PublicKey
   hplEvents: web3.PublicKey
   clock: web3.PublicKey
   instructionsSysvar: web3.PublicKey
-  project: web3.PublicKey
-  vault: web3.PublicKey
-  currencyManagerProgram: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -97,8 +99,18 @@ export function createDistributeRewardsInstruction(
   })
   const keys: web3.AccountMeta[] = [
     {
+      pubkey: accounts.project,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.stakingPool,
       isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.stakingPoolDelegate,
+      isWritable: false,
       isSigner: false,
     },
   ]
@@ -161,6 +173,11 @@ export function createDistributeRewardsInstruction(
     isSigner: true,
   })
   keys.push({
+    pubkey: accounts.vault,
+    isWritable: true,
+    isSigner: false,
+  })
+  keys.push({
     pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
     isWritable: false,
     isSigner: false,
@@ -176,6 +193,11 @@ export function createDistributeRewardsInstruction(
     isSigner: false,
   })
   keys.push({
+    pubkey: accounts.currencyManagerProgram,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
     pubkey: accounts.hplEvents,
     isWritable: false,
     isSigner: false,
@@ -187,21 +209,6 @@ export function createDistributeRewardsInstruction(
   })
   keys.push({
     pubkey: accounts.instructionsSysvar,
-    isWritable: false,
-    isSigner: false,
-  })
-  keys.push({
-    pubkey: accounts.project,
-    isWritable: true,
-    isSigner: false,
-  })
-  keys.push({
-    pubkey: accounts.vault,
-    isWritable: true,
-    isSigner: false,
-  })
-  keys.push({
-    pubkey: accounts.currencyManagerProgram,
     isWritable: false,
     isSigner: false,
   })

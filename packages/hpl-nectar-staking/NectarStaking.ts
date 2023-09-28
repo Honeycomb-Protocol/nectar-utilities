@@ -27,7 +27,6 @@ import {
   createStakeOperation,
   createUnstakeOperation,
   createUpdatePoolOperation,
-  createWithdrawRewardsOperation,
   fetchAvailableNfts,
   fetchRewards,
   fetchStakedNfts,
@@ -430,30 +429,6 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
       stakingPool: this.address,
       programId: this.programId,
     });
-    return operation.send(confirmOptions);
-  }
-
-  /**
-   * Withdraw rewards from the staking pool.
-   * @param amount - The amount of rewards to withdraw.
-   * @param receiverWallet - Optional receiver wallet address, defaults to the identity wallet address.
-   * @param confirmOptions - Optional transaction confirmation options.
-   * @returns A promise that resolves when the transaction is confirmed.
-   */
-  public async withdrawRewards(
-    amount: number,
-    receiverWallet?: web3.PublicKey,
-    confirmOptions?: web3.ConfirmOptions
-  ) {
-    const { operation } = await createWithdrawRewardsOperation(
-      this.honeycomb(),
-      {
-        receiverWallet: receiverWallet || this.honeycomb().identity().address,
-        stakingPool: this,
-        amount,
-        programId: this.programId,
-      }
-    );
     return operation.send(confirmOptions);
   }
 

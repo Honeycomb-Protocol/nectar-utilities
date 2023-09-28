@@ -94,12 +94,6 @@ export async function createParticipateOperation(
 
   const [nft] = getNftPda(args.nft.stakingPool, args.nft.mint);
   const [participation] = participationPda(nft, programId);
-  const { holderAccount: vaultHolderAccount, tokenAccount: vaultTokenAccount } =
-    holderAccountPdas(
-      args.mission.pool().address,
-      args.mission.requirements.cost.currency().mint.address,
-      args.mission.requirements.cost.currency().kind
-    );
 
   const { holderAccount, tokenAccount } = holderAccountPdas(
     honeycomb.identity().address,
@@ -121,8 +115,6 @@ export async function createParticipateOperation(
         mint: args.mission.requirements.cost.currency().mint.address,
         holderAccount,
         tokenAccount,
-        vaultHolderAccount,
-        vaultTokenAccount,
         participation,
         wallet: honeycomb.identity().address,
         vault: VAULT,

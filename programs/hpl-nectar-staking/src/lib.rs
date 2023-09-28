@@ -301,23 +301,6 @@ pub mod hpl_nectar_staking {
         instructions::unstake_cnft(ctx, args)
     }
 
-    pub fn withdraw_rewards(ctx: Context<WithdrawRewards>, amount: u64) -> Result<()> {
-        platform_gate_fn(
-            hpl_hive_control::state::SerializableActions::WithdrawStakingPoolRewards,
-            None,
-            ctx.accounts.project.to_account_info(),
-            ctx.accounts.authority.to_account_info(),
-            ctx.accounts.payer.to_account_info(),
-            ctx.accounts.vault.to_account_info(),
-            &ctx.accounts.delegate_authority,
-            ctx.accounts.system_program.to_account_info(),
-            ctx.accounts.hive_control.to_account_info(),
-            ctx.accounts.instructions_sysvar.to_account_info(),
-        )?;
-
-        instructions::withdraw_rewards(ctx, amount)
-    }
-
     pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
         platform_gate_fn(
             hpl_hive_control::state::SerializableActions::FeeExempt,
