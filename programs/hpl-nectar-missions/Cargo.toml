@@ -27,7 +27,8 @@ winnow = "=0.4.1"
 toml_datetime = "=0.6.1"
 hpl-utils = "0.1.4"
 hpl-events = { version = "0.1.17", features = ["no-entrypoint"] }
-hpl-hive-control = { version = "0.1.75", features = ["cpi"] }
+hpl-hive-control = { version = "0.1.78", features = ["cpi"] }
+hpl-macros = { version = "0.0.2" }
 hpl-currency-manager = { version = "0.0.67", features = ["cpi"] }
 hpl-nectar-staking = { version = "0.1.23", path = "../hpl-nectar-staking", features = [
   "cpi",
