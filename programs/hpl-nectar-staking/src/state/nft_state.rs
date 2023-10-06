@@ -65,13 +65,13 @@ pub enum NFTCriteria {
     MerkleTree { address: Pubkey },
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Copy, Clone, PartialEq, Eq, Debug)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, Debug)]
 pub enum NFTUsedBy {
     None,
     Missions,
     Guild { id: Pubkey, role: GuildRole },
 }
-
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Copy, Eq, Debug)]
 pub enum GuildRole {
     Chief,
     Member,

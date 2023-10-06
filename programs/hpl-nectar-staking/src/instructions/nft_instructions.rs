@@ -176,7 +176,7 @@ pub struct InitCNFT<'info> {
     /// NFT state account
     #[account(
         init, payer = wallet,
-        space = NFT::LEN,
+        space = NFTv1::LEN,
         seeds = [
           b"nft",
           asset_id.key().as_ref(),
