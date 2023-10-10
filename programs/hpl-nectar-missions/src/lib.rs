@@ -29,7 +29,7 @@ pub mod hpl_nectar_missions {
         ctx: Context<UpdateMissionPool>,
         args: UpdateMissionPoolArgs,
     ) -> Result<()> {
-        platform_gate_fn(
+        platform_gate_cpi(
             hpl_hive_control::state::SerializableActions::ManageMissionPool,
             None,
             ctx.accounts.project.to_account_info(),
@@ -45,7 +45,7 @@ pub mod hpl_nectar_missions {
     }
 
     pub fn create_mission(ctx: Context<CreateMission>, args: CreateMissionArgs) -> Result<()> {
-        platform_gate_fn(
+        platform_gate_cpi(
             hpl_hive_control::state::SerializableActions::ManageMissionPool,
             None,
             ctx.accounts.project.to_account_info(),
@@ -61,7 +61,7 @@ pub mod hpl_nectar_missions {
     }
 
     pub fn update_mission(ctx: Context<UpdateMission>, args: UpdateMissionArgs) -> Result<()> {
-        platform_gate_fn(
+        platform_gate_cpi(
             hpl_hive_control::state::SerializableActions::ManageMissionPool,
             None,
             ctx.accounts.project.to_account_info(),
@@ -77,7 +77,7 @@ pub mod hpl_nectar_missions {
     }
 
     pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<()> {
-        platform_gate_fn(
+        platform_gate_cpi(
             hpl_hive_control::state::SerializableActions::PublicHigh,
             None,
             ctx.accounts.project.to_account_info(),
@@ -94,7 +94,7 @@ pub mod hpl_nectar_missions {
     }
 
     pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
-        platform_gate_fn(
+        platform_gate_cpi(
             hpl_hive_control::state::SerializableActions::FeeExempt,
             None,
             ctx.accounts.project.to_account_info(),
@@ -111,7 +111,7 @@ pub mod hpl_nectar_missions {
     }
 
     pub fn recall(ctx: Context<Recall>) -> Result<()> {
-        platform_gate_fn(
+        platform_gate_cpi(
             hpl_hive_control::state::SerializableActions::FeeExempt,
             None,
             ctx.accounts.project.to_account_info(),

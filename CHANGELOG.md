@@ -1,5 +1,9 @@
 # 0.1.x
 
+## 0.1.24
+
+- Used `hpl-macro` for cpi calls and platform gate.
+
 ## 0.1.23
 
 - Remove vault mechanism
