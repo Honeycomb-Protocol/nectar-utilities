@@ -3,14 +3,14 @@
   "version": "0.0.17",
   "private": false,
   "scripts": {
+    "rollout": "node ./scripts/rollout.js",
     "publishall": "node ./scripts/publishall.js",
-    "compile": "tsc",
     "build:program": "anchor build",
-    "build:sdk": "yarn solita && yarn compile",
+    "build:sdk": "yarn solita && tsc",
     "build": "yarn build:program && yarn build:sdk",
     "deploy": "anchor deploy",
-    "build-deploy": "yarn build && yarn deploy",
-    "test": "jest --verbose"
+    "test": "jest --verbose",
+    "build-deploy": "yarn build && yarn deploy"
   },
   "dependencies": {
     "@honeycomb-protocol/currency-manager": "^0.0.68",
