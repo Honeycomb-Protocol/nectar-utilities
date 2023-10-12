@@ -9,11 +9,6 @@ runs:
         node-version: 16
         registry-url: https://registry.npmjs.org/
 
-    - name: presetup
-      run: npm pkg set scripts.prepare="echo LFG"
-      working-directory: ${{ inputs.working_dir }}
-      shell: bash
-
     - name: Install modules
       run: yarn install --immutable
       working-directory: ${{ inputs.working_dir }}
@@ -25,6 +20,6 @@ runs:
       shell: bash
 
     - name: Publish all packages
-      run: yarn publish-all
+      run: yarn publishall
       working-directory: ${{ inputs.working_dir }}
       shell: bash
