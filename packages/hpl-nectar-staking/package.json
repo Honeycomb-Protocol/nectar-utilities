@@ -4,16 +4,17 @@
   "private": false,
   "dependencies": {
     "@metaplex-foundation/js": "^0.18.1",
+    "@metaplex-foundation/mpl-bubblegum": "^0.7.0",
     "@metaplex-foundation/mpl-token-auth-rules": "^1.2.0",
     "@metaplex-foundation/mpl-token-metadata": "^2.10.0",
     "@msgpack/msgpack": "^3.0.0-beta2"
   },
   "peerDependencies": {
     "@solana/spl-token": "^0.3.8",
-    "@solana/web3.js": "^1.78.0",
-    "@honeycomb-protocol/events": "^0.1.17",
-    "@honeycomb-protocol/currency-manager": "^0.0.63",
-    "@honeycomb-protocol/hive-control": "^0.1.71",
-    "@solana/spl-account-compression": "^0.1.8"
+    "@solana/web3.js": "^1.87.1",
+    "@honeycomb-protocol/events": "^0.1.21",
+    "@honeycomb-protocol/hive-control": "^0.1.80",
+    "@honeycomb-protocol/currency-manager": "^0.0.72",
+    "@honeycomb-protocol/nectar-staking": "^0.1.25"
   }
 }
