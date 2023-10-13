@@ -22,7 +22,7 @@ export type UseNftInstructionArgs = {
  * @category UseNft
  * @category generated
  */
-export const useNftStruct = new beet.BeetArgsStruct<
+export const useNftStruct = new beet.FixableBeetArgsStruct<
   UseNftInstructionArgs & {
     instructionDiscriminator: number[] /* size: 8 */
   }

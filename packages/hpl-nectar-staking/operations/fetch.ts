@@ -6,7 +6,7 @@ import {
   Metadata,
   StakedNft,
 } from "../types";
-import { NFT, Staker } from "../generated";
+import { NFTv1, Staker } from "../generated";
 import { getStakerPda } from "../pdas";
 import { Honeycomb } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
@@ -364,12 +364,12 @@ export async function fetchAvailableNfts(
   if (honeycomb.staking().allowedMints) {
     const allowedMints: web3.PublicKey[] =
       args?.allowedMints ||
-      (await NFT.gpaBuilder(args.programId)
+      (await NFTv1.gpaBuilder(args.programId)
         .addFilter("stakingPool", honeycomb.staking().poolAddress)
         .addFilter("staker", null)
         .run(honeycomb.processedConnection)
         .then((nfts) =>
-          nfts.map(({ account }) => NFT.fromAccountInfo(account)[0].mint)
+          nfts.map(({ account }) => NFTv1.fromAccountInfo(account)[0].mint)
         ));
 
     filteredNfts = [
