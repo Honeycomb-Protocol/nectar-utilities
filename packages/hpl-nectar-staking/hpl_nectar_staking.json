@@ -1922,86 +1922,6 @@
       }
     },
     {
-      "name": "NFT",
-      "docs": [
-        "The staking account linked to the NFT",
-        "PDA: ['nft', mint, staking_pool]",
-        "Category: nft_state"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "stakingPool",
-            "docs": [
-              "The staking_pool this NFT is staked in"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "staker",
-            "docs": [
-              "wallet of the staker"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "mint",
-            "docs": [
-              "The mint of the NFT"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "creator",
-            "docs": [
-              "The verified creator of the NFT"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "collection",
-            "docs": [
-              "The verified collection of the NFT"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "lastClaim",
-            "docs": [
-              "Last time the owner claimed rewards"
-            ],
-            "type": "i64"
-          },
-          {
-            "name": "stakedAt",
-            "docs": [
-              "Accumulated staked at"
-            ],
-            "type": "i64"
-          },
-          {
-            "name": "lastStakedAt",
-            "docs": [
-              "Last staked at"
-            ],
-            "type": "i64"
-          },
-          {
-            "name": "lastUnstakedAt",
-            "docs": [
-              "Last unstraked_at"
-            ],
-            "type": "i64"
-          }
-        ]
-      }
-    },
-    {
       "name": "NFTv1",
       "docs": [
         "PDA: ['nft', mint, staking_pool]",
@@ -2687,6 +2607,35 @@
           },
           {
             "name": "Missions"
+          },
+          {
+            "name": "Guild",
+            "fields": [
+              {
+                "name": "id",
+                "type": "publicKey"
+              },
+              {
+                "name": "role",
+                "type": {
+                  "defined": "GuildRole"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "GuildRole",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Chief"
+          },
+          {
+            "name": "Member"
           }
         ]
       }

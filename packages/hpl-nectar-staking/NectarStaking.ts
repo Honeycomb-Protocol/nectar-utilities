@@ -11,7 +11,6 @@ import {
   CreateStakingPoolArgs,
   Multipliers,
   MultipliersArgs,
-  NFTUsedBy,
   NFTv1,
   PROGRAM_ID,
   Staker,
@@ -730,7 +729,7 @@ export class NectarStakingFetch {
     const promise =
       this._stakedNfts.get(walletAddress) || this.stakedNfts(walletAddress);
     return promise.then((nfts) =>
-      nfts.filter((nft) => nft.usedBy == NFTUsedBy.None)
+      nfts.filter((nft) => nft.usedBy.__kind === "None")
     );
   }
 

@@ -227,7 +227,7 @@ export class NFTv1 implements NFTv1Args {
       })(),
       isCompressed: this.isCompressed,
       criteria: this.criteria.__kind,
-      usedBy: 'NFTUsedBy.' + NFTUsedBy[this.usedBy],
+      usedBy: this.usedBy.__kind,
     }
   }
 }
