@@ -32,7 +32,6 @@ import {
   ValidDepthSizePair,
   getConcurrentMerkleTreeAccountSize,
 } from "@solana/spl-account-compression";
-import { SYSTEM_PROGRAM_ID } from "@raydium-io/raydium-sdk";
 import { PROGRAM_ID as TOKEN_METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata";
 import colors from "colors";
 
@@ -114,7 +113,7 @@ export async function createNewTree(honeycomb: Honeycomb) {
             treeCreator: honeycomb.identity().address,
             compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
             logWrapper: SPL_NOOP_PROGRAM_ID,
-            systemProgram: SYSTEM_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
           },
           {
             maxDepth: depthSizePair.maxDepth,

@@ -1,24 +1,21 @@
 {
-  "name": "nectar-utilities",
+  "name": "@honeycomb-protocol/nectar-utilities",
   "version": "0.0.17",
   "private": false,
   "scripts": {
-    "prepare": "husky install",
-    "pre-commit": "node ./scripts/precommit.js && git add programs/**/Cargo.toml && git add Cargo.lock",
-    "pre-push": "echo LFG",
-    "publish-all": "node ./scripts/publishall.js",
-    "compile": "tsc",
+    "rollout": "node ./scripts/rollout.js",
+    "publishall": "node ./scripts/publishall.js",
     "build:program": "anchor build",
-    "build:sdk": "yarn solita && yarn compile",
+    "build:sdk": "yarn solita && tsc",
     "build": "yarn build:program && yarn build:sdk",
     "deploy": "anchor deploy",
-    "build-deploy": "yarn build && yarn deploy",
-    "test": "jest --verbose"
+    "test": "jest --verbose",
+    "build-deploy": "yarn build && yarn deploy"
   },
   "dependencies": {
-    "@honeycomb-protocol/currency-manager": "^0.0.67",
+    "@honeycomb-protocol/currency-manager": "^0.0.68",
     "@honeycomb-protocol/events": "^0.1.17",
-    "@honeycomb-protocol/hive-control": "^0.1.75",
+    "@honeycomb-protocol/hive-control": "^0.1.76",
     "@honeycomb-protocol/nectar-staking": "^0.1.21",
     "@metaplex-foundation/js": "^0.18.1",
     "@metaplex-foundation/mpl-bubblegum": "^0.7.0",
@@ -28,19 +25,17 @@
     "@raydium-io/raydium-sdk": "^1.3.1-beta.8",
     "@solana/spl-account-compression": "^0.1.8",
     "@solana/spl-token": "^0.3.8",
-    "@solana/web3.js": "^1.78.0",
-    "@types/jest": "^29.5.1",
-    "colors": "^1.4.0",
-    "dotenv": "^16.0.3",
-    "jest": "^29.5.0",
-    "ts-jest": "^29.1.0"
+    "@solana/web3.js": "^1.78.0"
   },
   "devDependencies": {
     "@metaplex-foundation/solita": "^0.19.4",
     "@types/bn.js": "^5.1.0",
-    "copyfiles": "^2.4.1",
-    "husky": "^8.0.3",
+    "@types/jest": "^29.5.1",
+    "colors": "^1.4.0",
+    "dotenv": "^16.0.3",
+    "jest": "^29.5.0",
     "prettier": "^2.6.2",
+    "ts-jest": "^29.1.0",
     "typescript": "^4.3.5"
   }
 }

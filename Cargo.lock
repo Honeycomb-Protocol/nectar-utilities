@@ -844,15 +844,16 @@ dependencies = [
 
 [[package]]
 name = "hpl-currency-manager"
-version = "0.0.67"
+version = "0.0.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e15e1777bc71cee1af9a4df209edc179183f0f8aa68ad5a128bdc66b1af1a0bf"
+checksum = "4bbb76fdb32a6943d4219d1689c7b6b09bcc7fa9fb17d19064148fbf1a806988"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
  "getrandom 0.2.9",
  "hpl-events",
  "hpl-hive-control",
+ "hpl-macros",
  "hpl-utils",
  "mpl-token-metadata",
  "solana-program",
@@ -874,9 +875,9 @@ dependencies = [
 
 [[package]]
 name = "hpl-hive-control"
-version = "0.1.75"
+version = "0.1.78"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1da1af34c76d909f578b925ef31d9ff3677c7c9884c2a9715b3b5d3cf29d40a2"
+checksum = "1865651deab539cb503af349e83443fb585bd048d0afd727f29e983ac137399d"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -892,8 +893,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "hpl-macro-add-service"
+version = "0.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "871935cd97593c022e144853ba989a9efab33f7752744c43ea42c1ec8c56aeb2"
+dependencies = [
+ "convert_case",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.28",
+]
+
+[[package]]
+name = "hpl-macro-platform-gate"
+version = "0.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "909ff3c2ff55849e4a0f5f137aeb4da0ed10e28d34aae0048496b2edff3485d0"
+dependencies = [
+ "convert_case",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.28",
+]
+
+[[package]]
+name = "hpl-macros"
+version = "0.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c6711149f771cae31959af1ce6ef86bde0c4e6625f9528f662fd3825edb33c3"
+dependencies = [
+ "hpl-macro-add-service",
+ "hpl-macro-platform-gate",
+]
+
+[[package]]
 name = "hpl-nectar-missions"
-version = "0.1.23"
+version = "0.1.24"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -901,6 +936,7 @@ dependencies = [
  "hpl-currency-manager",
  "hpl-events",
  "hpl-hive-control",
+ "hpl-macros",
  "hpl-nectar-staking",
  "hpl-utils",
  "solana-program",
@@ -911,7 +947,7 @@ dependencies = [
 
 [[package]]
 name = "hpl-nectar-staking"
-version = "0.1.23"
+version = "0.1.24"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -919,6 +955,7 @@ dependencies = [
  "hpl-currency-manager",
  "hpl-events",
  "hpl-hive-control",
+ "hpl-macros",
  "hpl-utils",
  "mpl-bubblegum",
  "mpl-token-metadata",
