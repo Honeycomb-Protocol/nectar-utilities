@@ -56,7 +56,7 @@ packages.forEach((package) => {
 
   if (version !== currentVersion) {
     execSync(
-      `cargo update -p ${package} && git add packages/**/package.json && git add programs/**/Cargo.toml && git add Cargo.lock && git commit -m "bump ${package.replace(
+      `cargo update -p ${package} && yarn build:sdk && git add packages/**/*.json && git add programs/**/Cargo.toml && git add Cargo.lock && git commit -m "bump ${package.replace(
         "hpl-",
         ""
       )} version to ${version}"`
