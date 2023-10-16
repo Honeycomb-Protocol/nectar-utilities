@@ -17,7 +17,7 @@ use {
 pub struct InitNFT<'info> {
     /// StakingPool state account
     #[account(has_one = project)]
-    pub staking_pool: Account<'info, StakingPool>,
+    pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// NFT state account
     #[account(
@@ -30,7 +30,7 @@ pub struct InitNFT<'info> {
         ],
         bump,
       )]
-    pub nft: Account<'info, NFTv1>,
+    pub nft: Box<Account<'info, NFTv1>>,
 
     /// Mint address of the NFT
     #[account(mut)]
