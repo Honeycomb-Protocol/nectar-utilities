@@ -84,7 +84,7 @@ export async function createClaimRewardsOperation(
         stakingPool,
         stakingPoolDelegate,
         multipliers:
-          (await args.stakingPool.multipliers()).address || programId,
+          (await args.stakingPool.multipliers())?.address || programId,
         nft,
         currency: args.stakingPool.currency().address,
         mint: args.stakingPool.currency().mint.address,
