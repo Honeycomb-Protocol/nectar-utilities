@@ -86,7 +86,7 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
   readonly programId: web3.PublicKey = PROGRAM_ID;
   private _fetch: NectarStakingFetch;
 
-  private _multipliers: StakingMultipliers | null = null;
+  private _multipliers: StakingMultipliers | null | undefined = undefined;
   private _stakers: { [wallet: string]: Staker } = {};
   private _availableNfts: AvailableNft[] | null = null;
   private _stakedNfts: StakedNft[] | null = null;
@@ -325,8 +325,10 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
    * @param reFetch - If true, re-fetch the data from the blockchain.
    * @returns A Promise that resolves with the multipliers data.
    */
-  public async multipliers(reFetch = false) {
-    if (!this._multipliers || reFetch) {
+  public async multipliers(
+    reFetch = false
+  ): Promise<StakingMultipliers | null> {
+    if (this._multipliers === undefined || reFetch) {
       this._multipliers = await this.fetch().multipliers();
     }
     return this._multipliers;
