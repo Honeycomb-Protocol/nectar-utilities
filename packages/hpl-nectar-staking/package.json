@@ -3,7 +3,6 @@
   "version": "0.1.26",
   "private": false,
   "dependencies": {
-    "@metaplex-foundation/js": "^0.18.1",
     "@metaplex-foundation/mpl-bubblegum": "^0.7.0",
     "@metaplex-foundation/mpl-token-auth-rules": "^1.2.0",
     "@metaplex-foundation/mpl-token-metadata": "^2.10.0",
