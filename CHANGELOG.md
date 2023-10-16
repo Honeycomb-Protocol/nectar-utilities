@@ -1,10 +1,10 @@
 # 0.1.x
 
-## 0.1.28 - 0.1.30
+## 0.1.28 - 0.1.31
 
 ### Nectar Staking
 
-- Cache Multipliers unavailaility
+- Cache Multipliers unavailaility and support for nullable multipliers
 
 ## 0.1.27
 
