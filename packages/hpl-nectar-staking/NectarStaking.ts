@@ -605,16 +605,20 @@ export class NectarStakingFetch {
       this.nectarStaking.poolAddress,
       this.nectarStaking.programId
     );
-    return Multipliers.fromAccountAddress(
-      this.nectarStaking.honeycomb().connection,
-      multipliersAddress
-    ).then(
-      (multipliers) =>
-        ({
-          ...multipliers,
-          address: multipliersAddress,
-        } as StakingMultipliers)
-    );
+    try {
+      return Multipliers.fromAccountAddress(
+        this.nectarStaking.honeycomb().connection,
+        multipliersAddress
+      ).then(
+        (multipliers) =>
+          ({
+            ...multipliers,
+            address: multipliersAddress,
+          } as StakingMultipliers)
+      );
+    } catch {
+      return null;
+    }
   }
 
   /**
