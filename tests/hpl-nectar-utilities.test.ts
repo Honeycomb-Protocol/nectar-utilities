@@ -72,8 +72,6 @@ describe("Nectar Utilities", () => {
   let collection: Nft;
   let merkleTree: web3.PublicKey;
   let nfts: Nft[] = [];
-  let stakingVault: HplHolderAccount;
-  let missionsVault: HplHolderAccount;
   let universalLut: web3.AddressLookupTableAccount;
   // let cNfts: Metadata[];
   // let factionsArray: { faction: string; mint: web3.PublicKey }[] = [];
@@ -1691,7 +1689,7 @@ describe("Nectar Utilities", () => {
     // );
   });
 
-  it.skip("Setup", async () => {
+  it("Setup", async () => {
     // Mint Collection
     collection = await metaplex
       .nfts()
@@ -1717,14 +1715,10 @@ describe("Nectar Utilities", () => {
           collection: collection.mint.address,
           collectionAuthority: metaplex.identity(),
           tokenStandard: TokenStandard.NonFungible,
+          tokenOwner: userHC.identity().address,
         })
         .then((x) => x.nft);
       nfts.push(nft);
-
-      await metaplex.nfts().transfer({
-        nftOrSft: nft,
-        toOwner: userHC.identity().address,
-      });
     }
 
     // Create Merkle tree for cNFTs
@@ -1781,41 +1775,21 @@ describe("Nectar Utilities", () => {
       })
     );
 
-    userHC.use(
-      await HoneycombProject.fromAddress(
-        userHC.connection,
-        adminHC.project().address
-      )
-    );
-
     adminHC.use(
-      await HplCurrency.new(
-        adminHC,
-        {
-          name: "BAIL",
-          symbol: "BAIL",
-          kind: PermissionedCurrencyKind.NonCustodial,
-          decimals: 9,
-          uri: "https://arweave.net/QPC6FYdUn-3V8ytFNuoCS85S2tHAuiDblh6u3CIZLsw",
-        },
-        { skipPreflight: true }
-      )
-    );
-
-    userHC.use(
-      await HplCurrency.fromAddress(
-        userHC.connection,
-        adminHC.currency().address
-      )
+      await HplCurrency.new(adminHC, {
+        name: "BAIL",
+        symbol: "BAIL",
+        kind: PermissionedCurrencyKind.NonCustodial,
+        decimals: 9,
+        uri: "https://arweave.net/1VxSzPEOwYlTo3lU5XSQWj-9Ldt3dB68cynDDjzeF-c",
+      })
     );
 
     await adminHC
       .currency()
       .create()
-      .holderAccount(userHC.identity().address, { skipPreflight: true })
-      .then((hA) => hA.mint(10_000 * 1_000_000_000, { skipPreflight: true }));
-
-    await userHC.currency().holderAccount();
+      .holderAccount(userHC.identity().address)
+      .then((hA) => hA.mint(10_000 * 1_000_000_000));
 
     console.log(
       "Project",
@@ -1825,7 +1799,7 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it("Load Project", async () => {
+  it.skip("Load Project", async () => {
     const address = new web3.PublicKey(
       "AYr7vWkdA7AKz4LKddzRL5Tx2aEbt6aaPAE6NuqMGkeH"
     );
@@ -1833,17 +1807,6 @@ describe("Nectar Utilities", () => {
       await HoneycombProject.fromAddress(adminHC.connection, address)
     );
     await findProjectCurrencies(adminHC.project());
-
-    userHC.use(await HoneycombProject.fromAddress(userHC.connection, address));
-    await findProjectCurrencies(userHC.project());
-
-    const temp = await userHC
-      .lut()
-      .getOrFetch(
-        userHC.processedConnection,
-        new web3.PublicKey("86HuZxzdh1ErDpjTBsnyyg76rwusNDquNjDGPRT3Uuau")
-      );
-    if (temp) universalLut = temp;
   });
 
   it("Load/Create Staking Pool", async () => {
@@ -1852,45 +1815,41 @@ describe("Nectar Utilities", () => {
     if (!adminHC.staking) {
       // Create staking pool
       adminHC.use(
-        await NectarStaking.new(
-          adminHC,
-          {
-            args: {
-              name: "Staking3.0",
-              rewardsPerDuration: 1 * 1_000_000_000,
-              rewardsDuration: 1,
-              maxRewardsDuration: null,
-              minStakeDuration: null,
-              cooldownDuration: null,
-              resetStakeDuration: false,
-              startTime: Date.now(),
-              endTime: null,
-              lockType: LockType.Freeze,
-            },
-            project: adminHC.project(),
-            currency: adminHC.currency(),
-            collections: [collection.mint.address],
-            merkleTrees: [merkleTree],
-            multipliersDecimals: 3,
-            multipliers: [
-              {
-                multiplierType: {
-                  __kind: "NFTCount",
-                  minCount: 3,
-                },
-                value: 1400,
-              },
-              {
-                multiplierType: {
-                  __kind: "NFTCount",
-                  minCount: 5,
-                },
-                value: 1800,
-              },
-            ],
+        await NectarStaking.new(adminHC, {
+          args: {
+            name: "Staking3.0",
+            rewardsPerDuration: 1 * 1_000_000_000,
+            rewardsDuration: 1,
+            maxRewardsDuration: null,
+            minStakeDuration: null,
+            cooldownDuration: null,
+            resetStakeDuration: false,
+            startTime: Date.now(),
+            endTime: null,
+            lockType: LockType.Freeze,
           },
-          { skipPreflight: true }
-        )
+          project: adminHC.project(),
+          currency: adminHC.currency(),
+          collections: [collection.mint.address],
+          merkleTrees: [merkleTree],
+          multipliersDecimals: 3,
+          multipliers: [
+            {
+              multiplierType: {
+                __kind: "NFTCount",
+                minCount: 3,
+              },
+              value: 1400,
+            },
+            {
+              multiplierType: {
+                __kind: "NFTCount",
+                minCount: 5,
+              },
+              value: 1800,
+            },
+          ],
+        })
       );
     }
 
@@ -1906,22 +1865,7 @@ describe("Nectar Utilities", () => {
     (userHC.staking() as unknown as NectarStaking).helius_rpc =
       "https://devnet.helius-rpc.com/?api-key=014b4690-ef6d-4cab-b9e9-d3ec73610d52";
 
-    stakingVault = await adminHC
-      .currency()
-      .fetch()
-      .holderAccount(adminHC.staking().address)
-      .catch(() =>
-        adminHC
-          .currency()
-          .create()
-          .holderAccount(adminHC.staking().address, { skipPreflight: true })
-      );
-    await stakingVault.mint(1_000 * 1_000_000_000);
-    console.log(
-      "Stakinng",
-      adminHC.staking().address.toString(),
-      stakingVault.tokenAccount.toString()
-    );
+    console.log("Staking", adminHC.staking().address.toString());
   });
 
   it("Load/Create Mission Pool", async () => {
@@ -1946,19 +1890,7 @@ describe("Nectar Utilities", () => {
       )
     );
 
-    missionsVault = await adminHC
-      .currency()
-      .fetch()
-      .holderAccount(adminHC.missions().address)
-      .catch(() =>
-        adminHC.currency().create().holderAccount(adminHC.missions().address)
-      );
-    await missionsVault.mint(1_000_000 * 1_000_000_000);
-    console.log(
-      "Missions",
-      adminHC.missions().address.toString(),
-      missionsVault.tokenAccount.toString()
-    );
+    console.log("Missions", adminHC.missions().address.toString());
   });
 
   it("Load/Create Mission", async () => {
@@ -1995,6 +1927,27 @@ describe("Nectar Utilities", () => {
           ],
         });
     }
+  });
+
+  it("Fetch for user", async () => {
+    userHC.use(
+      await HoneycombProject.fromAddress(
+        userHC.connection,
+        adminHC.project().address
+      )
+    );
+    await findProjectCurrencies(userHC.project());
+    await findProjectStakingPools(userHC.project());
+    await findProjectMissionPools(userHC.project());
+    await userHC.missions().missions();
+
+    const temp = await userHC
+      .lut()
+      .getOrFetch(
+        userHC.processedConnection,
+        new web3.PublicKey("86HuZxzdh1ErDpjTBsnyyg76rwusNDquNjDGPRT3Uuau")
+      );
+    if (temp) universalLut = temp;
   });
 
   it("Create and Load Lookup Table", async () => {
@@ -2034,9 +1987,7 @@ describe("Nectar Utilities", () => {
           ]),
           ...Object.keys(adminHC._stakings).map((x) => new web3.PublicKey(x)),
           (await adminHC.staking().multipliers()).address,
-          stakingVault.address,
           ...Object.keys(adminHC._missions).map((x) => new web3.PublicKey(x)),
-          missionsVault.address,
           ...(await adminHC.missions().missions()).map((x) => x.address),
         ]);
       console.log("New universal LUT", universalLut.key.toString());
