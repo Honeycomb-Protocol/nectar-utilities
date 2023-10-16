@@ -1,5 +1,9 @@
 # 0.1.x
 
+## 0.1.27
+
+- Removed unnecessary dependencies
+
 ## 0.1.25
 
 - Removed NFT Struct which was Repalced by `NFTv1` Struct.
