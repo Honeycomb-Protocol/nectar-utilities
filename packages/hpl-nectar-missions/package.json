@@ -1,6 +1,6 @@
 {
   "name": "@honeycomb-protocol/nectar-missions",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "private": false,
   "peerDependencies": {
     "@honeycomb-protocol/events": "^0.1.21",
