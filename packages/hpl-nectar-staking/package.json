@@ -1,6 +1,6 @@
 {
   "name": "@honeycomb-protocol/nectar-staking",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "private": false,
   "dependencies": {
     "@metaplex-foundation/mpl-bubblegum": "^0.7.0",
