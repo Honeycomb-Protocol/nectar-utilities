@@ -1951,45 +1951,64 @@ describe("Nectar Utilities", () => {
   });
 
   it("Create and Load Lookup Table", async () => {
+    const addresses = [
+      HPL_EVENTS_PROGRAM,
+      HPL_HIVE_CONTROL_PROGRAM,
+      HPL_CURRENCY_MANAGER_PROGRAM,
+      HPL_NECTAR_STAKING_PROGRAM,
+      HPL_NECTAR_MISSIONS_PROGRAM,
+      VAULT,
+      web3.SystemProgram.programId,
+      TOKEN_PROGRAM_ID,
+      TOKEN_2022_PROGRAM_ID,
+      METADATA_PROGRAM_ID,
+      BUBBLEGUM_PROGRAM_ID,
+      AUTHORIZATION_PROGRAM_ID,
+
+      SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+      SPL_NOOP_PROGRAM_ID,
+      web3.SYSVAR_CLOCK_PUBKEY,
+      web3.SYSVAR_RENT_PUBKEY,
+      web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+    ];
+
+    Object.values(adminHC._projects).forEach((project) => {
+      addresses.push(project.address);
+      addresses.push(...project.collections);
+      addresses.push(...project.creators);
+      addresses.push(...project.merkleTrees);
+    });
+
+    Object.values(adminHC._currencies).forEach((currency) => {
+      addresses.push(currency.address);
+      addresses.push(currency.mint.address);
+    });
+
+    await Promise.all(
+      Object.values(adminHC._stakings).map(async (staking) => {
+        addresses.push(staking.address);
+        await staking
+          .multipliers()
+          .then(
+            (multipliers) => multipliers && addresses.push(multipliers.address)
+          );
+      })
+    );
+
+    await Promise.all(
+      Object.values(adminHC._missions).map(async (missions) => {
+        addresses.push(missions.address);
+        await missions
+          .missions()
+          .then(
+            (missions) =>
+              missions && addresses.push(...missions.map((m) => m.address))
+          );
+      })
+    );
+
     if (!universalLut) {
-      universalLut = await adminHC
-        .lut()
-        .create([
-          HPL_EVENTS_PROGRAM,
-          HPL_HIVE_CONTROL_PROGRAM,
-          HPL_CURRENCY_MANAGER_PROGRAM,
-          HPL_NECTAR_STAKING_PROGRAM,
-          HPL_NECTAR_MISSIONS_PROGRAM,
-          VAULT,
-          web3.SystemProgram.programId,
-          TOKEN_PROGRAM_ID,
-          TOKEN_2022_PROGRAM_ID,
-          METADATA_PROGRAM_ID,
-          BUBBLEGUM_PROGRAM_ID,
-          AUTHORIZATION_PROGRAM_ID,
-
-          SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-          SPL_NOOP_PROGRAM_ID,
-          web3.SYSVAR_CLOCK_PUBKEY,
-          web3.SYSVAR_RENT_PUBKEY,
-          web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-
-          ...Object.values(adminHC._projects).flatMap((x) => [
-            x.address,
-            ...x.collections,
-            ...x.creators,
-            ...x.merkleTrees,
-          ]),
-
-          ...Object.values(adminHC._currencies).flatMap((x) => [
-            x.address,
-            x.mint.address,
-          ]),
-          ...Object.keys(adminHC._stakings).map((x) => new web3.PublicKey(x)),
-          (await adminHC.staking().multipliers()).address,
-          ...Object.keys(adminHC._missions).map((x) => new web3.PublicKey(x)),
-          ...(await adminHC.missions().missions()).map((x) => x.address),
-        ]);
+      universalLut = await adminHC.lut().create(addresses);
       console.log("New universal LUT", universalLut.key.toString());
     }
 
