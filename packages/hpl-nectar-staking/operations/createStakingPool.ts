@@ -12,6 +12,8 @@ import {
   Honeycomb,
   Operation,
   HoneycombProject,
+  CurrencyManagerPermission,
+  createCreateDelegateAuthorityOperation,
 } from "@honeycomb-protocol/hive-control";
 import { createUpdatePoolOperation } from "./updateStakingPool";
 import { createInitMultiplierOperation } from "./initMultipliers";
@@ -103,6 +105,19 @@ export async function createCreateStakingPoolOperation(
       programId
     ),
   ];
+
+  await createCreateDelegateAuthorityOperation(honeycomb, {
+    args: {
+      delegations: [
+        {
+          __kind: "CurrencyManager",
+          permission: CurrencyManagerPermission.MintCurrencies,
+        },
+      ],
+    },
+    delegate: stakingPool,
+    project: args.project,
+  }).then(({ operation }) => instructions.push(...operation.instructions));
 
   if (args.collections?.length) {
     await Promise.all(

@@ -5,11 +5,13 @@ import {
   SYSVAR_RENT_PUBKEY,
 } from "@solana/web3.js";
 import {
+  CurrencyManagerPermission,
   HPL_HIVE_CONTROL_PROGRAM,
   Honeycomb,
   HoneycombProject,
   Operation,
   VAULT,
+  createCreateDelegateAuthorityOperation,
 } from "@honeycomb-protocol/hive-control";
 import {
   CreateMissionPoolArgs,
@@ -104,6 +106,19 @@ export async function createCreateMissionPoolOperation(
       programId
     ),
   ];
+
+  await createCreateDelegateAuthorityOperation(honeycomb, {
+    args: {
+      delegations: [
+        {
+          __kind: "CurrencyManager",
+          permission: CurrencyManagerPermission.MintCurrencies,
+        },
+      ],
+    },
+    delegate: missionPool,
+    project: args.project,
+  }).then(({ operation }) => instructions.push(...operation.instructions));
 
   if (args.args.collections?.length) {
     await Promise.all(
