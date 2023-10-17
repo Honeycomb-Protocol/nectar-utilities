@@ -5,19 +5,8 @@ use hpl_events::{event, invoke, Instruction, ProgramResult};
 
 #[event]
 pub enum Event {
-    NewParticipation {
-        address: Pubkey,
-        state: Vec<u8>,
-    },
-    CollectParticipationReward {
-        address: Pubkey,
-        index: u8,
-        state: Vec<u8>,
-    },
-    RecallParticipation {
-        address: Pubkey,
-        state: Vec<u8>,
-    },
+    NewParticipation { address: Pubkey, state: Vec<u8> },
+    RecallParticipation { address: Pubkey, state: Vec<u8> },
 }
 
 // impl Event {

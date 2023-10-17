@@ -280,7 +280,7 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
 /// Accounts used in recall instruction
 #[derive(Accounts)]
 pub struct CollectRewards<'info> {
-    #[account()]
+    #[account(mut)]
     pub project: Box<Account<'info, Project>>,
 
     #[account(has_one = project)]
@@ -533,13 +533,6 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
         }
     };
 
-    events::Event::collect_participation_reward(
-        participation_key,
-        reward_serial_no - 1,
-        reward.try_to_vec().unwrap(),
-        &ctx.accounts.clock,
-    )
-    .emit(ctx.accounts.hpl_events.to_account_info())?;
     res
 }
 

@@ -19,11 +19,6 @@ import * as beet from '@metaplex-foundation/beet'
  */
 export type EventRecord = {
   NewParticipation: { address: web3.PublicKey; state: Uint8Array }
-  CollectParticipationReward: {
-    address: web3.PublicKey
-    index: number
-    state: Uint8Array
-  }
   RecallParticipation: { address: web3.PublicKey; state: Uint8Array }
 }
 
@@ -44,10 +39,6 @@ export const isEventNewParticipation = (
   x: Event
 ): x is Event & { __kind: 'NewParticipation' } =>
   x.__kind === 'NewParticipation'
-export const isEventCollectParticipationReward = (
-  x: Event
-): x is Event & { __kind: 'CollectParticipationReward' } =>
-  x.__kind === 'CollectParticipationReward'
 export const isEventRecallParticipation = (
   x: Event
 ): x is Event & { __kind: 'RecallParticipation' } =>
@@ -66,18 +57,6 @@ export const eventBeet = beet.dataEnum<EventRecord>([
         ['state', beet.bytes],
       ],
       'EventRecord["NewParticipation"]'
-    ),
-  ],
-
-  [
-    'CollectParticipationReward',
-    new beet.FixableBeetArgsStruct<EventRecord['CollectParticipationReward']>(
-      [
-        ['address', beetSolana.publicKey],
-        ['index', beet.u8],
-        ['state', beet.bytes],
-      ],
-      'EventRecord["CollectParticipationReward"]'
     ),
   ],
 
