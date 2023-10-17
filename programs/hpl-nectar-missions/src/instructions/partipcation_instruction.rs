@@ -370,8 +370,6 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
         return Err(ErrorCode::NotEnded.into());
     }
 
-    let participation_key = ctx.accounts.participation.key();
-
     let mut reward_serial_no: u8 = 0;
     let reward = ctx
         .accounts
