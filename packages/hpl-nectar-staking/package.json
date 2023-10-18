@@ -12,14 +12,7 @@
     "@solana/spl-token": "^0.3.8",
     "@solana/web3.js": "^1.87.1",
     "@honeycomb-protocol/events": "^0.1.21",
-    "@honeycomb-protocol/hive-control": "^0.1.82",
-    "@honeycomb-protocol/currency-manager": "^0.0.73"
-  },
-  "devDependencies": {
-    "@solana/spl-token": "^0.3.8",
-    "@solana/web3.js": "^1.87.1",
-    "@honeycomb-protocol/events": "^0.1.21",
-    "@honeycomb-protocol/hive-control": "^0.1.82",
+    "@honeycomb-protocol/hive-control": "^0.1.84",
     "@honeycomb-protocol/currency-manager": "^0.0.73"
   }
 }

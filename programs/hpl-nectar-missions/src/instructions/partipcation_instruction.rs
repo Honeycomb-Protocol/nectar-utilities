@@ -304,12 +304,7 @@ pub struct CollectRewards<'info> {
     pub nft: Box<Account<'info, NFTv1>>,
 
     /// User profile account
-    #[account(
-        mut,
-        constraint = (profile.project == mission_pool.project) && (
-          profile.identity == ProfileIdentity::Wallet { key: wallet.key() }
-        )
-      )]
+    #[account(mut, has_one = project, constraint = profile.identity == ProfileIdentity::Main )]
     pub profile: Option<Box<Account<'info, Profile>>>,
 
     #[account(has_one = mint)]
