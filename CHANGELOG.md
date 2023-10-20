@@ -1,5 +1,11 @@
 # 0.1.x
 
+## 0.1.35
+
+- Fixes dependency version mismatches
+- Updates to latest hpl-hive-control
+- Uses Latest PDA Module of hpl-hive-control
+
 ## 0.1.28 - 0.1.31
 
 ### Nectar Staking

@@ -9,10 +9,9 @@ import {
 import {
   HPL_HIVE_CONTROL_PROGRAM,
   Honeycomb,
+  IdentityClient,
   Operation,
   VAULT,
-  getDelegateAuthorityPda,
-  getProfilePda,
 } from "@honeycomb-protocol/hive-control";
 import {
   PROGRAM_ID as CURRENCY_MANAGER_PROGRAM_ID,
@@ -108,14 +107,15 @@ export async function createCollectRewardsOperation(
     holderAccount = user.holderAccount;
     tokenAccount = user.tokenAccount;
 
-    missionPoolDelegate = getDelegateAuthorityPda(
-      project,
-      projectAuthority,
-      missionPool
-    )[0];
+    missionPoolDelegate = honeycomb
+      .pda()
+      .hiveControl()
+      .delegateAuthority(project, projectAuthority, missionPool)[0];
   }
 
-  const user = await honeycomb.identity().user();
+  const user = await honeycomb
+    .profiles()
+    .userFromIdentityClient(honeycomb.identity() as IdentityClient);
 
   const instructions = [
     createCollectRewardsInstruction(
@@ -127,11 +127,13 @@ export async function createCollectRewardsOperation(
         participation: args.reward.participation().address,
         nft: args.reward.participation().nftAddress,
         profile: !args.reward.isCurrency()
-          ? getProfilePda(
-              args.reward.participation().mission().pool().project().address,
-              user.address,
-              { __kind: "Wallet", key: args.wallet }
-            )[0]
+          ? honeycomb
+              .pda()
+              .hiveControl()
+              .profile(
+                args.reward.participation().mission().pool().project().address,
+                user.address
+              )[0]
           : programId,
         currency: args.reward.isCurrency()
           ? args.reward.currency().address

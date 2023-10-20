@@ -1,7 +1,6 @@
 import * as web3 from "@solana/web3.js";
 import { createClaimRewardsInstruction, PROGRAM_ID } from "../generated";
 import {
-  getDelegateAuthorityPda,
   Honeycomb,
   HPL_HIVE_CONTROL_PROGRAM,
   Operation,
@@ -69,11 +68,10 @@ export async function createClaimRewardsOperation(
     args.stakingPool.currency().kind
   );
 
-  const stakingPoolDelegate = getDelegateAuthorityPda(
-    project,
-    projectAuthority,
-    stakingPool
-  )[0];
+  const stakingPoolDelegate = honeycomb
+    .pda()
+    .hiveControl()
+    .delegateAuthority(project, projectAuthority, stakingPool)[0];
 
   let units = 500_000;
   const instructions = [
