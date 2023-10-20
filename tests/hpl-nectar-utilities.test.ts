@@ -5,6 +5,7 @@ import {
   HPL_HIVE_CONTROL_PROGRAM,
   Honeycomb,
   HoneycombProject,
+  ProfileDataType,
   VAULT,
   lutModule,
 } from "@honeycomb-protocol/hive-control";
@@ -1770,9 +1771,7 @@ describe("Nectar Utilities", () => {
         profileDataConfigs: [
           {
             label: "nectar_missions_xp",
-            dataType: {
-              __kind: "SingleValue",
-            },
+            dataType: ProfileDataType.SingleValue,
           },
         ],
       })
@@ -1807,7 +1806,7 @@ describe("Nectar Utilities", () => {
       "AYr7vWkdA7AKz4LKddzRL5Tx2aEbt6aaPAE6NuqMGkeH"
     );
     adminHC.use(
-      await HoneycombProject.fromAddress(adminHC.connection, address)
+      await HoneycombProject.fromAddress(adminHC, address)
     );
     await findProjectCurrencies(adminHC.project());
   });
@@ -1934,10 +1933,7 @@ describe("Nectar Utilities", () => {
 
   it("Fetch for user", async () => {
     userHC.use(
-      await HoneycombProject.fromAddress(
-        userHC.connection,
-        adminHC.project().address
-      )
+      await HoneycombProject.fromAddress(userHC, adminHC.project().address)
     );
     await findProjectCurrencies(userHC.project());
     await findProjectStakingPools(userHC.project());
@@ -2033,29 +2029,26 @@ describe("Nectar Utilities", () => {
   });
 
   it("Fetch or Create user/profile", async () => {
-    await userHC
-      .identity()
-      .user()
-      .catch((_) =>
-        userHC.identity().create().user({
-          username: "MissionTest6",
-          name: "MissionTest",
-          bio: "This account is used for testing",
-          pfp: "https://ottxzxktsovtp7hzlcgxu7ti42ukppp5pzavhy6rkj7v4neiblyq.arweave.net/dOd83VOTqzf8-ViNen5o5qinvf1-QVPj0VJ_XjSICvE?ext=png",
+    const user = await userHC
+      .profiles()
+      .userFromUsername("Test2")
+      .catch((e) =>
+        userHC.profiles().newUser({
+          username: "Test2",
+          name: "Test User",
+          bio: "This user account is used for testing",
+          pfp: "https://lh3.googleusercontent.com/yTzqJcgQ4VNQuq5BXjEefj88NvmY6uqmq9UEM6nGUF9Vs68LPsTYocXR9vJ4yhvl-LlXeXgdXkm5Y5lz9p3LQqbEifbKHV5xtLc",
         })
       );
 
-    await userHC
-      .identity()
-      .profile(userHC.project().address, userHC.identity().address)
-      .catch((_) =>
-        userHC
-          .identity()
-          .create()
-          .profile(userHC.project().address, userHC.identity().address)
-      );
-
-    // console.log("User", user.address.toString(), profile.address.toString());
+    await user.profile(userHC.project().address).catch(() =>
+      user.newProfile(
+        {
+          pfp: "https://lh3.googleusercontent.com/UjE0kuudxuDzQ0QezywU99TzM49_QbNKHvmE8A8rC9o76W84YU1TmT0M78WJZz5bcu1VMud5RfYSoYZuv5Pa52PpO_bchLkiQQ",
+        },
+        userHC.project().address
+      )
+    );
   });
 
   it("Stake NFTs", async () => {
