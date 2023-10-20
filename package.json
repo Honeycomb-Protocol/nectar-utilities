@@ -13,10 +13,10 @@
     "build-deploy": "yarn build && yarn deploy"
   },
   "dependencies": {
-    "@honeycomb-protocol/currency-manager": "^0.0.72",
+    "@honeycomb-protocol/currency-manager": "^0.0.74",
     "@honeycomb-protocol/events": "^0.1.21",
-    "@honeycomb-protocol/hive-control": "^0.1.83",
-    "@honeycomb-protocol/nectar-staking": "^0.1.32",
+    "@honeycomb-protocol/hive-control": "^0.2.0",
+    "@honeycomb-protocol/nectar-staking": "^0.1.34",
     "@metaplex-foundation/js": "^0.18.1",
     "@metaplex-foundation/mpl-bubblegum": "^0.7.0",
     "@metaplex-foundation/mpl-token-auth-rules": "^1.2.0",

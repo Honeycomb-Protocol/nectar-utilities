@@ -12,11 +12,8 @@ use {
     },
     hpl_events::HplEvents,
     hpl_hive_control::{
-        cpi::{accounts::ManageProfileData, add_profile_data, modify_profile_data},
-        instructions::{
-            AddProfileDataArgs, AddProfileDataArgsValue, ModifyProfileDataArgs,
-            ModifyProfileDataArgsValue,
-        },
+        cpi::{accounts::ManageProfileData, manage_profile_data},
+        instructions::ManageProfileDataArgs,
         program::HplHiveControl,
         state::{DelegateAuthority, Profile, ProfileData, ProfileIdentity, Project},
     },
@@ -454,75 +451,38 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
             }
 
             let profile = ctx.accounts.profile.clone().unwrap();
-            let current_xp = profile.data.get("nectar_missions_xp");
+            let mut xp = reward.amount;
 
-            if current_xp.is_none() {
-                add_profile_data(
-                    CpiContext::new(
-                        ctx.accounts.hive_control.to_account_info(),
-                        ManageProfileData {
-                            project: ctx.accounts.project.to_account_info(),
-                            profile: profile.to_account_info(),
-                            merkle_tree: None,
-                            delegate_authority: None,
-                            authority: ctx.accounts.wallet.to_account_info(),
-                            payer: ctx.accounts.wallet.to_account_info(),
-                            rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
-                            system_program: ctx.accounts.system_program.to_account_info(),
-                            hpl_events: ctx.accounts.hpl_events.to_account_info(),
-                            clock: ctx.accounts.clock.to_account_info(),
-                            compression_program: ctx.accounts.compression_program.to_account_info(),
-                            vault: ctx.accounts.vault.to_account_info(),
-                            instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
-                        },
-                    ),
-                    AddProfileDataArgs {
-                        label: String::from("nectar_missions_xp"),
-                        value: Some(AddProfileDataArgsValue::SingleValue {
-                            value: String::from((reward.amount).to_string()),
-                        }),
-                    },
-                )
-            } else {
-                match current_xp.unwrap() {
-                    ProfileData::SingleValue { value } => {
-                        let current_amount = value.parse::<u64>().unwrap();
-                        modify_profile_data(
-                            CpiContext::new(
-                                ctx.accounts.hive_control.to_account_info(),
-                                ManageProfileData {
-                                    project: ctx.accounts.project.to_account_info(),
-                                    profile: profile.to_account_info(),
-                                    merkle_tree: None,
-                                    delegate_authority: None,
-                                    authority: ctx.accounts.wallet.to_account_info(),
-                                    payer: ctx.accounts.wallet.to_account_info(),
-                                    rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
-                                    system_program: ctx.accounts.system_program.to_account_info(),
-                                    hpl_events: ctx.accounts.hpl_events.to_account_info(),
-                                    clock: ctx.accounts.clock.to_account_info(),
-                                    compression_program: ctx
-                                        .accounts
-                                        .compression_program
-                                        .to_account_info(),
-                                    vault: ctx.accounts.vault.to_account_info(),
-                                    instructions_sysvar: ctx
-                                        .accounts
-                                        .instructions_sysvar
-                                        .to_account_info(),
-                                },
-                            ),
-                            ModifyProfileDataArgs {
-                                label: String::from("nectar_missions_xp"),
-                                value: ModifyProfileDataArgsValue::SingleValue {
-                                    value: (current_amount + reward.amount).to_string(),
-                                },
-                            },
-                        )
-                    }
-                    _ => Err(ErrorCode::InvalidProfileData.into()),
+            if let Some(profile_data) = profile.app_context.get("nectar_missions_xp") {
+                match profile_data {
+                    ProfileData::SingleValue(value) => xp += value.parse::<u64>().unwrap(),
+                    _ => {}
                 }
             }
+
+            manage_profile_data(
+                CpiContext::new(
+                    ctx.accounts.hive_control.to_account_info(),
+                    ManageProfileData {
+                        project: ctx.accounts.project.to_account_info(),
+                        profile: profile.to_account_info(),
+                        delegate_authority: None,
+                        authority: ctx.accounts.wallet.to_account_info(),
+                        payer: ctx.accounts.wallet.to_account_info(),
+                        rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
+                        system_program: ctx.accounts.system_program.to_account_info(),
+                        hpl_events: ctx.accounts.hpl_events.to_account_info(),
+                        clock: ctx.accounts.clock.to_account_info(),
+                        vault: ctx.accounts.vault.to_account_info(),
+                        instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
+                    },
+                ),
+                ManageProfileDataArgs {
+                    label: String::from("nectar_missions_xp"),
+                    value: Some(ProfileData::SingleValue(String::from((xp).to_string()))),
+                    is_app_context: true,
+                },
+            )
         }
     };
 

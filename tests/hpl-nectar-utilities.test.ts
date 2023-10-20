@@ -63,8 +63,8 @@ export function bytesOf(input: any): number {
 }
 
 describe("Nectar Utilities", () => {
-  const totalNfts = 0;
-  const totalcNfts = 1;
+  const totalNfts = 1;
+  const totalcNfts = 0;
 
   let adminHC: Honeycomb;
   let userHC: Honeycomb;
@@ -1854,7 +1854,7 @@ describe("Nectar Utilities", () => {
     }
 
     (adminHC.staking() as unknown as NectarStaking).helius_rpc =
-      "https://devnet.helius-rpc.com/?api-key=014b4690-ef6d-4cab-b9e9-d3ec73610d52";
+      "https://devnet.helius-rpc.com/?api-key=b5676a53-d02f-4c59-9b5d-91bcdd9f4f54";
 
     userHC.use(
       await NectarStaking.fromAddress(
@@ -1862,8 +1862,8 @@ describe("Nectar Utilities", () => {
         adminHC.staking().address
       )
     );
-    (userHC.staking() as unknown as NectarStaking).helius_rpc =
-      "https://devnet.helius-rpc.com/?api-key=014b4690-ef6d-4cab-b9e9-d3ec73610d52";
+    userHC.staking().helius_rpc =
+      "https://devnet.helius-rpc.com/?api-key=b5676a53-d02f-4c59-9b5d-91bcdd9f4f54";
 
     console.log("Staking", adminHC.staking().address.toString());
   });
