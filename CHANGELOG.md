@@ -6,6 +6,12 @@
 
 - Cache Multipliers unavailaility and support for nullable multipliers
 
+## 0.1.35
+
+- Fixes dependency version mismatches
+- Updates to latest hpl-hive-control
+- Uses Latest PDA Module of hpl-hive-control\
+
 ## 0.1.27
 
 - Removed unnecessary dependencies
