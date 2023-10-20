@@ -14,11 +14,6 @@ runs:
       working-directory: ${{ inputs.working_dir }}
       shell: bash
 
-    - name: Link staking package
-      run: cd ./packages/hpl-nectar-staking && yarn link && cd ../.. && yarn link @honeycomb-protocol/nectar-staking
-      working-directory: ${{ inputs.working_dir }}
-      shell: bash
-
     - name: Compile TypeScript
       run: yarn tsc
       working-directory: ${{ inputs.working_dir }}
