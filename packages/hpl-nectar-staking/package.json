@@ -3,7 +3,7 @@
   "version": "0.1.34",
   "private": false,
   "dependencies": {
-    "@metaplex-foundation/mpl-bubblegum": "^3.0.0",
+    "@metaplex-foundation/mpl-bubblegum": "^0.7.0",
     "@metaplex-foundation/mpl-token-auth-rules": "^1.2.0",
     "@metaplex-foundation/mpl-token-metadata": "^2.10.0",
     "@msgpack/msgpack": "^3.0.0-beta2"
