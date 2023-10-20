@@ -8,7 +8,7 @@ import {
   PROGRAM_ID,
 } from "../generated";
 import { AssetProof, AvailableNft } from "../types";
-import { MPL_BUBBLEGUM_PROGRAM_ID as BUBBLEGUM_PROGRAM_ID } from "@metaplex-foundation/mpl-bubblegum";
+import { PROGRAM_ID as BUBBLEGUM_PROGRAM_ID } from "@metaplex-foundation/mpl-bubblegum";
 import { PROGRAM_ID as AUTHORIZATION_PROGRAM_ID } from "@metaplex-foundation/mpl-token-auth-rules";
 import {
   getMetadataAccount_,
