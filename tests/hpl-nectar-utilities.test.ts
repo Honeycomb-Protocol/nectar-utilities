@@ -12,7 +12,6 @@ import {
   PermissionedCurrencyKind,
   HplCurrency,
   findProjectCurrencies,
-  HplHolderAccount,
   HPL_CURRENCY_MANAGER_PROGRAM,
 } from "@honeycomb-protocol/currency-manager";
 import {
@@ -22,7 +21,8 @@ import {
   NectarStaking,
   findProjectStakingPools,
 } from "../packages/hpl-nectar-staking";
-import { createNewTree, getHoneycomb, mintOneCNFT, wait } from "./prepare";
+import getHoneycombs from "../scripts/prepare";
+import { createNewTree, mintOneCNFT } from "./helpers";
 import {
   HPL_NECTAR_MISSIONS_PROGRAM,
   NectarMissions,
@@ -39,6 +39,9 @@ import { PROGRAM_ID as BUBBLEGUM_PROGRAM_ID } from "@metaplex-foundation/mpl-bub
 import { PROGRAM_ID as AUTHORIZATION_PROGRAM_ID } from "@metaplex-foundation/mpl-token-auth-rules";
 
 jest.setTimeout(2000000);
+
+const wait = (seconds: number) =>
+  new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 
 export function bytesOf(input: any): number {
   if (Array.isArray(input)) {
@@ -1621,7 +1624,7 @@ describe("Nectar Utilities", () => {
   // });
 
   it("Prepare", async () => {
-    const temp = await getHoneycomb();
+    const temp = getHoneycombs();
 
     adminHC = temp.adminHC;
     userHC = temp.userHC;
