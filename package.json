@@ -3,6 +3,7 @@
   "version": "0.0.17",
   "private": false,
   "scripts": {
+    "prepare": "cd ./packages/hpl-nectar-staking && yarn link && cd ../.. && yarn link @honeycomb-protocol/nectar-staking",
     "rollout": "node ./scripts/rollout.js",
     "publishall": "node ./scripts/publishall.js",
     "build:program": "anchor build",
@@ -16,7 +17,6 @@
     "@honeycomb-protocol/currency-manager": "^0.0.74",
     "@honeycomb-protocol/events": "^0.1.21",
     "@honeycomb-protocol/hive-control": "^0.2.1",
-    "@honeycomb-protocol/nectar-staking": "^0.1.33",
     "@metaplex-foundation/js": "^0.18.1",
     "@metaplex-foundation/mpl-bubblegum": "^0.7.0",
     "@metaplex-foundation/mpl-token-auth-rules": "^1.2.0",
