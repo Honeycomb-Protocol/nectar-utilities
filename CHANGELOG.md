@@ -1,5 +1,9 @@
 # 0.1.x
 
+## 0.1.36
+
+- Using staking pool as criteria in mission pool
+
 ## 0.1.35
 
 - Fixes dependency version mismatches
