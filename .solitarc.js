@@ -1,4 +1,5 @@
 const path = require("path");
+require("dotenv").config();
 
 const createConfig = (name, programId) => {
   const packageName = "hpl-" + name;
@@ -50,9 +51,5 @@ const configs = {
   ),
 };
 
-const defaultProgram = "nectar-missions" || Object.keys(configs)[0];
-const activeConfig =
-  configs[process.env.SOLITA_HPL_PROGRAM || defaultProgram] ||
-  configs[defaultProgram];
-
-module.exports = activeConfig;
+const defaultProgram = Object.keys(configs)[0];
+module.exports = configs[process.env.PROGRAM_NAME || defaultProgram];

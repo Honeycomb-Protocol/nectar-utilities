@@ -19,7 +19,11 @@ import {
   Operation,
   SendBulkOptions,
 } from "@honeycomb-protocol/hive-control";
-import { StakedNft, getNftPda } from "@honeycomb-protocol/nectar-staking";
+import {
+  NectarStaking,
+  StakedNft,
+  getNftPda,
+} from "@honeycomb-protocol/nectar-staking";
 import {
   creatRecallOperation,
   createCreateMissionOperation,
@@ -236,8 +240,7 @@ export class NectarMissions extends Module<"recall" | "participate"> {
    * const args: UpdateMissionPoolArgs = {
    *   name: "Updated Mission Pool",
    *   ... (other properties to update the mission pool)
-   *   collection: newCollection, // Optional, specify if you want to change the collection
-   *   creator: newCreator, // Optional, specify if you want to change the creator
+   *   stakingPool, // Optional, specify if you want to change the stakingPool
    * };
    * const confirmOptions: web3.ConfirmOptions = {
    *   skipPreflight: false, // Optional, set to true to skip preflight checks
@@ -246,8 +249,7 @@ export class NectarMissions extends Module<"recall" | "participate"> {
    */
   public async update(
     args: UpdateMissionPoolArgs & {
-      collection?: web3.PublicKey;
-      creator?: web3.PublicKey;
+      stakingPool?: web3.PublicKey;
     },
     confirmOptions?: web3.ConfirmOptions
   ) {
@@ -258,8 +260,7 @@ export class NectarMissions extends Module<"recall" | "participate"> {
         programId: PROGRAM_ID,
         project: this.project().address,
         missionPool: this.address,
-        collection: args.collection,
-        creator: args.creator,
+        stakingPool: args.stakingPool,
       }
     );
     return operation.send(confirmOptions);
@@ -304,31 +305,23 @@ export class NectarMissions extends Module<"recall" | "participate"> {
     return this._pool.name;
   }
 
-  /**
-   * Returns an array of public keys representing the collections associated with the mission pool.
-   *
-   * @returns An array of public keys representing the collections associated with the mission pool.
-   *
-   * @example
-   * const collections = nectarMissions.collections;
-   * console.log(collections); // Output: [collection1, collection2]
-   */
-  public get collections() {
-    return this._pool.collections;
-  }
-
-  /**
-   * Returns an array of public keys representing the creators associated with the mission pool.
-   *
-   * @returns An array of public keys representing the creators associated with the mission pool.
-   *
-   * @example
-   * const creators = nectarMissions.creators;
-   * console.log(creators); // Output: [creator1, creator2]
-   */
-  public get creators() {
-    return this._pool.creators;
-  }
+  // /**
+  //  * Returns an array of public keys representing the collections associated with the mission pool.
+  //  *
+  //  * @returns An array of public keys representing the collections associated with the mission pool.
+  //  *
+  //  * @example
+  //  * const collections = nectarMissions.collections;
+  //  * console.log(collections); // Output: [collection1, collection2]
+  //  */
+  // public get stakingPools() {
+  //   return this._pool.stakingPools.map((i): NectarStaking => {
+  //     const service = this.project().services[i];
+  //     if (service.__kind === "Staking") {
+  //       return this.honeycomb().staking(service.poolId) as NectarStaking;
+  //     }
+  //   });
+  // }
 
   /**
    * Returns the `HoneycombProject` associated with the mission pool.

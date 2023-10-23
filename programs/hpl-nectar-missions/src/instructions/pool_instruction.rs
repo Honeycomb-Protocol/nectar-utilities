@@ -1,12 +1,12 @@
 use {
     crate::state::MissionPool,
     anchor_lang::prelude::*,
-    anchor_spl::token::Mint,
     hpl_events::HplEvents,
     hpl_hive_control::{
         program::HplHiveControl,
-        state::{DelegateAuthority, Project},
+        state::{DelegateAuthority, Project, Service},
     },
+    hpl_nectar_staking::state::StakingPool,
     hpl_utils::traits::Default,
 };
 
@@ -93,11 +93,8 @@ pub struct UpdateMissionPool<'info> {
     pub mission_pool: Account<'info, MissionPool>,
 
     /// Collection mint address to be used for the mission_pool
-    pub collection: Option<Account<'info, Mint>>,
-
-    /// Creator address to be used for the mission_pool
-    /// CHECK: This is not dangerous because we don't read or write from this account
-    pub creator: Option<AccountInfo<'info>>,
+    #[account(has_one = project)]
+    pub staking_pool: Option<Account<'info, StakingPool>>,
 
     #[account(has_one = authority)]
     pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
@@ -140,32 +137,21 @@ pub fn update_mission_pool(
         .factions_merkle_root
         .unwrap_or(mission_pool.factions_merkle_root);
 
-    if let Some(collection) = &ctx.accounts.collection {
+    if let Some(staking_pool) = &ctx.accounts.staking_pool {
         let index = ctx
             .accounts
             .project
-            .collections
+            .services
             .iter()
-            .position(|x| x.eq(&collection.key()))
+            .position(|x| {
+                if let Service::Staking { pool_id } = x {
+                    pool_id.eq(&staking_pool.key())
+                } else {
+                    false
+                }
+            })
             .unwrap();
-        hpl_utils::reallocate(
-            1,
-            mission_pool.to_account_info(),
-            ctx.accounts.payer.to_account_info(),
-            &ctx.accounts.rent,
-            &ctx.accounts.system_program,
-        )?;
-        mission_pool.collections.push(index as u8);
-    }
 
-    if let Some(creator) = &ctx.accounts.creator {
-        let index = ctx
-            .accounts
-            .project
-            .creators
-            .iter()
-            .position(|x| x.eq(&creator.key()))
-            .unwrap();
         hpl_utils::reallocate(
             1,
             mission_pool.to_account_info(),
@@ -173,7 +159,7 @@ pub fn update_mission_pool(
             &ctx.accounts.rent,
             &ctx.accounts.system_program,
         )?;
-        mission_pool.creators.push(index as u8);
+        mission_pool.staking_pools.push(index as u8);
     }
 
     Ok(())

@@ -15,12 +15,12 @@ use {
         cpi::{accounts::ManageProfileData, manage_profile_data},
         instructions::ManageProfileDataArgs,
         program::HplHiveControl,
-        state::{DelegateAuthority, Profile, ProfileData, ProfileIdentity, Project},
+        state::{DelegateAuthority, Profile, ProfileData, ProfileIdentity, Project, Service},
     },
     hpl_nectar_staking::{
         cpi::{accounts::UseNft, use_nft},
         program::HplNectarStaking,
-        state::{NFTCriteria, NFTUsedBy, NFTv1, Staker, StakingPool},
+        state::{NFTUsedBy, NFTv1, Staker, StakingPool},
     },
     hpl_utils::traits::Default,
     spl_account_compression::program::SplAccountCompression,
@@ -112,6 +112,24 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
     participation.nft = ctx.accounts.nft.key();
     participation.end_time = ctx.accounts.mission.duration + ctx.accounts.clock.unix_timestamp;
 
+    if !ctx
+        .accounts
+        .mission_pool
+        .staking_pools
+        .iter()
+        .any(|pool_index| {
+            if let Service::Staking { pool_id } =
+                ctx.accounts.project.services[*pool_index as usize]
+            {
+                pool_id == ctx.accounts.staking_pool.key()
+            } else {
+                false
+            }
+        })
+    {
+        panic!("Staking pool did not match");
+    }
+
     // if ctx.accounts.mission_pool.factions_merkle_root[0] != 0 {
     //     if args.faction.is_none() {
     //         return Err(ErrorCode::FactionNotProvided.into());
@@ -170,52 +188,6 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
 
     if ctx.accounts.nft.last_staked_at < ctx.accounts.nft.last_unstaked_at {
         return Err(ErrorCode::NotStaked.into());
-    }
-
-    match ctx.accounts.nft.criteria {
-        NFTCriteria::Collection { address } => {
-            let mut index = 0;
-            let collection = ctx
-                .accounts
-                .project
-                .collections
-                .iter()
-                .filter_map(|x| {
-                    let key = if ctx.accounts.mission_pool.collections.contains(&index) {
-                        Some(*x)
-                    } else {
-                        None
-                    };
-                    index += 1;
-                    key
-                })
-                .any(|collection| collection.eq(&address));
-            if !collection {
-                return Err(ErrorCode::NftNotRecognized.into());
-            }
-        }
-        NFTCriteria::Creator { address } => {
-            let mut index = 0;
-            let creator = ctx
-                .accounts
-                .project
-                .creators
-                .iter()
-                .filter_map(|x| {
-                    let key = if ctx.accounts.mission_pool.creators.contains(&index) {
-                        Some(*x)
-                    } else {
-                        None
-                    };
-                    index += 1;
-                    key
-                })
-                .any(|creator| creator.eq(&address));
-            if !creator {
-                return Err(ErrorCode::NftNotRecognized.into());
-            }
-        }
-        _ => {}
     }
 
     burn_currency(

@@ -33,15 +33,10 @@ type CreateUpdateMissionPoolOperationArgs = {
    */
   missionPool: PublicKey;
   /**
-   * (Optional) The collection public key associated with the mission pool.
+   * (Optional) The staking pool public key associated with the mission pool.
    * If not provided, the default programId will be used.
    */
-  collection?: PublicKey;
-  /**
-   * (Optional) The creator public key associated with the mission pool.
-   * If not provided, the default programId will be used.
-   */
-  creator?: PublicKey;
+  stakingPool?: PublicKey;
   /**
    * (Optional) The program ID associated with the update mission pool operation.
    * If not provided, the default PROGRAM_ID will be used.
@@ -65,8 +60,7 @@ type CreateUpdateMissionPoolOperationArgs = {
  *   args: updateArgs,
  *   project: myProjectPublicKey,
  *   missionPool: missionPoolAddress,
- *   collection: myCollectionPublicKey, // (Optional) Provide a custom collection public key if needed
- *   creator: myCreatorPublicKey, // (Optional) Provide a custom creator public key if needed
+ *   stakingPool: myStakinngPoolId, // (Optional) Provide a custom stakingPool public key if needed
  *   programId: myCustomProgramId, // (Optional) Provide a custom program ID if needed
  * };
  * const { operation } = createUpdateMissionPoolOperation(honeycomb, createUpdateMissionPoolArgs);
@@ -87,8 +81,7 @@ export async function createUpdateMissionPoolOperation(
       {
         project: args.project,
         missionPool: args.missionPool,
-        collection: args.collection || programId,
-        creator: args.creator || programId,
+        stakingPool: args.stakingPool || programId,
         delegateAuthority:
           honeycomb.identity().delegateAuthority()?.address || programId,
         authority: honeycomb.identity().address,

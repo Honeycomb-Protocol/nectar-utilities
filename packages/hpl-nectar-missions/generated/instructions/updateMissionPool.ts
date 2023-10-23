@@ -41,8 +41,7 @@ export const updateMissionPoolStruct = new beet.FixableBeetArgsStruct<
  *
  * @property [] project
  * @property [_writable_] missionPool
- * @property [] collection (optional)
- * @property [] creator (optional)
+ * @property [] stakingPool (optional)
  * @property [] delegateAuthority (optional)
  * @property [_writable_, **signer**] authority
  * @property [_writable_, **signer**] payer
@@ -56,8 +55,7 @@ export const updateMissionPoolStruct = new beet.FixableBeetArgsStruct<
 export type UpdateMissionPoolInstructionAccounts = {
   project: web3.PublicKey
   missionPool: web3.PublicKey
-  collection?: web3.PublicKey
-  creator?: web3.PublicKey
+  stakingPool?: web3.PublicKey
   delegateAuthority?: web3.PublicKey
   authority: web3.PublicKey
   payer: web3.PublicKey
@@ -110,29 +108,17 @@ export function createUpdateMissionPoolInstruction(
     },
   ]
 
-  if (accounts.collection != null) {
+  if (accounts.stakingPool != null) {
     keys.push({
-      pubkey: accounts.collection,
-      isWritable: false,
-      isSigner: false,
-    })
-  }
-  if (accounts.creator != null) {
-    if (accounts.collection == null) {
-      throw new Error(
-        "When providing 'creator' then 'accounts.collection' need(s) to be provided as well."
-      )
-    }
-    keys.push({
-      pubkey: accounts.creator,
+      pubkey: accounts.stakingPool,
       isWritable: false,
       isSigner: false,
     })
   }
   if (accounts.delegateAuthority != null) {
-    if (accounts.collection == null || accounts.creator == null) {
+    if (accounts.stakingPool == null) {
       throw new Error(
-        "When providing 'delegateAuthority' then 'accounts.collection', 'accounts.creator' need(s) to be provided as well."
+        "When providing 'delegateAuthority' then 'accounts.stakingPool' need(s) to be provided as well."
       )
     }
     keys.push({

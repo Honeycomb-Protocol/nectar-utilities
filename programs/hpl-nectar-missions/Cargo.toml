@@ -29,7 +29,7 @@ hpl-utils = "0.1.4"
 hpl-events = { version = "0.1.21", features = ["no-entrypoint"] }
 hpl-hive-control = { version = "0.2.0", features = ["cpi"] }
 hpl-macros = { version = "0.0.2" }
-hpl-currency-manager = { version = "0.0.74", features = ["cpi"] }
+hpl-currency-manager = { version = "0.0.75", features = ["cpi"] }
 hpl-nectar-staking = { version = "0.1.34", path = "../hpl-nectar-staking", features = [
   "cpi",
 ] }

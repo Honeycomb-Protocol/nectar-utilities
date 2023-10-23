@@ -32,8 +32,7 @@ type CreateCreateMissionPoolOperationArgs = {
    * You can provide additional fields like collections and creators.
    */
   args: CreateMissionPoolArgs & {
-    collections?: PublicKey[];
-    creators?: PublicKey[];
+    stakingPools?: PublicKey[];
   };
   /**
    * The HoneycombProject where the new mission pool will be created.
@@ -120,32 +119,16 @@ export async function createCreateMissionPoolOperation(
     project: args.project,
   }).then(({ operation }) => instructions.push(...operation.instructions));
 
-  if (args.args.collections?.length) {
+  if (args.args.stakingPools?.length) {
     await Promise.all(
-      args.args.collections.map((collection) =>
+      args.args.stakingPools.map((stakingPool) =>
         createUpdateMissionPoolOperation(honeycomb, {
           args: {
             factionsMerkleRoot: null,
           },
           project: args.project.address,
           missionPool,
-          collection,
-          programId,
-        }).then(({ operation }) => instructions.push(...operation.instructions))
-      )
-    );
-  }
-
-  if (args.args.creators?.length) {
-    await Promise.all(
-      args.args.creators.map((creator) =>
-        createUpdateMissionPoolOperation(honeycomb, {
-          args: {
-            factionsMerkleRoot: null,
-          },
-          project: args.project.address,
-          missionPool,
-          creator,
+          stakingPool,
           programId,
         }).then(({ operation }) => instructions.push(...operation.instructions))
       )
