@@ -4,6 +4,7 @@ const path = require("path");
 
 // write the version in cargo.toml of all programs
 const packages = fs.readdirSync("packages");
+const ignoreBuild = process.argv.includes("--ignore-build");
 packages.forEach((package) => {
   if (package === "idl" || package === ".DS_Store") return;
 
@@ -56,10 +57,15 @@ packages.forEach((package) => {
 
   if (version !== currentVersion) {
     execSync(
-      `cargo update -p ${package} && yarn build:sdk && git add packages/**/*.json && git add programs/**/Cargo.toml && git add Cargo.lock && git commit -m "bump ${package.replace(
+      `cargo update -p ${package} && ${
+        ignoreBuild ? "" : "yarn build:sdk &&"
+      } git add packages/**/*.json && git add programs/**/Cargo.toml && git add Cargo.lock && git commit -m "bump ${package.replace(
         "hpl-",
         ""
-      )} version to ${version}"`
+      )} version to ${version}"`,
+      {
+        stdio: "inherit",
+      }
     );
   }
 });

@@ -61,16 +61,14 @@ type ItemOrArray<T = any> = T | T[];
  *   args: {
  *     name: "Mission Pool 1",
  *     ... (other properties from CreateMissionPoolArgs)
- *     collections: [collection1, collection2],
- *     creators: [creator1, creator2],
+ *     stakingPools: [stakingPool1, stakingPool2],
  *   },
  *   project: honeycombProject, // Optional, if not provided, it will use the default project
  * };
  */
 type NewMissionPoolArgs = {
   args: CreateMissionPoolArgs & {
-    collections?: web3.PublicKey[];
-    creators?: web3.PublicKey[];
+    stakingPools?: web3.PublicKey[];
   };
   project?: HoneycombProject;
 };
@@ -201,7 +199,7 @@ export class NectarMissions extends Module<"recall" | "participate"> {
    *   args: {
    *     name: "Mission Pool 1",
    *     ... (other properties from CreateMissionPoolArgs)
-   *     collections: [collection1, collection2],
+   *     stakingPools: [stakingPool1, stakingPool2],
    *     creators: [creator1, creator2],
    *   },
    *   project: honeycombProject, // Optional, if not provided, it will use the default project
