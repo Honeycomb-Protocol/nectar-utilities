@@ -86,7 +86,7 @@ export async function createUnstakeOperation(
     await createClaimRewardsOperation(
       honeycomb,
       {
-        stakingPool: honeycomb.staking(),
+        stakingPool: honeycomb.staking(args.stakingPool.address),
         nft: args.nft,
         isFirst: args.isFirst,
         programId: args.programId,

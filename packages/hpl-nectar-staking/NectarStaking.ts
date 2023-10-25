@@ -693,7 +693,7 @@ export class NectarStakingFetch {
   public stakedNfts(walletAddress?: web3.PublicKey) {
     if (!walletAddress)
       walletAddress = this.nectarStaking.honeycomb().identity().address;
-    const promise = fetchStakedNfts(this.nectarStaking.honeycomb(), {
+    const promise = fetchStakedNfts(this.nectarStaking, {
       walletAddress,
       programId: this.nectarStaking.programId,
     });

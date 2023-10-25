@@ -8,7 +8,6 @@ import {
 } from "@honeycomb-protocol/hive-control";
 import {
   PROGRAM_ID as HPL_CURRENCY_MANAGER_PROGRAM_ID,
-  holderAccountPdas,
   createCreateHolderAccountOperation,
   createFixHolderAccountInstruction,
 } from "@honeycomb-protocol/currency-manager";
@@ -62,11 +61,14 @@ export async function createClaimRewardsOperation(
     programId
   );
 
-  const { holderAccount, tokenAccount } = holderAccountPdas(
-    honeycomb.identity().address,
-    args.stakingPool.currency().mint.address,
-    args.stakingPool.currency().kind
-  );
+  const { holderAccount, tokenAccount } = honeycomb
+    .pda()
+    .currencyManager()
+    .holderAccountWithTokenAccount(
+      honeycomb.identity().address,
+      args.stakingPool.currency().mint.address,
+      args.stakingPool.currency().kind
+    );
 
   const stakingPoolDelegate = honeycomb
     .pda()

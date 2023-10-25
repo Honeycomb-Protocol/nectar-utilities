@@ -14,7 +14,7 @@
     "build-deploy": "yarn build && yarn deploy"
   },
   "dependencies": {
-    "@honeycomb-protocol/currency-manager": "^0.0.75",
+    "@honeycomb-protocol/currency-manager": "^0.0.76",
     "@honeycomb-protocol/events": "^0.1.21",
     "@honeycomb-protocol/hive-control": "^0.2.2",
     "@metaplex-foundation/js": "^0.18.1",

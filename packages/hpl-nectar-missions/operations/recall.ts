@@ -16,7 +16,6 @@ import {
 import {
   PROGRAM_ID as CURRENCY_MANAGER_PROGRAM_ID,
   createCreateHolderAccountOperation,
-  holderAccountPdas,
 } from "@honeycomb-protocol/currency-manager";
 import {
   PROGRAM_ID,
@@ -99,11 +98,14 @@ export async function createCollectRewardsOperation(
     tokenAccount: PublicKey = programId,
     missionPoolDelegate: PublicKey = programId;
   if (args.reward.isCurrency()) {
-    const user = holderAccountPdas(
-      args.wallet,
-      args.reward.currency().mint.address,
-      args.reward.currency().kind
-    );
+    const user = honeycomb
+      .pda()
+      .currencyManager()
+      .holderAccountWithTokenAccount(
+        args.wallet,
+        args.reward.currency().mint.address,
+        args.reward.currency().kind
+      );
     holderAccount = user.holderAccount;
     tokenAccount = user.tokenAccount;
 

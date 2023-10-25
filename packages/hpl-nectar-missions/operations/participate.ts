@@ -15,7 +15,6 @@ import {
 import {
   PROGRAM_ID as HPL_CURRENCY_MANAGER_PROGRAM,
   createFixHolderAccountInstruction,
-  holderAccountPdas,
 } from "@honeycomb-protocol/currency-manager";
 import {
   HPL_NECTAR_STAKING_PROGRAM,
@@ -95,11 +94,14 @@ export async function createParticipateOperation(
   const [nft] = getNftPda(args.nft.stakingPool, args.nft.mint);
   const [participation] = participationPda(nft, programId);
 
-  const { holderAccount, tokenAccount } = holderAccountPdas(
-    honeycomb.identity().address,
-    args.mission.requirements.cost.currency().mint.address,
-    args.mission.requirements.cost.currency().kind
-  );
+  const { holderAccount, tokenAccount } = honeycomb
+    .pda()
+    .currencyManager()
+    .holderAccountWithTokenAccount(
+      honeycomb.identity().address,
+      args.mission.requirements.cost.currency().mint.address,
+      args.mission.requirements.cost.currency().kind
+    );
 
   let units = 500_000;
   operation.add(
