@@ -14,6 +14,7 @@ import {
 } from "@honeycomb-protocol/hive-control";
 import {
   PROGRAM_ID as HPL_CURRENCY_MANAGER_PROGRAM,
+  createCreateHolderAccountOperation,
   createFixHolderAccountInstruction,
 } from "@honeycomb-protocol/currency-manager";
 import {
@@ -141,26 +142,15 @@ export async function createParticipateOperation(
       const holderAccountT = await args.mission.requirements.cost
         .currency()
         .holderAccount(honeycomb.identity().address);
-
-      if (!holderAccountT.tokenAccount.equals(tokenAccount)) {
-        operation.addToStart(
-          createFixHolderAccountInstruction({
-            project: holderAccountT.currency().project().address,
-            currency: holderAccountT.currency().address,
-            mint: holderAccountT.currency().mint.address,
-            holderAccount,
-            tokenAccount: holderAccountT.tokenAccount,
-            newTokenAccount: tokenAccount,
-            owner: holderAccountT.owner,
-            payer: honeycomb.identity().address,
-            vault: VAULT,
-            hiveControl: HPL_HIVE_CONTROL_PROGRAM,
-            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-            instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
-          })
-        );
-      }
-    } catch {}
+    } catch {
+      operation.addToStart(
+        ...(await createCreateHolderAccountOperation(honeycomb, {
+          currency: args.mission.requirements.cost.currency(),
+          owner: honeycomb.identity().address,
+        }).then(({ operation }) => operation.instructions))
+      );
+      units += 150_000;
+    }
   }
   operation.addToStart(
     ComputeBudgetProgram.setComputeUnitLimit({
