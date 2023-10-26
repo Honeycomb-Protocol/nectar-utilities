@@ -248,10 +248,9 @@ type FetchStakedNftsArgs = {
  * });
  */
 export async function fetchStakedNfts(
-  honeycomb: Honeycomb,
+  staking: NectarStaking,
   args?: FetchStakedNftsArgs
 ) {
-  const staking = honeycomb.staking();
   const nfts = await staking.fetch().nftsByWallet(args.walletAddress);
 
   let ownedNfts: StakedNft[] = [
@@ -361,11 +360,14 @@ export async function fetchAvailableNfts(
 
   let filteredNfts: AvailableNft[] = [];
 
-  if (honeycomb.staking().allowedMints) {
+  if (honeycomb.staking(args.stakingPool).allowedMints) {
     const allowedMints: web3.PublicKey[] =
       args?.allowedMints ||
       (await NFTv1.gpaBuilder(args.programId)
-        .addFilter("stakingPool", honeycomb.staking().poolAddress)
+        .addFilter(
+          "stakingPool",
+          honeycomb.staking(args.stakingPool).poolAddress
+        )
         .addFilter("staker", null)
         .run(honeycomb.processedConnection)
         .then((nfts) =>
@@ -383,24 +385,24 @@ export async function fetchAvailableNfts(
     ...ownedNfts.filter(
       (nft) =>
         (nft.collection &&
-          honeycomb.staking().collections.length &&
+          honeycomb.staking(args.stakingPool).collections.length &&
           nft.collection.verified &&
           !!honeycomb
-            .staking()
+            .staking(args.stakingPool)
             .collections.find((x) => x.equals(nft.collection.address))) ||
         (!!nft.creators.length &&
-          !!honeycomb.staking().creators.length &&
+          !!honeycomb.staking(args.stakingPool).creators.length &&
           nft.creators.some(
             (creator) =>
               creator.verified &&
               honeycomb
-                .staking()
+                .staking(args.stakingPool)
                 .creators.find((x) => x.equals(creator.address))
           )) ||
         (nft.isCompressed &&
-          honeycomb.staking().merkleTrees.length &&
+          honeycomb.staking(args.stakingPool).merkleTrees.length &&
           !!honeycomb
-            .staking()
+            .staking(args.stakingPool)
             .merkleTrees.find((x) => x.equals(nft.compression.tree)))
     ),
   ];

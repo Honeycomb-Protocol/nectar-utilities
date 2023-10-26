@@ -1,5 +1,11 @@
 # 0.1.x
 
+## 0.1.38
+
+- Updates to latest hpl-hive-control
+- Fixes usage issues in Nectar Staking for more than 1 staking pools
+- Fixes Participate instruction in Nectar Missions by initializing Holder Account if not initialized
+
 ## 0.1.36
 
 - Using staking pool as criteria in mission pool
