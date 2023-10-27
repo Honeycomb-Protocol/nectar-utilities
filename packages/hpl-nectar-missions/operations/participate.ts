@@ -5,6 +5,7 @@ import {
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY,
+  TransactionInstruction,
 } from "@solana/web3.js";
 import {
   HPL_HIVE_CONTROL_PROGRAM,
@@ -89,11 +90,18 @@ export async function createParticipateOperation(
   luts: AddressLookupTableAccount[] = []
 ) {
   const programId = args.programId || PROGRAM_ID;
-  const operation = new Operation(honeycomb, []);
+  const operation = new Operation(honeycomb, [
+    ComputeBudgetProgram.setComputeUnitLimit({
+      units: 500_000,
+    }),
+  ]);
+
   if (luts.length > 0) operation.add_lut(...luts);
 
   const [nft] = getNftPda(args.nft.stakingPool, args.nft.mint);
   const [participation] = participationPda(nft, programId);
+
+  const preOperation = new Operation(honeycomb, []);
 
   const { holderAccount, tokenAccount } = honeycomb
     .pda()
@@ -104,7 +112,21 @@ export async function createParticipateOperation(
       args.mission.requirements.cost.currency().kind
     );
 
-  let units = 500_000;
+  if (args.isFirst) {
+    try {
+      await args.mission.requirements.cost
+        .currency()
+        .holderAccount(honeycomb.identity().address);
+    } catch {
+      preOperation.add(
+        ...(await createCreateHolderAccountOperation(honeycomb, {
+          currency: args.mission.requirements.cost.currency(),
+          owner: honeycomb.identity().address,
+        }).then(({ operation }) => operation.instructions))
+      );
+    }
+  }
+
   operation.add(
     createParticipateInstruction(
       {
@@ -134,28 +156,6 @@ export async function createParticipateOperation(
       },
       programId
     )
-  );
-
-  if (args.isFirst) {
-    units += 100_000;
-    try {
-      const holderAccountT = await args.mission.requirements.cost
-        .currency()
-        .holderAccount(honeycomb.identity().address);
-    } catch {
-      operation.addToStart(
-        ...(await createCreateHolderAccountOperation(honeycomb, {
-          currency: args.mission.requirements.cost.currency(),
-          owner: honeycomb.identity().address,
-        }).then(({ operation }) => operation.instructions))
-      );
-      units += 150_000;
-    }
-  }
-  operation.addToStart(
-    ComputeBudgetProgram.setComputeUnitLimit({
-      units,
-    })
   );
 
   return {

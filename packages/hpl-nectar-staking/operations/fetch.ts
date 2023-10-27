@@ -114,21 +114,55 @@ export async function fetchHeliusAssets(
     | { mintList: web3.PublicKey[] }
 ) {
   if ("mintList" in args) {
-    let batch = args.mintList.map((e, i) => ({
-      jsonrpc: "2.0",
-      id: `my-id-${i}`,
-      method: "getAsset",
-      params: {
-        id: e.toString(),
-      },
-    }));
+    // let batch = args.mintList.map((e, i) => ({
+    //   jsonrpc: "2.0",
+    //   id: `my-id-${i}`,
+    //   method: "getAsset",
+    //   params: {
+    //     id: e.toString(),
+    //   },
+    // }));
+    // try {
+    //   return fetch(heliusRpc, {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify(batch),
+    //   })
+    //     .then((r) => r.json())
+    //     .then((r) => {
+    //       console.log("R", r);
+    //       return r;
+    //     })
+    //     .then(
+    //       (r) =>
+    //         r
+    //           .map(({ result }) => result)
+    //           .filter((x) => !!x)
+    //           .map(parseHelius) as Metadata[]
+    //     );
+    // } catch (e) {
+    //   console.error(e);
+    //   console.error(e.response.data);
+    //   return [];
+    // }
+
+    //todo: fix this batch request & utilize for optimization
     try {
-      return fetch(heliusRpc, {
+      return await fetch(heliusRpc, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(batch),
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: "my-id",
+          method: "getAssetBatch",
+          params: {
+            ids: args.mintList,
+          },
+        }),
       })
         .then((r) => r.json())
         .then((r) => {
@@ -136,11 +170,8 @@ export async function fetchHeliusAssets(
           return r;
         })
         .then(
-          (r) =>
-            r
-              .map(({ result }) => result)
-              .filter((x) => !!x)
-              .map(parseHelius) as Metadata[]
+          ({ result }) =>
+            result.filter((x) => !!x).map(parseHelius) as Metadata[]
         );
     } catch (e) {
       console.error(e);
