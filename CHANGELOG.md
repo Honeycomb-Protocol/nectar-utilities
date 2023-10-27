@@ -1,5 +1,11 @@
 # 0.1.x
 
+## 0.1.39
+
+- Utilizes helius batch for fetching multiple assets in a single call
+- Fixes Participate instruction in Nectar Missions by initializing Holder Account if not initialized
+- Fixes fetch Participations for multiple instances
+
 ## 0.1.38
 
 - Updates to latest hpl-hive-control
