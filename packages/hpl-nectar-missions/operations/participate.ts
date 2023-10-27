@@ -95,7 +95,6 @@ export async function createParticipateOperation(
       units: 500_000,
     }),
   ]);
-  let units = 500_000;
 
   if (luts.length > 0) operation.add_lut(...luts);
 
@@ -126,11 +125,6 @@ export async function createParticipateOperation(
         }).then(({ operation }) => operation.instructions))
       );
     }
-    preOperation.addToStart(
-      ComputeBudgetProgram.setComputeUnitLimit({
-        units,
-      })
-    );
   }
 
   operation.add(
