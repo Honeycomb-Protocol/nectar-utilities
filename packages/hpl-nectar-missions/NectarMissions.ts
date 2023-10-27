@@ -335,6 +335,24 @@ export class NectarMissions extends Module<"recall" | "participate"> {
   }
 
   /**
+   * Get the all the staking pools associated with the mission pool.
+   *
+   * @returns The `NectarStaking` instances associated with the mission pool.
+   */
+  public stakingPools(): NectarStaking[] {
+    return [...this._pool.stakingPools].map((x) =>
+      this.honeycomb().staking(
+        (
+          this.project().services[x] as {
+            __kind: "Staking";
+            poolId: web3.PublicKey;
+          }
+        ).poolId
+      )
+    );
+  }
+
+  /**
    * Retrieves all missions associated with the mission pool.
    *
    * @param reFetch - Set to `true` to force fetching missions from the blockchain, even if cached.
@@ -657,8 +675,7 @@ class NectarMissionsFetch {
    */
   public async participations(
     walletAddress?: web3.PublicKey,
-    mission?: web3.PublicKey,
-    stakingPool?: web3.PublicKey
+    mission?: web3.PublicKey
   ): Promise<NectarMissionParticipation[]> {
     const gpa = Participation.gpaBuilder().addFilter(
       "wallet",
@@ -666,10 +683,11 @@ class NectarMissionsFetch {
     );
     if (mission) gpa.addFilter("mission", mission);
 
-    const stakedNfts = await this._missions
-      .honeycomb()
-      .staking(stakingPool)
-      .stakedNfts();
+    const stakedNfts = await Promise.all(
+      this._missions
+        .stakingPools()
+        .map((stakingPool) => stakingPool.stakedNfts())
+    ).then((x) => x.flat());
 
     return gpa
       .run(this._missions.honeycomb().processedConnection)
@@ -680,7 +698,7 @@ class NectarMissionsFetch {
               const participation = Participation.fromAccountInfo(p.account)[0];
               const stakedNft = stakedNfts.find((y) =>
                 getNftPda(
-                  this._missions.honeycomb().staking().address,
+                  this._missions.honeycomb().staking(y.stakingPool).address,
                   y.mint
                 )[0].equals(participation.nft)
               );
