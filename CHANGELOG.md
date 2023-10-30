@@ -1,5 +1,9 @@
 # 0.1.x
 
+## 0.1.40 - 0.1.41
+
+- Fixes Participate Issues
+
 ## 0.1.39
 
 - Utilizes helius batch for fetching multiple assets in a single call
