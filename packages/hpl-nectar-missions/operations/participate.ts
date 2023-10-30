@@ -102,6 +102,7 @@ export async function createParticipateOperation(
   const [participation] = participationPda(nft, programId);
 
   const preOperation = new Operation(honeycomb, []);
+  operation.addPreOperations(preOperation);
 
   const { holderAccount, tokenAccount } = honeycomb
     .pda()

@@ -164,11 +164,7 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
                 ctx.accounts.clock.slot,
                 reward.min,
                 reward.max,
-            ) * if ctx.accounts.nft.is_compressed {
-                1
-            } else {
-                10
-            },
+            ),
             reward_type: reward.reward_type.clone(),
             collected: false,
         })

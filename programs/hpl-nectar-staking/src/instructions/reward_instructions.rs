@@ -28,83 +28,80 @@ fn calculate_rewards(
     let mut rewards_amount = rewards_per_second * seconds_elapsed;
 
     let mut total_multipliers = 1u64;
-    if !nft.is_compressed {
-        let mut multplier_decimals = 1u64;
+    let mut multplier_decimals = 1u64;
+    if let Some(multipliers) = multipliers {
+        multplier_decimals = 10u64.pow(multipliers.decimals.into());
         total_multipliers = multplier_decimals;
-        if let Some(multipliers) = multipliers {
-            multplier_decimals = 10u64.pow(multipliers.decimals.into());
-            total_multipliers = multplier_decimals;
 
-            let mut duration_multiplier = multplier_decimals;
-            for multiplier in multipliers.duration_multipliers.iter() {
-                match multiplier.multiplier_type {
-                    MultiplierType::StakeDuration { min_duration } => {
-                        if seconds_elapsed < min_duration {
-                            duration_multiplier = multiplier.value;
-                        } else {
-                            break;
-                        }
+        let mut duration_multiplier = multplier_decimals;
+        for multiplier in multipliers.duration_multipliers.iter() {
+            match multiplier.multiplier_type {
+                MultiplierType::StakeDuration { min_duration } => {
+                    if seconds_elapsed < min_duration {
+                        duration_multiplier = multiplier.value;
+                    } else {
+                        break;
                     }
-                    _ => {}
                 }
+                _ => {}
             }
-            duration_multiplier -= multplier_decimals;
-            total_multipliers += duration_multiplier;
-
-            let mut count_multiplier = multplier_decimals;
-            for multiplier in multipliers.count_multipliers.iter() {
-                match multiplier.multiplier_type {
-                    MultiplierType::NFTCount { min_count } => {
-                        if min_count <= staker.total_staked {
-                            count_multiplier = multiplier.value;
-                        } else {
-                            break;
-                        }
-                    }
-                    _ => {}
-                }
-            }
-            count_multiplier -= multplier_decimals;
-            total_multipliers += count_multiplier;
-
-            let mut creator_multiplier = multplier_decimals;
-            for multiplier in multipliers.creator_multipliers.iter() {
-                match multiplier.multiplier_type {
-                    MultiplierType::Creator { creator } => match nft.criteria {
-                        NFTCriteria::Creator { address } => {
-                            if address.eq(&creator) {
-                                creator_multiplier = multiplier.value;
-                                break;
-                            }
-                        }
-                        _ => {}
-                    },
-                    _ => {}
-                }
-            }
-            creator_multiplier -= multplier_decimals;
-            total_multipliers += creator_multiplier;
-
-            let mut collection_multiplier = multplier_decimals;
-            for multiplier in multipliers.collection_multipliers.iter() {
-                match multiplier.multiplier_type {
-                    MultiplierType::Collection { collection } => match nft.criteria {
-                        NFTCriteria::Collection { address } => {
-                            if collection.eq(&address) {
-                                collection_multiplier = multiplier.value;
-                                break;
-                            }
-                        }
-                        _ => {}
-                    },
-                    _ => {}
-                }
-            }
-            collection_multiplier -= multplier_decimals;
-            total_multipliers += collection_multiplier;
         }
-        rewards_amount = (rewards_amount * total_multipliers) / multplier_decimals;
+        duration_multiplier -= multplier_decimals;
+        total_multipliers += duration_multiplier;
+
+        let mut count_multiplier = multplier_decimals;
+        for multiplier in multipliers.count_multipliers.iter() {
+            match multiplier.multiplier_type {
+                MultiplierType::NFTCount { min_count } => {
+                    if min_count <= staker.total_staked {
+                        count_multiplier = multiplier.value;
+                    } else {
+                        break;
+                    }
+                }
+                _ => {}
+            }
+        }
+        count_multiplier -= multplier_decimals;
+        total_multipliers += count_multiplier;
+
+        let mut creator_multiplier = multplier_decimals;
+        for multiplier in multipliers.creator_multipliers.iter() {
+            match multiplier.multiplier_type {
+                MultiplierType::Creator { creator } => match nft.criteria {
+                    NFTCriteria::Creator { address } => {
+                        if address.eq(&creator) {
+                            creator_multiplier = multiplier.value;
+                            break;
+                        }
+                    }
+                    _ => {}
+                },
+                _ => {}
+            }
+        }
+        creator_multiplier -= multplier_decimals;
+        total_multipliers += creator_multiplier;
+
+        let mut collection_multiplier = multplier_decimals;
+        for multiplier in multipliers.collection_multipliers.iter() {
+            match multiplier.multiplier_type {
+                MultiplierType::Collection { collection } => match nft.criteria {
+                    NFTCriteria::Collection { address } => {
+                        if collection.eq(&address) {
+                            collection_multiplier = multiplier.value;
+                            break;
+                        }
+                    }
+                    _ => {}
+                },
+                _ => {}
+            }
+        }
+        collection_multiplier -= multplier_decimals;
+        total_multipliers += collection_multiplier;
     }
+    rewards_amount = (rewards_amount * total_multipliers) / multplier_decimals;
 
     (rewards_amount, total_multipliers)
 }
