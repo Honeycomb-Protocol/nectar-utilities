@@ -148,7 +148,8 @@ export async function fetchHeliusAssets(
     //   return [];
     // }
 
-    //todo: fix this batch request & utilize for optimization
+    // this is an optimization as part of the new batch method introduced by helius
+    // to reduce the complexity of requests to the helius rpc endpoint the above is kept for reference
     try {
       return await fetch(heliusRpc, {
         method: "POST",
@@ -248,6 +249,45 @@ export async function fetchAssetProof(
     leaf: new web3.PublicKey(result.root),
     tree_id: new web3.PublicKey(result.root),
   };
+}
+
+export async function fetchAssetProofBatch(
+  heliusRpc: string,
+  nfts: Metadata[]
+) {
+  const response = await fetch(heliusRpc, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: "my-id",
+      method: "getAssetProofBatch",
+      params: {
+        ids: nfts.map((nft) => nft.mint.toString()),
+      },
+    }),
+  });
+
+  const { result } = await response.json();
+
+  const proofs: { [id: string]: AssetProof } = {};
+
+  for (const key in result) {
+    if (result.hasOwnProperty(key)) {
+      const entry = result[key];
+      proofs[key] = {
+        root: new web3.PublicKey(entry.root),
+        proof: entry.proof.map((x: string) => new web3.PublicKey(x)),
+        node_index: entry.node_index,
+        leaf: new web3.PublicKey(entry.leaf),
+        tree_id: new web3.PublicKey(entry.tree_id),
+      };
+    }
+  }
+
+  return proofs;
 }
 
 /**
@@ -486,78 +526,76 @@ export async function fetchRewards(
   }
 
   const rewardsPerSecond =
-    Number(staking.rewardsPerDuration) /
-    Number(staking.rewardsDuration) /
-    (args.nft.isCompressed ? 10 : 1);
+    Number(staking.rewardsPerDuration) / Number(staking.rewardsDuration);
   let rewardsAmount = rewardsPerSecond * secondsElapsed;
 
   let multipliersDecimals = 1;
   let totalMultipliers = multipliersDecimals;
-  if (!args.nft.isCompressed) {
-    const multipliers = await staking.multipliers();
-    if (multipliers) {
-      multipliersDecimals = 10 ** multipliers.decimals;
-      totalMultipliers = multipliersDecimals;
 
-      let durationMultiplier = multipliersDecimals;
-      for (const multiplier of multipliers.durationMultipliers) {
-        if (
-          multiplier.multiplierType.__kind === "StakeDuration" &&
-          secondsElapsed < Number(multiplier.multiplierType.minDuration)
-        ) {
-          durationMultiplier = Number(multiplier.value);
-        } else {
-          break;
-        }
-      }
-      durationMultiplier -= multipliersDecimals;
-      totalMultipliers += durationMultiplier;
+  const multipliers = await staking.multipliers();
+  if (multipliers) {
+    multipliersDecimals = 10 ** multipliers.decimals;
+    totalMultipliers = multipliersDecimals;
 
-      let countMultiplier = multipliersDecimals;
-      for (const multiplier of multipliers.countMultipliers) {
-        if (
-          multiplier.multiplierType.__kind === "NFTCount" &&
-          Number(multiplier.multiplierType.minCount) <=
-            Number(args.staker.totalStaked)
-        ) {
-          countMultiplier = Number(multiplier.value);
-        } else {
-          break;
-        }
+    let durationMultiplier = multipliersDecimals;
+    for (const multiplier of multipliers.durationMultipliers) {
+      if (
+        multiplier.multiplierType.__kind === "StakeDuration" &&
+        secondsElapsed < Number(multiplier.multiplierType.minDuration)
+      ) {
+        durationMultiplier = Number(multiplier.value);
+      } else {
+        break;
       }
-      countMultiplier -= multipliersDecimals;
-      totalMultipliers += countMultiplier;
-
-      let creatorMultiplier = multipliersDecimals;
-      for (const multiplier of multipliers.creatorMultipliers) {
-        if (
-          multiplier.multiplierType.__kind === "Creator" &&
-          args.nft.criteria.__kind === "Creator" &&
-          args.nft.criteria.address.equals(multiplier.multiplierType.creator)
-        ) {
-          creatorMultiplier = Number(multiplier.value);
-          break;
-        }
-      }
-      creatorMultiplier -= multipliersDecimals;
-      totalMultipliers += creatorMultiplier;
-
-      let collectionMultiplier = multipliersDecimals;
-      for (const multiplier of multipliers.collectionMultipliers) {
-        if (
-          multiplier.multiplierType.__kind === "Collection" &&
-          args.nft.criteria.__kind === "Collection" &&
-          args.nft.criteria.address.equals(multiplier.multiplierType.collection)
-        ) {
-          collectionMultiplier = Number(multiplier.value);
-          break;
-        }
-      }
-      collectionMultiplier -= multipliersDecimals;
-      totalMultipliers += collectionMultiplier;
     }
-    rewardsAmount = (rewardsAmount * totalMultipliers) / multipliersDecimals;
+    durationMultiplier -= multipliersDecimals;
+    totalMultipliers += durationMultiplier;
+
+    let countMultiplier = multipliersDecimals;
+    for (const multiplier of multipliers.countMultipliers) {
+      if (
+        multiplier.multiplierType.__kind === "NFTCount" &&
+        Number(multiplier.multiplierType.minCount) <=
+          Number(args.staker.totalStaked)
+      ) {
+        countMultiplier = Number(multiplier.value);
+      } else {
+        break;
+      }
+    }
+    countMultiplier -= multipliersDecimals;
+    totalMultipliers += countMultiplier;
+
+    let creatorMultiplier = multipliersDecimals;
+    for (const multiplier of multipliers.creatorMultipliers) {
+      if (
+        multiplier.multiplierType.__kind === "Creator" &&
+        args.nft.criteria.__kind === "Creator" &&
+        args.nft.criteria.address.equals(multiplier.multiplierType.creator)
+      ) {
+        creatorMultiplier = Number(multiplier.value);
+        break;
+      }
+    }
+    creatorMultiplier -= multipliersDecimals;
+    totalMultipliers += creatorMultiplier;
+
+    let collectionMultiplier = multipliersDecimals;
+    for (const multiplier of multipliers.collectionMultipliers) {
+      if (
+        multiplier.multiplierType.__kind === "Collection" &&
+        args.nft.criteria.__kind === "Collection" &&
+        args.nft.criteria.address.equals(multiplier.multiplierType.collection)
+      ) {
+        collectionMultiplier = Number(multiplier.value);
+        break;
+      }
+    }
+    collectionMultiplier -= multipliersDecimals;
+    totalMultipliers += collectionMultiplier;
   }
+  rewardsAmount = (rewardsAmount * totalMultipliers) / multipliersDecimals;
+
   return {
     rewards: rewardsAmount,
     multipliers: totalMultipliers / multipliersDecimals,

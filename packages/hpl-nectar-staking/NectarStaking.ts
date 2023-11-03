@@ -28,6 +28,7 @@ import {
   createStakeOperation,
   createUnstakeOperation,
   createUpdatePoolOperation,
+  fetchAssetProofBatch,
   fetchAvailableNfts,
   fetchRewards,
   fetchStakedNfts,
@@ -484,8 +485,23 @@ export class NectarStaking extends Module<
   public async stake(
     nfts: AvailableNft[],
     options: web3.ConfirmOptions & SendBulkOptions = {},
-    proofs: AssetProof[] = []
+    proofs: { [nftMint: string]: AssetProof } = {}
   ) {
+    const nftsMissingProofs = nfts.filter(
+      (nft) => !proofs[nft.mint.toString()]
+    );
+
+    if (nftsMissingProofs.length > 0) {
+      const missingProofs = await fetchAssetProofBatch(
+        this.helius_rpc,
+        nftsMissingProofs
+      );
+      proofs = {
+        ...proofs,
+        ...missingProofs,
+      };
+    }
+
     const operations = await Promise.all(
       nfts.map((nft, i) =>
         createStakeOperation(
@@ -493,7 +509,7 @@ export class NectarStaking extends Module<
           {
             stakingPool: this,
             nft,
-            proof: proofs[i],
+            proof: proofs[nft.mint.toString()],
             isFirst: i == 0,
             programId: this.programId,
           },
@@ -604,8 +620,22 @@ export class NectarStaking extends Module<
   public async unstake(
     nfts: StakedNft[],
     options: web3.ConfirmOptions & SendBulkOptions = {},
-    proofs: AssetProof[] = []
+    proofs: { [nftMint: string]: AssetProof } = {}
   ) {
+    const nftsMissingProofs = nfts.filter(
+      (nft) => !proofs[nft.mint.toString()]
+    );
+
+    if (nftsMissingProofs.length > 0) {
+      const missingProofs = await fetchAssetProofBatch(
+        this.helius_rpc,
+        nftsMissingProofs
+      );
+      proofs = {
+        ...proofs,
+        ...missingProofs,
+      };
+    }
     const operations = await Promise.all(
       nfts.map((nft, i) =>
         createUnstakeOperation(
@@ -613,7 +643,7 @@ export class NectarStaking extends Module<
           {
             stakingPool: this,
             nft,
-            proof: proofs[i],
+            proof: proofs[nft.mint.toString()],
             isFirst: i == 0,
             programId: this.programId,
           },
