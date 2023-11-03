@@ -15,7 +15,7 @@ runs:
       shell: bash
 
     - name: Compile TypeScript
-      run: yarn tsc
+      run: yarn compile
       working-directory: ${{ inputs.working_dir }}
       shell: bash
 

@@ -2,11 +2,11 @@ const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
-// write the version in cargo.toml of all programs
-const packages = fs.readdirSync("packages");
+const ignore = ["idl", "hpl-ledger-identity"];
 const ignoreBuild = process.argv.includes("--ignore-build");
-packages.forEach((package) => {
-  if (package === "idl" || package === ".DS_Store") return;
+
+versionBump = (package) => {
+  if (ignore.includes(package)) return;
 
   const packageJsonPath = path.join(
     __dirname,
@@ -59,13 +59,19 @@ packages.forEach((package) => {
     execSync(
       `cargo update -p ${package} && ${
         ignoreBuild ? "" : "yarn build:sdk &&"
-      } git add packages/**/*.json && git add programs/**/Cargo.toml && git add Cargo.lock && git commit -m "bump ${package.replace(
-        "hpl-",
-        ""
-      )} version to ${version}"`,
+      } git add packages/**/*.json && git add programs/**/Cargo.toml && git add Cargo.lock && git commit -m "bump version to ${version}"`,
       {
         stdio: "inherit",
       }
     );
   }
-});
+};
+
+const packageFlag = process.argv.indexOf("--package");
+if (packageFlag !== -1) {
+  versionBump(process.argv[packageFlag + 1]);
+} else {
+  const packages = fs.readdirSync("packages");
+  packages.forEach(versionBump);
+}
+process.exit(0);
