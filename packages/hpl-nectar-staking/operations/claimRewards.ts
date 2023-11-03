@@ -61,14 +61,15 @@ export async function createClaimRewardsOperation(
     programId
   );
 
-  const { holderAccount, tokenAccount } = honeycomb
-    .pda()
-    .currencyManager()
-    .holderAccountWithTokenAccount(
-      honeycomb.identity().address,
-      args.stakingPool.currency().mint.address,
-      args.stakingPool.currency().kind
-    );
+  const {
+    holderAccount,
+    tokenAccount,
+    operation: createHolderAccountOperation,
+  } = await createCreateHolderAccountOperation(honeycomb, {
+    currency: args.stakingPool.currency(),
+    owner: honeycomb.identity().address,
+    runAllways: true,
+  });
 
   const stakingPoolDelegate = honeycomb
     .pda()
@@ -77,6 +78,7 @@ export async function createClaimRewardsOperation(
 
   let units = 500_000;
   const instructions = [
+    ...createHolderAccountOperation.instructions,
     createClaimRewardsInstruction(
       {
         project,
@@ -101,42 +103,7 @@ export async function createClaimRewardsOperation(
       programId
     ),
   ];
-  if (args.isFirst) {
-    units = 1_000_000;
-    try {
-      const holderAccountT = await args.stakingPool
-        .currency()
-        .holderAccount(honeycomb.identity().address);
 
-      if (!holderAccountT.tokenAccount.equals(tokenAccount)) {
-        instructions.unshift(
-          createFixHolderAccountInstruction({
-            project: holderAccountT.currency().project().address,
-            currency: holderAccountT.currency().address,
-            mint: holderAccountT.currency().mint.address,
-            holderAccount,
-            tokenAccount: holderAccountT.tokenAccount,
-            newTokenAccount: tokenAccount,
-            owner: holderAccountT.owner,
-            payer: honeycomb.identity().address,
-            vault: VAULT,
-            hiveControl: HPL_HIVE_CONTROL_PROGRAM,
-            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-            instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-          })
-        );
-      }
-    } catch {
-      instructions.unshift(
-        ...(
-          await createCreateHolderAccountOperation(honeycomb, {
-            currency: args.stakingPool.currency(),
-            owner: honeycomb.identity().address,
-          })
-        ).operation.instructions
-      );
-    }
-  }
   instructions.unshift(
     web3.ComputeBudgetProgram.setComputeUnitLimit({
       units,

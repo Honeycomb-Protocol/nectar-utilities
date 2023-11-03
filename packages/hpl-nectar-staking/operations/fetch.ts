@@ -165,10 +165,6 @@ export async function fetchHeliusAssets(
         }),
       })
         .then((r) => r.json())
-        .then((r) => {
-          console.log("R", r);
-          return r;
-        })
         .then(
           ({ result }) =>
             result.filter((x) => !!x).map(parseHelius) as Metadata[]
@@ -259,6 +255,7 @@ export async function fetchAssetProof(
  * @category Types
  */
 type FetchStakedNftsArgs = {
+  metadatas?: Metadata[];
   walletAddress?: web3.PublicKey;
   programId?: web3.PublicKey;
 };
@@ -283,14 +280,15 @@ export async function fetchStakedNfts(
   args?: FetchStakedNftsArgs
 ) {
   const nfts = await staking.fetch().nftsByWallet(args.walletAddress);
+  if (!nfts.length) return [];
 
-  let ownedNfts: StakedNft[] = [
-    ...(nfts.length
-      ? await fetchHeliusAssets(staking.helius_rpc, {
-          mintList: nfts.map((x) => x.mint),
-        })
-      : []),
-  ].map((nft) => ({
+  const metadatas =
+    args.metadatas ||
+    (await fetchHeliusAssets(staking.helius_rpc, {
+      mintList: nfts.map((x) => x.mint),
+    }));
+
+  let ownedNfts: StakedNft[] = metadatas.map((nft) => ({
     ...nft,
     ...nfts.find((x) => x.mint.equals(nft.mint)),
   }));

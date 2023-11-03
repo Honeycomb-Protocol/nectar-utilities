@@ -1,5 +1,7 @@
 import * as web3 from "@solana/web3.js";
 import {
+  BatchLifeCycle,
+  BulkLifeCycle,
   Honeycomb,
   HoneycombProject,
   Module,
@@ -82,14 +84,15 @@ type StakingMultipliers = MultipliersArgs & {
  * Allows users to interact with staking pools, claim rewards, and manage staked NFTs.
  * @category Modules
  */
-export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
+export class NectarStaking extends Module<
+  "stake" | "claim" | "unstake",
+  { availableNfts: AvailableNft[]; stakedNfts: StakedNft[] }
+> {
   readonly programId: web3.PublicKey = PROGRAM_ID;
   private _fetch: NectarStakingFetch;
 
   private _multipliers: StakingMultipliers | null | undefined = undefined;
   private _stakers: { [wallet: string]: Staker } = {};
-  private _availableNfts: AvailableNft[] | null = null;
-  private _stakedNfts: StakedNft[] | null = null;
 
   /**
    * TODO: move helius rpc to hive-control
@@ -359,26 +362,34 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
 
   /**
    * Fetch the available NFTs for staking in the staking pool.
+   * @param wallet [Optional] - The wallet address to fetch available NFTs for.
    * @param reFetch - If true, re-fetch the data from the blockchain.
    * @returns A Promise that resolves with the available NFTs data.
    */
-  public async availableNfts(reFetch = false) {
-    if (!this._availableNfts || reFetch) {
-      this._availableNfts = await this.fetch().availableNfts();
-    }
-    return this._availableNfts;
+  public async availableNfts(wallet?: web3.PublicKey, reFetch = false) {
+    const address = wallet || this.honeycomb().identity().address;
+    return this.cache.getOrFetch(
+      "availableNfts",
+      address.toString(),
+      () => this.fetch().availableNfts(),
+      reFetch
+    );
   }
 
   /**
    * Fetch the staked NFTs in the staking pool.
+   * @param wallet [Optional] - The wallet address to fetch staked NFTs for.
    * @param reFetch - If true, re-fetch the data from the blockchain.
    * @returns A Promise that resolves with the staked NFTs data.
    */
-  public async stakedNfts(reFetch = false) {
-    if (!this._stakedNfts || reFetch) {
-      this._stakedNfts = await this.fetch().stakedNfts();
-    }
-    return this._stakedNfts;
+  public async stakedNfts(wallet?: web3.PublicKey, reFetch = false) {
+    const address = wallet || this.honeycomb().identity().address;
+    return this.cache.getOrFetch(
+      "stakedNfts",
+      address.toString(),
+      () => this.fetch().stakedNfts(),
+      reFetch
+    );
   }
 
   /**
@@ -389,8 +400,8 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
     return Promise.all([
       this.multipliers(true).catch((e) => console.error(e)),
       this.staker(undefined, true).catch((e) => console.error(e)),
-      this.availableNfts(true).catch((e) => console.error(e)),
-      this.stakedNfts(true).catch((e) => console.error(e)),
+      this.availableNfts(undefined, true).catch((e) => console.error(e)),
+      this.stakedNfts(undefined, true).catch((e) => console.error(e)),
     ]);
   }
 
@@ -490,11 +501,67 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
         ).then(({ operation }) => operation)
       )
     );
+    const instance = this;
+    let promises: Promise<any>[] = [];
 
     return Operation.sendBulk(this.honeycomb(), operations, {
       prepareAllAtOnce: nfts.length < 11,
       ...options,
-    });
+      statusUpdate(status) {
+        if (options.statusUpdate) options.statusUpdate(status);
+
+        if (
+          status.status !== BulkLifeCycle.Main ||
+          status.main.currentBatchStatus !== BatchLifeCycle.Completed
+        )
+          return;
+
+        const startsFrom = Math.max(
+          status.main.confirmedContexts.length - (options.batchSize || 10),
+          0
+        );
+
+        const processedNfts: Map<string, AvailableNft> = new Map();
+        status.main.confirmedContexts.slice(startsFrom).forEach((c, ind) => {
+          if (!("confirmationFailed" in c.confirmResponse))
+            processedNfts.set(
+              nfts[startsFrom + ind].mint.toString(),
+              nfts[startsFrom + ind]
+            );
+        });
+
+        instance.cache.updateSync(
+          "availableNfts",
+          instance.honeycomb().identity().address.toString(),
+          (nfts) =>
+            (nfts || []).filter((a) => !processedNfts.get(a.mint.toString()))
+        );
+
+        promises.push(
+          instance
+            .fetch()
+            .nftsByMints(
+              Array.from(processedNfts.keys()).map((n) => new web3.PublicKey(n))
+            )
+            .then((nfts) => {
+              instance.cache.updateSync(
+                "stakedNfts",
+                instance.honeycomb().identity().address.toString(),
+                (currentStakedNfts) => {
+                  if (!currentStakedNfts) currentStakedNfts = [];
+                  nfts.forEach((nft) => {
+                    currentStakedNfts.push({
+                      ...processedNfts.get(nft.mint.toString()),
+                      ...nft,
+                    });
+                  });
+                  return currentStakedNfts;
+                }
+              );
+            })
+        );
+      },
+    }).then((x) => Promise.all(promises).then(() => x));
   }
 
   /**
@@ -536,7 +603,7 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
    */
   public async unstake(
     nfts: StakedNft[],
-    options: web3.ConfirmOptions & SendBulkOptions,
+    options: web3.ConfirmOptions & SendBulkOptions = {},
     proofs: AssetProof[] = []
   ) {
     const operations = await Promise.all(
@@ -554,9 +621,46 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
         ).then(({ operation }) => operation)
       )
     );
+    const instance = this;
     return Operation.sendBulk(this.honeycomb(), operations, {
       prepareAllAtOnce: nfts.length < 11,
       ...options,
+      statusUpdate(status) {
+        if (options.statusUpdate) options.statusUpdate(status);
+
+        if (
+          status.status !== BulkLifeCycle.Main ||
+          status.main.currentBatchStatus !== BatchLifeCycle.Completed
+        )
+          return;
+
+        const startsFrom = Math.max(
+          status.main.confirmedContexts.length - (options.batchSize || 10),
+          0
+        );
+
+        const processedNfts: Map<string, AvailableNft> = new Map();
+        status.main.confirmedContexts.slice(startsFrom).forEach((c, ind) => {
+          if (!("confirmationFailed" in c.confirmResponse))
+            processedNfts.set(
+              nfts[startsFrom + ind].mint.toString(),
+              nfts[startsFrom + ind]
+            );
+        });
+
+        instance.cache.updateSync(
+          "stakedNfts",
+          instance.honeycomb().identity().address.toString(),
+          (nfts) =>
+            (nfts || []).filter((a) => !processedNfts.get(a.mint.toString()))
+        );
+
+        instance.cache.updateSync(
+          "availableNfts",
+          instance.honeycomb().identity().address.toString(),
+          (nfts) => (nfts || []).concat(Array.from(processedNfts.values()))
+        );
+      },
     });
   }
 
@@ -659,6 +763,20 @@ export class NectarStakingFetch {
       .then((nfts) =>
         nfts.map(({ account }) => NFTv1.fromAccountInfo(account)[0])
       );
+  }
+
+  /**
+   * Fetch all NFTs of specified mints in the staking pool.
+   * @param mints - The mints of staked NFTs.
+   * @returns A Promise that resolves with an array of staked NFTs.
+   */
+  public nftsByMints(mints: web3.PublicKey[]) {
+    return this.nectarStaking
+      .honeycomb()
+      .processedConnection.getMultipleAccountsInfo(
+        mints.map((m) => getNftPda(this.nectarStaking.address, m)[0])
+      )
+      .then((nfts) => nfts.map((account) => NFTv1.fromAccountInfo(account)[0]));
   }
 
   /**
