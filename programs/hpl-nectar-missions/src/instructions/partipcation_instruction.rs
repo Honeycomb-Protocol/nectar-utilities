@@ -195,7 +195,7 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
                 mint: ctx.accounts.mint.to_account_info(),
                 holder_account: ctx.accounts.holder_account.to_account_info(),
                 token_account: ctx.accounts.token_account.to_account_info(),
-                owner: ctx.accounts.wallet.to_account_info(),
+                authority: ctx.accounts.wallet.to_account_info(),
                 payer: ctx.accounts.wallet.to_account_info(),
                 instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),
