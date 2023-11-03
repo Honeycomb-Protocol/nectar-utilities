@@ -36,8 +36,8 @@ export async function createNewTree(honeycomb: Honeycomb) {
   );
 
   const depthSizePair: ValidDepthSizePair = {
-    maxDepth: 14,
-    maxBufferSize: 64,
+    maxDepth: 3,
+    maxBufferSize: 8,
   };
   const space = getConcurrentMerkleTreeAccountSize(
     depthSizePair.maxDepth,
