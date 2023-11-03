@@ -26,6 +26,7 @@ import {
   createStakeOperation,
   createUnstakeOperation,
   createUpdatePoolOperation,
+  fetchAssetProofBatch,
   fetchAvailableNfts,
   fetchRewards,
   fetchStakedNfts,
@@ -473,8 +474,23 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
   public async stake(
     nfts: AvailableNft[],
     options: web3.ConfirmOptions & SendBulkOptions = {},
-    proofs: AssetProof[] = []
+    proofs: { [nftMint: string]: AssetProof } = {}
   ) {
+    const nftsMissingProofs = nfts.filter(
+      (nft) => !proofs[nft.mint.toString()]
+    );
+
+    if (nftsMissingProofs.length > 0) {
+      const missingProofs = await fetchAssetProofBatch(
+        this.helius_rpc,
+        nftsMissingProofs
+      );
+      proofs = {
+        ...proofs,
+        ...missingProofs,
+      };
+    }
+
     const operations = await Promise.all(
       nfts.map((nft, i) =>
         createStakeOperation(
@@ -482,7 +498,7 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
           {
             stakingPool: this,
             nft,
-            proof: proofs[i],
+            proof: proofs[nft.mint.toString()],
             isFirst: i == 0,
             programId: this.programId,
           },
@@ -494,6 +510,8 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
     return Operation.sendBulk(this.honeycomb(), operations, {
       prepareAllAtOnce: nfts.length < 11,
       ...options,
+    }).then(async (responses) => {
+      await this.staker(undefined, true);
     });
   }
 
@@ -537,8 +555,22 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
   public async unstake(
     nfts: StakedNft[],
     options: web3.ConfirmOptions & SendBulkOptions,
-    proofs: AssetProof[] = []
+    proofs: { [nftMint: string]: AssetProof } = {}
   ) {
+    const nftsMissingProofs = nfts.filter(
+      (nft) => !proofs[nft.mint.toString()]
+    );
+
+    if (nftsMissingProofs.length > 0) {
+      const missingProofs = await fetchAssetProofBatch(
+        this.helius_rpc,
+        nftsMissingProofs
+      );
+      proofs = {
+        ...proofs,
+        ...missingProofs,
+      };
+    }
     const operations = await Promise.all(
       nfts.map((nft, i) =>
         createUnstakeOperation(
@@ -546,7 +578,7 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
           {
             stakingPool: this,
             nft,
-            proof: proofs[i],
+            proof: proofs[nft.mint.toString()],
             isFirst: i == 0,
             programId: this.programId,
           },
@@ -557,6 +589,8 @@ export class NectarStaking extends Module<"stake" | "claim" | "unstake"> {
     return Operation.sendBulk(this.honeycomb(), operations, {
       prepareAllAtOnce: nfts.length < 11,
       ...options,
+    }).then(async (responses) => {
+      await this.staker(undefined, true);
     });
   }
 
