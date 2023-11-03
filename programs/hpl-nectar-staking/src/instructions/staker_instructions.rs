@@ -15,7 +15,7 @@ pub struct InitStaker<'info> {
 
     /// Staker state account
     #[account(
-      init, payer = wallet,
+      init_if_needed, payer = wallet,
       space = Staker::LEN,
       seeds = [
           b"staker",
@@ -58,6 +58,10 @@ pub struct InitStaker<'info> {
 /// Initialize staker state
 pub fn init_staker(ctx: Context<InitStaker>) -> Result<()> {
     let staker = &mut ctx.accounts.staker;
+    if staker.wallet.eq(&ctx.accounts.wallet.key()) {
+        msg!("Staker already initialized");
+        return Ok(());
+    }
     staker.set_defaults();
     staker.bump = ctx.bumps["staker"];
     staker.staking_pool = ctx.accounts.staking_pool.key();

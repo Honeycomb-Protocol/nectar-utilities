@@ -7,6 +7,7 @@ use {
     },
     hpl_events::HplEvents,
     hpl_hive_control::{program::HplHiveControl, state::Project},
+    hpl_utils::Default,
     mpl_token_metadata::{
         instruction::{DelegateArgs, RevokeArgs},
         state::{Metadata, TokenMetadataAccount},
@@ -21,11 +22,18 @@ pub struct Stake<'info> {
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// NFT state account
-    #[account(mut, has_one = staking_pool)]
+    #[account(init_if_needed, payer = wallet, space = NFTv1::LEN,
+    seeds = [
+        b"nft",
+        nft_mint.key().as_ref(),
+        staking_pool.key().as_ref(),
+      ],
+      bump
+    )]
     pub nft: Box<Account<'info, NFTv1>>,
 
     /// Mint address of the NFT
-    #[account(mut, constraint = nft_mint.key() == nft.mint)]
+    #[account(mut)]
     pub nft_mint: Box<Account<'info, Mint>>,
 
     /// Token account of the NFT
@@ -121,6 +129,89 @@ pub struct Stake<'info> {
 pub fn stake(ctx: Context<Stake>) -> Result<()> {
     let staking_pool = &mut ctx.accounts.staking_pool;
     let nft = &mut ctx.accounts.nft;
+
+    if !nft.staking_pool.eq(&staking_pool.key()) {
+        nft.set_defaults();
+        nft.bump = ctx.bumps["nft"];
+        nft.staking_pool = staking_pool.key();
+        nft.mint = ctx.accounts.nft_mint.key();
+
+        let metadata_account_info = &ctx.accounts.nft_metadata;
+
+        if metadata_account_info.data_is_empty() {
+            msg!("Metadata account is empty");
+            return Err(ErrorCode::InvalidMetadata.into());
+        }
+
+        let metadata: Metadata = Metadata::from_account_info(metadata_account_info)?;
+        if metadata.mint != ctx.accounts.nft_mint.key() {
+            msg!("Metadata mint does not match NFT mint");
+            return Err(ErrorCode::InvalidMetadata.into());
+        }
+
+        let mut index: u8 = 0;
+        let collections = ctx
+            .accounts
+            .project
+            .collections
+            .iter()
+            .filter_map(|x| {
+                let key = if staking_pool.collections.contains(&index) {
+                    Some(*x)
+                } else {
+                    None
+                };
+                index += 1;
+                key
+            })
+            .collect::<Vec<_>>();
+
+        index = 0;
+        let creators = ctx
+            .accounts
+            .project
+            .creators
+            .iter()
+            .filter_map(|x| {
+                let key = if staking_pool.creators.contains(&index) {
+                    Some(*x)
+                } else {
+                    None
+                };
+                index += 1;
+                key
+            })
+            .collect::<Vec<_>>();
+
+        let validation_out =
+            hpl_utils::validate_collection_creator(metadata, &collections, &creators);
+
+        Event::new_nft(nft.key(), nft.try_to_vec().unwrap(), &ctx.accounts.clock)
+            .emit(ctx.accounts.hpl_events.to_account_info())?;
+
+        match validation_out {
+            Ok(x) => match x {
+                hpl_utils::ValidateCollectionCreatorOutput::Collection { address } => {
+                    nft.criteria = NFTCriteria::Collection { address };
+                    msg!("Collection: {:?}", address);
+                }
+                hpl_utils::ValidateCollectionCreatorOutput::Creator { address } => {
+                    nft.criteria = NFTCriteria::Creator { address };
+                    msg!("Creator: {:?}", address);
+                }
+            },
+            Err(_) => {
+                // if staking_pool.allowed_mints {
+                //     if staking_pool.authority == ctx.accounts.wallet.key() {
+                //         return Ok(());
+                //     } else if staking_pool.authority != ctx.accounts.wallet.key() {
+                //         return Err(ErrorCode::OnlyOwner.into());
+                //     }
+                // }
+                return Err(ErrorCode::InvalidMetadata.into());
+            }
+        };
+    }
 
     let staker = &mut ctx.accounts.staker;
 

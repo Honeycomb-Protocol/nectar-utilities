@@ -87,8 +87,6 @@ export async function createStakeOperation(
   luts: web3.AddressLookupTableAccount[] = []
 ) {
   const programId = args.programId || PROGRAM_ID;
-  const operation = new Operation(honeycomb, []);
-  if (luts.length > 0) operation.add_lut(...luts);
 
   // Get the PDA account for the NFT
   const [nft] = getNftPda(args.stakingPool.address, args.nft.mint, programId);
@@ -101,9 +99,15 @@ export async function createStakeOperation(
 
   // Create the transaction instruction for staking the NFT
   let units = 500_000;
-  const instructions: web3.TransactionInstruction[] = [];
+  const instructions: web3.TransactionInstruction[] = createInitStakerOperation(
+    honeycomb,
+    {
+      stakingPool: args.stakingPool,
+      programId: args.programId,
+    }
+  ).operation.instructions;
 
-  if (args.nft && args.nft.isCompressed) {
+  if (args.nft.isCompressed) {
     units += 100_000;
     const [treeAuthority] = web3.PublicKey.findProgramAddressSync(
       [args.nft.compression.tree.toBuffer()],
@@ -219,42 +223,13 @@ export async function createStakeOperation(
     );
   }
 
-  if (args.isFirst) {
-    try {
-      await args.stakingPool.staker({ wallet: honeycomb.identity().address });
-    } catch {
-      units += 100_000;
-      operation.addPreOperations(
-        createInitStakerOperation(honeycomb, {
-          stakingPool: args.stakingPool,
-          programId: args.programId,
-        }).operation
-      );
-    }
-  }
-
-  try {
-    const nft = await args.stakingPool.fetch().nft(args.nft.mint).catch();
-    if (!nft) throw new Error("NFT not initialized");
-  } catch {
-    let op = await createInitNFTOperation(
-      honeycomb,
-      {
-        stakingPool: args.stakingPool,
-        nft: args.nft,
-        proof: args.proof,
-        programId: args.programId,
-      },
-      luts
-    ).then(({ operation }) => operation);
-    instructions.unshift(...op.instructions);
-  }
   instructions.unshift(
     web3.ComputeBudgetProgram.setComputeUnitLimit({
       units,
     })
   );
-  operation.add(...instructions);
+  const operation = new Operation(honeycomb, instructions);
+  if (luts.length > 0) operation.add_lut(...luts);
   return {
     operation,
   };

@@ -3,19 +3,30 @@ use {
     anchor_lang::prelude::*,
     hpl_events::HplEvents,
     hpl_hive_control::{program::HplHiveControl, state::Project},
-    mpl_bubblegum::program::Bubblegum,
+    hpl_utils::Default,
+    mpl_bubblegum::{program::Bubblegum, utils::get_asset_id},
     spl_account_compression::{program::SplAccountCompression, Noop},
 };
 
 /// Accounts used in stake cnft instruction
 #[derive(Accounts)]
+#[instruction(args: super::CNFTArgs)]
 pub struct StakeCNFT<'info> {
     /// StakingPool state account
     #[account(mut, has_one = project)]
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
     /// NFT state account
-    #[account(mut, has_one = staking_pool)]
+    #[account(
+        init_if_needed, payer = wallet,
+        space = NFTv1::LEN,
+        seeds = [
+          b"nft",
+          get_asset_id(&merkle_tree.key(), args.nonce).as_ref(),
+          staking_pool.key().as_ref(),
+        ],
+        bump
+    )]
     pub nft: Box<Account<'info, NFTv1>>,
 
     /// CHECK: unsafe
