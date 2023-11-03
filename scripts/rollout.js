@@ -2,7 +2,7 @@ const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
-const ignore = ["idl", "hpl-ledger-identity"];
+const ignore = ["idl", "hpl-asset-assembler", "hpl-asset-manager"];
 const ignoreBuild = process.argv.includes("--ignore-build");
 
 versionBump = (package) => {
@@ -58,8 +58,8 @@ versionBump = (package) => {
   if (version !== currentVersion) {
     execSync(
       `cargo update -p ${package} && ${
-        ignoreBuild ? "" : "yarn build:sdk &&"
-      } git add packages/**/*.json && git add programs/**/Cargo.toml && git add Cargo.lock && git commit -m "bump version to ${version}"`,
+        ignoreBuild ? "" : `yarn build:${package.replace("hpl-", "")} &&`
+      } git add packages/${package}/*.json && git add programs/${package}/Cargo.toml && git add Cargo.lock && git commit -m "bump version to ${version}"`,
       {
         stdio: "inherit",
       }
@@ -69,7 +69,7 @@ versionBump = (package) => {
 
 const packageFlag = process.argv.indexOf("--package");
 if (packageFlag !== -1) {
-  versionBump(process.argv[packageFlag + 1]);
+  versionBump("hpl-" + process.argv[packageFlag + 1]);
 } else {
   const packages = fs.readdirSync("packages");
   packages.forEach(versionBump);
