@@ -1725,12 +1725,14 @@ describe("Nectar Utilities", () => {
       nfts.push(nft);
     }
 
-    // Create Merkle tree for cNFTs
-    const [treeKeypair] = await createNewTree(adminHC);
-    merkleTree = treeKeypair.publicKey;
-
+    let treeKeypair: web3.Keypair = web3.Keypair.generate();
     // Mint cNFTs
     for (let i = 1; i <= totalcNfts; i++) {
+      if (i === 1) {
+        treeKeypair = await createNewTree(adminHC)[0];
+        merkleTree = treeKeypair.publicKey;
+      }
+
       await mintOneCNFT(adminHC, {
         dropWalletKey: userHC.identity().address.toString(),
         name: `cNFT #${i}`,
@@ -1767,7 +1769,7 @@ describe("Nectar Utilities", () => {
         name: "TestProject",
         expectedMintAddresses: nfts.length,
         collections: [collection.mint.address],
-        merkleTrees: [merkleTree],
+        merkleTrees: merkleTree ? [merkleTree] : [],
         profileDataConfigs: [
           {
             label: "nectar_missions_xp",
@@ -1805,9 +1807,7 @@ describe("Nectar Utilities", () => {
     const address = new web3.PublicKey(
       "AYr7vWkdA7AKz4LKddzRL5Tx2aEbt6aaPAE6NuqMGkeH"
     );
-    adminHC.use(
-      await HoneycombProject.fromAddress(adminHC, address)
-    );
+    adminHC.use(await HoneycombProject.fromAddress(adminHC, address));
     await findProjectCurrencies(adminHC.project());
   });
 
@@ -1858,15 +1858,6 @@ describe("Nectar Utilities", () => {
     (adminHC.staking() as unknown as NectarStaking).helius_rpc =
       "https://devnet.helius-rpc.com/?api-key=b5676a53-d02f-4c59-9b5d-91bcdd9f4f54";
 
-    userHC.use(
-      await NectarStaking.fromAddress(
-        userHC.connection,
-        adminHC.staking().address
-      )
-    );
-    userHC.staking().helius_rpc =
-      "https://devnet.helius-rpc.com/?api-key=b5676a53-d02f-4c59-9b5d-91bcdd9f4f54";
-
     console.log("Staking", adminHC.staking().address.toString());
   });
 
@@ -1879,18 +1870,11 @@ describe("Nectar Utilities", () => {
           args: {
             name: "Missions2.0",
             factionsMerkleRoot: new Array(32).fill(0),
-            collections: [collection.mint.address],
+            stakingPools: [adminHC.staking().address],
           },
         })
       );
     }
-
-    userHC.use(
-      await NectarMissions.fromAddress(
-        userHC.connection,
-        adminHC.missions().address
-      )
-    );
 
     console.log("Missions", adminHC.missions().address.toString());
   });
@@ -1947,6 +1931,9 @@ describe("Nectar Utilities", () => {
         new web3.PublicKey("86HuZxzdh1ErDpjTBsnyyg76rwusNDquNjDGPRT3Uuau")
       );
     if (temp) universalLut = temp;
+
+    userHC.staking().helius_rpc =
+      "https://devnet.helius-rpc.com/?api-key=ccca5bb2-58dc-4b94-838b-664df478cf45";
   });
 
   it("Create and Load Lookup Table", async () => {
@@ -2053,11 +2040,10 @@ describe("Nectar Utilities", () => {
 
   it("Stake NFTs", async () => {
     const staking = userHC.staking() as unknown as NectarStaking;
-    const availableNfts = await staking.fetch().availableNfts();
-    console.log("AvailaleNFTs", availableNfts);
+    const availableNfts = await staking.availableNfts();
     expect(availableNfts.length).toBe(totalNfts + totalcNfts);
-    await staking.stake(availableNfts, { skipPreflight: true });
-    const stakedNfts = await staking.fetch().stakedNfts();
+    await staking.stake(availableNfts);
+    const stakedNfts = await staking.stakedNfts();
     expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
   });
 
@@ -2065,7 +2051,6 @@ describe("Nectar Utilities", () => {
     const staking = userHC.staking() as unknown as NectarStaking;
 
     const stakedNfts = await staking.fetch().stakedNfts();
-    // console.log("StakedNfts", stakedNfts);
     expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
 
     const participations = await userHC.missions().fetch().participations();
@@ -2084,8 +2069,7 @@ describe("Nectar Utilities", () => {
             faction: null,
             merkleProof: null,
           },
-        })),
-        {}
+        }))
       );
     }
   });
@@ -2094,17 +2078,16 @@ describe("Nectar Utilities", () => {
     await wait(1);
     const participations = await userHC.missions().participations();
     expect(participations.length).toBeGreaterThan(0);
-    const mission = await userHC.missions().mission("Quick Patrol");
-    await mission.recall(participations);
+    await userHC.missions().recall(participations);
   });
 
   it("Unstake NFTs", async () => {
     const staking = userHC.staking() as unknown as NectarStaking;
 
-    const stakedNfts = await staking.fetch().stakedNfts();
+    const stakedNfts = await staking.stakedNfts();
     expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
-    await staking.unstake(stakedNfts, {});
-    const availableNfts = await staking.fetch().availableNfts();
+    await staking.unstake(stakedNfts);
+    const availableNfts = await staking.availableNfts();
     expect(availableNfts.length).toBe(totalNfts + totalcNfts);
   });
 });
