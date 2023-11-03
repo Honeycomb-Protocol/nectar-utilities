@@ -90,13 +90,11 @@ export async function createParticipateOperation(
   luts: AddressLookupTableAccount[] = []
 ) {
   const programId = args.programId || PROGRAM_ID;
-  const operation = new Operation(honeycomb, [
+  const instructions = [
     ComputeBudgetProgram.setComputeUnitLimit({
       units: 500_000,
     }),
-  ]);
-
-  if (luts.length > 0) operation.add_lut(...luts);
+  ];
 
   const [nft] = getNftPda(args.nft.stakingPool, args.nft.mint);
   const [participation] = participationPda(nft, programId);
@@ -124,11 +122,10 @@ export async function createParticipateOperation(
           owner: honeycomb.identity().address,
         }).then(({ operation }) => operation.instructions))
       );
-      operation.addPreOperations(preOperation);
     }
   }
 
-  operation.add(
+  instructions.push(
     createParticipateInstruction(
       {
         project: args.mission.pool().project().address,
@@ -158,6 +155,11 @@ export async function createParticipateOperation(
       programId
     )
   );
+
+  const operation = new Operation(honeycomb, instructions);
+  if (luts.length > 0) operation.add_lut(...luts);
+
+  if (preOperation.items.length > 0) operation.addPreOperations(preOperation);
 
   return {
     operation: operation,

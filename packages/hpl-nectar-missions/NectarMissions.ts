@@ -524,7 +524,7 @@ export class NectarMissions extends Module<"recall" | "participate"> {
    */
   public async recall(
     participations: NectarMissionParticipation[],
-    options: web3.ConfirmOptions & SendBulkOptions
+    options: web3.ConfirmOptions & SendBulkOptions = {}
   ) {
     const operations = await Promise.all(
       participations.map((participation, i) =>
@@ -895,7 +895,7 @@ export class NectarMission {
    */
   public async participate(
     nfts: (StakedNft & { args: ParticipateArgs })[],
-    options: web3.ConfirmOptions & SendBulkOptions
+    options: web3.ConfirmOptions & SendBulkOptions = {}
   ) {
     const operations = await Promise.all(
       nfts.map((nft, i) =>
