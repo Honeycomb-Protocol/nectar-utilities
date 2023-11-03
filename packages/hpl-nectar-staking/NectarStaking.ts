@@ -634,7 +634,11 @@ export class NectarStaking extends Module<
             })
         );
       },
-    }).then((x) => Promise.all(promises).then(() => x));
+    }).then((x) =>
+      Promise.all(promises).then(() =>
+        this.staker(undefined, true).then(() => x)
+      )
+    );
   }
 
   /**
@@ -779,7 +783,7 @@ export class NectarStaking extends Module<
           }
         );
       },
-    });
+    }).then((x) => this.staker(undefined, true).then(() => x));
   }
 
   /**
