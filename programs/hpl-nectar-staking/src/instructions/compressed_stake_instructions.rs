@@ -95,6 +95,23 @@ pub fn stake_cnft<'info>(
 ) -> Result<()> {
     let staking_pool = &mut ctx.accounts.staking_pool;
     let nft = &mut ctx.accounts.nft;
+
+    if !nft.staking_pool.eq(&staking_pool.key()) {
+        nft.set_defaults();
+        nft.bump = ctx.bumps["nft"];
+        nft.staking_pool = staking_pool.key();
+        nft.mint = get_asset_id(&ctx.accounts.merkle_tree.key(), args.nonce);
+        nft.is_compressed = true;
+        nft.criteria = NFTCriteria::MerkleTree {
+            address: ctx.accounts.merkle_tree.key(),
+        };
+
+        Event::new_nft(nft.key(), nft.try_to_vec().unwrap(), &ctx.accounts.clock)
+            .emit(ctx.accounts.hpl_events.to_account_info())?;
+
+        msg!("New NFT created");
+    }
+
     let staker = &mut ctx.accounts.staker;
 
     staking_pool.total_staked += 1;
