@@ -110,6 +110,7 @@ export type Metadata = {
     creatorHash: web3.PublicKey;
     assetHash: web3.PublicKey;
     tree: web3.PublicKey;
+    proof?: AssetProof;
   } | null;
   isCompressed: boolean;
 

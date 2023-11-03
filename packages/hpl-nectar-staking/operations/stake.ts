@@ -113,8 +113,9 @@ export async function createStakeOperation(
       [args.nft.compression.tree.toBuffer()],
       BUBBLEGUM_PROGRAM_ID
     );
-    if (!args.proof)
-      args.proof = await fetchAssetProof(
+
+    if (!args.proof && !args.nft.compression.proof)
+      args.nft.compression.proof = await fetchAssetProof(
         args.stakingPool.helius_rpc,
         args.nft.mint
       );
@@ -139,8 +140,10 @@ export async function createStakeOperation(
           clock: web3.SYSVAR_CLOCK_PUBKEY,
           instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
           dataHash: args.nft.compression.dataHash,
-          root: args.proof.root,
-          anchorRemainingAccounts: args.proof.proof.map((p) => ({
+          root: (args.proof || args.nft.compression.proof).root,
+          anchorRemainingAccounts: (
+            args.proof || args.nft.compression.proof
+          ).proof.map((p) => ({
             pubkey: p,
             isSigner: false,
             isWritable: false,

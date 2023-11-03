@@ -8,7 +8,6 @@ import {
 } from "../types";
 import { NFTv1, Staker } from "../generated";
 import { getStakerPda } from "../pdas";
-import { Honeycomb } from "@honeycomb-protocol/hive-control";
 import { NectarStaking } from "../NectarStaking";
 
 const parseHelius = (asset: HeluisAsset): Metadata => {
@@ -58,6 +57,31 @@ const parseHelius = (asset: HeluisAsset): Metadata => {
   };
 };
 
+const checkCollection = (nft: AvailableNft, staking: NectarStaking) =>
+  nft.collection &&
+  staking.collections.length &&
+  nft.collection.verified &&
+  !!staking.collections.find((x) => x.equals(nft.collection.address));
+
+const checkCreator = (nft: AvailableNft, staking: NectarStaking) =>
+  !!nft.creators.length &&
+  !!staking.creators.length &&
+  nft.creators.some(
+    (creator) =>
+      creator.verified &&
+      staking.creators.find((x) => x.equals(creator.address))
+  );
+
+const checkMerkleTree = (nft: AvailableNft, staking: NectarStaking) =>
+  nft.isCompressed &&
+  staking.merkleTrees.length &&
+  !!staking.merkleTrees.find((x) => x.equals(nft.compression.tree));
+
+const checkCriteria = (nft: AvailableNft, staking: NectarStaking) =>
+  checkCollection(nft, staking) ||
+  checkCreator(nft, staking) ||
+  checkMerkleTree(nft, staking);
+
 /**
  * Represents the arguments for fetching a staker.
  * @category Types
@@ -83,13 +107,99 @@ type FetchStakerArgs = {
  *   programId: 'YOUR_PROGRAM_ID',
  * });
  */
-export function fetchStaker(honeycomb: Honeycomb, args: FetchStakerArgs) {
+export function fetchStaker(staking: NectarStaking, args: FetchStakerArgs) {
   const [staker] = getStakerPda(
-    honeycomb.staking().poolAddress,
-    args?.walletAddress || honeycomb.identity().address,
+    staking.poolAddress,
+    args?.walletAddress || staking.honeycomb().identity().address,
     args?.programId
   );
-  return Staker.fromAccountAddress(honeycomb.connection, staker);
+  return Staker.fromAccountAddress(staking.honeycomb().connection, staker);
+}
+
+/**
+ * Fetches the merkle proof of the cNFT
+ *
+ * @param args Arguements containing mint of cNFT
+ * @returns A promise that resolves to AssetProof object
+ *
+ * @example
+ * const assetProof = await getAssetProof(new web3.PulicKey(...));
+ */
+export async function fetchAssetProof(
+  heliusRpc: string,
+  mint: web3.PublicKey
+): Promise<AssetProof> {
+  const response = await fetch(heliusRpc as string, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: "my-id",
+      method: "getAssetProof",
+      params: {
+        id: mint.toString(),
+      },
+    }),
+  });
+  const { result } = await response.json();
+
+  return {
+    root: new web3.PublicKey(result.root),
+    proof: result.proof.map((x: string) => new web3.PublicKey(x)),
+    node_index: result.node_index,
+    leaf: new web3.PublicKey(result.root),
+    tree_id: new web3.PublicKey(result.root),
+  };
+}
+
+/**
+ * Fetches the merkle proof of the cNFTs
+ *
+ * @param args Arguements containing mints of cNFTs
+ * @returns A promise that resolves to AssetProof objects
+ *
+ * @example
+ * const assetProofs = await fetchAssetProofBatch(new web3.PulicKey(...));
+ */
+export async function fetchAssetProofBatch(
+  heliusRpc: string,
+  mints: web3.PublicKey[]
+): Promise<{ [mint: string]: AssetProof }> {
+  const response = await fetch(heliusRpc, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: "my-id",
+      method: "getAssetProofBatch",
+      params: {
+        ids: mints.map((mint) => mint.toString()),
+      },
+    }),
+  });
+
+  const { result } = await response.json();
+
+  const proofs: { [mint: string]: AssetProof } = {};
+
+  for (const key in result) {
+    if (result.hasOwnProperty(key)) {
+      const entry = result[key];
+      proofs[key] = {
+        root: new web3.PublicKey(entry.root),
+        proof: entry.proof.map((x: string) => new web3.PublicKey(x)),
+        node_index: entry.node_index,
+        leaf: new web3.PublicKey(entry.leaf),
+        tree_id: new web3.PublicKey(entry.tree_id),
+      };
+    }
+  }
+
+  return proofs;
 }
 
 /**
@@ -114,42 +224,6 @@ export async function fetchHeliusAssets(
     | { mintList: web3.PublicKey[] }
 ) {
   if ("mintList" in args) {
-    // let batch = args.mintList.map((e, i) => ({
-    //   jsonrpc: "2.0",
-    //   id: `my-id-${i}`,
-    //   method: "getAsset",
-    //   params: {
-    //     id: e.toString(),
-    //   },
-    // }));
-    // try {
-    //   return fetch(heliusRpc, {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(batch),
-    //   })
-    //     .then((r) => r.json())
-    //     .then((r) => {
-    //       console.log("R", r);
-    //       return r;
-    //     })
-    //     .then(
-    //       (r) =>
-    //         r
-    //           .map(({ result }) => result)
-    //           .filter((x) => !!x)
-    //           .map(parseHelius) as Metadata[]
-    //     );
-    // } catch (e) {
-    //   console.error(e);
-    //   console.error(e.response.data);
-    //   return [];
-    // }
-
-    // this is an optimization as part of the new batch method introduced by helius
-    // to reduce the complexity of requests to the helius rpc endpoint the above is kept for reference
     try {
       return await fetch(heliusRpc, {
         method: "POST",
@@ -211,83 +285,6 @@ export async function fetchHeliusAssets(
     }
   }
   return assetList.map(parseHelius) as Metadata[];
-}
-
-/**
- * Fetches the merkle proof of the cNFT
- *
- * @param args Arguements containing mint of cNFT
- * @returns A promise that resolves to AssetProof object
- *
- * @example
- * const assetProof = await getAssetProof(new web3.PulicKey(...));
- */
-export async function fetchAssetProof(
-  heliusRpc: string,
-  mint: web3.PublicKey
-): Promise<AssetProof> {
-  const response = await fetch(heliusRpc as string, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: "my-id",
-      method: "getAssetProof",
-      params: {
-        id: mint.toString(),
-      },
-    }),
-  });
-  const { result } = await response.json();
-
-  return {
-    root: new web3.PublicKey(result.root),
-    proof: result.proof.map((x: string) => new web3.PublicKey(x)),
-    node_index: result.node_index,
-    leaf: new web3.PublicKey(result.root),
-    tree_id: new web3.PublicKey(result.root),
-  };
-}
-
-export async function fetchAssetProofBatch(
-  heliusRpc: string,
-  nfts: Metadata[]
-) {
-  const response = await fetch(heliusRpc, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: "my-id",
-      method: "getAssetProofBatch",
-      params: {
-        ids: nfts.map((nft) => nft.mint.toString()),
-      },
-    }),
-  });
-
-  const { result } = await response.json();
-
-  const proofs: { [id: string]: AssetProof } = {};
-
-  for (const key in result) {
-    if (result.hasOwnProperty(key)) {
-      const entry = result[key];
-      proofs[key] = {
-        root: new web3.PublicKey(entry.root),
-        proof: entry.proof.map((x: string) => new web3.PublicKey(x)),
-        node_index: entry.node_index,
-        leaf: new web3.PublicKey(entry.leaf),
-        tree_id: new web3.PublicKey(entry.tree_id),
-      };
-    }
-  }
-
-  return proofs;
 }
 
 /**
@@ -362,7 +359,6 @@ export async function fetchStakedNfts(
  */
 type FetchAvailableNfts = {
   project?: web3.PublicKey;
-  stakingPool?: web3.PublicKey;
   walletAddress?: web3.PublicKey;
   allowedMints?: web3.PublicKey[];
   programId?: web3.PublicKey;
@@ -385,20 +381,15 @@ type FetchAvailableNfts = {
  * });
  */
 export async function fetchAvailableNfts(
-  honeycomb: Honeycomb,
+  staking: NectarStaking,
   args?: FetchAvailableNfts
 ) {
-  const wallet = args?.walletAddress || honeycomb.identity().address;
+  const wallet = args?.walletAddress || staking.honeycomb().identity().address;
 
   let ownedNfts: AvailableNft[] = [
     ...(await Promise.all(
-      (args.stakingPool
-        ? honeycomb.staking(args.stakingPool).collections
-        : args.project
-        ? honeycomb.project(args.project).collections
-        : []
-      ).map((collection) =>
-        fetchHeliusAssets(honeycomb.staking(args.stakingPool).helius_rpc, {
+      staking.collections.map((collection) =>
+        fetchHeliusAssets(staking.helius_rpc, {
           walletAddress: wallet,
           collectionAddress: collection,
         })
@@ -429,16 +420,13 @@ export async function fetchAvailableNfts(
 
   let filteredNfts: AvailableNft[] = [];
 
-  if (honeycomb.staking(args.stakingPool).allowedMints) {
+  if (staking.allowedMints) {
     const allowedMints: web3.PublicKey[] =
       args?.allowedMints ||
       (await NFTv1.gpaBuilder(args.programId)
-        .addFilter(
-          "stakingPool",
-          honeycomb.staking(args.stakingPool).poolAddress
-        )
+        .addFilter("stakingPool", staking.poolAddress)
         .addFilter("staker", null)
-        .run(honeycomb.processedConnection)
+        .run(staking.honeycomb().processedConnection)
         .then((nfts) =>
           nfts.map(({ account }) => NFTv1.fromAccountInfo(account)[0].mint)
         ));
@@ -451,30 +439,9 @@ export async function fetchAvailableNfts(
 
   filteredNfts = [
     ...filteredNfts,
-    ...ownedNfts.filter(
-      (nft) =>
-        (nft.collection &&
-          honeycomb.staking(args.stakingPool).collections.length &&
-          nft.collection.verified &&
-          !!honeycomb
-            .staking(args.stakingPool)
-            .collections.find((x) => x.equals(nft.collection.address))) ||
-        (!!nft.creators.length &&
-          !!honeycomb.staking(args.stakingPool).creators.length &&
-          nft.creators.some(
-            (creator) =>
-              creator.verified &&
-              honeycomb
-                .staking(args.stakingPool)
-                .creators.find((x) => x.equals(creator.address))
-          )) ||
-        (nft.isCompressed &&
-          honeycomb.staking(args.stakingPool).merkleTrees.length &&
-          !!honeycomb
-            .staking(args.stakingPool)
-            .merkleTrees.find((x) => x.equals(nft.compression.tree)))
-    ),
+    ...ownedNfts.filter((nft) => checkCriteria(nft, staking)),
   ];
+
   let tempFilterSet = new Set();
   filteredNfts = filteredNfts.filter((nft, index, self) => {
     if (tempFilterSet.has(nft.mint)) return false;
