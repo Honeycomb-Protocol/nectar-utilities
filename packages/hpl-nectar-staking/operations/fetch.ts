@@ -167,6 +167,10 @@ export async function fetchAssetProofBatch(
   heliusRpc: string,
   mints: web3.PublicKey[]
 ): Promise<{ [mint: string]: AssetProof }> {
+  if (mints.length === 0) {
+    return {};
+  }
+
   const response = await fetch(heliusRpc, {
     method: "POST",
     headers: {
