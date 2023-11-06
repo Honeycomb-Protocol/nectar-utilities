@@ -514,19 +514,27 @@ export class NectarStaking extends Module<
    * @returns A promise that resolves with an array of responses for the transactions.
    */
   public async stake(
-    nfts: AvailableNft[],
+    _nfts: AvailableNft[],
     options: web3.ConfirmOptions & SendBulkOptions = {}
   ) {
+    let nfts: AvailableNft[] = [..._nfts];
     await fetchAssetProofBatch(
       this.helius_rpc,
-      nfts
+      _nfts
         .filter((n) => n.isCompressed && !n.compression.proof)
         .map((n) => n.mint)
     ).then((proofs) => {
-      nfts.forEach((nft) => {
+      nfts = _nfts.map((nft) => {
         if (nft.compression) {
-          nft.compression.proof =
-            proofs[nft.mint.toString()] || nft.compression.proof;
+          return {
+            ...nft,
+            compression: {
+              ...nft.compression,
+              proof: proofs[nft.mint.toString()] || nft.compression.proof,
+            },
+          };
+        } else {
+          return nft;
         }
       });
     });
@@ -679,19 +687,27 @@ export class NectarStaking extends Module<
    * @returns A promise that resolves with an array of responses for the transactions.
    */
   public async unstake(
-    nfts: StakedNft[],
+    _nfts: StakedNft[],
     options: web3.ConfirmOptions & SendBulkOptions = {}
   ) {
+    let nfts: StakedNft[] = [..._nfts];
     await fetchAssetProofBatch(
       this.helius_rpc,
-      nfts
+      _nfts
         .filter((n) => n.isCompressed && !n.compression.proof)
         .map((n) => n.mint)
     ).then((proofs) => {
-      nfts.forEach((nft) => {
+      nfts = _nfts.map((nft) => {
         if (nft.compression) {
-          nft.compression.proof =
-            proofs[nft.mint.toString()] || nft.compression.proof;
+          return {
+            ...nft,
+            compression: {
+              ...nft.compression,
+              proof: proofs[nft.mint.toString()] || nft.compression.proof,
+            },
+          };
+        } else {
+          return nft;
         }
       });
     });
