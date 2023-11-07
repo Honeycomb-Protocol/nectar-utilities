@@ -1,5 +1,9 @@
 # 0.1.x
 
+## 0.1.45
+
+- Feches Staker with Processed connection for Nectar Staking
+
 ## 0.1.40 - 0.1.41
 
 - Fixes Participate Issues
