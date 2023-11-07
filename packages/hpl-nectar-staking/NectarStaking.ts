@@ -936,8 +936,9 @@ export class NectarStakingFetch {
       address = args.address;
     }
     return Staker.fromAccountAddress(
-      this.nectarStaking.honeycomb().connection,
-      address
+      this.nectarStaking.honeycomb().processedConnection,
+      address,
+      "processed"
     );
   }
 
