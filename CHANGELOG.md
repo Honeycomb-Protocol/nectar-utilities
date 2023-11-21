@@ -1,5 +1,9 @@
 # 0.1.x
 
+## 0.1.46
+
+- adds init_if_needed support for staker in stake operation
+
 ## 0.1.45
 
 - Feches Staker with Processed connection for Nectar Staking
