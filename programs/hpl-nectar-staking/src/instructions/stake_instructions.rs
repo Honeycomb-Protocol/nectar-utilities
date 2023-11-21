@@ -56,8 +56,17 @@ pub struct Stake<'info> {
     pub nft_token_record: Option<AccountInfo<'info>>,
 
     /// Staker state account
-    #[account(mut, has_one = staking_pool, has_one = wallet)]
-    pub staker: Box<Account<'info, Staker>>,
+    #[account(
+      init_if_needed, payer = wallet,
+      space = Staker::LEN,
+      seeds = [
+          b"staker",
+          wallet.key().as_ref(),
+          staking_pool.key().as_ref(),
+      ],
+      bump,
+    )]
+    pub staker: Account<'info, Staker>,
 
     /// The account that will hold the nft sent on expedition
     #[account(
@@ -129,6 +138,24 @@ pub struct Stake<'info> {
 pub fn stake(ctx: Context<Stake>) -> Result<()> {
     let staking_pool = &mut ctx.accounts.staking_pool;
     let nft = &mut ctx.accounts.nft;
+    let staker = &mut ctx.accounts.staker;
+
+    if !staker
+        .staking_pool
+        .eq(&staking_pool.key() || !staker.wallet.eq(&ctx.accounts.wallet.key()))
+    {
+        staker.set_defaults();
+        staker.bump = ctx.bumps["staker"];
+        staker.staking_pool = ctx.accounts.staking_pool.key();
+        staker.wallet = ctx.accounts.wallet.key();
+
+        Event::new_staker(
+            staker.key(),
+            staker.try_to_vec().unwrap(),
+            &ctx.accounts.clock,
+        )
+        .emit(ctx.accounts.hpl_events.to_account_info())?;
+    }
 
     if !nft.staking_pool.eq(&staking_pool.key()) {
         nft.set_defaults();
