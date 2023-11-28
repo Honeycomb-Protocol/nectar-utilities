@@ -43,7 +43,10 @@ const parseHelius = (asset: HeluisAsset): Metadata => {
       ),
     },
     isCompressed: asset.compression.compressed,
-    frozen: asset.ownership.delegated,
+    frozen:
+      asset.ownership.delegated ||
+      asset.ownership.frozen ||
+      !!asset.ownership.delegate,
     compression: !asset.compression.compressed
       ? null
       : {
