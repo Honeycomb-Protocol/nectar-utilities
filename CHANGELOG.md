@@ -1,5 +1,9 @@
 # 0.1.x
 
+## 0.1.46
+
+- Adds Nft order in `NFTv1` Used by State for Use in Guilds
+
 ## 0.1.45
 
 - Feches Staker with Processed connection for Nectar Staking
