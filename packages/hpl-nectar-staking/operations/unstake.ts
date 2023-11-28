@@ -38,6 +38,7 @@ import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
 type CreateUnstakeOperationArgs = {
   stakingPool: NectarStaking;
   nft: StakedNft;
+  shouldSkipClaimRewards?: boolean;
   proof?: AssetProof;
   isFirst?: boolean;
   programId?: web3.PublicKey;
@@ -201,6 +202,9 @@ export async function createUnstakeOperation(
 
   const operation = new Operation(honeycomb, instructions);
   if (luts.length > 0) operation.add_lut(...luts);
+
+  if (args.shouldSkipClaimRewards) return { operation };
+
   operation.addPreOperations(
     await createClaimRewardsOperation(
       honeycomb,
