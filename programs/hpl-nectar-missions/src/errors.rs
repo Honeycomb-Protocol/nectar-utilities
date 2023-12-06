@@ -40,4 +40,7 @@ pub enum ErrorCode {
 
     #[msg("Invalid Profile data")]
     InvalidProfileData,
+
+    #[msg("Missing required accounts")]
+    MissingRequiredAccounts,
 }

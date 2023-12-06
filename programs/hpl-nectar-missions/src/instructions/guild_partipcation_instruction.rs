@@ -2,6 +2,12 @@ use {
     crate::{errors::ErrorCode, state::*, utils::RANDOMIZER},
     anchor_lang::prelude::*,
     anchor_spl::token::{self, Mint, Token, TokenAccount},
+    hpl_buzz_guild::{
+        cpi::{accounts::UseGuild, use_guild},
+        errors::ErrorCode as BuzzGuildErrorCode,
+        program::HplBuzzGuild,
+        state::{Guild, GuildKit, GuildUsedBy},
+    },
     hpl_currency_manager::{
         cpi::{
             accounts::{BurnCurrency, MintCurrency},
@@ -18,17 +24,16 @@ use {
         state::{DelegateAuthority, Profile, ProfileData, ProfileIdentity, Project, Service},
     },
     hpl_nectar_staking::{
-        cpi::{accounts::UseNft, use_nft},
         program::HplNectarStaking,
-        state::{NFTUsedBy, NFTv1, Staker, StakingPool},
+        state::{GuildRole, NFTUsedBy, NFTv1, Staker, StakingPool},
     },
     hpl_utils::traits::Default,
     spl_account_compression::program::SplAccountCompression,
 };
 
-/// Accounts used in participate instruction
+/// Accounts used in participate Guild instruction
 #[derive(Accounts)]
-pub struct Participate<'info> {
+pub struct ParticipateGuild<'info> {
     #[account(mut)]
     pub project: Box<Account<'info, Project>>,
 
@@ -40,13 +45,21 @@ pub struct Participate<'info> {
     #[account(has_one = project)]
     pub mission_pool: Box<Account<'info, MissionPool>>,
 
+    /// GUILD KIT
+    #[account(has_one = project)]
+    pub guild_kit: Box<Account<'info, GuildKit>>,
+
+    /// Guild state account
+    #[account(has_one = guild_kit)]
+    pub guild: Box<Account<'info, Guild>>,
+
+    /// Chief NFT
+    #[account(mut, has_one = staking_pool, constraint = chief_nft.staker.is_some() && chief_nft.staker.unwrap() == staker.key())]
+    pub chief_nft: Box<Account<'info, NFTv1>>,
+
     /// Mission state account
     #[account(has_one = mission_pool)]
     pub mission: Box<Account<'info, Mission>>,
-
-    /// NFT state account
-    #[account(mut, has_one = staking_pool, constraint = nft.staker.is_some() && nft.staker.unwrap().eq(&staker.key()))]
-    pub nft: Box<Account<'info, NFTv1>>,
 
     /// Staker state account
     #[account(has_one = staking_pool, has_one = wallet)]
@@ -67,7 +80,7 @@ pub struct Participate<'info> {
       space = Participation::LEN,
       seeds = [
         b"participation".as_ref(),
-        nft.key().as_ref()
+        guild.key().as_ref()
       ],
       bump
     )]
@@ -89,6 +102,7 @@ pub struct Participate<'info> {
     pub currency_manager_program: Program<'info, HplCurrencyManager>,
     pub nectar_staking_program: Program<'info, HplNectarStaking>,
     pub hpl_events: Program<'info, HplEvents>,
+    pub buzz_guild_program: Program<'info, HplBuzzGuild>,
     pub clock: Sysvar<'info, Clock>,
     pub rent_sysvar: Sysvar<'info, Rent>,
     /// CHECK: This is not dangerous because we don't read or write from this account
@@ -96,20 +110,19 @@ pub struct Participate<'info> {
     pub instructions_sysvar: AccountInfo<'info>,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
-pub struct ParticipateArgs {
-    pub faction: Option<String>,
-    pub merkle_proof: Option<Vec<[u8; 32]>>,
-}
-
 /// participate in a mission
-pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<()> {
+pub fn participate_guild(ctx: Context<ParticipateGuild>) -> Result<()> {
     let participation = &mut ctx.accounts.participation;
+    let guild = &ctx.accounts.guild;
+    let guild_kit = &ctx.accounts.guild_kit;
+    let chief_nft = &ctx.accounts.chief_nft;
+    let buzz_guild_program = &ctx.accounts.buzz_guild_program;
+
     participation.set_defaults();
     participation.bump = ctx.bumps["participation"];
     participation.wallet = ctx.accounts.wallet.key();
     participation.mission = ctx.accounts.mission.key();
-    participation.instrument = Instrument::Nft(ctx.accounts.nft.key());
+    participation.instrument = Instrument::Guild(guild.key());
     participation.end_time = ctx.accounts.mission.duration + ctx.accounts.clock.unix_timestamp;
 
     if !ctx
@@ -129,29 +142,6 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
     {
         panic!("Staking pool did not match");
     }
-
-    // if ctx.accounts.mission_pool.factions_merkle_root[0] != 0 {
-    //     if args.faction.is_none() {
-    //         return Err(ErrorCode::FactionNotProvided.into());
-    //     }
-
-    //     if args.merkle_proof.is_none() {
-    //         return Err(ErrorCode::MerkleProofNotProvided.into());
-    //     }
-
-    //     let node = hpl_utils::merkle_tree::create_node(&[
-    //         &[0x00],
-    //         args.faction.unwrap().as_bytes(),
-    //         ctx.accounts.nft.mint.as_ref(),
-    //     ]);
-    //     if !hpl_utils::merkle_tree::verify_merkle(
-    //         args.merkle_proof.unwrap(),
-    //         ctx.accounts.mission_pool.factions_merkle_root,
-    //         node.0,
-    //     ) {
-    //         return Err(ErrorCode::InvalidProof.into());
-    //     }
-    // }
 
     let rewards = ctx
         .accounts
@@ -182,10 +172,6 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
 
     participation.rewards = rewards;
 
-    if ctx.accounts.nft.last_staked_at < ctx.accounts.nft.last_unstaked_at {
-        return Err(ErrorCode::NotStaked.into());
-    }
-
     burn_currency(
         CpiContext::new(
             ctx.accounts.currency_manager_program.to_account_info(),
@@ -204,32 +190,31 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
                 token_program: ctx.accounts.token_program.to_account_info(),
             },
         ),
-        ctx.accounts.mission.cost.amount
-            * if ctx.accounts.nft.is_compressed {
-                1
-            } else {
-                10
-            },
+        ctx.accounts.mission.cost.amount,
     )?;
 
-    use_nft(
+    if let NFTUsedBy::Guild { id, role, .. } = chief_nft.used_by {
+        if id.eq(&guild.key()) || role != GuildRole::Chief {
+            return Err(ErrorCode::NftNotRecognized.into());
+        }
+    } else {
+        return Err(BuzzGuildErrorCode::InvalidChief.into());
+    }
+
+    use_guild(
         CpiContext::new(
-            ctx.accounts.nectar_staking_program.to_account_info(),
-            UseNft {
+            buzz_guild_program.to_account_info(),
+            UseGuild {
                 project: ctx.accounts.project.to_account_info(),
+                guild_kit: guild_kit.to_account_info(),
                 staking_pool: ctx.accounts.staking_pool.to_account_info(),
+                guild: guild.to_account_info(),
                 staker: ctx.accounts.staker.to_account_info(),
-                nft: ctx.accounts.nft.to_account_info(),
+                chief_nft: chief_nft.to_account_info(),
                 wallet: ctx.accounts.wallet.to_account_info(),
-                system_program: ctx.accounts.system_program.to_account_info(),
-                hive_control: ctx.accounts.hive_control.to_account_info(),
-                hpl_events: ctx.accounts.hpl_events.to_account_info(),
-                clock: ctx.accounts.clock.to_account_info(),
-                instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
-                vault: ctx.accounts.vault.to_account_info(),
             },
         ),
-        NFTUsedBy::Missions,
+        GuildUsedBy::Missions,
     )?;
 
     events::Event::new_participation(
@@ -244,7 +229,7 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
 
 /// Accounts used in recall instruction
 #[derive(Accounts)]
-pub struct CollectRewards<'info> {
+pub struct CollectRewardsForGuild<'info> {
     #[account(mut)]
     pub project: Box<Account<'info, Project>>,
 
@@ -261,12 +246,8 @@ pub struct CollectRewards<'info> {
     pub mission: Box<Account<'info, Mission>>,
 
     /// Participation state account
-    #[account(mut, has_one = wallet, has_one = mission, constraint = if let Instrument::Nft(key) = participation.instrument { key.eq(&nft.key()) } else { false } )]
+    #[account(mut, has_one = wallet, has_one = mission)]
     pub participation: Box<Account<'info, Participation>>,
-
-    /// Staked NFT state account
-    #[account()]
-    pub nft: Box<Account<'info, NFTv1>>,
 
     /// User profile account
     #[account(mut, has_one = project, constraint = profile.identity == ProfileIdentity::Main )]
@@ -321,11 +302,7 @@ pub struct CollectRewards<'info> {
 }
 
 /// Collect rewards
-pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
-    if ctx.accounts.nft.last_staked_at < ctx.accounts.nft.last_unstaked_at {
-        return Err(ErrorCode::NotStaked.into());
-    }
-
+pub fn collect_rewards_for_guild(ctx: Context<CollectRewardsForGuild>) -> Result<()> {
     if ctx.accounts.participation.end_time > ctx.accounts.clock.unix_timestamp {
         return Err(ErrorCode::NotEnded.into());
     }
@@ -459,7 +436,7 @@ pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
 
 /// Accounts used in recall instruction
 #[derive(Accounts)]
-pub struct Recall<'info> {
+pub struct RecallGuild<'info> {
     #[account(mut)]
     pub project: Box<Account<'info, Project>>,
 
@@ -467,21 +444,29 @@ pub struct Recall<'info> {
     #[account(has_one = project)]
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
-    /// NFT state account
-    #[account(mut, has_one = staking_pool, constraint = nft.staker.is_some() && nft.staker.unwrap().eq(&staker.key()))]
-    pub nft: Box<Account<'info, NFTv1>>,
-
-    /// Staker state account
-    #[account(has_one = staking_pool, has_one = wallet)]
-    pub staker: Box<Account<'info, Staker>>,
-
     /// MissionPool account
     #[account(has_one = project)]
     pub mission_pool: Box<Account<'info, MissionPool>>,
 
+    /// GUILD KIT
+    #[account(has_one = project)]
+    pub guild_kit: Box<Account<'info, GuildKit>>,
+
+    /// Guild state account
+    #[account(has_one = guild_kit)]
+    pub guild: Box<Account<'info, Guild>>,
+
+    /// Chief NFT
+    #[account(mut, has_one = staking_pool, constraint = chief_nft.staker.is_some() && chief_nft.staker.unwrap() == staker.key())]
+    pub chief_nft: Box<Account<'info, NFTv1>>,
+
     /// Mission account
     #[account(has_one = mission_pool)]
     pub mission: Box<Account<'info, Mission>>,
+
+    /// Staker state account
+    #[account(has_one = staking_pool, has_one = wallet)]
+    pub staker: Box<Account<'info, Staker>>,
 
     /// Participation state account
     #[account(mut, has_one = wallet, has_one = mission, close = wallet)]
@@ -497,6 +482,7 @@ pub struct Recall<'info> {
 
     pub nectar_staking_program: Program<'info, HplNectarStaking>,
     pub hpl_events: Program<'info, HplEvents>,
+    pub buzz_guild_program: Program<'info, HplBuzzGuild>,
     pub clock: Sysvar<'info, Clock>,
     /// NATIVE INSTRUCTIONS SYSVAR
     /// CHECK: This is not dangerous because we don't read or write from this account
@@ -508,8 +494,12 @@ pub struct Recall<'info> {
 }
 
 /// recall from a mission
-pub fn recall(ctx: Context<Recall>) -> Result<()> {
+pub fn recall_guild(ctx: Context<RecallGuild>) -> Result<()> {
     let participation = &mut ctx.accounts.participation;
+    let guild = &ctx.accounts.guild;
+    let guild_kit = &ctx.accounts.guild_kit;
+    let chief_nft = &ctx.accounts.chief_nft;
+    let buzz_guild_program = &ctx.accounts.buzz_guild_program;
 
     let reward = participation
         .rewards
@@ -522,24 +512,20 @@ pub fn recall(ctx: Context<Recall>) -> Result<()> {
 
     participation.is_recalled = true;
 
-    use_nft(
+    use_guild(
         CpiContext::new(
-            ctx.accounts.nectar_staking_program.to_account_info(),
-            UseNft {
+            buzz_guild_program.to_account_info(),
+            UseGuild {
                 project: ctx.accounts.project.to_account_info(),
+                guild_kit: guild_kit.to_account_info(),
                 staking_pool: ctx.accounts.staking_pool.to_account_info(),
+                guild: guild.to_account_info(),
                 staker: ctx.accounts.staker.to_account_info(),
-                nft: ctx.accounts.nft.to_account_info(),
+                chief_nft: chief_nft.to_account_info(),
                 wallet: ctx.accounts.wallet.to_account_info(),
-                system_program: ctx.accounts.system_program.to_account_info(),
-                hive_control: ctx.accounts.hive_control.to_account_info(),
-                hpl_events: ctx.accounts.hpl_events.to_account_info(),
-                clock: ctx.accounts.clock.to_account_info(),
-                instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
-                vault: ctx.accounts.vault.to_account_info(),
             },
         ),
-        NFTUsedBy::None,
+        GuildUsedBy::None,
     )?;
 
     events::Event::recall_participation(

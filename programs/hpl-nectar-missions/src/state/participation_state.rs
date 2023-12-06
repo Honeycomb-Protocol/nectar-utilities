@@ -4,12 +4,12 @@ use {super::RewardType, anchor_lang::prelude::*, hpl_utils::Default};
 /// PDA: ['participation', nft]
 /// Category: participation_state
 #[account]
-#[derive(Default, PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug)]
 pub struct Participation {
     pub bump: u8,
     pub wallet: Pubkey,
     pub mission: Pubkey,
-    pub nft: Pubkey,
+    pub instrument: Instrument,
     /// The end time of the mission in unix timestamp
     /// It is calculated by start_time + mission.duration
     pub end_time: i64,
@@ -23,10 +23,10 @@ impl Default for Participation {
         self.bump = 0;
         self.wallet = Pubkey::default();
         self.mission = Pubkey::default();
-        self.nft = Pubkey::default();
         self.end_time = 0;
         self.is_recalled = false;
         self.rewards = vec![];
+        self.instrument = Instrument::Nft(Pubkey::default());
     }
 }
 
@@ -35,4 +35,10 @@ pub struct EarnedReward {
     pub amount: u64,
     pub reward_type: RewardType,
     pub collected: bool,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, PartialEq, Eq, Clone, Debug)]
+pub enum Instrument {
+    Nft(Pubkey),
+    Guild(Pubkey),
 }

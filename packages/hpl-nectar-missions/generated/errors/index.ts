@@ -299,6 +299,29 @@ createErrorFromNameLookup.set(
 )
 
 /**
+ * MissingRequiredAccounts: 'Missing required accounts'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class MissingRequiredAccountsError extends Error {
+  readonly code: number = 0x177d
+  readonly name: string = 'MissingRequiredAccounts'
+  constructor() {
+    super('Missing required accounts')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, MissingRequiredAccountsError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x177d, () => new MissingRequiredAccountsError())
+createErrorFromNameLookup.set(
+  'MissingRequiredAccounts',
+  () => new MissingRequiredAccountsError()
+)
+
+/**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
  * @category generated

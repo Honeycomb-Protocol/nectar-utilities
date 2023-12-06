@@ -869,8 +869,10 @@
             "type": "publicKey"
           },
           {
-            "name": "nft",
-            "type": "publicKey"
+            "name": "instrument",
+            "type": {
+              "defined": "Instrument"
+            }
           },
           {
             "name": "endTime",
@@ -1215,6 +1217,26 @@
           }
         ]
       }
+    },
+    {
+      "name": "Instrument",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Nft",
+            "fields": [
+              "publicKey"
+            ]
+          },
+          {
+            "name": "Guild",
+            "fields": [
+              "publicKey"
+            ]
+          }
+        ]
+      }
     }
   ],
   "errors": [
@@ -1282,6 +1304,11 @@
       "code": 6012,
       "name": "InvalidProfileData",
       "msg": "Invalid Profile data"
+    },
+    {
+      "code": 6013,
+      "name": "MissingRequiredAccounts",
+      "msg": "Missing required accounts"
     }
   ],
   "metadata": {
