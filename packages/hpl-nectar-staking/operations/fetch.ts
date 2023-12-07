@@ -36,17 +36,15 @@ const parseHelius = (asset: HeluisAsset): Metadata => {
     })),
     collection,
     isProgrammableNft:
-      asset.interface === "Custom" && !asset.compression.compressed,
+      asset.content?.metadata?.token_standard == "ProgrammableNonFungible" ||
+      asset.interface === "ProgrammableNFT",
     programmableConfig: {
       ruleSet: new web3.PublicKey(
         "eBJLFYPxJmMGKuFwpDWkzxZeUrad92kZRC5BJLpzyT9"
       ),
     },
     isCompressed: asset.compression.compressed,
-    frozen:
-      asset.ownership.delegated ||
-      asset.ownership.frozen ||
-      !!asset.ownership.delegate,
+    frozen: asset.ownership.delegated || !!asset.ownership.delegate,
     compression: !asset.compression.compressed
       ? null
       : {
