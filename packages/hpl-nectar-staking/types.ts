@@ -25,6 +25,7 @@ export interface HeluisAsset {
         trait_type: string;
       }[];
       description?: string;
+      token_standard?: string;
       [key: string]: unknown;
     };
     links: {
