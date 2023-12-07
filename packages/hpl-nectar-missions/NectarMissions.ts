@@ -501,7 +501,7 @@ export class NectarMissions extends Module<"recall" | "participate"> {
         this._participations[arg.wallet.toString()] =
           removeDuplicateFromArrayOf(
             this._participations[arg.wallet.toString()],
-            (x) => x.address.toString()
+            (x) => x.address.toString() + `_${x.endTime.getTime()}`
           );
       } else {
         throw new Error("Unrecognized item");
@@ -762,7 +762,7 @@ class NectarMissionsFetch {
           (p) =>
             new NectarMissionParticipation(
               allMissions[p.mission.toString()],
-              new web3.PublicKey(p._id),
+              new web3.PublicKey(p._id.split("_")[0]),
               offchainToSolitaParticipation(p),
               stakedNfts.find(
                 (y) =>
@@ -815,7 +815,7 @@ class NectarMissionsFetch {
           (p) =>
             new NectarMissionParticipation(
               allMissions[p.mission.toString()],
-              new web3.PublicKey(p._id),
+              new web3.PublicKey(p._id.split("_")[0]),
               offchainToSolitaParticipation(p),
               stakedNfts.find(
                 (y) =>
