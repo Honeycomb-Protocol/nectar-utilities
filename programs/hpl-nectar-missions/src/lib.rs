@@ -126,4 +126,54 @@ pub mod hpl_nectar_missions {
 
         instructions::recall(ctx)
     }
+    pub fn participate_guild(ctx: Context<ParticipateGuild>) -> Result<()> {
+        platform_gate_cpi(
+            hpl_hive_control::state::SerializableActions::PublicHigh,
+            None,
+            ctx.accounts.project.to_account_info(),
+            ctx.accounts.wallet.to_account_info(),
+            ctx.accounts.wallet.to_account_info(),
+            ctx.accounts.vault.to_account_info(),
+            &None,
+            ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.hive_control.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
+        )?;
+
+        instructions::participate_guild(ctx)
+    }
+
+    pub fn collect_rewards_for_guild(ctx: Context<CollectRewardsForGuild>) -> Result<()> {
+        platform_gate_cpi(
+            hpl_hive_control::state::SerializableActions::FeeExempt,
+            None,
+            ctx.accounts.project.to_account_info(),
+            ctx.accounts.wallet.to_account_info(),
+            ctx.accounts.wallet.to_account_info(),
+            ctx.accounts.vault.to_account_info(),
+            &None,
+            ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.hive_control.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
+        )?;
+
+        instructions::collect_rewards_for_guild(ctx)
+    }
+
+    pub fn recall_guild(ctx: Context<RecallGuild>) -> Result<()> {
+        platform_gate_cpi(
+            hpl_hive_control::state::SerializableActions::FeeExempt,
+            None,
+            ctx.accounts.project.to_account_info(),
+            ctx.accounts.wallet.to_account_info(),
+            ctx.accounts.wallet.to_account_info(),
+            ctx.accounts.vault.to_account_info(),
+            &None,
+            ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.hive_control.to_account_info(),
+            ctx.accounts.instructions_sysvar.to_account_info(),
+        )?;
+
+        instructions::recall_guild(ctx)
+    }
 }
