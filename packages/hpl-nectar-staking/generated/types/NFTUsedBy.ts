@@ -21,7 +21,7 @@ import { GuildRole, guildRoleBeet } from './GuildRole'
 export type NFTUsedByRecord = {
   None: void /* scalar variant */
   Missions: void /* scalar variant */
-  Guild: { id: web3.PublicKey; role: GuildRole }
+  Guild: { id: web3.PublicKey; role: GuildRole; order: number }
 }
 
 /**
@@ -61,6 +61,7 @@ export const nFTUsedByBeet = beet.dataEnum<NFTUsedByRecord>([
       [
         ['id', beetSolana.publicKey],
         ['role', guildRoleBeet],
+        ['order', beet.u8],
       ],
       'NFTUsedByRecord["Guild"]'
     ),

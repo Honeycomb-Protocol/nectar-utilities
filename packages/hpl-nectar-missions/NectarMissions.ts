@@ -32,7 +32,12 @@ import {
   createUpdateMissionOperation,
   createUpdateMissionPoolOperation,
 } from "./operations";
-import { missionPda, removeDuplicateFromArrayOf } from "./utils";
+import {
+  missionPda,
+  offchainToSolitaParticipation,
+  removeDuplicateFromArrayOf,
+} from "./utils";
+import { OffchainParticipation } from "./types";
 
 /**
  * The `ItemOrArray` type represents a value that can either be a single item of type `T`
@@ -496,7 +501,7 @@ export class NectarMissions extends Module<"recall" | "participate"> {
         this._participations[arg.wallet.toString()] =
           removeDuplicateFromArrayOf(
             this._participations[arg.wallet.toString()],
-            (x) => x.address.toString()
+            (x) => x.address.toString() + `_${x.endTime.getTime()}`
           );
       } else {
         throw new Error("Unrecognized item");
@@ -716,6 +721,112 @@ class NectarMissionsFetch {
         )
       )
       .then((x) => x.filter((y) => !!y))
+      .then((x) => {
+        this._missions.register(x);
+        return x;
+      });
+  }
+
+  public async participationFromOffchain(
+    authToken: string,
+    page: number = 1,
+    pageSize: number = 9999999
+  ): Promise<NectarMissionParticipation[]> {
+    const publicInfo = await this._missions.honeycomb().publicInfo();
+    const offchainUrl = publicInfo.get("offchain");
+
+    const allMissions = await this.missions().then((missions) =>
+      missions.reduce(
+        (acc, mission) => ({ ...acc, [mission.address.toString()]: mission }),
+        {}
+      )
+    );
+
+    const stakedNfts = await Promise.all(
+      this._missions
+        .stakingPools()
+        .map((stakingPool) => stakingPool.stakedNfts())
+    ).then((x) => x.flat());
+
+    return fetch(
+      `${offchainUrl}/missions/participations/${page}/${pageSize}?missionPool=${this._missions.address}&isRecalled=false`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((res: { data: OffchainParticipation[] }) =>
+        res.data.map(
+          (p) =>
+            new NectarMissionParticipation(
+              allMissions[p.mission.toString()],
+              new web3.PublicKey(p._id.split("_")[0]),
+              offchainToSolitaParticipation(p),
+              stakedNfts.find(
+                (y) =>
+                  getNftPda(
+                    this._missions.honeycomb().staking(y.stakingPool).address,
+                    y.mint
+                  )[0].toString() === p.nft
+              )
+            )
+        )
+      )
+      .then((x) => {
+        this._missions.register(x);
+        return x;
+      });
+  }
+
+  public async pastParticipation(
+    authToken: string,
+    page: number = 1,
+    pageSize: number = 9999999
+  ): Promise<NectarMissionParticipation[]> {
+    const publicInfo = await this._missions.honeycomb().publicInfo();
+    const offchainUrl = publicInfo.get("offchain");
+
+    const allMissions = await this.missions().then((missions) =>
+      missions.reduce(
+        (acc, mission) => ({ ...acc, [mission.address.toString()]: mission }),
+        {}
+      )
+    );
+
+    const stakedNfts = await Promise.all(
+      this._missions
+        .stakingPools()
+        .map((stakingPool) => stakingPool.stakedNfts())
+    ).then((x) => x.flat());
+
+    return fetch(
+      `${offchainUrl}/missions/participations/${page}/${pageSize}?missionPool=${this._missions.address}&isRecalled=true`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((res: { data: OffchainParticipation[] }) =>
+        res.data.map(
+          (p) =>
+            new NectarMissionParticipation(
+              allMissions[p.mission.toString()],
+              new web3.PublicKey(p._id.split("_")[0]),
+              offchainToSolitaParticipation(p),
+              stakedNfts.find(
+                (y) =>
+                  getNftPda(
+                    this._missions.honeycomb().staking(y.stakingPool).address,
+                    y.mint
+                  )[0].toString() === p.nft
+              )
+            )
+        )
+      )
       .then((x) => {
         this._missions.register(x);
         return x;

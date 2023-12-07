@@ -360,10 +360,10 @@ pub struct UseNft<'info> {
 
 /// Use NFT
 pub fn use_nft<'info>(ctx: Context<UseNft>, used_by: NFTUsedBy) -> Result<()> {
-    if used_by != NFTUsedBy::None && ctx.accounts.nft.used_by != NFTUsedBy::None {
-        msg!("NFT Already used");
-        return Err(ErrorCode::NFTAlreadyUsed.into());
-    }
+    // if used_by != NFTUsedBy::None && ctx.accounts.nft.used_by != NFTUsedBy::None {
+    //     msg!("NFT Already used");
+    //     return Err(ErrorCode::NFTAlreadyUsed.into());
+    // }
 
     ctx.accounts.nft.used_by = used_by;
 

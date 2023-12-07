@@ -69,7 +69,7 @@ pub enum NFTCriteria {
 pub enum NFTUsedBy {
     None,
     Missions,
-    Guild { id: Pubkey, role: GuildRole },
+    Guild { id: Pubkey, role: GuildRole, order: u8 },
 }
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Copy, Eq, Debug)]
 pub enum GuildRole {
