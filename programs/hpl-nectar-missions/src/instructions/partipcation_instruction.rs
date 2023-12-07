@@ -158,19 +158,21 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
         .mission
         .rewards
         .iter()
-        .map(|reward| EarnedReward {
-            amount: RANDOMIZER.get_random_between(
-                ctx.accounts.mission_pool.randomizer_round as usize,
-                ctx.accounts.clock.slot,
-                reward.min,
-                reward.max,
-            ),
-            reward_type: reward.reward_type.clone(),
-            collected: false,
+        .map(|reward| {
+            let r = EarnedReward {
+                amount: RANDOMIZER.get_random_between(
+                    ctx.accounts.mission_pool.randomizer_round as usize,
+                    ctx.accounts.clock.slot,
+                    reward.min,
+                    reward.max,
+                ),
+                reward_type: reward.reward_type.clone(),
+                collected: false,
+            };
+            ctx.accounts.mission_pool.increase_randomizer_round();
+            r
         })
         .collect::<Vec<_>>();
-
-    ctx.accounts.mission_pool.increase_randomizer_round();
 
     hpl_utils::reallocate(
         (Reward::LEN * rewards.len()) as isize,
@@ -204,12 +206,7 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
                 token_program: ctx.accounts.token_program.to_account_info(),
             },
         ),
-        ctx.accounts.mission.cost.amount
-            * if ctx.accounts.nft.is_compressed {
-                1
-            } else {
-                10
-            },
+        ctx.accounts.mission.cost.amount,
     )?;
 
     use_nft(
