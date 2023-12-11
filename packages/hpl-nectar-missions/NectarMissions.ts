@@ -1,4 +1,3 @@
-import { NectarMissionParticipationNft } from "./NectarMissions";
 import * as web3 from "@solana/web3.js";
 import {
   CreateMissionArgs,
@@ -683,7 +682,9 @@ class NectarMissionsFetch {
   public async participations(
     walletAddress?: web3.PublicKey,
     mission?: web3.PublicKey
-  ): Promise<NectarMissionParticipation[]> {
+  ): Promise<
+    (NectarMissionParticipationNft | NectarMissionParticipationGuild)[]
+  > {
     const gpa = Participation.gpaBuilder().addFilter(
       "wallet",
       walletAddress || this._missions.honeycomb().identity().address
@@ -696,7 +697,19 @@ class NectarMissionsFetch {
         .map((stakingPool) => stakingPool.stakedNfts())
     ).then((x) => x.flat());
 
-    const guilds = await Promise.all(this._mis);
+    // const guildAddreses = new Set<string>();
+
+    // stakedNfts.forEach((x) => {
+    //   if (x.usedBy.__kind === "Guild") {
+    //     guildAddreses.add(x.usedBy.id.toString());
+    //   }
+    // });
+
+    // const guilds = await Promise.all(
+    //   [...guildAddreses].map((x) =>
+    //     this._missions.honeycomb().guildKit().guild(new web3.PublicKey(x))
+    //   )
+    // );
 
     return gpa
       .run(this._missions.honeycomb().processedConnection)
@@ -719,17 +732,16 @@ class NectarMissionsFetch {
                   stakedNft
                 );
               } else if (participation.instrument.__kind === "Guild") {
-                const stakedNft = stakedNfts.find((y) =>
-                  getNftPda(
-                    this._missions.honeycomb().staking(y.stakingPool).address,
-                    y.mint
-                  )[0].equals(participation.instrument.fields[0])
-                );
+                const guild = await this._missions
+                  .honeycomb()
+                  .guildKit()
+                  .guild(participation.instrument.fields[0]);
+
                 return new NectarMissionParticipationGuild(
                   await this._missions.mission(participation.mission),
                   p.pubkey,
                   participation,
-                  stakedNft
+                  guild
                 );
               }
               return null;
