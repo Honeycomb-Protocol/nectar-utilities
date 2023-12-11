@@ -23,31 +23,25 @@ import {
   createCollectRewardsInstruction,
   createRecallGuildInstruction,
   createRecallInstruction,
-} from "../generated";
+} from "../../generated";
 import {
   NectarMissionParticipation,
   ParticipationReward,
-} from "../NectarMissions";
+} from "../../NectarMissions";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { SPL_ACCOUNT_COMPRESSION_PROGRAM_ID } from "@solana/spl-account-compression";
 import {
   HPL_NECTAR_STAKING_PROGRAM,
-  NectarStaking,
   StakedNft,
-  getNftPda,
-  getStakerPda,
 } from "@honeycomb-protocol/nectar-staking";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
-import {
-  BuzzGuild,
-  PROGRAM_ID as BUZZ_GUILD_PROGRAM_ID,
-} from "@honeycomb-protocol/buzz-guild";
+import { PROGRAM_ID as BUZZ_GUILD_PROGRAM_ID } from "@honeycomb-protocol/buzz-guild";
 
 /**
  * Represents the arguments needed to create a collect rewards operation.
  * @category Types
  */
-type CreateCollectRewardsForGuildOperationArgs = {
+type CreateCollectRewardsOperationArgs = {
   /**
    * The participation reward to collect.
    */
@@ -85,9 +79,9 @@ type CreateCollectRewardsForGuildOperationArgs = {
  * // Execute the collect rewards transaction
  * await operation.send(confirmOptions);
  */
-export async function createCollectRewardsForGuildOperation(
+export async function createCollectRewardsOperation(
   honeycomb: Honeycomb,
-  args: CreateCollectRewardsForGuildOperationArgs
+  args: CreateCollectRewardsOperationArgs
 ) {
   const programId = args.programId || PROGRAM_ID;
   const project = args.reward
@@ -128,45 +122,97 @@ export async function createCollectRewardsForGuildOperation(
     .profiles()
     .userFromIdentityClient(honeycomb.identity() as IdentityClient);
 
-  const instructions = [
-    createCollectRewardsForGuildInstruction(
-      {
-        project,
-        missionPool,
-        mission,
-        missionPoolDelegate,
-        participation: args.reward.participation().address,
-        profile: !args.reward.isCurrency()
-          ? honeycomb
-              .pda()
-              .hiveControl()
-              .profile(
-                args.reward.participation().mission().pool().project().address,
-                user.address
-              )[0]
-          : programId,
-        currency: args.reward.isCurrency()
-          ? args.reward.currency().address
-          : programId,
-        mint: args.reward.isCurrency()
-          ? args.reward.currency().mint.address
-          : programId,
-        holderAccount: holderAccount,
-        tokenAccount: tokenAccount,
-        wallet: args.wallet,
-        vault: VAULT,
-        hiveControl: HPL_HIVE_CONTROL_PROGRAM,
-        currencyManagerProgram: CURRENCY_MANAGER_PROGRAM_ID,
-        compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-        hplEvents: HPL_EVENTS_PROGRAM,
-        rentSysvar: SYSVAR_RENT_PUBKEY,
-        instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        clock: SYSVAR_CLOCK_PUBKEY,
-      },
-      programId
-    ),
-  ];
+  const participation = args.reward.participation();
+  const isNftParticipation = participation.isNft();
+
+  const instructions = [];
+
+  if (isNftParticipation) {
+    instructions.push(
+      createCollectRewardsInstruction(
+        {
+          project,
+          missionPool,
+          mission,
+          missionPoolDelegate,
+          participation: args.reward.participation().address,
+          nft: isNftParticipation && participation.nftAddress,
+          profile: !args.reward.isCurrency()
+            ? honeycomb
+                .pda()
+                .hiveControl()
+                .profile(
+                  args.reward.participation().mission().pool().project()
+                    .address,
+                  user.address
+                )[0]
+            : programId,
+          currency: args.reward.isCurrency()
+            ? args.reward.currency().address
+            : programId,
+          mint: args.reward.isCurrency()
+            ? args.reward.currency().mint.address
+            : programId,
+          holderAccount: holderAccount,
+          tokenAccount: tokenAccount,
+          wallet: args.wallet,
+          vault: VAULT,
+          hiveControl: HPL_HIVE_CONTROL_PROGRAM,
+          currencyManagerProgram: CURRENCY_MANAGER_PROGRAM_ID,
+          compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+          hplEvents: HPL_EVENTS_PROGRAM,
+          rentSysvar: SYSVAR_RENT_PUBKEY,
+          instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          clock: SYSVAR_CLOCK_PUBKEY,
+        },
+        programId
+      )
+    );
+  } else if (participation.isGuild()) {
+    instructions.push(
+      createCollectRewardsForGuildInstruction(
+        {
+          project,
+          missionPool,
+          mission,
+          missionPoolDelegate,
+          participation: args.reward.participation().address,
+          profile: !args.reward.isCurrency()
+            ? honeycomb
+                .pda()
+                .hiveControl()
+                .profile(
+                  args.reward.participation().mission().pool().project()
+                    .address,
+                  user.address
+                )[0]
+            : programId,
+          currency: args.reward.isCurrency()
+            ? args.reward.currency().address
+            : programId,
+          mint: args.reward.isCurrency()
+            ? args.reward.currency().mint.address
+            : programId,
+          holderAccount: holderAccount,
+          tokenAccount: tokenAccount,
+          wallet: args.wallet,
+          vault: VAULT,
+          hiveControl: HPL_HIVE_CONTROL_PROGRAM,
+          currencyManagerProgram: CURRENCY_MANAGER_PROGRAM_ID,
+          compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+          hplEvents: HPL_EVENTS_PROGRAM,
+          rentSysvar: SYSVAR_RENT_PUBKEY,
+          instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          clock: SYSVAR_CLOCK_PUBKEY,
+        },
+        programId
+      )
+    );
+  } else {
+    throw new Error("Invalid participation type");
+  }
 
   return {
     operation: new Operation(honeycomb, instructions),
@@ -177,19 +223,7 @@ export async function createCollectRewardsForGuildOperation(
  * Represents the arguments needed to create a recall operation.
  * @category Types
  */
-type CreateRecallGuildOperationArgs = {
-  /**
-   * The NectarStaking instance
-   */
-  stakingPool: NectarStaking;
-  /**
-   * The Guild that is participating in the mission.
-   */
-  guild: BuzzGuild;
-  /**
-   * The Chief Nft of the Guild that is participating in the mission.
-   */
-  chiefNft: StakedNft;
+type CreateRecallOperationArgs = {
   /**
    * The NectarMissionParticipation to recall rewards from.
    */
@@ -199,7 +233,15 @@ type CreateRecallGuildOperationArgs = {
    * If not provided, the default PROGRAM_ID will be used.
    */
   programId?: PublicKey;
-};
+} & (
+  | {
+      /**
+       * The Chief Nft of the Guild that is participating in the mission.
+       */
+      chiefNft: StakedNft;
+    }
+  | {}
+);
 
 /**
  * Creates a new recall operation to retrieve uncollected rewards from a participation.
@@ -222,20 +264,15 @@ type CreateRecallGuildOperationArgs = {
  */
 export async function creatRecallOperation(
   honeycomb: Honeycomb,
-  args: CreateRecallGuildOperationArgs,
+  args: CreateRecallOperationArgs,
   luts: AddressLookupTableAccount[] = []
 ) {
   const programId = args.programId || PROGRAM_ID;
-  const operation = new Operation(honeycomb, [
-    ComputeBudgetProgram.setComputeUnitLimit({
-      units: 250_000,
-    }),
-  ]);
+  const operation = new Operation(honeycomb, []);
   if (luts.length > 0) operation.add_lut(...luts);
 
   const holderAccounts: { [key: string]: boolean } = {};
-  let units = 100_000;
-  const preOperation = new Operation(honeycomb, []);
+  let units = 250_000;
   for (let i = 0; i < args.participation.rewards.length; i++) {
     const reward = args.participation.rewards[i];
     if (reward.collected) continue;
@@ -248,7 +285,7 @@ export async function creatRecallOperation(
       try {
         await reward.currency().holderAccount(honeycomb.identity().address);
       } catch {
-        preOperation.add(
+        operation.add(
           ...(await createCreateHolderAccountOperation(honeycomb, {
             currency: reward.currency(),
             owner: honeycomb.identity().address,
@@ -259,8 +296,8 @@ export async function creatRecallOperation(
       holderAccounts[reward.currency().address.toString()] = true;
     }
 
-    preOperation.add(
-      ...(await createCollectRewardsForGuildOperation(honeycomb, {
+    operation.add(
+      ...(await createCollectRewardsOperation(honeycomb, {
         reward,
         wallet: honeycomb.identity().address,
         programId: args.programId,
@@ -268,47 +305,81 @@ export async function creatRecallOperation(
     );
   }
 
-  if (preOperation.items.length > 0) {
-    preOperation.addToStart(
+  if (operation.items.length > 0) {
+    operation.addToStart(
       ComputeBudgetProgram.setComputeUnitLimit({
         units,
       })
     );
-    if (luts.length > 0) preOperation.add_lut(...luts);
-    operation.addPreOperations(preOperation);
   }
 
-  const [staker] = getStakerPda(
-    args.stakingPool.address,
-    honeycomb.identity().address
-  );
+  const participation = args.participation;
+  const isNftParticipation = participation.isNft();
 
-  const [chiefNft] = getNftPda(args.stakingPool.address, args.chiefNft.mint);
+  if (isNftParticipation) {
+    const [nft] = honeycomb
+      .pda()
+      .staking()
+      .nft(participation.nft.stakingPool, participation.nft.mint);
 
-  operation.add(
-    createRecallGuildInstruction(
-      {
-        project: args.participation.mission().pool().project().address,
-        stakingPool: args.participation.nft.stakingPool,
-        missionPool: args.participation.mission().pool().address,
-        guildKit: args.guild.guildKit.address,
-        mission: args.participation.mission().address,
-        guild: args.guild.address,
-        staker: staker,
-        chiefNft,
-        participation: args.participation.address,
-        wallet: honeycomb.identity().address,
-        vault: VAULT,
-        hiveControl: HPL_HIVE_CONTROL_PROGRAM,
-        nectarStakingProgram: HPL_NECTAR_STAKING_PROGRAM,
-        buzzGuildProgram: BUZZ_GUILD_PROGRAM_ID,
-        hplEvents: HPL_EVENTS_PROGRAM,
-        clock: SYSVAR_CLOCK_PUBKEY,
-        instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
-      },
-      programId
-    )
-  );
+    operation.add(
+      createRecallInstruction(
+        {
+          project: args.participation.mission().pool().project().address,
+          stakingPool: participation.nft.stakingPool,
+          missionPool: args.participation.mission().pool().address,
+          nft,
+          staker: participation.nft.staker,
+          mission: args.participation.mission().address,
+          participation: args.participation.address,
+          wallet: honeycomb.identity().address,
+          vault: VAULT,
+          hiveControl: HPL_HIVE_CONTROL_PROGRAM,
+          nectarStakingProgram: HPL_NECTAR_STAKING_PROGRAM,
+          hplEvents: HPL_EVENTS_PROGRAM,
+          clock: SYSVAR_CLOCK_PUBKEY,
+          instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+        },
+        programId
+      )
+    );
+  } else if (participation.isGuild()) {
+    if ("chiefNft" in args) {
+      const [chiefNft] = honeycomb
+        .pda()
+        .staking()
+        .nft(args.chiefNft.stakingPool, args.chiefNft.mint);
+
+      operation.add(
+        createRecallGuildInstruction(
+          {
+            project: args.participation.mission().pool().project().address,
+            stakingPool: args.chiefNft.stakingPool,
+            missionPool: args.participation.mission().pool().address,
+            guildKit: participation.guild.guildKit.address,
+            mission: args.participation.mission().address,
+            guild: participation.guild.address,
+            staker: args.chiefNft.staker,
+            chiefNft,
+            participation: args.participation.address,
+            wallet: honeycomb.identity().address,
+            vault: VAULT,
+            hiveControl: HPL_HIVE_CONTROL_PROGRAM,
+            nectarStakingProgram: HPL_NECTAR_STAKING_PROGRAM,
+            buzzGuildProgram: BUZZ_GUILD_PROGRAM_ID,
+            hplEvents: HPL_EVENTS_PROGRAM,
+            clock: SYSVAR_CLOCK_PUBKEY,
+            instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+          },
+          programId
+        )
+      );
+    } else {
+      throw new Error("Guild chief was not provided in args");
+    }
+  } else {
+    throw new Error("Invalid participation type");
+  }
 
   return {
     operation,

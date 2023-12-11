@@ -11,25 +11,26 @@ import {
   VAULT,
 } from "@honeycomb-protocol/hive-control";
 import {
-  UpdateMissionArgs as UpdateMissionArgsSolita,
+  CreateMissionArgs as CreateMissionArgsSolita,
   PROGRAM_ID,
-  createUpdateMissionInstruction,
-} from "../generated";
-import { NectarMission } from "../NectarMissions";
+  createCreateMissionInstruction,
+} from "../../generated";
+import { missionPda } from "../../utils";
+import { NectarMissions } from "../../NectarMissions";
 
 /**
  * Represents the arguments needed to create a new mission operation.
  * @category Types
  */
-type CreateUpdateMissionOperationArgs = {
+type CreateCreateMissionOperationArgs = {
   /**
-   * The arguments for updatinng the mission (defined in UpdateMissionArgsSolita).
+   * The arguments for creating the mission (defined in CreateMissionArgsSolita).
    */
-  args: UpdateMissionArgsSolita;
+  args: CreateMissionArgsSolita;
   /**
-   * The mission to be updated.
+   * The mission pool where the new mission will be created.
    */
-  mission: NectarMission;
+  missionPool: NectarMissions;
   /**
    * (Optional) The program ID associated with the mission.
    * If not provided, the default PROGRAM_ID will be used.
@@ -38,41 +39,55 @@ type CreateUpdateMissionOperationArgs = {
 };
 
 /**
- * Creates a update mission operation.
+ * Creates a new mission operation.
  * @category Operation Builder
  * @param honeycomb - An instance of the Honeycomb class.
- * @param args - The arguments for update mission operation.
+ * @param args - The arguments for creating the mission operation.
  * @returns An object containing the operation and the address of the new mission.
  * @example
  * const honeycomb = new Honeycomb(...); // Initialize Honeycomb instance
  * const missionPool = await NectarMissions.fromAddress(honeycomb.connection, missionPoolAddress);
- * const args: UpdateMissionArgsSolita = {
- *   name: "Renamed",
+ * const args: CreateMissionArgsSolita = {
+ *   name: "Mission 1",
+ *   minXp: 100,
+ *   cost: {
+ *     amount: 1000,
+ *     address: "..."
+ *   },
+ *   duration: 3600, // 1 hour (in seconds)
+ *   rewards: [...],
+ *   ...
  * };
- * const updateMissionArgs: CreateUpdateMissionOperationArgs = {
+ * const createMissionArgs: CreateCreateMissionOperationArgs = {
  *   args,
- *   mission,
+ *   missionPool,
  *   programId: myCustomProgramId // (Optional) Provide a custom program ID if needed
  * };
- * const { operation } = createUpdateMissionOperation(honeycomb, updateMissionArgs);
+ * const { operation, mission } = createCreateMissionOperation(honeycomb, createMissionArgs);
  * // Execute the transaction to create the mission
  * await operation.send(confirmOptions);
  */
-export async function createUpdateMissionOperation(
+export async function createCreateMissionOperation(
   honeycomb: Honeycomb,
-  args: CreateUpdateMissionOperationArgs
+  args: CreateCreateMissionOperationArgs
 ) {
   const programId = args.programId || PROGRAM_ID;
+
+  const [mission] = missionPda(
+    args.missionPool.address,
+    args.args.name,
+    programId
+  );
 
   const instructions = [
     ComputeBudgetProgram.setComputeUnitLimit({
       units: 400_000,
     }),
-    createUpdateMissionInstruction(
+    createCreateMissionInstruction(
       {
-        project: args.mission.pool().project().address,
-        missionPool: args.mission.pool().address,
-        mission: args.mission.address,
+        project: args.missionPool.project().address,
+        missionPool: args.missionPool.address,
+        mission,
         delegateAuthority:
           honeycomb.identity().delegateAuthority()?.address || programId,
         authority: honeycomb.identity().address,
@@ -91,5 +106,6 @@ export async function createUpdateMissionOperation(
 
   return {
     operation: new Operation(honeycomb, instructions),
+    mission,
   };
 }

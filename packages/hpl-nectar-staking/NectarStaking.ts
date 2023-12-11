@@ -101,7 +101,7 @@ export class NectarStaking extends Module<
     const pool = await honeycomb
       .fetch()
       .staking()
-      .stakingPool(address, commitment, forceFetch);
+      .pool(address, commitment, forceFetch);
     return new NectarStaking(address, pool);
   }
 
@@ -122,7 +122,7 @@ export class NectarStaking extends Module<
     const { stakingPool } = await honeycomb
       .create()
       .staking()
-      .stakingPool(args, confirmOptions);
+      .pool(args, confirmOptions);
     return await NectarStaking.fromAddress(honeycomb, stakingPool);
   }
 

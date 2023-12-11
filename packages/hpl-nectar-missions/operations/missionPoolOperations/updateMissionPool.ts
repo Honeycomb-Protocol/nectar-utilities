@@ -13,7 +13,7 @@ import {
   UpdateMissionPoolArgs as UpdateMissionPoolArgsSolita,
   PROGRAM_ID,
   createUpdateMissionPoolInstruction,
-} from "../generated";
+} from "../../generated";
 
 /**
  * Represents the arguments needed to create an update mission pool operation.

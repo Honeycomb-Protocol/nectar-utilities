@@ -27,7 +27,7 @@
     "@honeycomb-protocol/buzz-guild": "file:.yalc/@honeycomb-protocol/buzz-guild",
     "@honeycomb-protocol/currency-manager": "^0.0.79",
     "@honeycomb-protocol/events": "^0.1.21",
-    "@honeycomb-protocol/hive-control": "^0.2.6",
+    "@honeycomb-protocol/hive-control": "^0.2.10",
     "@metaplex-foundation/js": "^0.18.1",
     "@metaplex-foundation/mpl-bubblegum": "^0.7.0",
     "@metaplex-foundation/mpl-token-auth-rules": "^1.2.0",

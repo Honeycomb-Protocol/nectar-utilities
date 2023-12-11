@@ -44,7 +44,7 @@ export class NectarStakingPdas extends PdaClient {
    * @param programId The program ID for which the PDA is calculated. Default is the nectar staking program ID.
    * @returns The PDA for the stakingPool account.
    */
-  stakingPool = (
+  pool = (
     project: PublicKey,
     key: PublicKey,
     programId: PublicKey = this.defaultProgramId

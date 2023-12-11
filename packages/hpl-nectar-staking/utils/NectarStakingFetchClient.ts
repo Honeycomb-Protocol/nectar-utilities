@@ -41,7 +41,7 @@ export class NectarStakingFetchClient extends FetchClient {
    * @param forceFetch Wether to use cache data or forcefully refetch.
    * @returns An instance of HoneycombProject.
    */
-  public async stakingPool(
+  public async pool(
     address: PublicKey,
     commitment: Commitment = "processed",
     forceFetch?: ForceScenario

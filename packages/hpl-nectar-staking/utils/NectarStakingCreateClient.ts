@@ -33,7 +33,7 @@ export class NectarStakingCreateClient extends CreateClient {
    * @param args The arguments for creating the stakingPool.
    * @param confirmOptions Optional confirm options for the transaction.
    */
-  async stakingPool(args: NewStakingPoolArgs, confirmOptions?: ConfirmOptions) {
+  async pool(args: NewStakingPoolArgs, confirmOptions?: ConfirmOptions) {
     const { stakingPool, operation } = await createCreateStakingPoolOperation(
       this.honeycomb(),
       {
@@ -58,10 +58,7 @@ export class NectarStakingCreateClient extends CreateClient {
     wallet: PublicKey,
     confirmOptions?: ConfirmOptions
   ) {
-    const { project } = await this.honeycomb()
-      .fetch()
-      .staking()
-      .stakingPool(pool);
+    const { project } = await this.honeycomb().fetch().staking().pool(pool);
     const { operation } = await createInitStakerOperation(this.honeycomb(), {
       project,
       pool,

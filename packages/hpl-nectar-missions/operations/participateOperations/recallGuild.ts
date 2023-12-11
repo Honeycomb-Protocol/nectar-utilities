@@ -19,26 +19,35 @@ import {
 } from "@honeycomb-protocol/currency-manager";
 import {
   PROGRAM_ID,
+  createCollectRewardsForGuildInstruction,
   createCollectRewardsInstruction,
+  createRecallGuildInstruction,
   createRecallInstruction,
-} from "../generated";
+} from "../../generated";
 import {
   NectarMissionParticipation,
   ParticipationReward,
-} from "../NectarMissions";
+} from "../../NectarMissions";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { SPL_ACCOUNT_COMPRESSION_PROGRAM_ID } from "@solana/spl-account-compression";
 import {
   HPL_NECTAR_STAKING_PROGRAM,
+  NectarStaking,
+  StakedNft,
   getNftPda,
+  getStakerPda,
 } from "@honeycomb-protocol/nectar-staking";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
+import {
+  BuzzGuild,
+  PROGRAM_ID as BUZZ_GUILD_PROGRAM_ID,
+} from "@honeycomb-protocol/buzz-guild";
 
 /**
  * Represents the arguments needed to create a collect rewards operation.
  * @category Types
  */
-type CreateCollectRewardsOperationArgs = {
+type CreateCollectRewardsForGuildOperationArgs = {
   /**
    * The participation reward to collect.
    */
@@ -76,9 +85,9 @@ type CreateCollectRewardsOperationArgs = {
  * // Execute the collect rewards transaction
  * await operation.send(confirmOptions);
  */
-export async function createCollectRewardsOperation(
+export async function createCollectRewardsForGuildOperation(
   honeycomb: Honeycomb,
-  args: CreateCollectRewardsOperationArgs
+  args: CreateCollectRewardsForGuildOperationArgs
 ) {
   const programId = args.programId || PROGRAM_ID;
   const project = args.reward
@@ -120,14 +129,13 @@ export async function createCollectRewardsOperation(
     .userFromIdentityClient(honeycomb.identity() as IdentityClient);
 
   const instructions = [
-    createCollectRewardsInstruction(
+    createCollectRewardsForGuildInstruction(
       {
         project,
         missionPool,
         mission,
         missionPoolDelegate,
         participation: args.reward.participation().address,
-        nft: args.reward.participation().nftAddress,
         profile: !args.reward.isCurrency()
           ? honeycomb
               .pda()
@@ -169,7 +177,19 @@ export async function createCollectRewardsOperation(
  * Represents the arguments needed to create a recall operation.
  * @category Types
  */
-type CreateRecallOperationnArgs = {
+type CreateRecallGuildOperationArgs = {
+  /**
+   * The NectarStaking instance
+   */
+  stakingPool: NectarStaking;
+  /**
+   * The Guild that is participating in the mission.
+   */
+  guild: BuzzGuild;
+  /**
+   * The Chief Nft of the Guild that is participating in the mission.
+   */
+  chiefNft: StakedNft;
   /**
    * The NectarMissionParticipation to recall rewards from.
    */
@@ -202,7 +222,7 @@ type CreateRecallOperationnArgs = {
  */
 export async function creatRecallOperation(
   honeycomb: Honeycomb,
-  args: CreateRecallOperationnArgs,
+  args: CreateRecallGuildOperationArgs,
   luts: AddressLookupTableAccount[] = []
 ) {
   const programId = args.programId || PROGRAM_ID;
@@ -240,7 +260,7 @@ export async function creatRecallOperation(
     }
 
     preOperation.add(
-      ...(await createCollectRewardsOperation(honeycomb, {
+      ...(await createCollectRewardsForGuildOperation(honeycomb, {
         reward,
         wallet: honeycomb.identity().address,
         programId: args.programId,
@@ -257,25 +277,31 @@ export async function creatRecallOperation(
     if (luts.length > 0) preOperation.add_lut(...luts);
     operation.addPreOperations(preOperation);
   }
-  const [nft] = getNftPda(
-    args.participation.nft.stakingPool,
-    args.participation.nft.mint
+
+  const [staker] = getStakerPda(
+    args.stakingPool.address,
+    honeycomb.identity().address
   );
 
+  const [chiefNft] = getNftPda(args.stakingPool.address, args.chiefNft.mint);
+
   operation.add(
-    createRecallInstruction(
+    createRecallGuildInstruction(
       {
         project: args.participation.mission().pool().project().address,
         stakingPool: args.participation.nft.stakingPool,
         missionPool: args.participation.mission().pool().address,
-        nft,
-        staker: args.participation.nft.staker,
+        guildKit: args.guild.guildKit.address,
         mission: args.participation.mission().address,
+        guild: args.guild.address,
+        staker: staker,
+        chiefNft,
         participation: args.participation.address,
         wallet: honeycomb.identity().address,
         vault: VAULT,
         hiveControl: HPL_HIVE_CONTROL_PROGRAM,
         nectarStakingProgram: HPL_NECTAR_STAKING_PROGRAM,
+        buzzGuildProgram: BUZZ_GUILD_PROGRAM_ID,
         hplEvents: HPL_EVENTS_PROGRAM,
         clock: SYSVAR_CLOCK_PUBKEY,
         instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,

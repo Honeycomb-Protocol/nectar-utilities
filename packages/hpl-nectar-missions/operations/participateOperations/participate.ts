@@ -19,16 +19,15 @@ import {
 import {
   HPL_NECTAR_STAKING_PROGRAM,
   StakedNft,
-  getNftPda,
 } from "@honeycomb-protocol/nectar-staking";
 import {
   ParticipateArgs,
   PROGRAM_ID,
   createParticipateInstruction,
   createParticipateGuildInstruction,
-} from "../generated";
-import { participationPda } from "../utils";
-import { NectarMission } from "../NectarMissions";
+} from "../../generated";
+import { participationPda } from "../../utils";
+import { NectarMission } from "../../NectarMissions";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
 import {
   BuzzGuild,
@@ -138,7 +137,10 @@ export async function createParticipateOperation(
   }
 
   if ("nft" in args) {
-    const [nft] = getNftPda(args.nft.stakingPool, args.nft.mint);
+    const [nft] = honeycomb
+      .pda()
+      .staking()
+      .nft(args.nft.stakingPool, args.nft.mint);
     const [participation] = participationPda(nft, programId);
 
     operation.add(
@@ -172,7 +174,10 @@ export async function createParticipateOperation(
       )
     );
   } else if ("chiefNft" in args) {
-    const [chiefNft] = getNftPda(args.chiefNft.stakingPool, args.chiefNft.mint);
+    const [chiefNft] = honeycomb
+      .pda()
+      .staking()
+      .nft(args.chiefNft.stakingPool, args.chiefNft.mint);
     const [participation] = participationPda(args.guild.address, programId);
 
     operation.add(

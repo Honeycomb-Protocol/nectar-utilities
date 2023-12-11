@@ -17,8 +17,8 @@ import {
   CreateMissionPoolArgs,
   PROGRAM_ID,
   createCreateMissionPoolInstruction,
-} from "../generated";
-import { missionPoolPda } from "../utils";
+} from "../../generated";
+import { missionPoolPda } from "../../utils";
 import { createUpdateMissionPoolOperation } from "./updateMissionPool";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
 

@@ -83,7 +83,7 @@ export async function createCreateStakingPoolOperation(
   const [stakingPool] = honeycomb
     .pda()
     .staking()
-    .stakingPool(args.project.address, key, programId);
+    .pool(args.project.address, key, programId);
 
   const instructions: web3.TransactionInstruction[] = [
     createCreateStakingPoolInstruction(
