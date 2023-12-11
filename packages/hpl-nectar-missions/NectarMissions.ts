@@ -1,3 +1,4 @@
+import { NectarMissionParticipationNft } from "./NectarMissions";
 import * as web3 from "@solana/web3.js";
 import {
   CreateMissionArgs,
@@ -38,6 +39,7 @@ import {
   removeDuplicateFromArrayOf,
 } from "./utils";
 import { OffchainParticipation } from "./types";
+import { BuzzGuild } from "@honeycomb-protocol/buzz-guild";
 
 /**
  * The `ItemOrArray` type represents a value that can either be a single item of type `T`
@@ -694,6 +696,8 @@ class NectarMissionsFetch {
         .map((stakingPool) => stakingPool.stakedNfts())
     ).then((x) => x.flat());
 
+    const guilds = await Promise.all(this._mis);
+
     return gpa
       .run(this._missions.honeycomb().processedConnection)
       .then((participations) =>
@@ -701,19 +705,34 @@ class NectarMissionsFetch {
           participations.map(async (p) => {
             try {
               const participation = Participation.fromAccountInfo(p.account)[0];
-              const stakedNft = stakedNfts.find((y) =>
-                getNftPda(
-                  this._missions.honeycomb().staking(y.stakingPool).address,
-                  y.mint
-                )[0].equals(participation.nft)
-              );
-              return new NectarMissionParticipation(
-                await this._missions.mission(participation.mission),
-                p.pubkey,
-                participation,
-                //@ts-ignore
-                stakedNft
-              );
+              if (participation.instrument.__kind === "Nft") {
+                const stakedNft = stakedNfts.find((y) =>
+                  getNftPda(
+                    this._missions.honeycomb().staking(y.stakingPool).address,
+                    y.mint
+                  )[0].equals(participation.instrument.fields[0])
+                );
+                return new NectarMissionParticipationNft(
+                  await this._missions.mission(participation.mission),
+                  p.pubkey,
+                  participation,
+                  stakedNft
+                );
+              } else if (participation.instrument.__kind === "Guild") {
+                const stakedNft = stakedNfts.find((y) =>
+                  getNftPda(
+                    this._missions.honeycomb().staking(y.stakingPool).address,
+                    y.mint
+                  )[0].equals(participation.instrument.fields[0])
+                );
+                return new NectarMissionParticipationGuild(
+                  await this._missions.mission(participation.mission),
+                  p.pubkey,
+                  participation,
+                  stakedNft
+                );
+              }
+              return null;
             } catch {
               return null;
             }
@@ -1060,25 +1079,15 @@ export class NectarMissionParticipation {
    * @param _mission - The `NectarMission` instance that the participation belongs to.
    * @param address - The public key address of the participation.
    * @param _participation - The underlying `Participation` object representing the participation data.
-   * @param _stakedNft - The `StakedNft` object representing the staked NFT associated with the participation.
    * @throws {Error} Throws an error if the participation does not belong to the mission or the staked NFT.
    */
   constructor(
     private _mission: NectarMission,
     readonly address: web3.PublicKey,
-    private _participation: Participation,
-    private _stakedNft: StakedNft
+    private _participation: Participation
   ) {
     if (!_mission.address.equals(_participation.mission)) {
       throw new Error("Participation does not belong to mission");
-    }
-
-    if (
-      !getNftPda(_stakedNft.stakingPool, _stakedNft.mint)[0].equals(
-        _participation.nft
-      )
-    ) {
-      throw new Error("Participation does not belong to nft");
     }
   }
 
@@ -1096,22 +1105,6 @@ export class NectarMissionParticipation {
    */
   public get wallet() {
     return this._participation.wallet;
-  }
-
-  /**
-   * Gets the staked NFT associated with the participation.
-   * @returns The staked NFT object.
-   */
-  public get nft() {
-    return this._stakedNft;
-  }
-
-  /**
-   * Gets the address of the staked NFT associated with the participation.
-   * @returns The address of the staked NFT.
-   */
-  public get nftAddress() {
-    return getNftPda(this._stakedNft.stakingPool, this._stakedNft.mint)[0];
   }
 
   /**
@@ -1164,6 +1157,22 @@ export class NectarMissionParticipation {
   }
 
   /**
+   * Checks if this participation is an NFT Participation.
+   * @returns true is this participation is an NFT Participation.
+   */
+  public isNft(): this is NectarMissionParticipationNft {
+    return this._participation.instrument.__kind === "Nft";
+  }
+
+  /**
+   * Checks if this participation is a Guild Participation.
+   * @returns true is this participation is a Guild Participation.
+   */
+  public isGuild(): this is NectarMissionParticipationGuild {
+    return this._participation.instrument.__kind === "Guild";
+  }
+
+  /**
    * Recalls the participation from the mission for this instance.
    * @param confirmOptions - Optional transaction confirmation options.
    * @returns A promise that resolves to the transaction signature upon successful recall.
@@ -1175,6 +1184,96 @@ export class NectarMissionParticipation {
    */
   public recall(confirmOptions?: web3.ConfirmOptions) {
     return this._mission.recall([this], confirmOptions);
+  }
+}
+
+/**
+ * Represents a Nectar Mission Participation.
+ * @category Helpers
+ */
+export class NectarMissionParticipationNft extends NectarMissionParticipation {
+  /**
+   * Creates a new `NectarMissionParticipation` instance.
+   * @param _mission - The `NectarMission` instance that the participation belongs to.
+   * @param address - The public key address of the participation.
+   * @param _participation - The underlying `Participation` object representing the participation data.
+   * @param _stakedNft - The `StakedNft` object representing the staked NFT associated with the participation.
+   * @throws {Error} Throws an error if the participation does not belong to the mission or the staked NFT.
+   */
+  constructor(
+    mission: NectarMission,
+    address: web3.PublicKey,
+    participation: Participation,
+    private _stakedNft: StakedNft
+  ) {
+    super(mission, address, participation);
+
+    if (participation.instrument.__kind === "Nft") {
+      if (
+        !getNftPda(_stakedNft.stakingPool, _stakedNft.mint)[0].equals(
+          participation.instrument.fields[0]
+        )
+      ) {
+        throw new Error("Participation does not belong to nft");
+      }
+    } else {
+      throw new Error("Provided participation is not an NFT participation");
+    }
+  }
+
+  /**
+   * Gets the staked NFT associated with the participation.
+   * @returns The staked NFT object.
+   */
+  public get nft() {
+    return this._stakedNft;
+  }
+
+  /**
+   * Gets the address of the staked NFT associated with the participation.
+   * @returns The address of the staked NFT.
+   */
+  public get nftAddress() {
+    return getNftPda(this._stakedNft.stakingPool, this._stakedNft.mint)[0];
+  }
+}
+
+/**
+ * Represents a Nectar Mission Participation.
+ * @category Helpers
+ */
+export class NectarMissionParticipationGuild extends NectarMissionParticipation {
+  /**
+   * Creates a new `NectarMissionParticipation` instance.
+   * @param mission - The `NectarMission` instance that the participation belongs to.
+   * @param address - The public key address of the participation.
+   * @param participation - The underlying `Participation` object representing the participation data.
+   * @param guild - The `StakedNft` object representing the staked NFT associated with the participation.
+   * @throws {Error} Throws an error if the participation does not belong to the mission or the staked NFT.
+   */
+  constructor(
+    mission: NectarMission,
+    address: web3.PublicKey,
+    participation: Participation,
+    private _guild: BuzzGuild
+  ) {
+    super(mission, address, participation);
+
+    if (participation.instrument.__kind === "Guild") {
+      if (!_guild.address.equals(participation.instrument.fields[0])) {
+        throw new Error("Participation does not belong to guild");
+      }
+    } else {
+      throw new Error("Provided participation is not a Guild participation");
+    }
+  }
+
+  /**
+   * Gets the staked NFT associated with the participation.
+   * @returns The staked NFT object.
+   */
+  public get guild() {
+    return this._guild;
   }
 }
 

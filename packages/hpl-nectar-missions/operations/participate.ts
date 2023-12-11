@@ -5,7 +5,6 @@ import {
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY,
-  TransactionInstruction,
 } from "@solana/web3.js";
 import {
   HPL_HIVE_CONTROL_PROGRAM,
@@ -14,9 +13,8 @@ import {
   VAULT,
 } from "@honeycomb-protocol/hive-control";
 import {
-  PROGRAM_ID as HPL_CURRENCY_MANAGER_PROGRAM,
+  HPL_CURRENCY_MANAGER_PROGRAM,
   createCreateHolderAccountOperation,
-  createFixHolderAccountInstruction,
 } from "@honeycomb-protocol/currency-manager";
 import {
   HPL_NECTAR_STAKING_PROGRAM,
@@ -27,11 +25,15 @@ import {
   ParticipateArgs,
   PROGRAM_ID,
   createParticipateInstruction,
+  createParticipateGuildInstruction,
 } from "../generated";
 import { participationPda } from "../utils";
 import { NectarMission } from "../NectarMissions";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
-import { ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import {
+  BuzzGuild,
+  PROGRAM_ID as HPL_BUZZ_GUILD_PROGRAM,
+} from "@honeycomb-protocol/buzz-guild";
 
 /**
  * Represents the arguments needed to create a participate operation.
@@ -39,17 +41,9 @@ import { ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
  */
 type CreateParticipateOperationArgs = {
   /**
-   * The arguments for participating in a mission (defined in ParticipateArgs).
-   */
-  args: ParticipateArgs;
-  /**
    * The NectarMission to participate in.
    */
   mission: NectarMission;
-  /**
-   * The StakedNft to use for participation.
-   */
-  nft: StakedNft;
 
   isFirst?: boolean;
 
@@ -58,7 +52,29 @@ type CreateParticipateOperationArgs = {
    * If not provided, the default PROGRAM_ID will be used.
    */
   programId?: PublicKey;
-};
+} & (
+  | {
+      /**
+       * The arguments for participating in a mission (defined in ParticipateArgs).
+       */
+      args: ParticipateArgs;
+
+      /**
+       * The StakedNft to use for participation.
+       */
+      nft: StakedNft;
+    }
+  | {
+      /**
+       * The Guild that is participating in the mission.
+       */
+      guild: BuzzGuild;
+      /**
+       * The Chief Nft of the Guild that is participating in the mission.
+       */
+      chiefNft: StakedNft;
+    }
+);
 
 /**
  * Creates a new participate operation to join a mission.
@@ -90,16 +106,12 @@ export async function createParticipateOperation(
   luts: AddressLookupTableAccount[] = []
 ) {
   const programId = args.programId || PROGRAM_ID;
-  const instructions = [
+
+  const operation = new Operation(honeycomb, [
     ComputeBudgetProgram.setComputeUnitLimit({
       units: 500_000,
     }),
-  ];
-
-  const [nft] = getNftPda(args.nft.stakingPool, args.nft.mint);
-  const [participation] = participationPda(nft, programId);
-
-  const preOperation = new Operation(honeycomb, []);
+  ]);
 
   const { holderAccount, tokenAccount } = honeycomb
     .pda()
@@ -116,7 +128,7 @@ export async function createParticipateOperation(
         .currency()
         .holderAccount(honeycomb.identity().address);
     } catch {
-      preOperation.add(
+      operation.add(
         ...(await createCreateHolderAccountOperation(honeycomb, {
           currency: args.mission.requirements.cost.currency(),
           owner: honeycomb.identity().address,
@@ -125,41 +137,77 @@ export async function createParticipateOperation(
     }
   }
 
-  instructions.push(
-    createParticipateInstruction(
-      {
-        project: args.mission.pool().project().address,
-        stakingPool: args.nft.stakingPool,
-        missionPool: args.mission.pool().address,
-        mission: args.mission.address,
-        nft,
-        staker: args.nft.staker,
-        currency: args.mission.requirements.cost.currency().address,
-        mint: args.mission.requirements.cost.currency().mint.address,
-        holderAccount,
-        tokenAccount,
-        participation,
-        wallet: honeycomb.identity().address,
-        vault: VAULT,
-        hiveControl: HPL_HIVE_CONTROL_PROGRAM,
-        rentSysvar: SYSVAR_RENT_PUBKEY,
-        instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
-        clock: SYSVAR_CLOCK_PUBKEY,
-        currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM,
-        nectarStakingProgram: HPL_NECTAR_STAKING_PROGRAM,
-        hplEvents: HPL_EVENTS_PROGRAM,
-      },
-      {
-        args: args.args,
-      },
-      programId
-    )
-  );
+  if ("nft" in args) {
+    const [nft] = getNftPda(args.nft.stakingPool, args.nft.mint);
+    const [participation] = participationPda(nft, programId);
 
-  const operation = new Operation(honeycomb, instructions);
+    operation.add(
+      createParticipateInstruction(
+        {
+          project: args.mission.pool().project().address,
+          stakingPool: args.nft.stakingPool,
+          missionPool: args.mission.pool().address,
+          mission: args.mission.address,
+          nft,
+          staker: args.nft.staker,
+          currency: args.mission.requirements.cost.currency().address,
+          mint: args.mission.requirements.cost.currency().mint.address,
+          holderAccount,
+          tokenAccount,
+          participation,
+          wallet: honeycomb.identity().address,
+          vault: VAULT,
+          hiveControl: HPL_HIVE_CONTROL_PROGRAM,
+          rentSysvar: SYSVAR_RENT_PUBKEY,
+          instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+          clock: SYSVAR_CLOCK_PUBKEY,
+          currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM,
+          nectarStakingProgram: HPL_NECTAR_STAKING_PROGRAM,
+          hplEvents: HPL_EVENTS_PROGRAM,
+        },
+        {
+          args: args.args,
+        },
+        programId
+      )
+    );
+  } else if ("chiefNft" in args) {
+    const [chiefNft] = getNftPda(args.chiefNft.stakingPool, args.chiefNft.mint);
+    const [participation] = participationPda(args.guild.address, programId);
+
+    operation.add(
+      createParticipateGuildInstruction(
+        {
+          project: args.mission.pool().project().address,
+          stakingPool: args.chiefNft.stakingPool,
+          missionPool: args.mission.pool().address,
+          guildKit: args.guild.guildKit.address,
+          mission: args.mission.address,
+          guild: args.guild.address,
+          staker: args.chiefNft.staker,
+          chiefNft,
+          currency: args.mission.requirements.cost.currency().address,
+          mint: args.mission.requirements.cost.currency().mint.address,
+          holderAccount,
+          tokenAccount,
+          participation,
+          wallet: honeycomb.identity().address,
+          vault: VAULT,
+          hiveControl: HPL_HIVE_CONTROL_PROGRAM,
+          rentSysvar: SYSVAR_RENT_PUBKEY,
+          instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+          clock: SYSVAR_CLOCK_PUBKEY,
+          currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM,
+          buzzGuildProgram: HPL_BUZZ_GUILD_PROGRAM,
+          nectarStakingProgram: HPL_NECTAR_STAKING_PROGRAM,
+          hplEvents: HPL_EVENTS_PROGRAM,
+        },
+        programId
+      )
+    );
+  }
+
   if (luts.length > 0) operation.add_lut(...luts);
-
-  if (preOperation.items.length > 0) operation.addPreOperations(preOperation);
 
   return {
     operation: operation,
