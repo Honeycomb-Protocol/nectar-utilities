@@ -1,5 +1,5 @@
 import * as web3 from "@solana/web3.js";
-import { createClaimRewardsInstruction, PROGRAM_ID } from "../generated";
+import { createClaimRewardsInstruction, PROGRAM_ID } from "../../generated";
 import {
   Honeycomb,
   HPL_HIVE_CONTROL_PROGRAM,
@@ -9,13 +9,10 @@ import {
 import {
   PROGRAM_ID as HPL_CURRENCY_MANAGER_PROGRAM_ID,
   createCreateHolderAccountOperation,
-  createFixHolderAccountInstruction,
 } from "@honeycomb-protocol/currency-manager";
-import { getNftPda, getStakerPda } from "../pdas";
-import { StakedNft } from "../types";
-import { NectarStaking } from "../NectarStaking";
+import { StakedNft } from "../../types";
+import { NectarStaking } from "../../NectarStaking";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
-import { ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 /**
  * Represents the context arguments for creating the ClaimRewards operation.
@@ -54,12 +51,14 @@ export async function createClaimRewardsOperation(
   const project = args.stakingPool.project().address;
   const projectAuthority = args.stakingPool.project().authority;
   const stakingPool = args.stakingPool.address;
-  const [nft] = getNftPda(args.stakingPool.address, args.nft.mint, programId);
-  const [staker] = getStakerPda(
-    args.stakingPool.address,
-    honeycomb.identity().address,
-    programId
-  );
+  const [nft] = honeycomb
+    .pda()
+    .nectarStaking()
+    .nft(args.stakingPool.address, args.nft.mint, programId);
+  const [staker] = honeycomb
+    .pda()
+    .nectarStaking()
+    .staker(args.stakingPool.address, honeycomb.identity().address, programId);
 
   const {
     holderAccount,

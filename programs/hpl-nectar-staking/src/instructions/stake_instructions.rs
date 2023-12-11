@@ -140,13 +140,11 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
     let nft = &mut ctx.accounts.nft;
     let staker = &mut ctx.accounts.staker;
 
-    if !staker
-        .staking_pool
-        .eq(&staking_pool.key() || !staker.wallet.eq(&ctx.accounts.wallet.key()))
+    if !staker.staking_pool.eq(&staking_pool.key()) || !staker.wallet.eq(&ctx.accounts.wallet.key())
     {
         staker.set_defaults();
         staker.bump = ctx.bumps["staker"];
-        staker.staking_pool = ctx.accounts.staking_pool.key();
+        staker.staking_pool = staking_pool.key();
         staker.wallet = ctx.accounts.wallet.key();
 
         Event::new_staker(

@@ -4,8 +4,7 @@ import {
   CreateStakingPoolArgs,
   AddMultiplierArgs,
   PROGRAM_ID,
-} from "../generated";
-import { getStakingPoolPda } from "../pdas";
+} from "../../generated";
 import {
   VAULT,
   HPL_HIVE_CONTROL_PROGRAM,
@@ -81,7 +80,10 @@ export async function createCreateStakingPoolOperation(
   const programId = args.programId || PROGRAM_ID;
 
   const key = web3.Keypair.generate().publicKey;
-  const [stakingPool] = getStakingPoolPda(args.project.address, key, programId);
+  const [stakingPool] = honeycomb
+    .pda()
+    .nectarStaking()
+    .stakingPool(args.project.address, key, programId);
 
   const instructions: web3.TransactionInstruction[] = [
     createCreateStakingPoolInstruction(

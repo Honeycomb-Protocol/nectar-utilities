@@ -3,8 +3,7 @@ import {
   createAddMultiplierInstruction,
   AddMultiplierArgs,
   PROGRAM_ID,
-} from "../generated";
-import { getMultipliersPda } from "../pdas";
+} from "../../generated";
 import {
   HPL_HIVE_CONTROL_PROGRAM,
   Honeycomb,
@@ -53,7 +52,10 @@ export async function createAddMultiplierOperation(
   const programId = args.programId || PROGRAM_ID;
 
   // Get the multipliers PDA associated with the staking pool
-  const [multipliers] = getMultipliersPda(args.stakingPool, programId);
+  const [multipliers] = honeycomb
+    .pda()
+    .nectarStaking()
+    .multipliers(args.stakingPool, programId);
 
   // Create the instruction to add a new multiplier
   const instructions: web3.TransactionInstruction[] = [

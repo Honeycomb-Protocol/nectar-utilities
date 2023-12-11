@@ -1,6 +1,14 @@
 import * as web3 from "@solana/web3.js";
-import { NFTv1Args } from "./generated";
+import {
+  AddMultiplierArgs,
+  CreateStakingPoolArgs,
+  MultipliersArgs,
+  NFTv1Args,
+  UpdateStakingPoolArgs,
+} from "./generated";
 import { TokenRecord } from "@metaplex-foundation/mpl-token-metadata";
+import { HoneycombProject } from "@honeycomb-protocol/hive-control";
+import { HplCurrency } from "@honeycomb-protocol/currency-manager";
 
 /**
  * Represents the asset data responded by helius RPC.
@@ -180,3 +188,38 @@ export type StakedNft = Metadata & NFTv1Args;
  * @category Types
  */
 export type AvailableNft = Metadata & { tokenRecord?: TokenRecord };
+
+/**
+ * Represents the arguments for creating a new staking pool.
+ * @category Types
+ */
+export type NewStakingPoolArgs = {
+  args: CreateStakingPoolArgs;
+  project: HoneycombProject;
+  currency: HplCurrency;
+  collections?: web3.PublicKey[];
+  creators?: web3.PublicKey[];
+  merkleTrees?: web3.PublicKey[];
+  multipliers?: AddMultiplierArgs[];
+  multipliersDecimals?: number;
+};
+
+/**
+ * Represents the arguments for updating a staking pool.
+ * @category Types
+ */
+export type UpdatePoolArgs = {
+  args: UpdateStakingPoolArgs;
+  collection?: web3.PublicKey;
+  creator?: web3.PublicKey;
+  merkleTree?: web3.PublicKey;
+  currency?: web3.PublicKey;
+};
+
+/**
+ * Represents data for staking multipliers.
+ * @category Types
+ */
+export type StakingMultipliers = MultipliersArgs & {
+  address: web3.PublicKey;
+};

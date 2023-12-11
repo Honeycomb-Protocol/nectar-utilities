@@ -2,22 +2,21 @@ import * as web3 from "@solana/web3.js";
 import {
   BatchLifeCycle,
   BulkLifeCycle,
+  ForceScenario,
   Honeycomb,
   HoneycombProject,
   Module,
   Operation,
   SendBulkOptions,
+  isPublicKey,
 } from "@honeycomb-protocol/hive-control";
 import {
   AddMultiplierArgs,
-  CreateStakingPoolArgs,
   Multipliers,
-  MultipliersArgs,
   NFTv1,
   PROGRAM_ID,
   Staker,
   StakingPool,
-  UpdateStakingPoolArgs,
 } from "./generated";
 import {
   createAddMultiplierOperation,
@@ -28,57 +27,28 @@ import {
   createStakeOperation,
   createUnstakeOperation,
   createUpdatePoolOperation,
-  fetchAssetProofBatch,
-  fetchAvailableNfts,
-  fetchRewards,
-  fetchStakedNfts,
 } from "./operations";
-import { AssetProof, AvailableNft, StakedNft } from "./types";
-import { getMultipliersPda, getNftPda, getStakerPda } from "./pdas";
-import { HplCurrency } from "@honeycomb-protocol/currency-manager";
+import {
+  AvailableNft,
+  NewStakingPoolArgs,
+  StakedNft,
+  StakingMultipliers,
+  UpdatePoolArgs,
+} from "./types";
+import { fetchAssetProofBatch } from "./utils/helius";
+import {
+  nectarStakingCreate,
+  nectarStakingFetch,
+  nectarStakingPdas,
+} from "./utils";
 
 declare module "@honeycomb-protocol/hive-control" {
   interface Honeycomb {
     //@ts-ignore
     _stakings: { [key: string]: NectarStaking };
-    staking(key?: string | web3.PublicKey): NectarStaking;
+    staking(nameOrKey?: string | web3.PublicKey): NectarStaking;
   }
 }
-
-/**
- * Represents the arguments for creating a new staking pool.
- * @category Types
- */
-type NewStakingPoolArgs = {
-  args: CreateStakingPoolArgs;
-  project: HoneycombProject;
-  currency: HplCurrency;
-  collections?: web3.PublicKey[];
-  creators?: web3.PublicKey[];
-  merkleTrees?: web3.PublicKey[];
-  multipliers?: AddMultiplierArgs[];
-  multipliersDecimals?: number;
-};
-
-/**
- * Represents the arguments for updating a staking pool.
- * @category Types
- */
-type UpdatePoolArgs = {
-  args: UpdateStakingPoolArgs;
-  collection?: web3.PublicKey;
-  creator?: web3.PublicKey;
-  merkleTree?: web3.PublicKey;
-  currency?: web3.PublicKey;
-};
-
-/**
- * Represents data for staking multipliers.
- * @category Types
- */
-type StakingMultipliers = MultipliersArgs & {
-  address: web3.PublicKey;
-};
 
 /**
  * Represents the Nectar Staking module in the Honeycomb Protocol.
@@ -93,16 +63,14 @@ export class NectarStaking extends Module<
   }
 > {
   readonly programId: web3.PublicKey = PROGRAM_ID;
-  private _fetch: NectarStakingFetch;
-
-  private _multipliers: StakingMultipliers | null | undefined = undefined;
-  private _stakers: { [wallet: string]: Staker } = {};
 
   /**
    * TODO: move helius rpc to hive-control
    */
   public helius_rpc: string =
     "https://rpc.helius.xyz/?api-key=014b4690-ef6d-4cab-b9e9-d3ec73610d52";
+
+  private _multipliers: StakingMultipliers | null;
 
   /**
    * Create a new instance of NectarStaking based on the provided address.
@@ -114,7 +82,6 @@ export class NectarStaking extends Module<
     private _pool: StakingPool
   ) {
     super();
-    this._fetch = new NectarStakingFetch(this);
   }
 
   /**
@@ -125,16 +92,17 @@ export class NectarStaking extends Module<
    * @returns A new NectarStaking instance.
    */
   static async fromAddress(
-    connection: web3.Connection,
-    poolAddress: web3.PublicKey,
-    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
+    honeycomb: Honeycomb,
+    address: web3.PublicKey,
+    commitment?: web3.Commitment,
+    forceFetch?: ForceScenario
   ) {
-    const pool = await StakingPool.fromAccountAddress(
-      connection,
-      poolAddress,
-      commitmentOrConfig
-    );
-    return new NectarStaking(poolAddress, pool);
+    honeycomb.fetch().register(nectarStakingFetch());
+    const pool = await honeycomb
+      .fetch()
+      .nectarStaking()
+      .stakingPool(address, commitment, forceFetch);
+    return new NectarStaking(address, pool);
   }
 
   /**
@@ -149,18 +117,13 @@ export class NectarStaking extends Module<
     args: NewStakingPoolArgs,
     confirmOptions?: web3.ConfirmOptions
   ) {
-    const { stakingPool, operation } = await createCreateStakingPoolOperation(
-      honeycomb,
-      {
-        programId: PROGRAM_ID,
-        ...args,
-      }
-    );
-    await operation.send(confirmOptions);
-    return await NectarStaking.fromAddress(
-      new web3.Connection(honeycomb.connection.rpcEndpoint, "processed"),
-      stakingPool
-    );
+    honeycomb.pda().register(nectarStakingPdas());
+    honeycomb.create().register(nectarStakingCreate());
+    const { stakingPool } = await honeycomb
+      .create()
+      .nectarStaking()
+      .stakingPool(args, confirmOptions);
+    return await NectarStaking.fromAddress(honeycomb, stakingPool);
   }
 
   /**
@@ -177,14 +140,6 @@ export class NectarStaking extends Module<
    */
   public pool() {
     return this._pool;
-  }
-
-  /**
-   * Get the NectarStakingFetch instance to fetch data related to staking pools and NFTs.
-   * @returns The NectarStakingFetch instance.
-   */
-  public fetch() {
-    return this._fetch;
   }
 
   /**
@@ -333,12 +288,20 @@ export class NectarStaking extends Module<
    * @returns A Promise that resolves with the multipliers data.
    */
   public async multipliers(
-    reFetch = false
+    commitment?: web3.Commitment,
+    forceFetch?: ForceScenario
   ): Promise<StakingMultipliers | null> {
-    if (this._multipliers === undefined || reFetch) {
-      this._multipliers = await this.fetch().multipliers();
-    }
-    return this._multipliers;
+    const [address] = this.honeycomb()
+      .pda()
+      .nectarStaking()
+      .multipliers(this.address, this.programId);
+    return {
+      address,
+      ...(await this.honeycomb()
+        .fetch()
+        .nectarStaking()
+        .multipliers(address, commitment, forceFetch)),
+    };
   }
 
   /**
@@ -348,20 +311,21 @@ export class NectarStaking extends Module<
    * @returns A Promise that resolves with the Staker instance.
    */
   public async staker(
-    args?: { wallet: web3.PublicKey } | { address: web3.PublicKey },
-    reFetch = false
+    commitment?: web3.Commitment,
+    forceFetch?: ForceScenario
   ) {
-    let address: web3.PublicKey;
-    if (!args) args = { wallet: this.honeycomb().identity().address };
-    if ("wallet" in args) {
-      address = getStakerPda(this.address, args.wallet, this.programId)[0];
-    } else {
-      address = args.address;
-    }
-    if (!this._stakers[address.toString()] || reFetch) {
-      this._stakers[address.toString()] = await this.fetch().staker(args);
-    }
-    return this._stakers[address.toString()];
+    const [staker] = this.honeycomb()
+      .pda()
+      .nectarStaking()
+      .staker(
+        this.address,
+        this.honeycomb().identity().address,
+        this.programId
+      );
+    return this.honeycomb()
+      .fetch()
+      .nectarStaking()
+      .staker(staker, commitment, forceFetch);
   }
 
   /**
@@ -370,20 +334,25 @@ export class NectarStaking extends Module<
    * @param reFetch - If true, re-fetch the data from the blockchain.
    * @returns A Promise that resolves with the available NFTs data.
    */
-  public async availableNfts(wallet?: web3.PublicKey, reFetch = false) {
-    const address = wallet || this.honeycomb().identity().address;
+  public async availableNfts(forceFetch = ForceScenario.NoForce) {
     const nftsMap = await this.cache.getOrFetch(
       "availableNfts",
-      address.toString(),
+      this.honeycomb().identity().address.toString(),
       () =>
-        this.fetch()
-          .availableNfts()
+        this.honeycomb()
+          .fetch()
+          .nectarStaking()
+          .availableNfts({
+            pool: this.address,
+            wallet: this.honeycomb().identity().address,
+            heliusRpc: this.helius_rpc,
+          })
           .then((nfts) => {
             const nftsMap = new Map();
             nfts.forEach((nft) => nftsMap.set(nft.mint.toString(), nft));
             return nftsMap;
           }),
-      reFetch
+      forceFetch
     );
     return Array.from(nftsMap.values());
   }
@@ -394,20 +363,25 @@ export class NectarStaking extends Module<
    * @param reFetch - If true, re-fetch the data from the blockchain.
    * @returns A Promise that resolves with the staked NFTs data.
    */
-  public async stakedNfts(wallet?: web3.PublicKey, reFetch = false) {
-    const address = wallet || this.honeycomb().identity().address;
+  public async stakedNfts(forceFetch = ForceScenario.NoForce) {
     const nftsMap = await this.cache.getOrFetch(
       "stakedNfts",
-      address.toString(),
+      this.honeycomb().identity().address.toString(),
       () =>
-        this.fetch()
-          .stakedNfts()
+        this.honeycomb()
+          .fetch()
+          .nectarStaking()
+          .stakedNfts({
+            pool: this.address,
+            wallet: this.honeycomb().identity().address,
+            heliusRpc: this.helius_rpc,
+          })
           .then((nfts) => {
             const nftsMap = new Map();
             nfts.forEach((nft) => nftsMap.set(nft.mint.toString(), nft));
             return nftsMap;
           }),
-      reFetch
+      forceFetch
     );
     return Array.from(nftsMap.values());
   }
@@ -418,8 +392,8 @@ export class NectarStaking extends Module<
    * @param reFetch - If true, re-fetch the data from the blockchain.
    * @returns A Promise that resolves with the staked NFTs data.
    */
-  public async usableNfts(wallet?: web3.PublicKey, reFetch = false) {
-    return this.stakedNfts(wallet, reFetch).then((nfts) =>
+  public async usableNfts(forceFetch?: ForceScenario) {
+    return this.stakedNfts(forceFetch).then((nfts) =>
       nfts.filter((nft) => nft.usedBy.__kind === "None")
     );
   }
@@ -430,10 +404,14 @@ export class NectarStaking extends Module<
    */
   public reloadData() {
     return Promise.all([
-      this.multipliers(true).catch((e) => console.error(e)),
-      this.staker(undefined, true).catch((e) => console.error(e)),
-      this.availableNfts(undefined, true).catch((e) => console.error(e)),
-      this.stakedNfts(undefined, true).catch((e) => console.error(e)),
+      this.multipliers(undefined, ForceScenario.ConsiderNull).catch((e) =>
+        console.error(e)
+      ),
+      this.staker(undefined, ForceScenario.Force).catch((e) =>
+        console.error(e)
+      ),
+      this.availableNfts(ForceScenario.Force).catch((e) => console.error(e)),
+      this.stakedNfts(ForceScenario.Force).catch((e) => console.error(e)),
     ]);
   }
 
@@ -481,30 +459,20 @@ export class NectarStaking extends Module<
    * @param confirmOptions - Optional transaction confirmation options.
    * @returns A promise that resolves when the transaction is confirmed.
    */
-  public async initStaker(confirmOptions?: web3.ConfirmOptions) {
-    const { operation } = await createInitStakerOperation(this.honeycomb(), {
-      stakingPool: this,
-      programId: this.programId,
-    });
-    return operation.send(confirmOptions);
+  public async newStaker(confirmOptions?: web3.ConfirmOptions) {
+    await this.honeycomb()
+      .create()
+      .nectarStaking()
+      .staker(
+        this.address,
+        this.honeycomb().identity().address,
+        confirmOptions
+      );
+    return this.staker(undefined, ForceScenario.Force);
   }
 
-  /**
-   * Initialize an NFT for the staking pool.
-   * @param mint - The address of the NFT mint.
-   * @param confirmOptions - Optional transaction confirmation options.
-   * @returns A promise that resolves when the transaction is confirmed.
-   */
-  public async initNft(
-    nft: AvailableNft,
-    confirmOptions?: web3.ConfirmOptions
-  ) {
-    const { operation } = await createInitNFTOperation(this.honeycomb(), {
-      stakingPool: this,
-      nft,
-      programId: this.programId,
-    });
-    return operation.send(confirmOptions);
+  public get initStaker() {
+    return this.newStaker;
   }
 
   /**
@@ -616,8 +584,11 @@ export class NectarStaking extends Module<
 
         promises.push(
           instance
+            .honeycomb()
             .fetch()
-            .nftsByMints(
+            .nectarStaking()
+            .nfts(
+              instance.address,
               Array.from(processedNfts.keys()).map((n) => new web3.PublicKey(n))
             )
             .then((nfts) => {
@@ -644,7 +615,7 @@ export class NectarStaking extends Module<
       },
     }).then((x) =>
       Promise.all(promises).then(() =>
-        this.staker(undefined, true).then(() => x)
+        this.staker(undefined, ForceScenario.Force).then(() => x)
       )
     );
   }
@@ -799,7 +770,7 @@ export class NectarStaking extends Module<
           }
         );
       },
-    }).then((x) => this.staker(undefined, true).then(() => x));
+    }).then((x) => this.staker(undefined, ForceScenario.Force).then(() => x));
   }
 
   /**
@@ -810,16 +781,21 @@ export class NectarStaking extends Module<
   public install(honeycomb: Honeycomb): Honeycomb {
     if (!honeycomb._stakings) {
       honeycomb._stakings = {};
+      honeycomb.pda().register(nectarStakingPdas());
+      honeycomb.fetch().register(nectarStakingFetch());
+      honeycomb.create().register(nectarStakingCreate());
     }
-    //@ts-ignore
     honeycomb._stakings[this.poolAddress.toString()] = this;
 
-    //@ts-ignore
-    honeycomb.staking = (key?: string | web3.PublicKey) => {
-      if (key) {
-        return honeycomb._stakings[
-          key instanceof web3.PublicKey ? key.toString() : key
-        ];
+    honeycomb.staking = (nameOrKey?: string | web3.PublicKey) => {
+      if (nameOrKey) {
+        if (typeof nameOrKey === "string") {
+          return Object.values(honeycomb._stakings).find(
+            (s) => s.name === nameOrKey
+          );
+        } else {
+          return honeycomb._stakings[nameOrKey.toString()];
+        }
       } else {
         return this;
       }
@@ -827,186 +803,6 @@ export class NectarStaking extends Module<
 
     this._honeycomb = honeycomb;
     return honeycomb;
-  }
-}
-
-/**
- * Represents the API for fetching data related to staking pools and NFTs.
- * @category Helpers
- */
-export class NectarStakingFetch {
-  constructor(private nectarStaking: NectarStaking) {}
-  private _stakedNfts = new Map<web3.PublicKey, Promise<StakedNft[]>>();
-  private _availableNfts = new Map<web3.PublicKey, Promise<AvailableNft[]>>();
-  /**
-   * Fetch the multipliers associated with the staking pool.
-   * @returns A Promise that resolves with the multipliers data.
-   */
-  public multipliers() {
-    const [multipliersAddress] = getMultipliersPda(
-      this.nectarStaking.poolAddress,
-      this.nectarStaking.programId
-    );
-    return Multipliers.fromAccountAddress(
-      this.nectarStaking.honeycomb().connection,
-      multipliersAddress
-    )
-      .then(
-        (multipliers) =>
-          ({
-            ...multipliers,
-            address: multipliersAddress,
-          } as StakingMultipliers)
-      )
-      .catch((_) => null);
-  }
-
-  /**
-   * Fetch data for a specific NFT mint.
-   * @param mint - The address of the NFT mint.
-   * @returns A Promise that resolves with the NFT data.
-   */
-  public nft(mint: web3.PublicKey) {
-    const [nftAddress] = getNftPda(
-      this.nectarStaking.poolAddress,
-      mint,
-      this.nectarStaking.programId
-    );
-    return NFTv1.fromAccountAddress(
-      this.nectarStaking.honeycomb().connection,
-      nftAddress
-    ).then((nft) => ({
-      ...nft,
-      address: nftAddress,
-    }));
-  }
-
-  /**
-   * Fetch all NFTs staked by a specific wallet in the staking pool.
-   * @param walletAddress - The address of the wallet to fetch staked NFTs for.
-   * @returns A Promise that resolves with an array of staked NFTs.
-   */
-  public nftsByWallet(walletAddress?: web3.PublicKey) {
-    const gpa = NFTv1.gpaBuilder();
-    gpa.addFilter("stakingPool", this.nectarStaking.poolAddress);
-    const [staker] = getStakerPda(
-      this.nectarStaking.poolAddress,
-      walletAddress || this.nectarStaking.honeycomb().identity().address,
-      this.nectarStaking.programId
-    );
-    gpa.addFilter("staker", staker);
-
-    return gpa
-      .run(this.nectarStaking.honeycomb().processedConnection)
-      .then((nfts) =>
-        nfts.map(({ account }) => NFTv1.fromAccountInfo(account)[0])
-      );
-  }
-
-  /**
-   * Fetch all NFTs of specified mints in the staking pool.
-   * @param mints - The mints of staked NFTs.
-   * @returns A Promise that resolves with an array of staked NFTs.
-   */
-  public nftsByMints(mints: web3.PublicKey[]) {
-    return this.nectarStaking
-      .honeycomb()
-      .processedConnection.getMultipleAccountsInfo(
-        mints.map((m) => getNftPda(this.nectarStaking.address, m)[0])
-      )
-      .then((nfts) => nfts.map((account) => NFTv1.fromAccountInfo(account)[0]));
-  }
-
-  /**
-   * Fetch a staker's account information.
-   * @param args - The arguments to identify the staker (wallet address or account address).
-   * @returns A Promise that resolves with the staker's account information.
-   */
-  public staker(
-    args: { wallet: web3.PublicKey } | { address: web3.PublicKey }
-  ) {
-    let address: web3.PublicKey;
-    if ("wallet" in args) {
-      address = getStakerPda(
-        this.nectarStaking.poolAddress,
-        args.wallet,
-        this.nectarStaking.programId
-      )[0];
-    } else {
-      address = args.address;
-    }
-    return Staker.fromAccountAddress(
-      this.nectarStaking.honeycomb().processedConnection,
-      address,
-      "processed"
-    );
-  }
-
-  /**
-   * Fetch all staked NFTs of a specific wallet in the staking pool.
-   * @param walletAddress - The address of the wallet to fetch staked NFTs for.
-   * @returns A Promise that resolves with an array of staked NFTs.
-   */
-  public stakedNfts(walletAddress?: web3.PublicKey) {
-    if (!walletAddress)
-      walletAddress = this.nectarStaking.honeycomb().identity().address;
-    const promise = fetchStakedNfts(this.nectarStaking, {
-      walletAddress,
-      programId: this.nectarStaking.programId,
-    });
-
-    this._stakedNfts.set(walletAddress, promise);
-
-    return promise;
-  }
-
-  /**
-   * Fetch all available NFTs that can be staked in the staking pool.
-   * @param walletAddress - The address of the wallet to fetch available NFTs for.
-   * @returns A Promise that resolves with an array of available NFTs.
-   */
-  public availableNfts(walletAddress?: web3.PublicKey) {
-    if (!walletAddress)
-      walletAddress = this.nectarStaking.honeycomb().identity().address;
-    const promise = fetchAvailableNfts(this.nectarStaking, {
-      walletAddress,
-      programId: this.nectarStaking.programId,
-    });
-
-    this._availableNfts.set(walletAddress, promise);
-
-    return promise;
-  }
-
-  /**
-   * Fetch all available NFTs that can be staked in the staking pool.
-   * @param walletAddress - The address of the wallet to fetch available NFTs for.
-   * @returns A Promise that resolves with an array of available NFTs.
-   */
-  public usableNfts(walletAddress?: web3.PublicKey) {
-    if (!walletAddress)
-      walletAddress = this.nectarStaking.honeycomb().identity().address;
-    const promise =
-      this._stakedNfts.get(walletAddress) || this.stakedNfts(walletAddress);
-    return promise.then((nfts) =>
-      nfts.filter((nft) => nft.usedBy.__kind === "None")
-    );
-  }
-
-  /**
-   * Fetch rewards data for a list of staked NFTs.
-   * @param stakedNfts - An array of staked NFTs for which rewards data is to be fetched.
-   * @returns A Promise that resolves with an array of rewards data.
-   */
-  public rewards(stakedNfts: StakedNft[]) {
-    return Promise.all(
-      stakedNfts.map(async (nft) =>
-        fetchRewards(this.nectarStaking, {
-          staker: await this.nectarStaking.staker({ address: nft.staker }),
-          nft,
-        })
-      )
-    );
   }
 }
 
@@ -1023,8 +819,8 @@ export const nectarStakingModule = (
   honeycomb: Honeycomb,
   args: web3.PublicKey | NewStakingPoolArgs
 ) =>
-  args instanceof web3.PublicKey
-    ? NectarStaking.fromAddress(honeycomb.connection, args)
+  isPublicKey(args)
+    ? NectarStaking.fromAddress(honeycomb, args)
     : NectarStaking.new(honeycomb, args);
 
 /**

@@ -3,7 +3,7 @@ import {
   UpdateStakingPoolArgs,
   createUpdateStakingPoolInstruction,
   PROGRAM_ID,
-} from "../generated";
+} from "../../generated";
 import {
   Honeycomb,
   VAULT,
