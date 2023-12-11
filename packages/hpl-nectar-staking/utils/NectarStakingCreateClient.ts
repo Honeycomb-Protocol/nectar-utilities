@@ -12,7 +12,7 @@ import {
  */
 declare module "@honeycomb-protocol/hive-control" {
   interface CreateModule {
-    nectarStaking(): NectarStakingCreateClient;
+    staking(): NectarStakingCreateClient;
   }
 }
 
@@ -60,7 +60,7 @@ export class NectarStakingCreateClient extends CreateClient {
   ) {
     const { project } = await this.honeycomb()
       .fetch()
-      .nectarStaking()
+      .staking()
       .stakingPool(pool);
     const { operation } = await createInitStakerOperation(this.honeycomb(), {
       project,
@@ -78,7 +78,7 @@ export class NectarStakingCreateClient extends CreateClient {
    */
   public install(createModule: CreateModule) {
     this._createModule = createModule;
-    createModule.nectarStaking = () => this;
+    createModule.staking = () => this;
     return createModule;
   }
 }

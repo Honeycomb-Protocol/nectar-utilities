@@ -73,11 +73,11 @@ export async function createUnstakeOperation(
 
   const [nft] = honeycomb
     .pda()
-    .nectarStaking()
+    .staking()
     .nft(args.stakingPool.address, args.nft.mint);
   const [staker] = honeycomb
     .pda()
-    .nectarStaking()
+    .staking()
     .staker(args.stakingPool.address, honeycomb.identity().address);
 
   const instructions = [];
@@ -149,7 +149,7 @@ export async function createUnstakeOperation(
       depositTokenRecord: web3.PublicKey | undefined;
 
     if (args.stakingPool.lockType === LockType.Custoday) {
-      [depositAccount] = honeycomb.pda().nectarStaking().deposit(args.nft.mint);
+      [depositAccount] = honeycomb.pda().staking().deposit(args.nft.mint);
     }
 
     if (args.nft.isProgrammableNft) {

@@ -7,7 +7,7 @@ import { PROGRAM_ID } from "../generated";
  */
 declare module "@honeycomb-protocol/hive-control" {
   interface PdaModule {
-    nectarStaking: () => NectarStakingPdas;
+    staking: () => NectarStakingPdas;
   }
 }
 
@@ -32,7 +32,7 @@ export class NectarStakingPdas extends PdaClient {
    * @returns The updated PdaModule instance with the installed client.
    */
   public install(pdaModule: PdaModule): PdaModule {
-    pdaModule.nectarStaking = () => this;
+    pdaModule.staking = () => this;
     return pdaModule;
   }
 

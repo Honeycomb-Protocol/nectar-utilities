@@ -54,7 +54,7 @@ export async function createAddMultiplierOperation(
   // Get the multipliers PDA associated with the staking pool
   const [multipliers] = honeycomb
     .pda()
-    .nectarStaking()
+    .staking()
     .multipliers(args.stakingPool, programId);
 
   // Create the instruction to add a new multiplier

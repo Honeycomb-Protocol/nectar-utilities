@@ -100,7 +100,7 @@ export class NectarStaking extends Module<
     honeycomb.fetch().register(nectarStakingFetch());
     const pool = await honeycomb
       .fetch()
-      .nectarStaking()
+      .staking()
       .stakingPool(address, commitment, forceFetch);
     return new NectarStaking(address, pool);
   }
@@ -121,7 +121,7 @@ export class NectarStaking extends Module<
     honeycomb.create().register(nectarStakingCreate());
     const { stakingPool } = await honeycomb
       .create()
-      .nectarStaking()
+      .staking()
       .stakingPool(args, confirmOptions);
     return await NectarStaking.fromAddress(honeycomb, stakingPool);
   }
@@ -293,13 +293,13 @@ export class NectarStaking extends Module<
   ): Promise<StakingMultipliers | null> {
     const [address] = this.honeycomb()
       .pda()
-      .nectarStaking()
+      .staking()
       .multipliers(this.address, this.programId);
     return {
       address,
       ...(await this.honeycomb()
         .fetch()
-        .nectarStaking()
+        .staking()
         .multipliers(address, commitment, forceFetch)),
     };
   }
@@ -316,7 +316,7 @@ export class NectarStaking extends Module<
   ) {
     const [staker] = this.honeycomb()
       .pda()
-      .nectarStaking()
+      .staking()
       .staker(
         this.address,
         this.honeycomb().identity().address,
@@ -324,7 +324,7 @@ export class NectarStaking extends Module<
       );
     return this.honeycomb()
       .fetch()
-      .nectarStaking()
+      .staking()
       .staker(staker, commitment, forceFetch);
   }
 
@@ -341,7 +341,7 @@ export class NectarStaking extends Module<
       () =>
         this.honeycomb()
           .fetch()
-          .nectarStaking()
+          .staking()
           .availableNfts({
             pool: this.address,
             wallet: this.honeycomb().identity().address,
@@ -370,7 +370,7 @@ export class NectarStaking extends Module<
       () =>
         this.honeycomb()
           .fetch()
-          .nectarStaking()
+          .staking()
           .stakedNfts({
             pool: this.address,
             wallet: this.honeycomb().identity().address,
@@ -462,7 +462,7 @@ export class NectarStaking extends Module<
   public async newStaker(confirmOptions?: web3.ConfirmOptions) {
     await this.honeycomb()
       .create()
-      .nectarStaking()
+      .staking()
       .staker(
         this.address,
         this.honeycomb().identity().address,
@@ -586,7 +586,7 @@ export class NectarStaking extends Module<
           instance
             .honeycomb()
             .fetch()
-            .nectarStaking()
+            .staking()
             .nfts(
               instance.address,
               Array.from(processedNfts.keys()).map((n) => new web3.PublicKey(n))

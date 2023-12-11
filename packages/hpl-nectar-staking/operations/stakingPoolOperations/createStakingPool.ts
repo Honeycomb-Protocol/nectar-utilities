@@ -82,7 +82,7 @@ export async function createCreateStakingPoolOperation(
   const key = web3.Keypair.generate().publicKey;
   const [stakingPool] = honeycomb
     .pda()
-    .nectarStaking()
+    .staking()
     .stakingPool(args.project.address, key, programId);
 
   const instructions: web3.TransactionInstruction[] = [

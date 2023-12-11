@@ -61,7 +61,7 @@ export async function createInitNFTOperation(
   // Get the PDA account for the NFT and its metadata
   const [nft] = honeycomb
     .pda()
-    .nectarStaking()
+    .staking()
     .nft(args.stakingPool.address, args.nft.mint, programId);
 
   const instructions: web3.TransactionInstruction[] = [];

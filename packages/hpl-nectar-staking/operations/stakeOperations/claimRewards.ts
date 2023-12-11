@@ -53,11 +53,11 @@ export async function createClaimRewardsOperation(
   const stakingPool = args.stakingPool.address;
   const [nft] = honeycomb
     .pda()
-    .nectarStaking()
+    .staking()
     .nft(args.stakingPool.address, args.nft.mint, programId);
   const [staker] = honeycomb
     .pda()
-    .nectarStaking()
+    .staking()
     .staker(args.stakingPool.address, honeycomb.identity().address, programId);
 
   const {

@@ -86,13 +86,13 @@ export async function createStakeOperation(
   // Get the PDA account for the NFT
   const [nft] = honeycomb
     .pda()
-    .nectarStaking()
+    .staking()
     .nft(args.stakingPool.address, args.nft.mint, programId);
 
   // Get the PDA account for the staker
   const [staker] = honeycomb
     .pda()
-    .nectarStaking()
+    .staking()
     .staker(args.stakingPool.address, honeycomb.identity().address);
 
   // Create the transaction instruction for staking the NFT
@@ -174,7 +174,7 @@ export async function createStakeOperation(
       depositTokenRecord: web3.PublicKey | undefined;
 
     if (args.stakingPool.lockType === LockType.Custoday) {
-      [depositAccount] = honeycomb.pda().nectarStaking().deposit(nft);
+      [depositAccount] = honeycomb.pda().staking().deposit(nft);
     }
 
     if (args.nft.isProgrammableNft) {

@@ -18,7 +18,7 @@ import { checkCriteria } from "./misc";
  */
 declare module "@honeycomb-protocol/hive-control" {
   interface FetchModule {
-    nectarStaking(): NectarStakingFetchClient;
+    staking(): NectarStakingFetchClient;
   }
 }
 
@@ -132,7 +132,7 @@ export class NectarStakingFetchClient extends FetchClient {
           .rpc()
           .getMultipleAccounts(
             stakerOrMints.map(
-              (m) => this.honeycomb().pda().nectarStaking().nft(pool, m)[0]
+              (m) => this.honeycomb().pda().staking().nft(pool, m)[0]
             ),
             commitment
           )
@@ -150,7 +150,7 @@ export class NectarStakingFetchClient extends FetchClient {
         if (PublicKey.isOnCurve(stakerOrMints))
           stakerOrMints = this.honeycomb()
             .pda()
-            .nectarStaking()
+            .staking()
             .staker(pool, stakerOrMints)[0];
         gpa.addFilter("staker", stakerOrMints);
       }
@@ -351,7 +351,7 @@ export class NectarStakingFetchClient extends FetchClient {
    */
   public install(fetchModule: FetchModule): FetchModule {
     this._fetchModule = fetchModule;
-    fetchModule.nectarStaking = () => this;
+    fetchModule.staking = () => this;
     return fetchModule;
   }
 }

@@ -49,7 +49,7 @@ export async function createInitStakerOperation(
   // Get the PDA account for the staker
   const [staker] = honeycomb
     .pda()
-    .nectarStaking()
+    .staking()
     .staker(args.pool, args.wallet, programId);
 
   // Create the transaction instruction for initializing the staker
