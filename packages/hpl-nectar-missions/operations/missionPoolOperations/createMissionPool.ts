@@ -5,20 +5,16 @@ import {
   SYSVAR_RENT_PUBKEY,
 } from "@solana/web3.js";
 import {
-  CurrencyManagerPermission,
   HPL_HIVE_CONTROL_PROGRAM,
   Honeycomb,
-  HoneycombProject,
   Operation,
   VAULT,
-  createCreateDelegateAuthorityOperation,
 } from "@honeycomb-protocol/hive-control";
 import {
   CreateMissionPoolArgs,
   PROGRAM_ID,
   createCreateMissionPoolInstruction,
 } from "../../generated";
-import { missionPoolPda } from "../../utils";
 import { createUpdateMissionPoolOperation } from "./updateMissionPool";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
 
@@ -37,7 +33,7 @@ type CreateCreateMissionPoolOperationArgs = {
   /**
    * The HoneycombProject where the new mission pool will be created.
    */
-  project: HoneycombProject;
+  project: PublicKey;
   /**
    * (Optional) The program ID associated with the mission pool.
    * If not provided, the default PROGRAM_ID will be used.
@@ -77,16 +73,15 @@ export async function createCreateMissionPoolOperation(
 ) {
   const programId = args.programId || PROGRAM_ID;
 
-  const [missionPool] = missionPoolPda(
-    args.project.address,
-    args.args.name,
-    programId
-  );
+  const [missionPool] = honeycomb
+    .pda()
+    .missions()
+    .pool(args.project, args.args.name, programId);
 
   const instructions = [
     createCreateMissionPoolInstruction(
       {
-        project: args.project.address,
+        project: args.project,
         missionPool,
         delegateAuthority:
           honeycomb.identity().delegateAuthority()?.address || programId,
@@ -106,18 +101,18 @@ export async function createCreateMissionPoolOperation(
     ),
   ];
 
-  await createCreateDelegateAuthorityOperation(honeycomb, {
-    args: {
-      delegations: [
-        {
-          __kind: "CurrencyManager",
-          permission: CurrencyManagerPermission.MintCurrencies,
-        },
-      ],
-    },
-    delegate: missionPool,
-    project: args.project,
-  }).then(({ operation }) => instructions.push(...operation.instructions));
+  // await createCreateDelegateAuthorityOperation(honeycomb, {
+  //   args: {
+  //     delegations: [
+  //       {
+  //         __kind: "CurrencyManager",
+  //         permission: CurrencyManagerPermission.MintCurrencies,
+  //       },
+  //     ],
+  //   },
+  //   delegate: missionPool,
+  //   project: args.project,
+  // }).then(({ operation }) => instructions.push(...operation.instructions));
 
   if (args.args.stakingPools?.length) {
     await Promise.all(
@@ -126,7 +121,7 @@ export async function createCreateMissionPoolOperation(
           args: {
             factionsMerkleRoot: null,
           },
-          project: args.project.address,
+          project: args.project,
           missionPool,
           stakingPool,
           programId,

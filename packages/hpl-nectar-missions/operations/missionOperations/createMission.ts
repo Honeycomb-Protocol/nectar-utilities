@@ -15,8 +15,6 @@ import {
   PROGRAM_ID,
   createCreateMissionInstruction,
 } from "../../generated";
-import { missionPda } from "../../utils";
-import { NectarMissions } from "../../NectarMissions";
 
 /**
  * Represents the arguments needed to create a new mission operation.
@@ -30,7 +28,11 @@ type CreateCreateMissionOperationArgs = {
   /**
    * The mission pool where the new mission will be created.
    */
-  missionPool: NectarMissions;
+  project: PublicKey;
+  /**
+   * The mission pool where the new mission will be created.
+   */
+  pool: PublicKey;
   /**
    * (Optional) The program ID associated with the mission.
    * If not provided, the default PROGRAM_ID will be used.
@@ -73,11 +75,10 @@ export async function createCreateMissionOperation(
 ) {
   const programId = args.programId || PROGRAM_ID;
 
-  const [mission] = missionPda(
-    args.missionPool.address,
-    args.args.name,
-    programId
-  );
+  const [mission] = honeycomb
+    .pda()
+    .missions()
+    .mission(args.pool, args.args.name, programId);
 
   const instructions = [
     ComputeBudgetProgram.setComputeUnitLimit({
@@ -85,8 +86,8 @@ export async function createCreateMissionOperation(
     }),
     createCreateMissionInstruction(
       {
-        project: args.missionPool.project().address,
-        missionPool: args.missionPool.address,
+        project: args.project,
+        missionPool: args.pool,
         mission,
         delegateAuthority:
           honeycomb.identity().delegateAuthority()?.address || programId,

@@ -15,7 +15,7 @@ import {
   PROGRAM_ID,
   createUpdateMissionInstruction,
 } from "../../generated";
-import { NectarMission } from "../../NectarMissions";
+import type { NectarMission } from "../../Mission";
 
 /**
  * Represents the arguments needed to create a new mission operation.

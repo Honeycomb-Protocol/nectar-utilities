@@ -26,8 +26,7 @@ import {
   createParticipateInstruction,
   createParticipateGuildInstruction,
 } from "../../generated";
-import { participationPda } from "../../utils";
-import { NectarMission } from "../../NectarMissions";
+import type { NectarMission } from "../../Mission";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
 import {
   BuzzGuild,
@@ -141,7 +140,10 @@ export async function createParticipateOperation(
       .pda()
       .staking()
       .nft(args.nft.stakingPool, args.nft.mint);
-    const [participation] = participationPda(nft, programId);
+    const [participation] = honeycomb
+      .pda()
+      .missions()
+      .participation(nft, programId);
 
     operation.add(
       createParticipateInstruction(
@@ -178,7 +180,10 @@ export async function createParticipateOperation(
       .pda()
       .staking()
       .nft(args.chiefNft.stakingPool, args.chiefNft.mint);
-    const [participation] = participationPda(args.guild.address, programId);
+    const [participation] = honeycomb
+      .pda()
+      .missions()
+      .participation(args.guild.address, programId);
 
     operation.add(
       createParticipateGuildInstruction(

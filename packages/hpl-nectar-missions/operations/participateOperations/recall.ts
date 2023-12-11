@@ -24,10 +24,10 @@ import {
   createRecallGuildInstruction,
   createRecallInstruction,
 } from "../../generated";
-import {
+import type {
   NectarMissionParticipation,
   ParticipationReward,
-} from "../../NectarMissions";
+} from "../../Participation";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { SPL_ACCOUNT_COMPRESSION_PROGRAM_ID } from "@solana/spl-account-compression";
 import {

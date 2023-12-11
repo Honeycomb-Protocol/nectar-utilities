@@ -2,9 +2,11 @@ import { PublicKey } from "@solana/web3.js";
 import { Participation } from "../generated";
 import { OffchainParticipation } from "../types";
 
-export * from "./pdas";
 export * from "./merkleTree";
 export * from "./lookupTables";
+export * from "./NectarMissionsPdaClient";
+export * from "./NectarMissionsCreateClient";
+export * from "./NectarMissionsFetchClient";
 
 export function removeDuplicateFromArrayOf<T = any, C = any>(
   array: T[],
@@ -30,7 +32,10 @@ export const offchainToSolitaParticipation = (
     bump: 0,
     wallet: new PublicKey(participation.wallet),
     mission: new PublicKey(participation.mission),
-    nft: new PublicKey(participation.nft),
+    instrument: {
+      __kind: participation.instrument.__kind,
+      fields: [new PublicKey(participation.instrument.address)],
+    },
     endTime: new Date(participation.endTime).getTime() / 1000,
     isRecalled: participation.isRecalled,
     rewards: participation.rewards.map((reward) => ({
