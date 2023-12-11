@@ -14,7 +14,7 @@ import { NectarStaking } from "../../NectarStaking";
 import { SPL_ACCOUNT_COMPRESSION_PROGRAM_ID } from "@solana/spl-account-compression";
 import { AssetProof, AvailableNft } from "../../types";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
-import { fetchAssetProof } from "packages/hpl-nectar-staking/utils";
+import { fetchAssetProof } from "../../utils";
 import { metadataPda } from "@honeycomb-protocol/currency-manager";
 
 /**

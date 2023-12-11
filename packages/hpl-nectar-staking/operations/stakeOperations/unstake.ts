@@ -22,7 +22,7 @@ import {
   SPL_NOOP_PROGRAM_ID,
 } from "@solana/spl-account-compression";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
-import { fetchAssetProof } from "packages/hpl-nectar-staking/utils";
+import { fetchAssetProof } from "../../utils";
 import {
   METADATA_PROGRAM_ID,
   metadataPda,

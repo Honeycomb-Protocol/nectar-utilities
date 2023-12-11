@@ -844,23 +844,71 @@ dependencies = [
 
 [[package]]
 name = "hpl-buzz-guild"
-version = "0.0.1"
+version = "0.0.1-beta.6"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
+ "hpl-compression",
+ "hpl-currency-manager 0.0.80",
  "hpl-events",
  "hpl-hive-control",
  "hpl-nectar-staking 0.1.45",
- "hpl-payment-manager",
  "hpl-utils",
+ "mpl-bubblegum 0.9.2",
+ "mpl-token-metadata",
  "solana-program",
+ "spl-account-compression",
+]
+
+[[package]]
+name = "hpl-compression"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f50f5fe1eea9abe21b92c395407ddb759eb74bb0123514063f6262fbf8fa95a"
+dependencies = [
+ "hpl-compression-macro-merkle-tree-apply-fn",
+ "hpl-compression-macro-merkle-tree-apply-fn-deep",
+ "hpl-compression-macro-merkle-tree-utils",
+]
+
+[[package]]
+name = "hpl-compression-macro-merkle-tree-apply-fn"
+version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09da400e79c331800c3c4e5b235658df9332cf29526ce42ba5c3de6045e4977b"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.28",
+]
+
+[[package]]
+name = "hpl-compression-macro-merkle-tree-apply-fn-deep"
+version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6dbeab966883b753120134b60cea9b61762fa413fbc44de50bf1c7ab138c0250"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.28",
+]
+
+[[package]]
+name = "hpl-compression-macro-merkle-tree-utils"
+version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ede6017d32662e1e899db67239d76fd7acaa659db6c537d9837cc8af71f54bd"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.28",
 ]
 
 [[package]]
 name = "hpl-currency-manager"
-version = "0.0.76"
+version = "0.0.79"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f9349ea4c487e91e72efe89ed918551981cde09b0598d67465366d34fb435fe"
+checksum = "51742ed14629f521c219b39f7e437105fcb07d6dc151a92b4e142e842abbd3c5"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -877,9 +925,9 @@ dependencies = [
 
 [[package]]
 name = "hpl-currency-manager"
-version = "0.0.79"
+version = "0.0.80"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51742ed14629f521c219b39f7e437105fcb07d6dc151a92b4e142e842abbd3c5"
+checksum = "530de178ad09f1b5973aeb28266f031b4d6f8642dc56ebb96af79efa2199ab46"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -908,9 +956,9 @@ dependencies = [
 
 [[package]]
 name = "hpl-hive-control"
-version = "0.2.6"
+version = "0.2.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4bc96f83773d57b5293feae504925e6b99e322dd47840517a963b04cf70e08ae"
+checksum = "f942e04d0d61b820523f5ec4150913953152852789e31c4d9666e57d819fe36b"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -993,7 +1041,7 @@ dependencies = [
  "hpl-hive-control",
  "hpl-macros",
  "hpl-utils",
- "mpl-bubblegum",
+ "mpl-bubblegum 0.7.0",
  "mpl-token-metadata",
  "solana-program",
  "spl-account-compression",
@@ -1013,29 +1061,7 @@ dependencies = [
  "hpl-hive-control",
  "hpl-macros",
  "hpl-utils",
- "mpl-bubblegum",
- "mpl-token-metadata",
- "solana-program",
- "spl-account-compression",
- "toml_datetime 0.6.1",
- "winnow",
-]
-
-[[package]]
-name = "hpl-payment-manager"
-version = "0.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ffc681ac2e025fa909a30532eb5b42db80226744a17fcd85ea698835c4e3129"
-dependencies = [
- "anchor-lang",
- "anchor-spl",
- "getrandom 0.2.9",
- "hpl-currency-manager 0.0.76",
- "hpl-events",
- "hpl-hive-control",
- "hpl-macros",
- "hpl-utils",
- "mpl-bubblegum",
+ "mpl-bubblegum 0.7.0",
  "mpl-token-metadata",
  "solana-program",
  "spl-account-compression",
@@ -1274,6 +1300,22 @@ dependencies = [
  "anchor-lang",
  "bytemuck",
  "mpl-token-metadata",
+ "solana-program",
+ "spl-account-compression",
+ "spl-associated-token-account",
+ "spl-token",
+]
+
+[[package]]
+name = "mpl-bubblegum"
+version = "0.9.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2a89c3a68ce92a7c3b3d17378551f6572a0f9fd7d34947c0207e357992326629"
+dependencies = [
+ "anchor-lang",
+ "bytemuck",
+ "mpl-token-metadata",
+ "num-traits",
  "solana-program",
  "spl-account-compression",
  "spl-associated-token-account",
