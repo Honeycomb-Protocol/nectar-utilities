@@ -24,7 +24,6 @@
     "publishall": "node ./scripts/publishall.js"
   },
   "dependencies": {
-    "@honeycomb-protocol/currency-manager": "^0.0.79",
     "@honeycomb-protocol/events": "^0.1.21",
     "@metaplex-foundation/js": "^0.18.1",
     "@metaplex-foundation/mpl-bubblegum": "^0.7.0",
