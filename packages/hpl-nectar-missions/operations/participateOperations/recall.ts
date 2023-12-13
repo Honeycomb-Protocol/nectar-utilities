@@ -233,15 +233,7 @@ type CreateRecallOperationArgs = {
    * If not provided, the default PROGRAM_ID will be used.
    */
   programId?: PublicKey;
-} & (
-  | {
-      /**
-       * The Chief Nft of the Guild that is participating in the mission.
-       */
-      chiefNft: StakedNft;
-    }
-  | {}
-);
+};
 
 /**
  * Creates a new recall operation to retrieve uncollected rewards from a participation.
@@ -344,39 +336,36 @@ export async function creatRecallOperation(
       )
     );
   } else if (participation.isGuild()) {
-    if ("chiefNft" in args) {
-      const [chiefNft] = honeycomb
-        .pda()
-        .staking()
-        .nft(args.chiefNft.stakingPool, args.chiefNft.mint);
+    const chief = await participation.guild.chief();
+    const [chiefNft] = honeycomb
+      .pda()
+      .staking()
+      .nft(chief.stakingPool, chief.mint);
 
-      operation.add(
-        createRecallGuildInstruction(
-          {
-            project: args.participation.mission().pool().project().address,
-            stakingPool: args.chiefNft.stakingPool,
-            missionPool: args.participation.mission().pool().address,
-            guildKit: participation.guild.guildKit.address,
-            mission: args.participation.mission().address,
-            guild: participation.guild.address,
-            staker: args.chiefNft.staker,
-            chiefNft,
-            participation: args.participation.address,
-            wallet: honeycomb.identity().address,
-            vault: VAULT,
-            hiveControl: HPL_HIVE_CONTROL_PROGRAM,
-            nectarStakingProgram: HPL_NECTAR_STAKING_PROGRAM,
-            buzzGuildProgram: BUZZ_GUILD_PROGRAM_ID,
-            hplEvents: HPL_EVENTS_PROGRAM,
-            clock: SYSVAR_CLOCK_PUBKEY,
-            instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
-          },
-          programId
-        )
-      );
-    } else {
-      throw new Error("Guild chief was not provided in args");
-    }
+    operation.add(
+      createRecallGuildInstruction(
+        {
+          project: args.participation.mission().pool().project().address,
+          stakingPool: chief.stakingPool,
+          missionPool: args.participation.mission().pool().address,
+          guildKit: participation.guild.guildKit.address,
+          mission: args.participation.mission().address,
+          guild: participation.guild.address,
+          staker: chief.staker,
+          chiefNft,
+          participation: args.participation.address,
+          wallet: honeycomb.identity().address,
+          vault: VAULT,
+          hiveControl: HPL_HIVE_CONTROL_PROGRAM,
+          nectarStakingProgram: HPL_NECTAR_STAKING_PROGRAM,
+          buzzGuildProgram: BUZZ_GUILD_PROGRAM_ID,
+          hplEvents: HPL_EVENTS_PROGRAM,
+          clock: SYSVAR_CLOCK_PUBKEY,
+          instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+        },
+        programId
+      )
+    );
   } else {
     throw new Error("Invalid participation type");
   }

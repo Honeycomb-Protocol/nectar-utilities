@@ -849,12 +849,12 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "hpl-compression",
- "hpl-currency-manager 0.0.80",
+ "hpl-currency-manager 0.0.81",
  "hpl-events",
  "hpl-hive-control",
- "hpl-nectar-staking",
+ "hpl-nectar-staking 0.1.45 (registry+https://github.com/rust-lang/crates.io-index)",
  "hpl-utils",
- "mpl-bubblegum",
+ "mpl-bubblegum 0.9.2",
  "mpl-token-metadata",
  "solana-program",
  "spl-account-compression",
@@ -906,9 +906,9 @@ dependencies = [
 
 [[package]]
 name = "hpl-currency-manager"
-version = "0.0.80"
+version = "0.0.79"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "530de178ad09f1b5973aeb28266f031b4d6f8642dc56ebb96af79efa2199ab46"
+checksum = "51742ed14629f521c219b39f7e437105fcb07d6dc151a92b4e142e842abbd3c5"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -1019,7 +1019,7 @@ dependencies = [
  "hpl-events",
  "hpl-hive-control",
  "hpl-macros",
- "hpl-nectar-staking",
+ "hpl-nectar-staking 0.1.45 (registry+https://github.com/rust-lang/crates.io-index)",
  "hpl-utils",
  "solana-program",
  "spl-account-compression",
@@ -1039,7 +1039,29 @@ dependencies = [
  "hpl-hive-control",
  "hpl-macros",
  "hpl-utils",
- "mpl-bubblegum",
+ "mpl-bubblegum 0.9.2",
+ "mpl-token-metadata",
+ "solana-program",
+ "spl-account-compression",
+ "toml_datetime 0.6.1",
+ "winnow",
+]
+
+[[package]]
+name = "hpl-nectar-staking"
+version = "0.1.45"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "278b8f08dc284aeb02970367a6d9a142c835838b9652e3136815adc25b0da166"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "getrandom 0.2.9",
+ "hpl-currency-manager 0.0.79",
+ "hpl-events",
+ "hpl-hive-control",
+ "hpl-macros",
+ "hpl-utils",
+ "mpl-bubblegum 0.7.0",
  "mpl-token-metadata",
  "solana-program",
  "spl-account-compression",
@@ -1267,6 +1289,21 @@ dependencies = [
  "keccak",
  "rand_core 0.6.4",
  "zeroize",
+]
+
+[[package]]
+name = "mpl-bubblegum"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b751e0658d7414a801b2fee9802d884f508724fdc1d8645405f69e604d348bc1"
+dependencies = [
+ "anchor-lang",
+ "bytemuck",
+ "mpl-token-metadata",
+ "solana-program",
+ "spl-account-compression",
+ "spl-associated-token-account",
+ "spl-token",
 ]
 
 [[package]]

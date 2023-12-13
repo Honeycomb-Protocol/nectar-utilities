@@ -16,6 +16,7 @@ import type {
   NectarMissionParticipation,
   ParticipationCurrencyRewards,
 } from "./Participation";
+import { BuzzGuild } from "@honeycomb-protocol/buzz-guild";
 
 /**
  * Represents a Nectar Mission.
@@ -146,26 +147,59 @@ export class NectarMission {
    */
   public async participate(
     nfts: (StakedNft & { args: ParticipateArgs })[],
+    options?: ConfirmOptions & SendBulkOptions
+  );
+
+  /**
+   * Participates in the mission by staking NFTs.
+   * @param nfts - An array of staked NFTs along with their participation arguments.
+   * @param confirmOptions - Optional transaction confirmation options.
+   * @returns A promise that resolves to an array of transaction signatures upon successful participation.
+   * @async
+   * @example
+   * // Participate in a mission by staking NFTs
+   * const nftsToStake = [
+   *   { nft: stakedNft1, args: participateArgs1 },
+   *   { nft: stakedNft2, args: participateArgs2 },
+   *   // Add more NFTs to stake as needed
+   * ];
+   * const participationResult = await nectarMission.participate(nftsToStake);
+   * console.log(participationResult); // Output: Array of transaction signatures
+   */
+  public async participate(
+    guilds: BuzzGuild[],
+    options?: ConfirmOptions & SendBulkOptions
+  );
+
+  public async participate(
+    participants: (StakedNft & { args: ParticipateArgs })[] | BuzzGuild[],
     options: ConfirmOptions & SendBulkOptions = {}
   ) {
     const operations = await Promise.all(
-      nfts.map((nft, i) =>
-        createParticipateOperation(
-          this.pool().honeycomb(),
-          {
-            args: nft.args,
-            mission: this,
-            nft,
-            isFirst: i === 0,
-            programId: this.pool().programId,
-          },
-          this.pool().getLuts("participate")
-        ).then(({ operation }) => operation)
+      participants.map(
+        (participant: (StakedNft & { args: ParticipateArgs }) | BuzzGuild, i) =>
+          createParticipateOperation(
+            this.pool().honeycomb(),
+            {
+              ...("mint" in participant
+                ? {
+                    args: participant.args,
+                    nft: participant,
+                  }
+                : {
+                    guild: participant,
+                  }),
+              mission: this,
+              isFirst: i === 0,
+              programId: this.pool().programId,
+            },
+            this.pool().getLuts("participate")
+          ).then(({ operation }) => operation)
       )
     );
 
     return Operation.sendBulk(this.pool().honeycomb(), operations, {
-      prepareAllAtOnce: nfts.length < 5,
+      prepareAllAtOnce: participants.length < 5,
       ...options,
     });
   }

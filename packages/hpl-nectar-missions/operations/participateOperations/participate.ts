@@ -67,10 +67,6 @@ type CreateParticipateOperationArgs = {
        * The Guild that is participating in the mission.
        */
       guild: BuzzGuild;
-      /**
-       * The Chief Nft of the Guild that is participating in the mission.
-       */
-      chiefNft: StakedNft;
     }
 );
 
@@ -175,11 +171,12 @@ export async function createParticipateOperation(
         programId
       )
     );
-  } else if ("chiefNft" in args) {
+  } else if ("guild" in args) {
+    const chief = await args.guild.chief();
     const [chiefNft] = honeycomb
       .pda()
       .staking()
-      .nft(args.chiefNft.stakingPool, args.chiefNft.mint);
+      .nft(chief.stakingPool, chief.mint);
     const [participation] = honeycomb
       .pda()
       .missions()
@@ -189,12 +186,12 @@ export async function createParticipateOperation(
       createParticipateGuildInstruction(
         {
           project: args.mission.pool().project().address,
-          stakingPool: args.chiefNft.stakingPool,
+          stakingPool: chief.stakingPool,
           missionPool: args.mission.pool().address,
           guildKit: args.guild.guildKit.address,
           mission: args.mission.address,
           guild: args.guild.address,
-          staker: args.chiefNft.staker,
+          staker: chief.staker,
           chiefNft,
           currency: args.mission.requirements.cost.currency().address,
           mint: args.mission.requirements.cost.currency().mint.address,
