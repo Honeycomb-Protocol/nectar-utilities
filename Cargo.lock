@@ -906,25 +906,6 @@ dependencies = [
 
 [[package]]
 name = "hpl-currency-manager"
-version = "0.0.79"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51742ed14629f521c219b39f7e437105fcb07d6dc151a92b4e142e842abbd3c5"
-dependencies = [
- "anchor-lang",
- "anchor-spl",
- "getrandom 0.2.9",
- "hpl-events",
- "hpl-hive-control",
- "hpl-macros",
- "hpl-utils",
- "mpl-token-metadata",
- "solana-program",
- "toml_datetime 0.6.1",
- "winnow",
-]
-
-[[package]]
-name = "hpl-currency-manager"
 version = "0.0.80"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "530de178ad09f1b5973aeb28266f031b4d6f8642dc56ebb96af79efa2199ab46"
@@ -1053,7 +1034,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "getrandom 0.2.9",
- "hpl-currency-manager 0.0.79",
+ "hpl-currency-manager 0.0.81",
  "hpl-events",
  "hpl-hive-control",
  "hpl-macros",
