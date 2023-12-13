@@ -1,5 +1,10 @@
 import * as web3 from "@solana/web3.js";
-import { MissionPool, PROGRAM_ID, UpdateMissionPoolArgs } from "./generated";
+import {
+  CreateMissionArgs,
+  MissionPool,
+  PROGRAM_ID,
+  UpdateMissionPoolArgs,
+} from "./generated";
 import {
   ForceScenario,
   Honeycomb,
@@ -273,6 +278,28 @@ export class NectarMissions extends Module<
     );
   }
 
+  public async add(
+    args: CreateMissionArgs,
+    confirmOptions?: web3.ConfirmOptions
+  ) {
+    const { address } = await this.honeycomb().create().missions().mission(
+      {
+        args,
+        pool: this.address,
+        project: this.project().address,
+      },
+      confirmOptions
+    );
+    return this.mission(
+      address,
+      confirmOptions?.commitment || "processed",
+      ForceScenario.Force
+    );
+  }
+  public get newMission() {
+    return this.add;
+  }
+
   /**
    * Retrieves a specific mission associated with the mission pool by its name or public key.
    *
@@ -342,10 +369,12 @@ export class NectarMissions extends Module<
    * const missions = await nectarMissions.missions();
    * console.log(missions); // Output: [NectarMission1, NectarMission2, ...]
    */
-  public async missions() {
-    const missions = Array.from(this.cache.cache.mission.values());
-    if (missions.length === 0) {
-      this.honeycomb()
+  public async missions(forceFetch = ForceScenario.NoForce) {
+    const missions = this.cache.cache.mission
+      ? Array.from(this.cache.cache.mission.values())
+      : [];
+    if (missions.length === 0 || forceFetch == ForceScenario.Force) {
+      await this.honeycomb()
         .fetch()
         .missions()
         .missions(this.address)
@@ -360,7 +389,9 @@ export class NectarMissions extends Module<
           })
         );
     }
-    return Array.from(this.cache.cache.mission.values());
+    return this.cache.cache.mission
+      ? Array.from(this.cache.cache.mission.values())
+      : [];
   }
 
   /**
@@ -389,7 +420,7 @@ export class NectarMissions extends Module<
     const stakedNfts = await this.stakedNfts();
     const guilds = await this.guilds();
 
-    return this.cache.getOrFetch(
+    const participationsMap = await this.cache.getOrFetch(
       "participations",
       this.honeycomb().identity().address.toString(),
       () =>
@@ -432,6 +463,8 @@ export class NectarMissions extends Module<
           }),
       forceFetch
     );
+
+    return Array.from(participationsMap.values());
   }
 
   /**
@@ -528,7 +561,12 @@ export class NectarMissions extends Module<
   public install(honeycomb: Honeycomb): Honeycomb {
     if (!honeycomb._missions) {
       honeycomb._missions = {};
+      honeycomb.pda().register(nectarMissionsPdas());
+      honeycomb.fetch().register(nectarMissionsFetch());
+      honeycomb.create().register(nectarMissionsCreate());
     }
+
+    this._honeycomb = honeycomb;
     honeycomb._missions[this.address.toString()] = this;
 
     honeycomb.missions = (key?: string | web3.PublicKey) => {
@@ -541,7 +579,6 @@ export class NectarMissions extends Module<
       }
     };
 
-    this._honeycomb = honeycomb;
     return honeycomb;
   }
 }
