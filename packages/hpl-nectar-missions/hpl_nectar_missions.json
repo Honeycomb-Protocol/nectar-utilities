@@ -1376,6 +1376,10 @@
           {
             "name": "stakingPools",
             "type": "bytes"
+          },
+          {
+            "name": "guildKits",
+            "type": "bytes"
           }
         ]
       }

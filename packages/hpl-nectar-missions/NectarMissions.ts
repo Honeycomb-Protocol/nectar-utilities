@@ -255,7 +255,7 @@ export class NectarMissions extends Module<
    * @returns The `NectarStaking` instances associated with the mission pool.
    */
   public guildKits(): BuzzGuildKit[] {
-    return [...this._pool.stakingPools].map((x) =>
+    return [...this._pool.guildKits].map((x) =>
       this.honeycomb().guildKit(
         (
           this.project().services[x] as {
