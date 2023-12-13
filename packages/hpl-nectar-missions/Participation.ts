@@ -8,7 +8,7 @@ import type { BuzzGuild } from "@honeycomb-protocol/buzz-guild";
  * Represents a Nectar Mission Participation.
  * @category Helpers
  */
-export class NectarMissionParticipation {
+export abstract class NectarMissionParticipation {
   /**
    * Creates a new `NectarMissionParticipation` instance.
    * @param _mission - The `NectarMission` instance that the participation belongs to.

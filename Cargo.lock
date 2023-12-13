@@ -852,9 +852,9 @@ dependencies = [
  "hpl-currency-manager 0.0.80",
  "hpl-events",
  "hpl-hive-control",
- "hpl-nectar-staking 0.1.45",
+ "hpl-nectar-staking",
  "hpl-utils",
- "mpl-bubblegum 0.9.2",
+ "mpl-bubblegum",
  "mpl-token-metadata",
  "solana-program",
  "spl-account-compression",
@@ -943,6 +943,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "hpl-currency-manager"
+version = "0.0.81"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6059ce161c3c83f5b9dc4c6856cca54627ed03cbce376a0ce559f2ad5c74babb"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "getrandom 0.2.9",
+ "hpl-events",
+ "hpl-hive-control",
+ "hpl-macros",
+ "hpl-utils",
+ "mpl-token-metadata",
+ "solana-program",
+ "toml_datetime 0.6.1",
+ "winnow",
+]
+
+[[package]]
 name = "hpl-events"
 version = "0.1.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1015,11 +1034,11 @@ dependencies = [
  "anchor-spl",
  "getrandom 0.2.9",
  "hpl-buzz-guild",
- "hpl-currency-manager 0.0.79",
+ "hpl-currency-manager 0.0.81",
  "hpl-events",
  "hpl-hive-control",
  "hpl-macros",
- "hpl-nectar-staking 0.1.46",
+ "hpl-nectar-staking",
  "hpl-utils",
  "solana-program",
  "spl-account-compression",
@@ -1030,8 +1049,6 @@ dependencies = [
 [[package]]
 name = "hpl-nectar-staking"
 version = "0.1.45"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "278b8f08dc284aeb02970367a6d9a142c835838b9652e3136815adc25b0da166"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -1041,27 +1058,7 @@ dependencies = [
  "hpl-hive-control",
  "hpl-macros",
  "hpl-utils",
- "mpl-bubblegum 0.7.0",
- "mpl-token-metadata",
- "solana-program",
- "spl-account-compression",
- "toml_datetime 0.6.1",
- "winnow",
-]
-
-[[package]]
-name = "hpl-nectar-staking"
-version = "0.1.46"
-dependencies = [
- "anchor-lang",
- "anchor-spl",
- "getrandom 0.2.9",
- "hpl-currency-manager 0.0.79",
- "hpl-events",
- "hpl-hive-control",
- "hpl-macros",
- "hpl-utils",
- "mpl-bubblegum 0.7.0",
+ "mpl-bubblegum",
  "mpl-token-metadata",
  "solana-program",
  "spl-account-compression",
@@ -1289,22 +1286,6 @@ dependencies = [
  "keccak",
  "rand_core 0.6.4",
  "zeroize",
-]
-
-[[package]]
-name = "mpl-bubblegum"
-version = "0.9.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a89c3a68ce92a7c3b3d17378551f6572a0f9fd7d34947c0207e357992326629"
-dependencies = [
- "anchor-lang",
- "bytemuck",
- "mpl-token-metadata",
- "num-traits",
- "solana-program",
- "spl-account-compression",
- "spl-associated-token-account",
- "spl-token",
 ]
 
 [[package]]

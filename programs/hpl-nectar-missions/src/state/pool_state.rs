@@ -11,9 +11,10 @@ pub struct MissionPool {
     pub factions_merkle_root: [u8; 32],
     pub randomizer_round: u8,
     pub staking_pools: Vec<u8>,
+    pub guild_kits: Vec<u8>,
 }
 impl Default for MissionPool {
-    const LEN: usize = 8 + 120;
+    const LEN: usize = 8 + 144;
 
     fn set_defaults(&mut self) {
         self.bump = 0;
@@ -22,6 +23,7 @@ impl Default for MissionPool {
         self.factions_merkle_root = [0; 32];
         self.randomizer_round = 0;
         self.staking_pools = vec![];
+        self.guild_kits = vec![];
     }
 }
 impl MissionPool {

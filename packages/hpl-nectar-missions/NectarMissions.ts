@@ -8,7 +8,7 @@ import {
   Operation,
   SendBulkOptions,
 } from "@honeycomb-protocol/hive-control";
-import { NectarStaking } from "@honeycomb-protocol/nectar-staking";
+import { NectarStaking, StakedNft } from "@honeycomb-protocol/nectar-staking";
 import {
   creatRecallOperation,
   createUpdateMissionPoolOperation,
@@ -20,7 +20,12 @@ import {
 } from "./utils";
 import type { ItemOrArray, NewMissionPoolArgs } from "./types";
 import { NectarMission } from "./Mission";
-import { NectarMissionParticipation } from "./Participation";
+import {
+  NectarMissionParticipation,
+  NectarMissionParticipationGuild,
+  NectarMissionParticipationNft,
+} from "./Participation";
+import { BuzzGuild, BuzzGuildKit } from "@honeycomb-protocol/buzz-guild";
 
 /**
  * The module declaration for `@honeycomb-protocol/hive-control`.
@@ -238,6 +243,36 @@ export class NectarMissions extends Module<
     );
   }
 
+  public stakedNfts(): Promise<StakedNft[]> {
+    return Promise.all(
+      this.stakingPools().map((pool) => pool.stakedNfts())
+    ).then((x) => x.flat());
+  }
+
+  /**
+   * Get the all the staking pools associated with the mission pool.
+   *
+   * @returns The `NectarStaking` instances associated with the mission pool.
+   */
+  public guildKits(): BuzzGuildKit[] {
+    return [...this._pool.stakingPools].map((x) =>
+      this.honeycomb().guildKit(
+        (
+          this.project().services[x] as {
+            __kind: "GuildKit";
+            kitId: web3.PublicKey;
+          }
+        ).kitId
+      )
+    );
+  }
+
+  public guilds(): Promise<BuzzGuild[]> {
+    return Promise.all(this.guildKits().map((kit) => kit.guilds())).then((x) =>
+      x.flat()
+    );
+  }
+
   /**
    * Retrieves a specific mission associated with the mission pool by its name or public key.
    *
@@ -350,6 +385,10 @@ export class NectarMissions extends Module<
    */
   public async participations(forceFetch = ForceScenario.NoForce) {
     await this.missions();
+
+    const stakedNfts = await this.stakedNfts();
+    const guilds = await this.guilds();
+
     return this.cache.getOrFetch(
       "participations",
       this.honeycomb().identity().address.toString(),
@@ -363,10 +402,30 @@ export class NectarMissions extends Module<
           .then((participations) => {
             const participationsMap = new Map();
             participations.forEach((_participation) => {
-              const participation = new NectarMissionParticipation(
-                this.cache.cache.mission.get(_participation.mission.toString()),
-                _participation
-              );
+              const participation =
+                _participation.instrument.__kind === "Nft"
+                  ? new NectarMissionParticipationNft(
+                      this.cache.cache.mission.get(
+                        _participation.mission.toString()
+                      ),
+                      _participation,
+                      stakedNfts.find((n) =>
+                        this.honeycomb()
+                          .pda()
+                          .staking()
+                          .nft(n.stakingPool, n.mint)[0]
+                          .equals(_participation.instrument.fields[0])
+                      )
+                    )
+                  : new NectarMissionParticipationGuild(
+                      this.cache.cache.mission.get(
+                        _participation.mission.toString()
+                      ),
+                      _participation,
+                      guilds.find((g) =>
+                        g.address.equals(_participation.instrument.fields[0])
+                      )
+                    );
               participationsMap.set(participation.address, participation);
             });
             return participationsMap;
