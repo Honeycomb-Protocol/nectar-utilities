@@ -10,14 +10,12 @@ import {
   HPL_HIVE_CONTROL_PROGRAM,
   Honeycomb,
   Operation,
-  HoneycombProject,
   CurrencyManagerPermission,
   createCreateDelegateAuthorityOperation,
 } from "@honeycomb-protocol/hive-control";
 import { createUpdatePoolOperation } from "./updateStakingPool";
 import { createInitMultiplierOperation } from "./initMultipliers";
 import { createAddMultiplierOperation } from "./addMultiplier";
-import { HplCurrency } from "@honeycomb-protocol/currency-manager";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
 
 /**
@@ -25,8 +23,8 @@ import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
  * @category Types
  */
 type CreateCreateStakingOperationArgs = {
-  project: HoneycombProject;
-  currency: HplCurrency;
+  project: web3.PublicKey;
+  currency: web3.PublicKey;
   args: CreateStakingPoolArgs;
   collections?: web3.PublicKey[];
   creators?: web3.PublicKey[];
@@ -83,16 +81,16 @@ export async function createCreateStakingPoolOperation(
   const [stakingPool] = honeycomb
     .pda()
     .staking()
-    .pool(args.project.address, key, programId);
+    .pool(args.project, key, programId);
 
   const instructions: web3.TransactionInstruction[] = [
     createCreateStakingPoolInstruction(
       {
-        project: args.project.address,
+        project: args.project,
         vault: VAULT,
         key,
         stakingPool,
-        currency: args.currency.address,
+        currency: args.currency,
         delegateAuthority:
           honeycomb.identity().delegateAuthority()?.address || programId,
         authority: honeycomb.identity().address,
@@ -136,7 +134,7 @@ export async function createCreateStakingPoolOperation(
             startTime: null,
             endTime: null,
           },
-          project: args.project.address,
+          project: args.project,
           stakingPool: stakingPool,
           collection,
           programId,
@@ -160,7 +158,7 @@ export async function createCreateStakingPoolOperation(
             startTime: null,
             endTime: null,
           },
-          project: args.project.address,
+          project: args.project,
           stakingPool: stakingPool,
           creator,
           programId,
@@ -184,7 +182,7 @@ export async function createCreateStakingPoolOperation(
             startTime: null,
             endTime: null,
           },
-          project: args.project.address,
+          project: args.project,
           stakingPool: stakingPool,
           merkleTree,
           programId,
@@ -198,7 +196,7 @@ export async function createCreateStakingPoolOperation(
       args: {
         decimals: args.multipliersDecimals || 9,
       },
-      project: args.project.address,
+      project: args.project,
       stakingPool,
       programId,
     }).then(({ operation }) => instructions.push(...operation.instructions));
@@ -207,7 +205,7 @@ export async function createCreateStakingPoolOperation(
       args.multipliers.map((multiplier) =>
         createAddMultiplierOperation(honeycomb, {
           args: multiplier,
-          project: args.project.address,
+          project: args.project,
           stakingPool,
           programId,
         }).then(({ operation }) => instructions.push(...operation.instructions))

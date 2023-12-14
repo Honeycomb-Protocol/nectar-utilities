@@ -41,6 +41,7 @@ export type ItemOrArray<T = any> = T | T[];
 export type NewMissionPoolArgs = {
   args: CreateMissionPoolArgs & {
     stakingPools?: PublicKey[];
+    guildKits?: PublicKey[];
   };
   project: PublicKey;
 };

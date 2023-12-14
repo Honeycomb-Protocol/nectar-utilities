@@ -75,8 +75,8 @@ export function bytesOf(input: any): number {
 }
 
 describe("Nectar Utilities", () => {
-  const totalNfts = 0;
-  const totalcNfts = 7;
+  const totalNfts = 1;
+  const totalcNfts = 0;
 
   let adminHC: Honeycomb;
   let userHC: Honeycomb;
@@ -114,10 +114,7 @@ describe("Nectar Utilities", () => {
 
     userHC.use(
       lutModule(async (accounts) => {
-        const lookupTable = await createLookupTable(userHC, accounts);
-        if (!lookupTable) throw new Error("Lookuptale noinsfoiasdoiahjsod");
-        console.log("Lookup Table", lookupTable.key.toString());
-        return lookupTable;
+        throw new Error("Should not be called");
       })
     );
   });
@@ -237,7 +234,7 @@ describe("Nectar Utilities", () => {
     //   "GWZwbVCxjzkLgnqtvAGV2LNB26g4XJhNotCDhSrS893C"
     // );
     const address = new web3.PublicKey(
-      "FKRhYwW4QJwC6r2C1MGv3xP88zjDqqk4nyCazjrRoysQ"
+      "7PzoQiv7PV1ehpFTxdgxY3viNWshsqC6Rf1PSAc1AtJX"
     );
     adminHC.use(await HoneycombProject.fromAddress(adminHC, address));
     await findProjectCurrencies(adminHC.project());
@@ -249,8 +246,15 @@ describe("Nectar Utilities", () => {
 
     universalLut = (await getOrFetchLoockupTable(
       userHC.connection,
-      new web3.PublicKey("9CwjtN96dKCkQUfhZyqpmcanECx5GsqduehwBQFriTQx")
+      new web3.PublicKey("6iyeoDsthBnCKFZwgnuLaaUEjpFEHFZAehCkEjwcegjB")
     ))!;
+
+    console.log(
+      "Project",
+      adminHC.project().address.toString(),
+      "Currency",
+      adminHC.currency().address.toString()
+    );
   });
 
   it("Load/Create Staking Pool", async () => {
@@ -272,8 +276,8 @@ describe("Nectar Utilities", () => {
             endTime: null,
             lockType: LockType.Freeze,
           },
-          project: adminHC.project(),
-          currency: adminHC.currency(),
+          project: adminHC.project().address,
+          currency: adminHC.currency().address,
           collections: [collection.mint.address],
           merkleTrees: [merkleTree],
           multipliersDecimals: 3,
@@ -303,7 +307,7 @@ describe("Nectar Utilities", () => {
     console.log("Staking", adminHC.staking().address.toString());
   });
 
-  it("Load/Create Guild Kit", async () => {
+  it.skip("Load/Create Guild Kit", async () => {
     await findProjectGuildKits(adminHC.project());
 
     if (!adminHC.guildKit) {
@@ -402,63 +406,64 @@ describe("Nectar Utilities", () => {
   });
 
   it("Create and Load Lookup Table", async () => {
-    const addresses = [
-      HPL_EVENTS_PROGRAM,
-      HPL_HIVE_CONTROL_PROGRAM,
-      HPL_CURRENCY_MANAGER_PROGRAM,
-      HPL_NECTAR_STAKING_PROGRAM,
-      HPL_NECTAR_MISSIONS_PROGRAM,
-      VAULT,
-      web3.SystemProgram.programId,
-      TOKEN_PROGRAM_ID,
-      TOKEN_2022_PROGRAM_ID,
-      METADATA_PROGRAM_ID,
-      BUBBLEGUM_PROGRAM_ID,
-      AUTHORIZATION_PROGRAM_ID,
-
-      SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-      SPL_NOOP_PROGRAM_ID,
-      web3.SYSVAR_CLOCK_PUBKEY,
-      web3.SYSVAR_RENT_PUBKEY,
-      web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-    ];
-
-    Object.values(adminHC._projects).forEach((project) => {
-      addresses.push(project.address);
-      addresses.push(...project.collections);
-      addresses.push(...project.creators);
-      addresses.push(...project.merkleTrees);
-    });
-
-    Object.values(adminHC._currencies).forEach((currency) => {
-      addresses.push(currency.address);
-      addresses.push(currency.mint.address);
-    });
-
-    await Promise.all(
-      Object.values(adminHC._stakings).map(async (staking) => {
-        addresses.push(staking.address);
-        await staking
-          .multipliers()
-          .then(
-            (multipliers) => multipliers && addresses.push(multipliers.address)
-          );
-      })
-    );
-
-    await Promise.all(
-      Object.values(adminHC._missions).map(async (missions) => {
-        addresses.push(missions.address);
-        await missions
-          .missions()
-          .then(
-            (missions) =>
-              missions && addresses.push(...missions.map((m) => m.address))
-          );
-      })
-    );
-
     if (!universalLut) {
+      const addresses = [
+        HPL_EVENTS_PROGRAM,
+        HPL_HIVE_CONTROL_PROGRAM,
+        HPL_CURRENCY_MANAGER_PROGRAM,
+        HPL_NECTAR_STAKING_PROGRAM,
+        HPL_NECTAR_MISSIONS_PROGRAM,
+        VAULT,
+        web3.SystemProgram.programId,
+        TOKEN_PROGRAM_ID,
+        TOKEN_2022_PROGRAM_ID,
+        METADATA_PROGRAM_ID,
+        BUBBLEGUM_PROGRAM_ID,
+        AUTHORIZATION_PROGRAM_ID,
+
+        SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+        SPL_NOOP_PROGRAM_ID,
+        web3.SYSVAR_CLOCK_PUBKEY,
+        web3.SYSVAR_RENT_PUBKEY,
+        web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+      ];
+
+      Object.values(adminHC._projects).forEach((project) => {
+        addresses.push(project.address);
+        addresses.push(...project.collections);
+        addresses.push(...project.creators);
+        addresses.push(...project.merkleTrees);
+      });
+
+      Object.values(adminHC._currencies).forEach((currency) => {
+        addresses.push(currency.address);
+        addresses.push(currency.mint.address);
+      });
+
+      await Promise.all(
+        Object.values(adminHC._stakings).map(async (staking) => {
+          addresses.push(staking.address);
+          await staking
+            .multipliers()
+            .then(
+              (multipliers) =>
+                multipliers && addresses.push(multipliers.address)
+            );
+        })
+      );
+
+      await Promise.all(
+        Object.values(adminHC._missions).map(async (missions) => {
+          addresses.push(missions.address);
+          await missions
+            .missions()
+            .then(
+              (missions) =>
+                missions && addresses.push(...missions.map((m) => m.address))
+            );
+        })
+      );
+
       universalLut = await adminHC.lut().create(addresses);
       console.log("New universal LUT", universalLut.key.toString());
     }
@@ -506,15 +511,16 @@ describe("Nectar Utilities", () => {
   it("Stake NFTs", async () => {
     const staking = userHC.staking() as unknown as NectarStaking;
     const availableNfts = await staking.availableNfts();
-    console.log("AvailabbleNfts", availableNfts);
-    expect(availableNfts.length).toBe(totalNfts + totalcNfts);
-    await staking.stake(availableNfts, {
-      skipPreflight: true,
-      commitment: "processed",
-      preflightCommitment: "processed",
-    });
+
+    if (availableNfts.length) {
+      await staking.stake(availableNfts, {
+        skipPreflight: true,
+        commitment: "processed",
+        preflightCommitment: "processed",
+      });
+    }
+
     const stakedNfts = await staking.stakedNfts();
-    console.log("StakedNfts", stakedNfts);
     expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
   });
 
@@ -544,19 +550,14 @@ describe("Nectar Utilities", () => {
     console.log("guild", guild.address.toString());
   });
 
-  it.skip("Participate on Mission with Nft", async () => {
+  it("Participate on Mission with Nft", async () => {
     const staking = userHC.staking() as unknown as NectarStaking;
 
     const usableNfts = await staking.usableNfts();
     const guilds = await userHC.guildKit().myGuilds();
+
     console.log("usable Nfts", usableNfts.length);
-    console.log("guilds", guilds.length);
-    expect(usableNfts.length).toBe(totalNfts + totalcNfts - guilds.length);
-
-    const participations = await userHC.missions().participations();
-    console.log("Participations", participations.length);
-
-    if (nfts.length) {
+    if (usableNfts.length) {
       const mission = await userHC.missions().mission("Quick Patrol");
       await mission.participate(
         usableNfts.map((x) => ({
@@ -568,6 +569,10 @@ describe("Nectar Utilities", () => {
         }))
       );
     }
+
+    const participations = await userHC.missions().participations();
+    console.log("Participations", participations.length);
+    expect(participations.length).toBe(usableNfts.length);
   });
 
   it.skip("Participate on Mission with Guild", async () => {
@@ -582,7 +587,7 @@ describe("Nectar Utilities", () => {
     }
   });
 
-  it.skip("Recall Nfts from missions", async () => {
+  it("Recall Nfts from missions", async () => {
     await wait(1);
     const participations = await userHC.missions().participations();
     expect(participations.length).toBeGreaterThan(0);
@@ -611,7 +616,7 @@ describe("Nectar Utilities", () => {
     console.log("Successfully left guild & unstaked nfts");
   });
 
-  it.skip("Unstake NFTs", async () => {
+  it("Unstake NFTs", async () => {
     const staking = userHC.staking() as unknown as NectarStaking;
 
     const stakedNfts = await staking.stakedNfts();

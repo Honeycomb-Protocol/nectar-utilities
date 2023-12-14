@@ -415,7 +415,14 @@ export class NectarMissions extends Module<
    * console.log(participations); // Output: [NectarMissionParticipation1, NectarMissionParticipation2, ...]
    */
   public async participations(forceFetch = ForceScenario.NoForce) {
-    await this.missions();
+    const missions = await this.missions().then((missions) =>
+      missions.reduce(
+        (acc, mission) => ({ ...acc, [mission.address.toString()]: mission }),
+        {} as { [key: string]: NectarMission }
+      )
+    );
+
+    console.dir(missions);
 
     const stakedNfts = await this.stakedNfts();
     const guilds = await this.guilds();
@@ -433,12 +440,20 @@ export class NectarMissions extends Module<
           .then((participations) => {
             const participationsMap = new Map();
             participations.forEach((_participation) => {
+              if (
+                !Object.keys(missions).includes(
+                  _participation.mission.toString()
+                )
+              )
+                return;
+              console.log(
+                "_participation.mission.toString()",
+                _participation.mission.toString()
+              );
               const participation =
                 _participation.instrument.__kind === "Nft"
                   ? new NectarMissionParticipationNft(
-                      this.cache.cache.mission.get(
-                        _participation.mission.toString()
-                      ),
+                      missions[_participation.mission.toString()],
                       _participation,
                       stakedNfts.find((n) =>
                         this.honeycomb()
@@ -449,9 +464,7 @@ export class NectarMissions extends Module<
                       )
                     )
                   : new NectarMissionParticipationGuild(
-                      this.cache.cache.mission.get(
-                        _participation.mission.toString()
-                      ),
+                      missions[_participation.mission.toString()],
                       _participation,
                       guilds.find((g) =>
                         g.address.equals(_participation.instrument.fields[0])

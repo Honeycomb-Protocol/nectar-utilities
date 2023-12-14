@@ -5,10 +5,12 @@ import {
   SYSVAR_RENT_PUBKEY,
 } from "@solana/web3.js";
 import {
+  CurrencyManagerPermission,
   HPL_HIVE_CONTROL_PROGRAM,
   Honeycomb,
   Operation,
   VAULT,
+  createCreateDelegateAuthorityOperation,
 } from "@honeycomb-protocol/hive-control";
 import {
   CreateMissionPoolArgs,
@@ -29,6 +31,7 @@ type CreateCreateMissionPoolOperationArgs = {
    */
   args: CreateMissionPoolArgs & {
     stakingPools?: PublicKey[];
+    guildKits?: PublicKey[];
   };
   /**
    * The HoneycombProject where the new mission pool will be created.
@@ -101,18 +104,18 @@ export async function createCreateMissionPoolOperation(
     ),
   ];
 
-  // await createCreateDelegateAuthorityOperation(honeycomb, {
-  //   args: {
-  //     delegations: [
-  //       {
-  //         __kind: "CurrencyManager",
-  //         permission: CurrencyManagerPermission.MintCurrencies,
-  //       },
-  //     ],
-  //   },
-  //   delegate: missionPool,
-  //   project: args.project,
-  // }).then(({ operation }) => instructions.push(...operation.instructions));
+  await createCreateDelegateAuthorityOperation(honeycomb, {
+    args: {
+      delegations: [
+        {
+          __kind: "CurrencyManager",
+          permission: CurrencyManagerPermission.MintCurrencies,
+        },
+      ],
+    },
+    delegate: missionPool,
+    project: args.project,
+  }).then(({ operation }) => instructions.push(...operation.instructions));
 
   if (args.args.stakingPools?.length) {
     await Promise.all(

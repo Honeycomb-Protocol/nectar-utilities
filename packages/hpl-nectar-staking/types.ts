@@ -195,8 +195,8 @@ export type AvailableNft = Metadata & { tokenRecord?: TokenRecord };
  */
 export type NewStakingPoolArgs = {
   args: CreateStakingPoolArgs;
-  project: HoneycombProject;
-  currency: HplCurrency;
+  project: web3.PublicKey;
+  currency: web3.PublicKey;
   collections?: web3.PublicKey[];
   creators?: web3.PublicKey[];
   merkleTrees?: web3.PublicKey[];

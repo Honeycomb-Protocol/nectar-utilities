@@ -70,7 +70,7 @@ export class NectarStakingPdas extends PdaClient {
     wallet: PublicKey,
     programId: PublicKey = this.defaultProgramId
   ) => {
-    const buffers = [Buffer.from("staker"), pool.toBuffer(), wallet.toBuffer()];
+    const buffers = [Buffer.from("staker"), wallet.toBuffer(), pool.toBuffer()];
     return PdaModule.findProgramAddressSyncWithSeeds(buffers, programId);
   };
 
