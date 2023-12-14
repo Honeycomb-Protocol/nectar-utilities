@@ -32,7 +32,7 @@ pub fn transfer_cnft_cpi<'info>(
     signer_seeds: Option<&[&[&[u8]]; 1]>, // Optional signer seeds
 ) -> Result<()> {
     msg!(
-        "attempting to burn an nft {} from tree {}",
+        "attempting to transfer an nft {} from tree {}",
         index,
         merkle_tree.key()
     );

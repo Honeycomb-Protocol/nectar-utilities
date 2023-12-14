@@ -291,9 +291,9 @@ pub fn unstake_cnft<'info>(
 
     crate::bubblegum::transfer_cnft_cpi(
         ctx.accounts.tree_authority.to_account_info(),
-        ctx.accounts.wallet.to_account_info(),
-        ctx.accounts.wallet.to_account_info(),
         staker.to_account_info(),
+        staker.to_account_info(),
+        ctx.accounts.wallet.to_account_info(),
         ctx.accounts.merkle_tree.to_account_info(),
         ctx.accounts.log_wrapper.to_account_info(),
         ctx.accounts.compression_program.to_account_info(),

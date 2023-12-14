@@ -76,7 +76,7 @@ export function bytesOf(input: any): number {
 
 describe("Nectar Utilities", () => {
   const totalNfts = 1;
-  const totalcNfts = 0;
+  const totalcNfts = 5;
 
   let adminHC: Honeycomb;
   let userHC: Honeycomb;
@@ -234,7 +234,7 @@ describe("Nectar Utilities", () => {
     //   "GWZwbVCxjzkLgnqtvAGV2LNB26g4XJhNotCDhSrS893C"
     // );
     const address = new web3.PublicKey(
-      "7PzoQiv7PV1ehpFTxdgxY3viNWshsqC6Rf1PSAc1AtJX"
+      "8bqzYQPCqoUFHDv8vpmpig7qgMgQA1EKT1mqe1QxZSwe"
     );
     adminHC.use(await HoneycombProject.fromAddress(adminHC, address));
     await findProjectCurrencies(adminHC.project());
@@ -246,7 +246,7 @@ describe("Nectar Utilities", () => {
 
     universalLut = (await getOrFetchLoockupTable(
       userHC.connection,
-      new web3.PublicKey("6iyeoDsthBnCKFZwgnuLaaUEjpFEHFZAehCkEjwcegjB")
+      new web3.PublicKey("BbVTfbpKCE62N4tHRuHmm5TbcAXyyDARfgJFyEdAQUZ9")
     ))!;
 
     console.log(
@@ -307,7 +307,7 @@ describe("Nectar Utilities", () => {
     console.log("Staking", adminHC.staking().address.toString());
   });
 
-  it.skip("Load/Create Guild Kit", async () => {
+  it("Load/Create Guild Kit", async () => {
     await findProjectGuildKits(adminHC.project());
 
     if (!adminHC.guildKit) {
@@ -521,10 +521,11 @@ describe("Nectar Utilities", () => {
     }
 
     const stakedNfts = await staking.stakedNfts();
+    console.log("Staked Nfts", stakedNfts.length);
     expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
   });
 
-  it.skip("Create Guild", async () => {
+  it("Create Guild", async () => {
     const staking = userHC.staking();
     const nfts = await staking.stakedNfts();
     const guildKit = userHC.guildKit();
@@ -554,7 +555,6 @@ describe("Nectar Utilities", () => {
     const staking = userHC.staking() as unknown as NectarStaking;
 
     const usableNfts = await staking.usableNfts();
-    const guilds = await userHC.guildKit().myGuilds();
 
     console.log("usable Nfts", usableNfts.length);
     if (usableNfts.length) {
@@ -575,7 +575,7 @@ describe("Nectar Utilities", () => {
     expect(participations.length).toBe(usableNfts.length);
   });
 
-  it.skip("Participate on Mission with Guild", async () => {
+  it("Participate on Mission with Guild", async () => {
     const guilds = await userHC.guildKit().myGuilds();
     console.log("guilds", guilds.length);
     const participations = await userHC.missions().participations();
@@ -594,7 +594,7 @@ describe("Nectar Utilities", () => {
     await userHC.missions().recall(participations);
   });
 
-  it.skip("Disband Guilds", async () => {
+  it("Disband Guilds", async () => {
     const staking = userHC.staking() as unknown as NectarStaking;
     const guilds = await userHC.guildKit().myGuilds();
 
