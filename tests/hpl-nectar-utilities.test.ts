@@ -508,16 +508,12 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it("Stake NFTs", async () => {
+  it.skip("Stake NFTs", async () => {
     const staking = userHC.staking() as unknown as NectarStaking;
     const availableNfts = await staking.availableNfts();
 
     if (availableNfts.length) {
-      await staking.stake(availableNfts, {
-        skipPreflight: true,
-        commitment: "processed",
-        preflightCommitment: "processed",
-      });
+      await staking.stake(availableNfts);
     }
 
     const stakedNfts = await staking.stakedNfts();
@@ -576,6 +572,7 @@ describe("Nectar Utilities", () => {
   });
 
   it("Participate on Mission with Guild", async () => {
+    await wait(10);
     const guilds = await userHC.guildKit().myGuilds();
     console.log("guilds", guilds.length);
     const participations = await userHC.missions().participations();

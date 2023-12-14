@@ -194,7 +194,7 @@ pub fn participate_guild(ctx: Context<ParticipateGuild>) -> Result<()> {
     )?;
 
     if let NFTUsedBy::Guild { id, role, .. } = chief_nft.used_by {
-        if id.eq(&guild.key()) || role != GuildRole::Chief {
+        if !id.eq(&guild.key()) || role != GuildRole::Chief {
             return Err(ErrorCode::NftNotRecognized.into());
         }
     } else {
