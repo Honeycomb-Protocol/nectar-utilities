@@ -537,18 +537,22 @@ export class NectarMissions extends Module<
    * const participations = await nectarMissions.participations(walletAddress);
    * console.log(participations); // Output: [NectarMissionParticipation1, NectarMissionParticipation2, ...]
    */
-  public async history(
-    args: {
-      pool: web3.PublicKey;
-      authToken: string;
-      page: number;
-      pageSize: number;
-    },
-    forceFetch?: ForceScenario
-  ) {
+  public async history(args: {
+    authToken: string;
+    page: number;
+    pageSize: number;
+    forceFetch?: ForceScenario;
+  }) {
     return this.fetchParticipationsUsing(
-      () => this.honeycomb().fetch().missions().participationHistory(args),
-      forceFetch
+      () =>
+        this.honeycomb()
+          .fetch()
+          .missions()
+          .participationHistory({
+            pool: this.address,
+            ...args,
+          }),
+      args.forceFetch
     );
   }
 
