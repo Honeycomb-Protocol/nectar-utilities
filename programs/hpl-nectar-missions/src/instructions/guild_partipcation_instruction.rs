@@ -50,7 +50,7 @@ pub struct ParticipateGuild<'info> {
     pub guild_kit: Box<Account<'info, GuildKit>>,
 
     /// Guild state account
-    #[account(has_one = guild_kit)]
+    #[account(mut, has_one = guild_kit)]
     pub guild: Box<Account<'info, Guild>>,
 
     /// Chief NFT
@@ -113,7 +113,7 @@ pub struct ParticipateGuild<'info> {
 /// participate in a mission
 pub fn participate_guild(ctx: Context<ParticipateGuild>) -> Result<()> {
     let participation = &mut ctx.accounts.participation;
-    let guild = &ctx.accounts.guild;
+    let guild = &mut ctx.accounts.guild;
     let guild_kit = &ctx.accounts.guild_kit;
     let chief_nft = &ctx.accounts.chief_nft;
     let buzz_guild_program = &ctx.accounts.buzz_guild_program;
@@ -453,7 +453,7 @@ pub struct RecallGuild<'info> {
     pub guild_kit: Box<Account<'info, GuildKit>>,
 
     /// Guild state account
-    #[account(has_one = guild_kit)]
+    #[account(mut, has_one = guild_kit)]
     pub guild: Box<Account<'info, Guild>>,
 
     /// Chief NFT
@@ -496,7 +496,7 @@ pub struct RecallGuild<'info> {
 /// recall from a mission
 pub fn recall_guild(ctx: Context<RecallGuild>) -> Result<()> {
     let participation = &mut ctx.accounts.participation;
-    let guild = &ctx.accounts.guild;
+    let guild = &mut ctx.accounts.guild;
     let guild_kit = &ctx.accounts.guild_kit;
     let chief_nft = &ctx.accounts.chief_nft;
     let buzz_guild_program = &ctx.accounts.buzz_guild_program;
