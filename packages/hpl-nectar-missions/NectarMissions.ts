@@ -492,7 +492,8 @@ export class NectarMissions extends Module<
     argsOrforceFetch?:
       | ForceScenario
       | {
-          authToken: string;
+          authToken?: string;
+          wallets?: string[];
           page: number;
           pageSize: number;
           forceFetch?: ForceScenario;
@@ -538,7 +539,8 @@ export class NectarMissions extends Module<
    * console.log(participations); // Output: [NectarMissionParticipation1, NectarMissionParticipation2, ...]
    */
   public async history(args: {
-    authToken: string;
+    authToken?: string;
+    wallets?: string[];
     page: number;
     pageSize: number;
     forceFetch?: ForceScenario;

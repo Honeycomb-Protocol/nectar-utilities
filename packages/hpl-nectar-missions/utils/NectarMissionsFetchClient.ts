@@ -153,7 +153,8 @@ export class NectarMissionsFetchClient extends FetchClient {
    */
   public async participations(args: {
     pool: PublicKey;
-    authToken: string;
+    authToken?: string;
+    wallets?: string[];
     page: number;
     pageSize: number;
   }): Promise<Participation[] | null>;
@@ -166,12 +167,38 @@ export class NectarMissionsFetchClient extends FetchClient {
         }
       | {
           pool: PublicKey;
-          authToken: string;
+          authToken?: string;
+          wallets?: string[];
           page: number;
           pageSize?: number;
         }
   ): Promise<Participation[] | null> {
-    if ("wallet" in args) {
+    if ("pool" in args) {
+      const publicInfo = await this.honeycomb().publicInfo();
+      const offchainUrl = publicInfo.get("offchain");
+
+      const headers = {};
+      if (args.authToken) {
+        headers["Authorization"] = `Bearer ${args.authToken}`;
+      }
+
+      let url = `${offchainUrl}/missions/participations/${args.page}/${
+        args.pageSize || 99999
+      }?missionPool=${args.pool}&isRecalled=false`;
+
+      if (args.wallets) {
+        args.wallets.forEach((wallet) => {
+          url += `&wallets=${wallet}`;
+        });
+      }
+      return fetch(url, {
+        headers,
+      })
+        .then((res) => res.json())
+        .then((res: { data: OffchainParticipation[] }) =>
+          res.data.map(offchainToSolitaParticipation)
+        );
+    } else {
       const gpaBuilder = Participation.gpaBuilder().addFilter(
         "wallet",
         args.wallet
@@ -196,24 +223,6 @@ export class NectarMissionsFetchClient extends FetchClient {
       } catch {
         return null;
       }
-    } else {
-      const publicInfo = await this.honeycomb().publicInfo();
-      const offchainUrl = publicInfo.get("offchain");
-
-      return fetch(
-        `${offchainUrl}/missions/participations/${args.page}/${
-          args.pageSize || 99999
-        }?missionPool=${args.pool}&isRecalled=false`,
-        {
-          headers: {
-            Authorization: `Bearer ${args.authToken}`,
-          },
-        }
-      )
-        .then((res) => res.json())
-        .then((res: { data: OffchainParticipation[] }) =>
-          res.data.map(offchainToSolitaParticipation)
-        );
     }
   }
 
@@ -226,23 +235,38 @@ export class NectarMissionsFetchClient extends FetchClient {
    */
   public async participationHistory(args: {
     pool: PublicKey;
-    authToken: string;
+    wallets?: string[];
+    authToken?: string;
     page: number;
     pageSize: number;
   }): Promise<Participation[] | null> {
     const publicInfo = await this.honeycomb().publicInfo();
     const offchainUrl = publicInfo.get("offchain");
 
-    return fetch(
-      `${offchainUrl}/missions/participations/${args.page}/${
-        args.pageSize || 99999
-      }?missionPool=${args.pool}&isRecalled=true`,
-      {
-        headers: {
-          Authorization: `Bearer ${args.authToken}`,
-        },
-      }
-    )
+    if (!args.authToken && !args.wallets) {
+      throw new Error(
+        "Either an authToken or wallets must be provided to fetch participation history."
+      );
+    }
+
+    const headers = {};
+    if (args.authToken) {
+      headers["Authorization"] = `Bearer ${args.authToken}`;
+    }
+
+    let url = `${offchainUrl}/missions/participations/${args.page}/${
+      args.pageSize || 99999
+    }?missionPool=${args.pool}&isRecalled=false`;
+
+    if (args.wallets) {
+      args.wallets.forEach((wallet) => {
+        url += `&wallets=${wallet}`;
+      });
+    }
+
+    return fetch(url, {
+      headers,
+    })
       .then((res) => res.json())
       .then((res: { data: OffchainParticipation[] }) =>
         res.data.map(offchainToSolitaParticipation)
