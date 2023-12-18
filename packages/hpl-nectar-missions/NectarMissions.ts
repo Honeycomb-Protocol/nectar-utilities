@@ -3,6 +3,7 @@ import {
   CreateMissionArgs,
   MissionPool,
   PROGRAM_ID,
+  Participation,
   UpdateMissionPoolArgs,
 } from "./generated";
 import {
@@ -370,9 +371,7 @@ export class NectarMissions extends Module<
    * console.log(missions); // Output: [NectarMission1, NectarMission2, ...]
    */
   public async missions(forceFetch = ForceScenario.NoForce) {
-    const missions = this.cache.cache.mission
-      ? Array.from(this.cache.cache.mission.values())
-      : [];
+    const missions = this.cache.get("mission");
     if (missions.length === 0 || forceFetch == ForceScenario.Force) {
       await this.honeycomb()
         .fetch()
@@ -389,9 +388,84 @@ export class NectarMissions extends Module<
           })
         );
     }
-    return this.cache.cache.mission
-      ? Array.from(this.cache.cache.mission.values())
-      : [];
+    return this.cache.get("mission");
+  }
+
+  private async fetchParticipationsUsing(
+    fetch: () => Promise<Participation[]>,
+    forceFetch = ForceScenario.NoForce
+  ) {
+    const missions = await this.missions().then((missions) =>
+      missions.reduce(
+        (acc, mission) => ({ ...acc, [mission.address.toString()]: mission }),
+        {} as { [key: string]: NectarMission }
+      )
+    );
+
+    const stakedNfts = await this.stakedNfts();
+    const guilds = await this.guilds();
+
+    if (
+      this.cache.get(
+        "participations",
+        this.honeycomb().identity().address.toString()
+      ).size === 0 ||
+      forceFetch === ForceScenario.Force
+    ) {
+      await fetch().then((participations) =>
+        this.cache.updateSync(
+          "participations",
+          this.honeycomb().identity().address.toString(),
+          (participationsMap) => {
+            {
+              participations.forEach((_participation) => {
+                if (
+                  !Object.keys(missions).includes(
+                    _participation.mission.toString()
+                  )
+                )
+                  return;
+                console.log(
+                  "_participation.mission.toString()",
+                  _participation.mission.toString()
+                );
+                const participation =
+                  _participation.instrument.__kind === "Nft"
+                    ? new NectarMissionParticipationNft(
+                        missions[_participation.mission.toString()],
+                        _participation,
+                        stakedNfts.find((n) =>
+                          this.honeycomb()
+                            .pda()
+                            .staking()
+                            .nft(n.stakingPool, n.mint)[0]
+                            .equals(_participation.instrument.fields[0])
+                        )
+                      )
+                    : new NectarMissionParticipationGuild(
+                        missions[_participation.mission.toString()],
+                        _participation,
+                        guilds.find((g) =>
+                          g.address.equals(_participation.instrument.fields[0])
+                        )
+                      );
+                participationsMap.set(
+                  participation.address.toString(),
+                  participation
+                );
+              });
+              return participationsMap;
+            }
+          }
+        )
+      );
+    }
+
+    return Array.from(
+      this.cache
+        .get("participations", this.honeycomb().identity().address.toString())
+        .values()
+    );
   }
 
   /**
@@ -414,70 +488,68 @@ export class NectarMissions extends Module<
    * const participations = await nectarMissions.participations(walletAddress);
    * console.log(participations); // Output: [NectarMissionParticipation1, NectarMissionParticipation2, ...]
    */
-  public async participations(forceFetch = ForceScenario.NoForce) {
-    const missions = await this.missions().then((missions) =>
-      missions.reduce(
-        (acc, mission) => ({ ...acc, [mission.address.toString()]: mission }),
-        {} as { [key: string]: NectarMission }
-      )
-    );
-
-    console.dir(missions);
-
-    const stakedNfts = await this.stakedNfts();
-    const guilds = await this.guilds();
-
-    const participationsMap = await this.cache.getOrFetch(
-      "participations",
-      this.honeycomb().identity().address.toString(),
+  public async participations(
+    argsOrforceFetch?:
+      | ForceScenario
+      | {
+          authToken: string;
+          page: number;
+          pageSize: number;
+          forceFetch?: ForceScenario;
+        }
+  ) {
+    return this.fetchParticipationsUsing(
       () =>
-        this.honeycomb()
-          .fetch()
-          .missions()
-          .participations({
-            wallet: this.honeycomb().identity().address,
-          })
-          .then((participations) => {
-            const participationsMap = new Map();
-            participations.forEach((_participation) => {
-              if (
-                !Object.keys(missions).includes(
-                  _participation.mission.toString()
-                )
-              )
-                return;
-              console.log(
-                "_participation.mission.toString()",
-                _participation.mission.toString()
-              );
-              const participation =
-                _participation.instrument.__kind === "Nft"
-                  ? new NectarMissionParticipationNft(
-                      missions[_participation.mission.toString()],
-                      _participation,
-                      stakedNfts.find((n) =>
-                        this.honeycomb()
-                          .pda()
-                          .staking()
-                          .nft(n.stakingPool, n.mint)[0]
-                          .equals(_participation.instrument.fields[0])
-                      )
-                    )
-                  : new NectarMissionParticipationGuild(
-                      missions[_participation.mission.toString()],
-                      _participation,
-                      guilds.find((g) =>
-                        g.address.equals(_participation.instrument.fields[0])
-                      )
-                    );
-              participationsMap.set(participation.address, participation);
-            });
-            return participationsMap;
-          }),
+        typeof argsOrforceFetch === "object"
+          ? this.honeycomb()
+              .fetch()
+              .missions()
+              .participations({
+                pool: this.address,
+                ...argsOrforceFetch,
+              })
+          : this.honeycomb().fetch().missions().participations({
+              wallet: this.honeycomb().identity().address,
+            }),
+      typeof argsOrforceFetch === "object"
+        ? argsOrforceFetch.forceFetch
+        : argsOrforceFetch
+    );
+  }
+
+  /**
+   * Retrieves mission participations for a given wallet address associated with the mission pool.
+   *
+   * @param wallet - The public key of the wallet for which to retrieve mission participations.
+   * If not provided, the default wallet associated with the `Honeycomb` instance will be used.
+   * @param reFetch - Set to `true` to force fetching participations from the blockchain, even if cached.
+   * @returns An array of `NectarMissionParticipation` instances representing the mission participations
+   * associated with the wallet.
+   *
+   * @async
+   * @example
+   * // Retrieve mission participations for the default wallet
+   * const participations = await nectarMissions.participations();
+   * console.log(participations); // Output: [NectarMissionParticipation1, NectarMissionParticipation2, ...]
+   *
+   * // Alternatively, you can specify the wallet address to retrieve participations for a specific wallet
+   * const walletAddress = new web3.PublicKey("WalletAddress");
+   * const participations = await nectarMissions.participations(walletAddress);
+   * console.log(participations); // Output: [NectarMissionParticipation1, NectarMissionParticipation2, ...]
+   */
+  public async history(
+    args: {
+      pool: web3.PublicKey;
+      authToken: string;
+      page: number;
+      pageSize: number;
+    },
+    forceFetch?: ForceScenario
+  ) {
+    return this.fetchParticipationsUsing(
+      () => this.honeycomb().fetch().missions().participationHistory(args),
       forceFetch
     );
-
-    return Array.from(participationsMap.values());
   }
 
   /**
