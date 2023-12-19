@@ -99,7 +99,7 @@ pub struct UpdateMissionPool<'info> {
 
     /// GuildKit from which the Guilds can participate in the mission_pool
     #[account(has_one = project)]
-    pub guild_kit: Option<Account<'info, GuildKit>>,
+    pub guild_kit: Option<Box<Account<'info, GuildKit>>>,
 
     #[account(has_one = authority)]
     pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
@@ -184,7 +184,7 @@ pub fn update_mission_pool(
 
         hpl_utils::reallocate(
             1,
-            guild_kit.to_account_info(),
+            mission_pool.to_account_info(),
             ctx.accounts.payer.to_account_info(),
             &ctx.accounts.rent,
             &ctx.accounts.system_program,

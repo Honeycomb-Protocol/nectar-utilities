@@ -130,8 +130,8 @@ export async function createCreateMissionPoolOperation(
           },
           project: args.project,
           missionPool,
-          stakingPool: index < stakingPools.length ? stakingPools[index] : null,
-          guildKit: index < guildKits.length ? guildKits[index] : null,
+          stakingPool: stakingPools[index],
+          guildKit: guildKits[index],
           programId,
         }).then(({ operation }) => instructions.push(...operation.instructions))
       )
