@@ -123,6 +123,15 @@
           ]
         },
         {
+          "name": "guildKit",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "GuildKit from which the Guilds can participate in the mission_pool"
+          ]
+        },
+        {
           "name": "delegateAuthority",
           "isMut": false,
           "isSigner": false,

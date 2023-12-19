@@ -38,6 +38,11 @@ type CreateUpdateMissionPoolOperationArgs = {
    */
   stakingPool?: PublicKey;
   /**
+   * (Optional) The guild kits public key associated with the mission pool.
+   * If not provided, the default programId will be used.
+   */
+  guildKit?: PublicKey;
+  /**
    * (Optional) The program ID associated with the update mission pool operation.
    * If not provided, the default PROGRAM_ID will be used.
    */
@@ -82,6 +87,7 @@ export async function createUpdateMissionPoolOperation(
         project: args.project,
         missionPool: args.missionPool,
         stakingPool: args.stakingPool || programId,
+        guildKit: args.guildKit || programId,
         delegateAuthority:
           honeycomb.identity().delegateAuthority()?.address || programId,
         authority: honeycomb.identity().address,

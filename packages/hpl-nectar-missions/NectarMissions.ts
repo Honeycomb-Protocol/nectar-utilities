@@ -404,58 +404,54 @@ export class NectarMissions extends Module<
 
     const stakedNfts = await this.stakedNfts();
     const guilds = await this.guilds();
-
-    if (
-      this.cache.get(
-        "participations",
-        this.honeycomb().identity().address.toString()
-      ).size === 0 ||
-      forceFetch === ForceScenario.Force
-    ) {
+    const item = this.cache.get(
+      "participations",
+      this.honeycomb().identity().address.toString()
+    );
+    if (!item || item.size === 0 || forceFetch === ForceScenario.Force) {
       await fetch().then((participations) =>
         this.cache.updateSync(
           "participations",
           this.honeycomb().identity().address.toString(),
           (participationsMap) => {
-            {
-              participations.forEach((_participation) => {
-                if (
-                  !Object.keys(missions).includes(
-                    _participation.mission.toString()
-                  )
-                )
-                  return;
-                console.log(
-                  "_participation.mission.toString()",
+            if (!participationsMap) participationsMap = new Map();
+            participations.forEach((_participation) => {
+              if (
+                !Object.keys(missions).includes(
                   _participation.mission.toString()
-                );
-                const participation =
-                  _participation.instrument.__kind === "Nft"
-                    ? new NectarMissionParticipationNft(
-                        missions[_participation.mission.toString()],
-                        _participation,
-                        stakedNfts.find((n) =>
-                          this.honeycomb()
-                            .pda()
-                            .staking()
-                            .nft(n.stakingPool, n.mint)[0]
-                            .equals(_participation.instrument.fields[0])
-                        )
+                )
+              )
+                return;
+              console.log(
+                "_participation.mission.toString()",
+                _participation.mission.toString()
+              );
+              const participation =
+                _participation.instrument.__kind === "Nft"
+                  ? new NectarMissionParticipationNft(
+                      missions[_participation.mission.toString()],
+                      _participation,
+                      stakedNfts.find((n) =>
+                        this.honeycomb()
+                          .pda()
+                          .staking()
+                          .nft(n.stakingPool, n.mint)[0]
+                          .equals(_participation.instrument.fields[0])
                       )
-                    : new NectarMissionParticipationGuild(
-                        missions[_participation.mission.toString()],
-                        _participation,
-                        guilds.find((g) =>
-                          g.address.equals(_participation.instrument.fields[0])
-                        )
-                      );
-                participationsMap.set(
-                  participation.address.toString(),
-                  participation
-                );
-              });
-              return participationsMap;
-            }
+                    )
+                  : new NectarMissionParticipationGuild(
+                      missions[_participation.mission.toString()],
+                      _participation,
+                      guilds.find((g) =>
+                        g.address.equals(_participation.instrument.fields[0])
+                      )
+                    );
+              participationsMap.set(
+                participation.address.toString(),
+                participation
+              );
+            });
+            return participationsMap;
           }
         )
       );

@@ -1,6 +1,7 @@
 use {
     crate::state::MissionPool,
     anchor_lang::prelude::*,
+    hpl_buzz_guild::state::GuildKit,
     hpl_events::HplEvents,
     hpl_hive_control::{
         program::HplHiveControl,
@@ -96,6 +97,10 @@ pub struct UpdateMissionPool<'info> {
     #[account(has_one = project)]
     pub staking_pool: Option<Account<'info, StakingPool>>,
 
+    /// GuildKit from which the Guilds can participate in the mission_pool
+    #[account(has_one = project)]
+    pub guild_kit: Option<Account<'info, GuildKit>>,
+
     #[account(has_one = authority)]
     pub delegate_authority: Option<Account<'info, DelegateAuthority>>,
 
@@ -155,6 +160,31 @@ pub fn update_mission_pool(
         hpl_utils::reallocate(
             1,
             mission_pool.to_account_info(),
+            ctx.accounts.payer.to_account_info(),
+            &ctx.accounts.rent,
+            &ctx.accounts.system_program,
+        )?;
+        mission_pool.staking_pools.push(index as u8);
+    }
+
+    if let Some(guild_kit) = &ctx.accounts.guild_kit {
+        let index = ctx
+            .accounts
+            .project
+            .services
+            .iter()
+            .position(|x| {
+                if let Service::GuildKit { kit_id } = x {
+                    kit_id.eq(&guild_kit.key())
+                } else {
+                    false
+                }
+            })
+            .unwrap();
+
+        hpl_utils::reallocate(
+            1,
+            guild_kit.to_account_info(),
             ctx.accounts.payer.to_account_info(),
             &ctx.accounts.rent,
             &ctx.accounts.system_program,

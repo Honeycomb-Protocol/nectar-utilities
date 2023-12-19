@@ -143,6 +143,23 @@ pub fn participate_guild(ctx: Context<ParticipateGuild>) -> Result<()> {
         panic!("Staking pool did not match");
     }
 
+    if !ctx
+        .accounts
+        .mission_pool
+        .guild_kits
+        .iter()
+        .any(|kit_index| {
+            if let Service::GuildKit { kit_id } = ctx.accounts.project.services[*kit_index as usize]
+            {
+                kit_id == ctx.accounts.guild_kit.key()
+            } else {
+                false
+            }
+        })
+    {
+        panic!("GuildKit pool did not match");
+    }
+
     let rewards = ctx
         .accounts
         .mission

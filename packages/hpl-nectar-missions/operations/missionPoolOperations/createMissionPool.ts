@@ -117,16 +117,21 @@ export async function createCreateMissionPoolOperation(
     project: args.project,
   }).then(({ operation }) => instructions.push(...operation.instructions));
 
-  if (args.args.stakingPools?.length) {
+  const stakingPools = args.args.stakingPools || [];
+  const guildKits = args.args.guildKits || [];
+  const maxLength = Math.max(stakingPools.length, guildKits.length);
+
+  if (maxLength > 0) {
     await Promise.all(
-      args.args.stakingPools.map((stakingPool) =>
+      Array.from({ length: maxLength }, (_, index) =>
         createUpdateMissionPoolOperation(honeycomb, {
           args: {
             factionsMerkleRoot: null,
           },
           project: args.project,
           missionPool,
-          stakingPool,
+          stakingPool: index < stakingPools.length ? stakingPools[index] : null,
+          guildKit: index < guildKits.length ? guildKits[index] : null,
           programId,
         }).then(({ operation }) => instructions.push(...operation.instructions))
       )
