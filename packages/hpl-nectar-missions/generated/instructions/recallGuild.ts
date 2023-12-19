@@ -26,7 +26,7 @@ export const recallGuildStruct = new beet.BeetArgsStruct<{
  * @property [] stakingPool
  * @property [] missionPool
  * @property [] guildKit
- * @property [] guild
+ * @property [_writable_] guild
  * @property [_writable_] chiefNft
  * @property [] mission
  * @property [] staker
@@ -107,7 +107,7 @@ export function createRecallGuildInstruction(
     },
     {
       pubkey: accounts.guild,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {

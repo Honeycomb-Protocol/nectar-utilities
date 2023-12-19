@@ -828,7 +828,7 @@
         },
         {
           "name": "guild",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "docs": [
             "Guild state account"
@@ -1143,7 +1143,7 @@
         },
         {
           "name": "guild",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "docs": [
             "Guild state account"
