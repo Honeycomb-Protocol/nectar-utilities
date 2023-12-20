@@ -189,7 +189,7 @@ pub fn update_mission_pool(
             &ctx.accounts.rent,
             &ctx.accounts.system_program,
         )?;
-        mission_pool.staking_pools.push(index as u8);
+        mission_pool.guild_kits.push(index as u8);
     }
 
     Ok(())
