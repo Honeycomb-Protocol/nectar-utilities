@@ -273,7 +273,10 @@ export class NectarStakingFetchClient extends FetchClient {
     let multipliersDecimals = 1;
     let totalMultipliers = multipliersDecimals;
 
-    const multipliers = await staking.multipliers();
+    const multipliers = await staking.multipliers(
+      undefined,
+      ForceScenario.ConsiderNull
+    );
     if (multipliers) {
       multipliersDecimals = 10 ** multipliers.decimals;
       totalMultipliers = multipliersDecimals;

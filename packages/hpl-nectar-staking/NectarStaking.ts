@@ -773,6 +773,15 @@ export class NectarStaking extends Module<
     }).then((x) => this.staker(undefined, ForceScenario.Force).then(() => x));
   }
 
+  public async rewards(nfts?: StakedNft[], till?: Date) {
+    if (!nfts) nfts = await this.stakedNfts();
+    this.multipliers(undefined, ForceScenario.ConsiderNull);
+    const rewards = await Promise.all(
+      nfts.map((nft) => this.honeycomb().fetch().staking().rewards(nft, till))
+    );
+    return rewards.reduce((a, b) => a + b.rewards, 0);
+  }
+
   /**
    * Install the NectarStaking module into the Honeycomb instance.
    * @param honeycomb - The Honeycomb instance to install the module into.

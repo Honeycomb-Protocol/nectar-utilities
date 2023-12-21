@@ -1,6 +1,6 @@
 {
   "name": "@honeycomb-protocol/nectar-staking",
-  "version": "0.1.47-beta.2",
+  "version": "0.1.47-beta.4",
   "private": false,
   "peerDependencies": {
     "@solana/spl-token": "^0.3.8",

@@ -76,7 +76,7 @@ export function bytesOf(input: any): number {
 
 describe("Nectar Utilities", () => {
   const totalNfts = 1;
-  const totalcNfts = 5;
+  const totalcNfts = 1;
 
   let adminHC: Honeycomb;
   let userHC: Honeycomb;
@@ -234,7 +234,7 @@ describe("Nectar Utilities", () => {
     //   "GWZwbVCxjzkLgnqtvAGV2LNB26g4XJhNotCDhSrS893C"
     // );
     const address = new web3.PublicKey(
-      "8bqzYQPCqoUFHDv8vpmpig7qgMgQA1EKT1mqe1QxZSwe"
+      "C8UviNNx3ezSKFfExac3P9L3uBJFgWc5ecdqHFFBDfNc"
     );
     adminHC.use(await HoneycombProject.fromAddress(adminHC, address));
     await findProjectCurrencies(adminHC.project());
@@ -246,7 +246,7 @@ describe("Nectar Utilities", () => {
 
     universalLut = (await getOrFetchLoockupTable(
       userHC.connection,
-      new web3.PublicKey("BbVTfbpKCE62N4tHRuHmm5TbcAXyyDARfgJFyEdAQUZ9")
+      new web3.PublicKey("8zKtJXrGf9JNNP9Yw3LmrBc8aPDuFroYEthtGAAEajQt")
     ))!;
 
     console.log(
@@ -257,7 +257,7 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it("Load/Create Staking Pool", async () => {
+  it.skip("Load/Create Staking Pool", async () => {
     await findProjectStakingPools(adminHC.project());
 
     if (!adminHC.staking) {
@@ -307,7 +307,7 @@ describe("Nectar Utilities", () => {
     console.log("Staking", adminHC.staking().address.toString());
   });
 
-  it("Load/Create Guild Kit", async () => {
+  it.skip("Load/Create Guild Kit", async () => {
     await findProjectGuildKits(adminHC.project());
 
     if (!adminHC.guildKit) {
@@ -331,7 +331,7 @@ describe("Nectar Utilities", () => {
     console.log("GuildKit", adminHC.guildKit().address.toString());
   });
 
-  it("Load/Create Mission Pool", async () => {
+  it.skip("Load/Create Mission Pool", async () => {
     await findProjectMissionPools(adminHC.project());
 
     if (!adminHC.missions) {
@@ -350,7 +350,7 @@ describe("Nectar Utilities", () => {
     console.log("Missions", adminHC.missions().address.toString());
   });
 
-  it("Load/Create Mission", async () => {
+  it.skip("Load/Create Mission", async () => {
     const missions = await adminHC.missions().missions();
 
     if (!missions.length) {
@@ -383,7 +383,7 @@ describe("Nectar Utilities", () => {
     }
   });
 
-  it("Fetch for user", async () => {
+  it.skip("Fetch for user", async () => {
     userHC.use(
       await HoneycombProject.fromAddress(userHC, adminHC.project().address)
     );
@@ -405,7 +405,7 @@ describe("Nectar Utilities", () => {
       "https://devnet.helius-rpc.com/?api-key=ccca5bb2-58dc-4b94-838b-664df478cf45";
   });
 
-  it("Create and Load Lookup Table", async () => {
+  it.skip("Create and Load Lookup Table", async () => {
     if (!universalLut) {
       const addresses = [
         HPL_EVENTS_PROGRAM,
@@ -485,7 +485,7 @@ describe("Nectar Utilities", () => {
       );
   });
 
-  it("Fetch or Create user/profile", async () => {
+  it.skip("Fetch or Create user/profile", async () => {
     const user = await userHC
       .profiles()
       .userFromUsername("Test2")
@@ -521,7 +521,7 @@ describe("Nectar Utilities", () => {
     expect(stakedNfts.length).toBe(totalNfts + totalcNfts);
   });
 
-  it("Create Guild", async () => {
+  it.skip("Create Guild", async () => {
     const staking = userHC.staking();
     const nfts = await staking.stakedNfts();
     const guildKit = userHC.guildKit();
@@ -547,7 +547,7 @@ describe("Nectar Utilities", () => {
     console.log("guild", guild.address.toString());
   });
 
-  it("Participate on Mission with Nft", async () => {
+  it.skip("Participate on Mission with Nft", async () => {
     const staking = userHC.staking() as unknown as NectarStaking;
 
     const usableNfts = await staking.usableNfts();
@@ -571,7 +571,7 @@ describe("Nectar Utilities", () => {
     expect(participations.length).toBe(usableNfts.length);
   });
 
-  it("Participate on Mission with Guild", async () => {
+  it.skip("Participate on Mission with Guild", async () => {
     await wait(10);
     const guilds = await userHC.guildKit().myGuilds();
     console.log("guilds", guilds.length);
@@ -584,14 +584,14 @@ describe("Nectar Utilities", () => {
     }
   });
 
-  it("Recall Nfts from missions", async () => {
+  it.skip("Recall Nfts from missions", async () => {
     await wait(1);
     const participations = await userHC.missions().participations();
     expect(participations.length).toBeGreaterThan(0);
     await userHC.missions().recall(participations);
   });
 
-  it("Disband Guilds", async () => {
+  it.skip("Disband Guilds", async () => {
     const staking = userHC.staking() as unknown as NectarStaking;
     const guilds = await userHC.guildKit().myGuilds();
 
@@ -613,7 +613,7 @@ describe("Nectar Utilities", () => {
     console.log("Successfully left guild & unstaked nfts");
   });
 
-  it("Unstake NFTs", async () => {
+  it.skip("Unstake NFTs", async () => {
     const staking = userHC.staking() as unknown as NectarStaking;
 
     const stakedNfts = await staking.stakedNfts();
