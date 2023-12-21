@@ -414,7 +414,7 @@ export class NectarMissions extends Module<
           "participations",
           this.honeycomb().identity().address.toString(),
           (participationsMap) => {
-            if (!participationsMap) participationsMap = new Map();
+            participationsMap = new Map();
             participations.forEach((_participation) => {
               if (
                 !Object.keys(missions).includes(
@@ -422,10 +422,6 @@ export class NectarMissions extends Module<
                 )
               )
                 return;
-              console.log(
-                "_participation.mission.toString()",
-                _participation.mission.toString()
-              );
               const participation =
                 _participation.instrument.__kind === "Nft"
                   ? new NectarMissionParticipationNft(
