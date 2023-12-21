@@ -188,7 +188,7 @@ export class NectarMissionsFetchClient extends FetchClient {
 
       if (args.wallets) {
         args.wallets.forEach((wallet) => {
-          url += `&wallets=${wallet}`;
+          url += `&wallet=${wallet}`;
         });
       }
       return fetch(url, {
@@ -256,11 +256,11 @@ export class NectarMissionsFetchClient extends FetchClient {
 
     let url = `${offchainUrl}/missions/participations/${args.page}/${
       args.pageSize || 99999
-    }?missionPool=${args.pool}&isRecalled=false`;
+    }?missionPool=${args.pool}&isRecalled=true`;
 
     if (args.wallets) {
       args.wallets.forEach((wallet) => {
-        url += `&wallets=${wallet}`;
+        url += `&wallet=${wallet}`;
       });
     }
 
