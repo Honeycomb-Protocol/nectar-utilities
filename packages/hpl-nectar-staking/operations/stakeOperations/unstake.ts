@@ -5,15 +5,8 @@ import {
   createUnstakeInstruction,
   LockType,
   PROGRAM_ID,
-} from "../generated";
-import { AssetProof, StakedNft } from "../types";
-import {
-  getMetadataAccount_,
-  getDepositPda,
-  getNftPda,
-  getStakerPda,
-  METADATA_PROGRAM_ID,
-} from "../pdas";
+} from "../../generated";
+import { AssetProof, StakedNft } from "../../types";
 import {
   VAULT,
   Honeycomb,
@@ -22,14 +15,18 @@ import {
 } from "@honeycomb-protocol/hive-control";
 import { PROGRAM_ID as BUBBLEGUM_PROGRAM_ID } from "@metaplex-foundation/mpl-bubblegum";
 import { PROGRAM_ID as AUTHORIZATION_PROGRAM_ID } from "@metaplex-foundation/mpl-token-auth-rules";
-import { NectarStaking } from "../NectarStaking";
+import { NectarStaking } from "../../NectarStaking";
 import { createClaimRewardsOperation } from "./claimRewards";
 import {
   SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
   SPL_NOOP_PROGRAM_ID,
 } from "@solana/spl-account-compression";
-import { fetchAssetProof } from "./fetch";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
+import { fetchAssetProof } from "../../utils";
+import {
+  METADATA_PROGRAM_ID,
+  metadataPda,
+} from "@honeycomb-protocol/currency-manager";
 
 /**
  * Represents the arguments required to create an unstake operation.
@@ -74,11 +71,14 @@ export async function createUnstakeOperation(
 ) {
   const programId = args.programId || PROGRAM_ID;
 
-  const [nft] = getNftPda(args.stakingPool.address, args.nft.mint);
-  const [staker] = getStakerPda(
-    args.stakingPool.address,
-    honeycomb.identity().address
-  );
+  const [nft] = honeycomb
+    .pda()
+    .staking()
+    .nft(args.stakingPool.address, args.nft.mint);
+  const [staker] = honeycomb
+    .pda()
+    .staking()
+    .staker(args.stakingPool.address, honeycomb.identity().address);
 
   const instructions = [];
 
@@ -139,8 +139,8 @@ export async function createUnstakeOperation(
       args.nft.mint,
       honeycomb.identity().address
     );
-    const [nftMetadata] = getMetadataAccount_(args.nft.mint);
-    const [nftEdition] = getMetadataAccount_(args.nft.mint, {
+    const [nftMetadata] = metadataPda(args.nft.mint);
+    const [nftEdition] = metadataPda(args.nft.mint, {
       __kind: "edition",
     });
 
@@ -149,16 +149,16 @@ export async function createUnstakeOperation(
       depositTokenRecord: web3.PublicKey | undefined;
 
     if (args.stakingPool.lockType === LockType.Custoday) {
-      [depositAccount] = getDepositPda(args.nft.mint);
+      [depositAccount] = honeycomb.pda().staking().deposit(args.nft.mint);
     }
 
     if (args.nft.isProgrammableNft) {
-      [nftTokenRecord] = getMetadataAccount_(args.nft.mint, {
+      [nftTokenRecord] = metadataPda(args.nft.mint, {
         __kind: "token_record",
         tokenAccount: nftAccount,
       });
       if (depositAccount && args.stakingPool.lockType === LockType.Custoday) {
-        [depositTokenRecord] = getMetadataAccount_(args.nft.mint, {
+        [depositTokenRecord] = metadataPda(args.nft.mint, {
           __kind: "token_record",
           tokenAccount: depositAccount,
         });

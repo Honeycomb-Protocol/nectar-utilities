@@ -1,4 +1,3 @@
-import { PROGRAM_ADDRESS } from "./../generated/index";
 import * as web3 from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
 import {
@@ -6,32 +5,28 @@ import {
   createStakeInstruction,
   LockType,
   PROGRAM_ID,
-} from "../generated";
-import { AssetProof, AvailableNft } from "../types";
+} from "../../generated";
+import { AssetProof, AvailableNft } from "../../types";
 import { PROGRAM_ID as BUBBLEGUM_PROGRAM_ID } from "@metaplex-foundation/mpl-bubblegum";
 import { PROGRAM_ID as AUTHORIZATION_PROGRAM_ID } from "@metaplex-foundation/mpl-token-auth-rules";
-import {
-  getMetadataAccount_,
-  getDepositPda,
-  getNftPda,
-  getStakerPda,
-  METADATA_PROGRAM_ID,
-} from "../pdas";
 import {
   VAULT,
   Honeycomb,
   Operation,
   HPL_HIVE_CONTROL_PROGRAM,
 } from "@honeycomb-protocol/hive-control";
-import { NectarStaking } from "../NectarStaking";
-import { createInitNFTOperation } from "./initNFT";
-import { createInitStakerOperation } from "./initStaker";
+import { NectarStaking } from "../../NectarStaking";
+import { createInitStakerOperation } from "../miscOperations/initStaker";
 import {
   SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
   SPL_NOOP_PROGRAM_ID,
 } from "@solana/spl-account-compression";
-import { fetchAssetProof } from "./fetch";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
+import { fetchAssetProof } from "../../utils";
+import {
+  METADATA_PROGRAM_ID,
+  metadataPda,
+} from "@honeycomb-protocol/currency-manager";
 
 /**
  * Represents the arguments required to create a stake operation.
@@ -89,23 +84,26 @@ export async function createStakeOperation(
   const programId = args.programId || PROGRAM_ID;
 
   // Get the PDA account for the NFT
-  const [nft] = getNftPda(args.stakingPool.address, args.nft.mint, programId);
+  const [nft] = honeycomb
+    .pda()
+    .staking()
+    .nft(args.stakingPool.address, args.nft.mint, programId);
 
   // Get the PDA account for the staker
-  const [staker] = getStakerPda(
-    args.stakingPool.address,
-    honeycomb.identity().address
-  );
+  const [staker] = honeycomb
+    .pda()
+    .staking()
+    .staker(args.stakingPool.address, honeycomb.identity().address);
 
   // Create the transaction instruction for staking the NFT
   let units = 500_000;
-  const instructions: web3.TransactionInstruction[] = createInitStakerOperation(
-    honeycomb,
-    {
-      stakingPool: args.stakingPool,
+  const instructions: web3.TransactionInstruction[] =
+    await createInitStakerOperation(honeycomb, {
+      pool: args.stakingPool.address,
+      project: args.stakingPool.project().address,
+      wallet: honeycomb.identity().address,
       programId: args.programId,
-    }
-  ).operation.instructions;
+    }).then(({ operation }) => operation.instructions);
 
   if (args.nft.isCompressed) {
     units += 100_000;
@@ -166,8 +164,8 @@ export async function createStakeOperation(
     );
 
     // Get metadata accounts for NFT
-    const [nftMetadata] = getMetadataAccount_(args.nft.mint);
-    const [nftEdition] = getMetadataAccount_(args.nft.mint, {
+    const [nftMetadata] = metadataPda(args.nft.mint);
+    const [nftEdition] = metadataPda(args.nft.mint, {
       __kind: "edition",
     });
 
@@ -176,18 +174,18 @@ export async function createStakeOperation(
       depositTokenRecord: web3.PublicKey | undefined;
 
     if (args.stakingPool.lockType === LockType.Custoday) {
-      [depositAccount] = getDepositPda(nft);
+      [depositAccount] = honeycomb.pda().staking().deposit(nft);
     }
 
     if (args.nft.isProgrammableNft) {
       units += 500_000;
 
-      [nftTokenRecord] = getMetadataAccount_(args.nft.mint, {
+      [nftTokenRecord] = metadataPda(args.nft.mint, {
         __kind: "token_record",
         tokenAccount: nftAccount,
       });
       if (depositAccount && args.stakingPool.lockType === LockType.Custoday) {
-        [depositTokenRecord] = getMetadataAccount_(args.nft.mint, {
+        [depositTokenRecord] = metadataPda(args.nft.mint, {
           __kind: "token_record",
           tokenAccount: depositAccount,
         });

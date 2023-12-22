@@ -42,6 +42,7 @@ export const updateMissionPoolStruct = new beet.FixableBeetArgsStruct<
  * @property [] project
  * @property [_writable_] missionPool
  * @property [] stakingPool (optional)
+ * @property [] guildKit (optional)
  * @property [] delegateAuthority (optional)
  * @property [_writable_, **signer**] authority
  * @property [_writable_, **signer**] payer
@@ -56,6 +57,7 @@ export type UpdateMissionPoolInstructionAccounts = {
   project: web3.PublicKey
   missionPool: web3.PublicKey
   stakingPool?: web3.PublicKey
+  guildKit?: web3.PublicKey
   delegateAuthority?: web3.PublicKey
   authority: web3.PublicKey
   payer: web3.PublicKey
@@ -115,10 +117,22 @@ export function createUpdateMissionPoolInstruction(
       isSigner: false,
     })
   }
-  if (accounts.delegateAuthority != null) {
+  if (accounts.guildKit != null) {
     if (accounts.stakingPool == null) {
       throw new Error(
-        "When providing 'delegateAuthority' then 'accounts.stakingPool' need(s) to be provided as well."
+        "When providing 'guildKit' then 'accounts.stakingPool' need(s) to be provided as well."
+      )
+    }
+    keys.push({
+      pubkey: accounts.guildKit,
+      isWritable: false,
+      isSigner: false,
+    })
+  }
+  if (accounts.delegateAuthority != null) {
+    if (accounts.stakingPool == null || accounts.guildKit == null) {
+      throw new Error(
+        "When providing 'delegateAuthority' then 'accounts.stakingPool', 'accounts.guildKit' need(s) to be provided as well."
       )
     }
     keys.push({

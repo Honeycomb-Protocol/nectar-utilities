@@ -127,53 +127,27 @@ pub fn stake_cnft<'info>(
         }
     }
 
-    // let wallet_key = ctx.accounts.wallet.key();
-    // let pool_key = staking_pool.key();
-    // let staker_seeds = &[
-    //     b"staker",
-    //     wallet_key.as_ref(),
-    //     pool_key.as_ref(),
-    //     &[staker.bump],
-    // ];
-    // let staker_signer = &[&staker_seeds[..]];
-
-    let mut cpi_ctx = CpiContext::new(
-        ctx.accounts.bubblegum_program.to_account_info(),
-        mpl_bubblegum::cpi::accounts::Transfer {
-            tree_authority: ctx.accounts.tree_authority.to_account_info(),
-            leaf_owner: ctx.accounts.wallet.to_account_info(),
-            leaf_delegate: ctx.accounts.wallet.to_account_info(),
-            new_leaf_owner: staker.to_account_info(),
-            merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-            log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
-            compression_program: ctx.accounts.compression_program.to_account_info(),
-            system_program: ctx.accounts.system_program.to_account_info(),
-        },
-    )
-    .with_remaining_accounts(ctx.remaining_accounts.to_vec());
-
-    msg!(
-        "Is leaf owner signer {}",
-        cpi_ctx.accounts.leaf_owner.is_signer
-    );
-    cpi_ctx.accounts.leaf_owner.is_signer = true;
     let creator_hash: [u8; 32] = ctx.accounts.creator_hash.key().to_bytes();
     let data_hash: [u8; 32] = ctx.accounts.data_hash.key().to_bytes();
     let root: [u8; 32] = ctx.accounts.root.key().to_bytes();
 
-    msg!("{:?}", root.clone());
-    msg!("{:?}", data_hash.clone());
-    msg!("{:?}", creator_hash.clone());
-    msg!("{:?}", args.nonce.clone());
-    msg!("{:?}", args.index.clone());
-
-    mpl_bubblegum::cpi::transfer(
-        cpi_ctx,
+    crate::bubblegum::transfer_cnft_cpi(
+        ctx.accounts.tree_authority.to_account_info(),
+        ctx.accounts.wallet.to_account_info(),
+        ctx.accounts.wallet.to_account_info(),
+        staker.to_account_info(),
+        ctx.accounts.merkle_tree.to_account_info(),
+        ctx.accounts.log_wrapper.to_account_info(),
+        ctx.accounts.compression_program.to_account_info(),
+        ctx.accounts.system_program.to_account_info(),
+        ctx.accounts.bubblegum_program.to_account_info(),
+        ctx.remaining_accounts.to_vec(),
         root,
         data_hash,
         creator_hash,
         args.nonce,
         args.index,
+        None,
     )?;
 
     nft.staker = Some(staker.key());
@@ -315,31 +289,26 @@ pub fn unstake_cnft<'info>(
     msg!("{:?}", args.nonce.clone());
     msg!("{:?}", args.index.clone());
 
-    let cpi_ctx = CpiContext::new_with_signer(
+    crate::bubblegum::transfer_cnft_cpi(
+        ctx.accounts.tree_authority.to_account_info(),
+        staker.to_account_info(),
+        staker.to_account_info(),
+        ctx.accounts.wallet.to_account_info(),
+        ctx.accounts.merkle_tree.to_account_info(),
+        ctx.accounts.log_wrapper.to_account_info(),
+        ctx.accounts.compression_program.to_account_info(),
+        ctx.accounts.system_program.to_account_info(),
         ctx.accounts.bubblegum_program.to_account_info(),
-        mpl_bubblegum::cpi::accounts::Transfer {
-            tree_authority: ctx.accounts.tree_authority.to_account_info(),
-            leaf_owner: staker.to_account_info(),
-            leaf_delegate: staker.to_account_info(),
-            new_leaf_owner: ctx.accounts.wallet.to_account_info(),
-            merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-            log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
-            compression_program: ctx.accounts.compression_program.to_account_info(),
-            system_program: ctx.accounts.system_program.to_account_info(),
-        },
-        staker_signer,
-    )
-    .with_remaining_accounts(ctx.remaining_accounts.to_vec());
-    mpl_bubblegum::cpi::transfer(
-        cpi_ctx,
+        ctx.remaining_accounts.to_vec(),
         root,
         data_hash,
         creator_hash,
         args.nonce,
         args.index,
+        Some(staker_signer),
     )?;
 
-    Event::stake(
+    Event::unstake(
         nft.key(),
         nft.try_to_vec().unwrap(),
         staker.key(),

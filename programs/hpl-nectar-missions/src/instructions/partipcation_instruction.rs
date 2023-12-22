@@ -109,7 +109,7 @@ pub fn participate(ctx: Context<Participate>, _args: ParticipateArgs) -> Result<
     participation.bump = ctx.bumps["participation"];
     participation.wallet = ctx.accounts.wallet.key();
     participation.mission = ctx.accounts.mission.key();
-    participation.nft = ctx.accounts.nft.key();
+    participation.instrument = Instrument::Nft(ctx.accounts.nft.key());
     participation.end_time = ctx.accounts.mission.duration + ctx.accounts.clock.unix_timestamp;
 
     if !ctx
@@ -258,7 +258,7 @@ pub struct CollectRewards<'info> {
     pub mission: Box<Account<'info, Mission>>,
 
     /// Participation state account
-    #[account(mut, has_one = wallet, has_one = nft, has_one = mission)]
+    #[account(mut, has_one = wallet, has_one = mission, constraint = if let Instrument::Nft(key) = participation.instrument { key.eq(&nft.key()) } else { false } )]
     pub participation: Box<Account<'info, Participation>>,
 
     /// Staked NFT state account

@@ -1,13 +1,11 @@
 import * as web3 from "@solana/web3.js";
-import { createInitStakerInstruction, PROGRAM_ID } from "../generated";
-import { getStakerPda } from "../pdas";
+import { createInitStakerInstruction, PROGRAM_ID } from "../../generated";
 import {
   VAULT,
   Operation,
   Honeycomb,
   HPL_HIVE_CONTROL_PROGRAM,
 } from "@honeycomb-protocol/hive-control";
-import { NectarStaking } from "../NectarStaking";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
 
 /**
@@ -15,7 +13,9 @@ import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
  * @category Types
  */
 type CreateInitStakerOperationArgs = {
-  stakingPool: NectarStaking;
+  project: web3.PublicKey;
+  pool: web3.PublicKey;
+  wallet: web3.PublicKey;
   programId?: web3.PublicKey;
 };
 
@@ -40,28 +40,27 @@ type CreateInitStakerOperationArgs = {
  * const operationResult = await createInitStakerOperation(honeycomb, createInitArgs);
  * console.log("Created operation:", operationResult.operation);
  */
-export function createInitStakerOperation(
+export async function createInitStakerOperation(
   honeycomb: Honeycomb,
   args: CreateInitStakerOperationArgs
 ) {
   const programId = args.programId || PROGRAM_ID;
 
   // Get the PDA account for the staker
-  const [staker] = getStakerPda(
-    args.stakingPool.address,
-    honeycomb.identity().address,
-    programId
-  );
+  const [staker] = honeycomb
+    .pda()
+    .staking()
+    .staker(args.pool, args.wallet, programId);
 
   // Create the transaction instruction for initializing the staker
   const instructions: web3.TransactionInstruction[] = [
     createInitStakerInstruction(
       {
-        project: args.stakingPool.project().address,
+        project: args.project,
         vault: VAULT,
-        stakingPool: args.stakingPool.address,
+        stakingPool: args.pool,
         staker,
-        wallet: honeycomb.identity().address,
+        wallet: args.wallet,
         hiveControl: HPL_HIVE_CONTROL_PROGRAM,
         hplEvents: HPL_EVENTS_PROGRAM,
         clock: web3.SYSVAR_CLOCK_PUBKEY,

@@ -8,7 +8,6 @@ import {
   CurrencyManagerPermission,
   HPL_HIVE_CONTROL_PROGRAM,
   Honeycomb,
-  HoneycombProject,
   Operation,
   VAULT,
   createCreateDelegateAuthorityOperation,
@@ -17,8 +16,7 @@ import {
   CreateMissionPoolArgs,
   PROGRAM_ID,
   createCreateMissionPoolInstruction,
-} from "../generated";
-import { missionPoolPda } from "../utils";
+} from "../../generated";
 import { createUpdateMissionPoolOperation } from "./updateMissionPool";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
 
@@ -33,11 +31,12 @@ type CreateCreateMissionPoolOperationArgs = {
    */
   args: CreateMissionPoolArgs & {
     stakingPools?: PublicKey[];
+    guildKits?: PublicKey[];
   };
   /**
    * The HoneycombProject where the new mission pool will be created.
    */
-  project: HoneycombProject;
+  project: PublicKey;
   /**
    * (Optional) The program ID associated with the mission pool.
    * If not provided, the default PROGRAM_ID will be used.
@@ -77,16 +76,15 @@ export async function createCreateMissionPoolOperation(
 ) {
   const programId = args.programId || PROGRAM_ID;
 
-  const [missionPool] = missionPoolPda(
-    args.project.address,
-    args.args.name,
-    programId
-  );
+  const [missionPool] = honeycomb
+    .pda()
+    .missions()
+    .pool(args.project, args.args.name, programId);
 
   const instructions = [
     createCreateMissionPoolInstruction(
       {
-        project: args.project.address,
+        project: args.project,
         missionPool,
         delegateAuthority:
           honeycomb.identity().delegateAuthority()?.address || programId,
@@ -119,16 +117,21 @@ export async function createCreateMissionPoolOperation(
     project: args.project,
   }).then(({ operation }) => instructions.push(...operation.instructions));
 
-  if (args.args.stakingPools?.length) {
+  const stakingPools = args.args.stakingPools || [];
+  const guildKits = args.args.guildKits || [];
+  const maxLength = Math.max(stakingPools.length, guildKits.length);
+
+  if (maxLength > 0) {
     await Promise.all(
-      args.args.stakingPools.map((stakingPool) =>
+      Array.from({ length: maxLength }, (_, index) =>
         createUpdateMissionPoolOperation(honeycomb, {
           args: {
             factionsMerkleRoot: null,
           },
-          project: args.project.address,
+          project: args.project,
           missionPool,
-          stakingPool,
+          stakingPool: stakingPools[index],
+          guildKit: guildKits[index],
           programId,
         }).then(({ operation }) => instructions.push(...operation.instructions))
       )

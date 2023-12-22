@@ -16,3 +16,5 @@ deployments.json
 .env
 temp
 .cargo
+.yalc
+yalc.lock

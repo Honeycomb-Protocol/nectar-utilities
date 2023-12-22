@@ -1,82 +1,37 @@
 import * as web3 from "@solana/web3.js";
 import {
   CreateMissionArgs,
-  CreateMissionPoolArgs,
-  EarnedReward,
-  Mission,
   MissionPool,
   PROGRAM_ID,
-  ParticipateArgs,
   Participation,
-  Reward,
-  UpdateMissionArgs,
   UpdateMissionPoolArgs,
 } from "./generated";
 import {
+  ForceScenario,
   Honeycomb,
   HoneycombProject,
   Module,
   Operation,
   SendBulkOptions,
 } from "@honeycomb-protocol/hive-control";
-import {
-  NectarStaking,
-  StakedNft,
-  getNftPda,
-} from "@honeycomb-protocol/nectar-staking";
+import { NectarStaking, StakedNft } from "@honeycomb-protocol/nectar-staking";
 import {
   creatRecallOperation,
-  createCreateMissionOperation,
-  createCreateMissionPoolOperation,
-  createParticipateOperation,
-  createUpdateMissionOperation,
   createUpdateMissionPoolOperation,
 } from "./operations";
 import {
-  missionPda,
-  offchainToSolitaParticipation,
-  removeDuplicateFromArrayOf,
+  nectarMissionsCreate,
+  nectarMissionsFetch,
+  nectarMissionsPdas,
 } from "./utils";
-import { OffchainParticipation } from "./types";
-
-/**
- * The `ItemOrArray` type represents a value that can either be a single item of type `T`
- * or an array of items of type `T`.
- *
- * @category Types
- * @typeparam T - The type of items in the array.
- *
- * @example
- * type ExampleType = ItemOrArray<number>;
- * const value1: ExampleType = 42; // A single number
- * const value2: ExampleType = [1, 2, 3]; // An array of numbers
- */
-type ItemOrArray<T = any> = T | T[];
-
-/**
- * The `NewMissionPoolArgs` type represents the arguments needed to create a new mission pool in the Honeycomb Protocol.
- *
- * @category Types
- * @property args - The `CreateMissionPoolArgs` object containing the necessary data to create the mission pool,
- *                along with optional properties `collections` and `creators`.
- * @property project - An optional `HoneycombProject` object representing the project associated with the mission pool.
- *
- * @example
- * const args: NewMissionPoolArgs = {
- *   args: {
- *     name: "Mission Pool 1",
- *     ... (other properties from CreateMissionPoolArgs)
- *     stakingPools: [stakingPool1, stakingPool2],
- *   },
- *   project: honeycombProject, // Optional, if not provided, it will use the default project
- * };
- */
-type NewMissionPoolArgs = {
-  args: CreateMissionPoolArgs & {
-    stakingPools?: web3.PublicKey[];
-  };
-  project?: HoneycombProject;
-};
+import type { ItemOrArray, NewMissionPoolArgs } from "./types";
+import { NectarMission } from "./Mission";
+import {
+  NectarMissionParticipation,
+  NectarMissionParticipationGuild,
+  NectarMissionParticipationNft,
+} from "./Participation";
+import { BuzzGuild, BuzzGuildKit } from "@honeycomb-protocol/buzz-guild";
 
 /**
  * The module declaration for `@honeycomb-protocol/hive-control`.
@@ -119,36 +74,17 @@ declare module "@honeycomb-protocol/hive-control" {
  * such as creating new missions, updating existing missions, fetching missions, etc.
  * @category Module
  */
-export class NectarMissions extends Module<"recall" | "participate"> {
+export class NectarMissions extends Module<
+  "recall" | "participate",
+  {
+    mission: NectarMission;
+    participations: Map<string, NectarMissionParticipation>;
+  }
+> {
   /**
    * The program ID associated with the NectarMissions module.
    */
   public readonly programId = PROGRAM_ID;
-
-  /**
-   * An instance of the `NectarMissionsFetch` class to handle fetching mission data.
-   * Used internally for fetching missions from the blockchain.
-   */
-  private _fetch: NectarMissionsFetch;
-
-  /**
-   * An instance of the `NectarMissionsCreate` class to handle creating new missions.
-   * Used internally for creating missions on the blockchain.
-   */
-  private _create: NectarMissionsCreate;
-
-  /**
-   * An object that holds instances of `NectarMission`, indexed by their names.
-   * Used to cache mission instances for efficient access and retrieval.
-   */
-  private _missions: { [name: string]: NectarMission } = {};
-
-  /**
-   * An object that holds arrays of `NectarMissionParticipation`, indexed by the wallet address.
-   * Used to cache mission participations for efficient access and retrieval.
-   */
-  private _participations: { [wallet: string]: NectarMissionParticipation[] } =
-    {};
 
   /**
    * Creates a new `NectarMissions` instance.
@@ -156,10 +92,8 @@ export class NectarMissions extends Module<"recall" | "participate"> {
    * @param address - The public key of the NectarMissions account on the blockchain.
    * @param _pool - The associated `MissionPool` instance representing the mission pool.
    */
-  constructor(readonly address: web3.PublicKey, private _pool: MissionPool) {
+  constructor(private _pool: MissionPool) {
     super();
-    this._fetch = new NectarMissionsFetch(this);
-    this._create = new NectarMissionsCreate(this);
   }
 
   /**
@@ -177,16 +111,17 @@ export class NectarMissions extends Module<"recall" | "participate"> {
    * const missionPool = await NectarMissions.fromAddress(connection, address);
    */
   static async fromAddress(
-    connection: web3.Connection,
+    honeycomb: Honeycomb,
     address: web3.PublicKey,
-    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
+    commitment?: web3.Commitment,
+    forceFetch?: ForceScenario
   ) {
-    const pool = await MissionPool.fromAccountAddress(
-      connection,
-      address,
-      commitmentOrConfig
-    );
-    return new NectarMissions(address, pool);
+    honeycomb.fetch().register(nectarMissionsFetch());
+    const pool = await honeycomb
+      .fetch()
+      .missions()
+      .pool(address, commitment, forceFetch);
+    return new NectarMissions(pool);
   }
 
   /**
@@ -216,19 +151,13 @@ export class NectarMissions extends Module<"recall" | "participate"> {
     args: NewMissionPoolArgs,
     confirmOptions?: web3.ConfirmOptions
   ) {
-    const { missionPool, operation } = await createCreateMissionPoolOperation(
-      honeycomb,
-      {
-        programId: PROGRAM_ID,
-        project: args.project || honeycomb.project(),
-        ...args,
-      }
-    );
-    await operation.send(confirmOptions);
-    return await NectarMissions.fromAddress(
-      new web3.Connection(honeycomb.connection.rpcEndpoint, "processed"),
-      missionPool
-    );
+    honeycomb.pda().register(nectarMissionsPdas());
+    honeycomb.create().register(nectarMissionsCreate());
+    const { address } = await honeycomb
+      .create()
+      .missions()
+      .pool(args, confirmOptions);
+    return NectarMissions.fromAddress(honeycomb, address);
   }
 
   /**
@@ -269,30 +198,11 @@ export class NectarMissions extends Module<"recall" | "participate"> {
     return operation.send(confirmOptions);
   }
 
-  /**
-   * Returns the `NectarMissionsFetch` instance to handle fetching mission data.
-   *
-   * @returns The `NectarMissionsFetch` instance.
-   *
-   * @example
-   * const fetcher = nectarMissions.fetch();
-   * // Use the fetcher to retrieve mission data from the blockchain.
-   */
-  public fetch() {
-    return this._fetch;
-  }
-
-  /**
-   * Returns the `NectarMissionsCreate` instance to handle creating new missions.
-   *
-   * @returns The `NectarMissionsCreate` instance.
-   *
-   * @example
-   * const creator = nectarMissions.create();
-   * // Use the creator to create new missions on the blockchain.
-   */
-  public create() {
-    return this._create;
+  public get address() {
+    return this.honeycomb()
+      .pda()
+      .missions()
+      .pool(this.project().address, this.name)[0];
   }
 
   /**
@@ -307,24 +217,6 @@ export class NectarMissions extends Module<"recall" | "participate"> {
   public get name() {
     return this._pool.name;
   }
-
-  // /**
-  //  * Returns an array of public keys representing the collections associated with the mission pool.
-  //  *
-  //  * @returns An array of public keys representing the collections associated with the mission pool.
-  //  *
-  //  * @example
-  //  * const collections = nectarMissions.collections;
-  //  * console.log(collections); // Output: [collection1, collection2]
-  //  */
-  // public get stakingPools() {
-  //   return this._pool.stakingPools.map((i): NectarStaking => {
-  //     const service = this.project().services[i];
-  //     if (service.__kind === "Staking") {
-  //       return this.honeycomb().staking(service.poolId) as NectarStaking;
-  //     }
-  //   });
-  // }
 
   /**
    * Returns the `HoneycombProject` associated with the mission pool.
@@ -357,29 +249,56 @@ export class NectarMissions extends Module<"recall" | "participate"> {
     );
   }
 
+  public stakedNfts(): Promise<StakedNft[]> {
+    return Promise.all(
+      this.stakingPools().map((pool) => pool.stakedNfts())
+    ).then((x) => x.flat());
+  }
+
   /**
-   * Retrieves all missions associated with the mission pool.
+   * Get the all the staking pools associated with the mission pool.
    *
-   * @param reFetch - Set to `true` to force fetching missions from the blockchain, even if cached.
-   * @returns An array of `NectarMission` instances representing the missions associated with the mission pool.
-   *
-   * @async
-   * @example
-   * const missions = await nectarMissions.missions();
-   * console.log(missions); // Output: [NectarMission1, NectarMission2, ...]
+   * @returns The `NectarStaking` instances associated with the mission pool.
    */
-  public async missions(reFetch: boolean = false) {
-    if (Object.keys(this._missions).length === 0 || reFetch) {
-      this._missions = await this.fetch()
-        .missions()
-        .then((missions) =>
-          missions.reduce(
-            (acc, mission) => ({ ...acc, [mission.name]: mission }),
-            {}
-          )
-        );
-    }
-    return Object.values(this._missions);
+  public guildKits(): BuzzGuildKit[] {
+    return [...this._pool.guildKits].map((x) =>
+      this.honeycomb().guildKit(
+        (
+          this.project().services[x] as {
+            __kind: "GuildKit";
+            kitId: web3.PublicKey;
+          }
+        ).kitId
+      )
+    );
+  }
+
+  public guilds(): Promise<BuzzGuild[]> {
+    return Promise.all(this.guildKits().map((kit) => kit.guilds())).then((x) =>
+      x.flat()
+    );
+  }
+
+  public async add(
+    args: CreateMissionArgs,
+    confirmOptions?: web3.ConfirmOptions
+  ) {
+    const { address } = await this.honeycomb().create().missions().mission(
+      {
+        args,
+        pool: this.address,
+        project: this.project().address,
+      },
+      confirmOptions
+    );
+    return this.mission(
+      address,
+      confirmOptions?.commitment || "processed",
+      ForceScenario.Force
+    );
+  }
+  public get newMission() {
+    return this.add;
   }
 
   /**
@@ -403,37 +322,143 @@ export class NectarMissions extends Module<"recall" | "participate"> {
    */
   public async mission(
     name: string,
-    reFetch?: boolean,
-    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
+    commitment?: web3.Commitment,
+    forceFetch?: ForceScenario
   ): Promise<NectarMission>;
+
   public async mission(
     address: web3.PublicKey,
-    reFetch?: boolean,
-    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
+    commitment?: web3.Commitment,
+    forceFetch?: ForceScenario
   ): Promise<NectarMission>;
+
   public async mission(
-    nameOrAddress: string | web3.PublicKey,
-    reFetch = false,
-    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
-  ) {
-    if (typeof nameOrAddress === "string") {
-      if (!this._missions[nameOrAddress] || reFetch) {
-        this._missions[nameOrAddress] = await this.fetch().mission(
-          nameOrAddress,
-          commitmentOrConfig
+    nameOrAddress: web3.PublicKey | string,
+    commitment: web3.Commitment = "processed",
+    forceFetch = ForceScenario.NoForce
+  ): Promise<NectarMission> {
+    return this.cache.getOrFetch(
+      "mission",
+      this.honeycomb().identity().address.toString(),
+      () =>
+        this.honeycomb()
+          .fetch()
+          .missions()
+          .mission(
+            typeof nameOrAddress == "string"
+              ? this.honeycomb()
+                  .pda()
+                  .missions()
+                  .mission(this.address, nameOrAddress)[0]
+              : nameOrAddress,
+            commitment,
+            forceFetch
+          )
+          .then((mission) => new NectarMission(this, mission)),
+      forceFetch
+    );
+  }
+
+  /**
+   * Retrieves all missions associated with the mission pool.
+   *
+   * @param reFetch - Set to `true` to force fetching missions from the blockchain, even if cached.
+   * @returns An array of `NectarMission` instances representing the missions associated with the mission pool.
+   *
+   * @async
+   * @example
+   * const missions = await nectarMissions.missions();
+   * console.log(missions); // Output: [NectarMission1, NectarMission2, ...]
+   */
+  public async missions(forceFetch = ForceScenario.NoForce) {
+    const missions = this.cache.get("mission");
+    if (missions.length === 0 || forceFetch == ForceScenario.Force) {
+      await this.honeycomb()
+        .fetch()
+        .missions()
+        .missions(this.address)
+        .then((missions) =>
+          missions.forEach((mission) => {
+            const nectarMission = new NectarMission(this, mission);
+            this.cache.set(
+              "mission",
+              nectarMission.address.toString(),
+              nectarMission
+            );
+          })
         );
-      }
-      return this._missions[nameOrAddress];
-    } else {
-      let mission = Object.values(this._missions).find((m) =>
-        m.address.equals(nameOrAddress)
-      );
-      if (!mission || reFetch) {
-        mission = await this.fetch().mission(nameOrAddress, commitmentOrConfig);
-        this._missions[mission.name] = mission;
-      }
-      return mission;
     }
+    return this.cache.get("mission");
+  }
+
+  private async fetchParticipationsUsing(
+    fetch: () => Promise<Participation[]>,
+    forceFetch = ForceScenario.NoForce
+  ) {
+    const missions = await this.missions().then((missions) =>
+      missions.reduce(
+        (acc, mission) => ({ ...acc, [mission.address.toString()]: mission }),
+        {} as { [key: string]: NectarMission }
+      )
+    );
+
+    const stakedNfts = await this.stakedNfts();
+    const guilds = await this.guilds();
+    const item = this.cache.get(
+      "participations",
+      this.honeycomb().identity().address.toString()
+    );
+    if (!item || item.size === 0 || forceFetch === ForceScenario.Force) {
+      await fetch().then((participations) =>
+        this.cache.updateSync(
+          "participations",
+          this.honeycomb().identity().address.toString(),
+          (participationsMap) => {
+            participationsMap = new Map();
+            participations.forEach((_participation) => {
+              if (
+                !Object.keys(missions).includes(
+                  _participation.mission.toString()
+                )
+              )
+                return;
+              const participation =
+                _participation.instrument.__kind === "Nft"
+                  ? new NectarMissionParticipationNft(
+                      missions[_participation.mission.toString()],
+                      _participation,
+                      stakedNfts.find((n) =>
+                        this.honeycomb()
+                          .pda()
+                          .staking()
+                          .nft(n.stakingPool, n.mint)[0]
+                          .equals(_participation.instrument.fields[0])
+                      )
+                    )
+                  : new NectarMissionParticipationGuild(
+                      missions[_participation.mission.toString()],
+                      _participation,
+                      guilds.find((g) =>
+                        g.address.equals(_participation.instrument.fields[0])
+                      )
+                    );
+              participationsMap.set(
+                participation.address.toString() +
+                  participation.endTime.getTime(),
+                participation
+              );
+            });
+            return participationsMap;
+          }
+        )
+      );
+    }
+
+    return Array.from(
+      this.cache
+        .get("participations", this.honeycomb().identity().address.toString())
+        .values()
+    );
   }
 
   /**
@@ -456,13 +481,74 @@ export class NectarMissions extends Module<"recall" | "participate"> {
    * const participations = await nectarMissions.participations(walletAddress);
    * console.log(participations); // Output: [NectarMissionParticipation1, NectarMissionParticipation2, ...]
    */
-  public async participations(wallet?: web3.PublicKey, reFetch = false) {
-    const walletAddr = wallet || this.honeycomb().identity().address;
-    if (!this._participations[walletAddr.toString()] || reFetch) {
-      this._participations[walletAddr.toString()] =
-        await this.fetch().participations(wallet);
-    }
-    return this._participations[walletAddr.toString()];
+  public async participations(
+    argsOrforceFetch?:
+      | ForceScenario
+      | {
+          authToken?: string;
+          wallets?: string[];
+          page: number;
+          pageSize: number;
+          forceFetch?: ForceScenario;
+        }
+  ) {
+    return this.fetchParticipationsUsing(
+      () =>
+        typeof argsOrforceFetch === "object"
+          ? this.honeycomb()
+              .fetch()
+              .missions()
+              .participations({
+                pool: this.address,
+                ...argsOrforceFetch,
+              })
+          : this.honeycomb().fetch().missions().participations({
+              wallet: this.honeycomb().identity().address,
+            }),
+      typeof argsOrforceFetch === "object"
+        ? argsOrforceFetch.forceFetch
+        : argsOrforceFetch
+    );
+  }
+
+  /**
+   * Retrieves mission participations for a given wallet address associated with the mission pool.
+   *
+   * @param wallet - The public key of the wallet for which to retrieve mission participations.
+   * If not provided, the default wallet associated with the `Honeycomb` instance will be used.
+   * @param reFetch - Set to `true` to force fetching participations from the blockchain, even if cached.
+   * @returns An array of `NectarMissionParticipation` instances representing the mission participations
+   * associated with the wallet.
+   *
+   * @async
+   * @example
+   * // Retrieve mission participations for the default wallet
+   * const participations = await nectarMissions.participations();
+   * console.log(participations); // Output: [NectarMissionParticipation1, NectarMissionParticipation2, ...]
+   *
+   * // Alternatively, you can specify the wallet address to retrieve participations for a specific wallet
+   * const walletAddress = new web3.PublicKey("WalletAddress");
+   * const participations = await nectarMissions.participations(walletAddress);
+   * console.log(participations); // Output: [NectarMissionParticipation1, NectarMissionParticipation2, ...]
+   */
+  public async history(args: {
+    authToken?: string;
+    wallets?: string[];
+    page: number;
+    pageSize: number;
+    forceFetch?: ForceScenario;
+  }) {
+    return this.fetchParticipationsUsing(
+      () =>
+        this.honeycomb()
+          .fetch()
+          .missions()
+          .participationHistory({
+            pool: this.address,
+            ...args,
+          }),
+      args.forceFetch
+    );
   }
 
   /**
@@ -486,28 +572,23 @@ export class NectarMissions extends Module<"recall" | "participate"> {
     arg: ItemOrArray<NectarMission> | ItemOrArray<NectarMissionParticipation>
   ) {
     if (Array.isArray(arg)) {
-      arg.map((x) => this.register(x));
+      arg.forEach((x) => this.register(x));
     } else {
       if (arg instanceof NectarMission) {
-        this._missions[arg.name] = arg;
+        this.cache.set("mission", arg.address.toString(), arg);
       } else if (arg instanceof NectarMissionParticipation) {
-        if (!this._participations[arg.wallet.toString()])
-          this._participations[arg.wallet.toString()] = [];
-        this._participations[arg.wallet.toString()] = [
-          ...this._participations[arg.wallet.toString()],
-          arg,
-        ];
-
-        this._participations[arg.wallet.toString()] =
-          removeDuplicateFromArrayOf(
-            this._participations[arg.wallet.toString()],
-            (x) => x.address.toString() + `_${x.endTime.getTime()}`
-          );
+        this.cache.updateSync(
+          "participations",
+          arg.wallet.toString(),
+          (participationsMap) => {
+            participationsMap.set(arg.address.toString(), arg);
+            return participationsMap;
+          }
+        );
       } else {
         throw new Error("Unrecognized item");
       }
     }
-
     return this;
   }
 
@@ -564,7 +645,12 @@ export class NectarMissions extends Module<"recall" | "participate"> {
   public install(honeycomb: Honeycomb): Honeycomb {
     if (!honeycomb._missions) {
       honeycomb._missions = {};
+      honeycomb.pda().register(nectarMissionsPdas());
+      honeycomb.fetch().register(nectarMissionsFetch());
+      honeycomb.create().register(nectarMissionsCreate());
     }
+
+    this._honeycomb = honeycomb;
     honeycomb._missions[this.address.toString()] = this;
 
     honeycomb.missions = (key?: string | web3.PublicKey) => {
@@ -577,796 +663,7 @@ export class NectarMissions extends Module<"recall" | "participate"> {
       }
     };
 
-    this._honeycomb = honeycomb;
     return honeycomb;
-  }
-}
-
-/**
- * A class that provides methods to fetch missions and mission participations associated with a `NectarMissions` instance.
- * @category Helpers
- */
-class NectarMissionsFetch {
-  /**
-   * Creates a new `NectarMissionsFetch` instance.
-   * @param _missions - The `NectarMissions` instance to fetch missions and participations for.
-   */
-  constructor(private _missions: NectarMissions) {}
-
-  /**
-   * Fetches all missions associated with the `NectarMissions` instance.
-   * @returns A promise that resolves to an array of `NectarMission` instances representing the fetched missions.
-   * @async
-   */
-  public async missions(): Promise<NectarMission[]> {
-    return Mission.gpaBuilder()
-      .addFilter("missionPool", this._missions.address)
-      .run(this._missions.honeycomb().processedConnection)
-      .then((missions) =>
-        missions
-          .map((m) => {
-            try {
-              return new NectarMission(
-                this._missions,
-                m.pubkey,
-                Mission.fromAccountInfo(m.account)[0]
-              );
-            } catch {
-              return null;
-            }
-          })
-          .filter((x) => !!x)
-      );
-  }
-
-  /**
-   * Fetches a specific mission associated with the `NectarMissions` instance based on its name or public key.
-   * @param name - The name of the mission to fetch.
-   * @param commitmentOrConfig - Optional transaction commitment or configuration for fetching mission data.
-   * @returns A promise that resolves to the fetched `NectarMission` instance.
-   * @async
-   * @example
-   * // Fetch a mission by its name
-   * const missionName = "MissionABC";
-   * const mission = await nectarMissions.fetch().mission(missionName);
-   * console.log(mission); // Output: NectarMission instance representing the fetched mission
-   *
-   * // Fetch a mission by its public key
-   * const missionPublicKey = new web3.PublicKey("MissionPublicKey");
-   * const mission = await nectarMissions.fetch().mission(missionPublicKey);
-   * console.log(mission); // Output: NectarMission instance representing the fetched mission
-   */
-  public async mission(
-    name: string,
-    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
-  ): Promise<NectarMission>;
-  public async mission(
-    address: web3.PublicKey,
-    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
-  ): Promise<NectarMission>;
-  public async mission(
-    nameOrAddress: string | web3.PublicKey,
-    commitmentOrConfig?: web3.Commitment | web3.GetAccountInfoConfig
-  ): Promise<NectarMission | null> {
-    const address =
-      typeof nameOrAddress === "string"
-        ? missionPda(this._missions.address, nameOrAddress)[0]
-        : nameOrAddress;
-    return Mission.fromAccountAddress(
-      this._missions.honeycomb().connection,
-      address,
-      commitmentOrConfig
-    ).then((m) => new NectarMission(this._missions, address, m));
-  }
-
-  /**
-   * Fetches mission participations associated with the `NectarMissions` instance and optionally a specific wallet and mission.
-   * @param walletAddress - The public key of the wallet for which to fetch participations.
-   * If not provided, the default wallet associated with the `NectarMissions` instance will be used.
-   * @param mission - The public key of the mission for which to fetch participations.
-   * If not provided, all participations for the given wallet will be fetched.
-   * @returns A promise that resolves to an array of `NectarMissionParticipation` instances representing the fetched participations.
-   * @async
-   * @example
-   * // Fetch all participations for the default wallet
-   * const participations = await nectarMissions.fetch().participations();
-   * console.log(participations); // Output: [NectarMissionParticipation1, NectarMissionParticipation2, ...]
-   *
-   * // Fetch participations for a specific wallet and mission
-   * const walletAddress = new web3.PublicKey("WalletAddress");
-   * const missionPublicKey = new web3.PublicKey("MissionPublicKey");
-   * const participations = await nectarMissions.fetch().participations(walletAddress, missionPublicKey);
-   * console.log(participations); // Output: [NectarMissionParticipation1, NectarMissionParticipation2, ...]
-   */
-  public async participations(
-    walletAddress?: web3.PublicKey,
-    mission?: web3.PublicKey
-  ): Promise<NectarMissionParticipation[]> {
-    const gpa = Participation.gpaBuilder().addFilter(
-      "wallet",
-      walletAddress || this._missions.honeycomb().identity().address
-    );
-    if (mission) gpa.addFilter("mission", mission);
-
-    const stakedNfts = await Promise.all(
-      this._missions
-        .stakingPools()
-        .map((stakingPool) => stakingPool.stakedNfts())
-    ).then((x) => x.flat());
-
-    return gpa
-      .run(this._missions.honeycomb().processedConnection)
-      .then((participations) =>
-        Promise.all(
-          participations.map(async (p) => {
-            try {
-              const participation = Participation.fromAccountInfo(p.account)[0];
-              const stakedNft = stakedNfts.find((y) =>
-                getNftPda(
-                  this._missions.honeycomb().staking(y.stakingPool).address,
-                  y.mint
-                )[0].equals(participation.nft)
-              );
-              return new NectarMissionParticipation(
-                await this._missions.mission(participation.mission),
-                p.pubkey,
-                participation,
-                //@ts-ignore
-                stakedNft
-              );
-            } catch {
-              return null;
-            }
-          })
-        )
-      )
-      .then((x) => x.filter((y) => !!y))
-      .then((x) => {
-        this._missions.register(x);
-        return x;
-      });
-  }
-
-  public async participationFromOffchain(
-    authToken: string,
-    page: number = 1,
-    pageSize: number = 9999999
-  ): Promise<NectarMissionParticipation[]> {
-    const publicInfo = await this._missions.honeycomb().publicInfo();
-    const offchainUrl = publicInfo.get("offchain");
-
-    const allMissions = await this.missions().then((missions) =>
-      missions.reduce(
-        (acc, mission) => ({ ...acc, [mission.address.toString()]: mission }),
-        {}
-      )
-    );
-
-    const stakedNfts = await Promise.all(
-      this._missions
-        .stakingPools()
-        .map((stakingPool) => stakingPool.stakedNfts())
-    ).then((x) => x.flat());
-
-    return fetch(
-      `${offchainUrl}/missions/participations/${page}/${pageSize}?missionPool=${this._missions.address}&isRecalled=false`,
-      {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      }
-    )
-      .then((res) => res.json())
-      .then((res: { data: OffchainParticipation[] }) =>
-        res.data.map(
-          (p) =>
-            new NectarMissionParticipation(
-              allMissions[p.mission.toString()],
-              new web3.PublicKey(p._id.split("_")[0]),
-              offchainToSolitaParticipation(p),
-              stakedNfts.find(
-                (y) =>
-                  getNftPda(
-                    this._missions.honeycomb().staking(y.stakingPool).address,
-                    y.mint
-                  )[0].toString() === p.nft
-              )
-            )
-        )
-      )
-      .then((x) => {
-        this._missions.register(x);
-        return x;
-      });
-  }
-
-  public async pastParticipation(
-    authToken: string,
-    page: number = 1,
-    pageSize: number = 9999999
-  ): Promise<NectarMissionParticipation[]> {
-    const publicInfo = await this._missions.honeycomb().publicInfo();
-    const offchainUrl = publicInfo.get("offchain");
-
-    const allMissions = await this.missions().then((missions) =>
-      missions.reduce(
-        (acc, mission) => ({ ...acc, [mission.address.toString()]: mission }),
-        {}
-      )
-    );
-
-    const stakedNfts = await Promise.all(
-      this._missions
-        .stakingPools()
-        .map((stakingPool) => stakingPool.stakedNfts())
-    ).then((x) => x.flat());
-
-    return fetch(
-      `${offchainUrl}/missions/participations/${page}/${pageSize}?missionPool=${this._missions.address}&isRecalled=true`,
-      {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      }
-    )
-      .then((res) => res.json())
-      .then((res: { data: OffchainParticipation[] }) =>
-        res.data.map(
-          (p) =>
-            new NectarMissionParticipation(
-              allMissions[p.mission.toString()],
-              new web3.PublicKey(p._id.split("_")[0]),
-              offchainToSolitaParticipation(p),
-              stakedNfts.find(
-                (y) =>
-                  getNftPda(
-                    this._missions.honeycomb().staking(y.stakingPool).address,
-                    y.mint
-                  )[0].toString() === p.nft
-              )
-            )
-        )
-      )
-      .then((x) => {
-        this._missions.register(x);
-        return x;
-      });
-  }
-}
-
-/**
- * A class that provides a method to create a new mission associated with a `NectarMissions` instance.
- * @category Helpers
- */
-class NectarMissionsCreate {
-  /**
-   * Creates a new `NectarMissionsCreate` instance.
-   * @param _missionPool - The `NectarMissions` instance to create a mission for.
-   */
-  constructor(private _missionPool: NectarMissions) {}
-
-  /**
-   * Creates a new mission associated with the `NectarMissions` instance.
-   * @param args - The arguments to create the mission.
-   * @param confirmOptions - Optional transaction confirmation options.
-   * @returns A promise that resolves to the created `NectarMission` instance.
-   * @async
-   * @example
-   * // Create a new mission
-   * const createMissionArgs = {
-   *   name: "MissionABC",
-   *   description: "This is a test mission.",
-   *   reward: 100,
-   *   startDate: new Date("2023-07-01"),
-   *   endDate: new Date("2023-07-31"),
-   *   maxParticipationLimit: 1000,
-   *   maxStakePerParticipant: 10,
-   * };
-   * const createdMission = await nectarMissions.create().mission(createMissionArgs);
-   * console.log(createdMission); // Output: NectarMission instance representing the created mission
-   */
-  public async mission(
-    args: CreateMissionArgs,
-    confirmOptions?: web3.ConfirmOptions
-  ): Promise<NectarMission> {
-    const { operation, mission } = await createCreateMissionOperation(
-      this._missionPool.honeycomb(),
-      {
-        args,
-        missionPool: this._missionPool,
-        programId: this._missionPool.programId,
-      }
-    );
-    await operation.send(confirmOptions);
-    return this._missionPool.mission(mission, true, "processed");
-  }
-}
-/**
- * Represents a Nectar Mission.
- * @category Helpers
- */
-export class NectarMission {
-  /**
-   * Creates a new `NectarMission` instance.
-   * @param _pool - The `NectarMissions` instance that the mission belongs to.
-   * @param address - The public key address of the mission.
-   * @param _mission - The underlying `Mission` object representing the mission data.
-   * @throws {Error} Throws an error if the mission does not belong to the pool.
-   */
-  constructor(
-    private _pool: NectarMissions,
-    readonly address: web3.PublicKey,
-    private _mission: Mission
-  ) {
-    if (!_pool.address.equals(_mission.missionPool)) {
-      throw new Error("Mission does not belong to pool");
-    }
-  }
-
-  /**
-   * Returns the `NectarMissions` instance that the mission belongs to.
-   * @returns The `NectarMissions` instance.
-   */
-  public pool() {
-    return this._pool;
-  }
-
-  /**
-   * Gets the name of the mission.
-   * @returns The name of the mission.
-   */
-  public get name() {
-    return this._mission.name;
-  }
-
-  /**
-   * Gets the mission requirements.
-   * @returns The mission requirements.
-   */
-  public get requirements() {
-    return {
-      minXp: this._mission.minXp,
-      cost: {
-        amount: this._mission.cost.amount,
-        currency: () =>
-          this.pool().honeycomb().currency(this._mission.cost.address),
-      },
-    };
-  }
-
-  /**
-   * Gets the duration of the mission.
-   * @returns The duration of the mission as a `Date`.
-   */
-  public get duration() {
-    return new Date(Number(this._mission.duration.toString()) * 1000);
-  }
-
-  /**
-   * Gets the rewards associated with the mission.
-   * @returns An array of `MissionReward` or `MissionCurrencyRewards` objects representing the rewards.
-   */
-  public get rewards() {
-    return this._mission.rewards.map((r) =>
-      (() => {
-        switch (r.rewardType.__kind) {
-          case "Currency":
-            return new MissionCurrencyRewards(this, r);
-          default:
-            return new MissionReward(this, r);
-        }
-      })()
-    );
-  }
-
-  /**
-   * Updates this missions config.
-   * @param args - The arguments to update the mission.
-   * @param confirmOptions - Optional transaction confirmation options.
-   * @returns A promise that resolves to the operation context.
-   * @async
-   * @example
-   * // Update mission
-   * const updateMissionArgs = {
-   *   name: "MissionABC",
-   * };
-   * const { signature } = await mission.update(updateMissionArgs);
-   * console.log(signature); // Output: Transaction signature
-   */
-  public async update(
-    args: UpdateMissionArgs,
-    confirmOptions?: web3.ConfirmOptions
-  ) {
-    const { operation } = await createUpdateMissionOperation(
-      this.pool().honeycomb(),
-      {
-        args,
-        mission: this,
-        programId: this.pool().programId,
-      }
-    );
-    return operation.send(confirmOptions);
-  }
-
-  /**
-   * Participates in the mission by staking NFTs.
-   * @param nfts - An array of staked NFTs along with their participation arguments.
-   * @param confirmOptions - Optional transaction confirmation options.
-   * @returns A promise that resolves to an array of transaction signatures upon successful participation.
-   * @async
-   * @example
-   * // Participate in a mission by staking NFTs
-   * const nftsToStake = [
-   *   { nft: stakedNft1, args: participateArgs1 },
-   *   { nft: stakedNft2, args: participateArgs2 },
-   *   // Add more NFTs to stake as needed
-   * ];
-   * const participationResult = await nectarMission.participate(nftsToStake);
-   * console.log(participationResult); // Output: Array of transaction signatures
-   */
-  public async participate(
-    nfts: (StakedNft & { args: ParticipateArgs })[],
-    options: web3.ConfirmOptions & SendBulkOptions = {}
-  ) {
-    const operations = await Promise.all(
-      nfts.map((nft, i) =>
-        createParticipateOperation(
-          this.pool().honeycomb(),
-          {
-            args: nft.args,
-            mission: this,
-            nft,
-            isFirst: i === 0,
-            programId: this.pool().programId,
-          },
-          this.pool().getLuts("participate")
-        ).then(({ operation }) => operation)
-      )
-    );
-
-    return Operation.sendBulk(this.pool().honeycomb(), operations, {
-      prepareAllAtOnce: nfts.length < 5,
-      ...options,
-    });
-  }
-
-  /**
-   * Recalls the participation from the mission for the provided participations.
-   * @param participations - An array of `NectarMissionParticipation` instances representing the participations to recall.
-   * @param confirmOptions - Optional transaction confirmation options.
-   * @returns A promise that resolves to the transaction signature upon successful recall.
-   * @async
-   * @example
-   * // Recall participation from the mission for specific participations
-   * const participationsToRecall = [participation1, participation2];
-   * const recallResult = await nectarMission.recall(participationsToRecall);
-   * console.log(recallResult); // Output: Transaction signature
-   */
-  public async recall(
-    participations: NectarMissionParticipation[],
-    confirmOptions?: web3.ConfirmOptions
-  ) {
-    return this.pool().recall(participations, confirmOptions);
-  }
-}
-
-/**
- * Represents a Nectar Mission Participation.
- * @category Helpers
- */
-export class NectarMissionParticipation {
-  /**
-   * Creates a new `NectarMissionParticipation` instance.
-   * @param _mission - The `NectarMission` instance that the participation belongs to.
-   * @param address - The public key address of the participation.
-   * @param _participation - The underlying `Participation` object representing the participation data.
-   * @param _stakedNft - The `StakedNft` object representing the staked NFT associated with the participation.
-   * @throws {Error} Throws an error if the participation does not belong to the mission or the staked NFT.
-   */
-  constructor(
-    private _mission: NectarMission,
-    readonly address: web3.PublicKey,
-    private _participation: Participation,
-    private _stakedNft: StakedNft
-  ) {
-    if (!_mission.address.equals(_participation.mission)) {
-      throw new Error("Participation does not belong to mission");
-    }
-
-    if (
-      !getNftPda(_stakedNft.stakingPool, _stakedNft.mint)[0].equals(
-        _participation.nft
-      )
-    ) {
-      throw new Error("Participation does not belong to nft");
-    }
-  }
-
-  /**
-   * Returns the `NectarMission` instance that the participation belongs to.
-   * @returns The `NectarMission` instance.
-   */
-  public mission() {
-    return this._mission;
-  }
-
-  /**
-   * Gets the wallet address associated with the participation.
-   * @returns The wallet address.
-   */
-  public get wallet() {
-    return this._participation.wallet;
-  }
-
-  /**
-   * Gets the staked NFT associated with the participation.
-   * @returns The staked NFT object.
-   */
-  public get nft() {
-    return this._stakedNft;
-  }
-
-  /**
-   * Gets the address of the staked NFT associated with the participation.
-   * @returns The address of the staked NFT.
-   */
-  public get nftAddress() {
-    return getNftPda(this._stakedNft.stakingPool, this._stakedNft.mint)[0];
-  }
-
-  /**
-   * Gets the end time of the participation as a `Date`.
-   * @returns The end time of the participation.
-   */
-  public get endTime() {
-    return new Date(Number(this._participation.endTime.toString()) * 1000);
-  }
-
-  /**
-   * Gets the start time of the participation as a `Date`.
-   * @returns The start time of the participation.
-   */
-  public get startTime() {
-    return new Date(this.endTime.getTime() - this.mission().duration.getTime());
-  }
-
-  /**
-   * Checks if the participation has ended.
-   * @returns `true` if the participation has ended, `false` otherwise.
-   */
-  public get isEnded() {
-    return this.endTime.getTime() < Date.now();
-  }
-
-  /**
-   * Checks if the participation has been recalled.
-   * @returns `true` if the participation has been recalled, `false` otherwise.
-   */
-  public get isRecalled() {
-    return this._participation.isRecalled;
-  }
-
-  /**
-   * Gets the rewards associated with the participation.
-   * @returns An array of `ParticipationReward` or `ParticipationCurrencyRewards` objects representing the rewards.
-   */
-  public get rewards() {
-    return this._participation.rewards.map((r) =>
-      (() => {
-        switch (r.rewardType.__kind) {
-          case "Currency":
-            return new ParticipationCurrencyRewards(this, r);
-          default:
-            return new ParticipationReward(this, r);
-        }
-      })()
-    );
-  }
-
-  /**
-   * Recalls the participation from the mission for this instance.
-   * @param confirmOptions - Optional transaction confirmation options.
-   * @returns A promise that resolves to the transaction signature upon successful recall.
-   * @async
-   * @example
-   * // Recall participation for this instance
-   * const recallResult = await nectarMissionParticipation.recall();
-   * console.log(recallResult); // Output: Transaction signature
-   */
-  public recall(confirmOptions?: web3.ConfirmOptions) {
-    return this._mission.recall([this], confirmOptions);
-  }
-}
-
-/**
- * Represents a Mission Reward.
- * @category Helpers
- */
-export class MissionReward {
-  /**
-   * Creates a new `MissionReward` instance.
-   * @param _mission - The `NectarMission` instance that the reward belongs to.
-   * @param _reward - The underlying `Reward` object representing the reward data.
-   */
-  constructor(protected _mission: NectarMission, protected _reward: Reward) {}
-
-  /**
-   * Gets the minimum amount of the reward.
-   * @returns The minimum amount.
-   */
-  public get min() {
-    return this._reward.min;
-  }
-
-  /**
-   * Gets the maximum amount of the reward.
-   * @returns The maximum amount.
-   */
-  public get max() {
-    return this._reward.max;
-  }
-
-  /**
-   * Checks if the reward is of type `ParticipationCurrencyRewards`.
-   * @returns `true` if the reward is of type `ParticipationCurrencyRewards`, `false` otherwise.
-   */
-  public isCurrency(): this is ParticipationCurrencyRewards {
-    return this._reward.rewardType.__kind === "Currency";
-  }
-
-  /**
-   * Gets the user interface (UI) amount representation of the reward.
-   * @returns The UI amount string.
-   * @example
-   * // Example 1:
-   * const reward = new MissionReward(mission, rewardData);
-   * console.log(reward.uiAmount); // Output: "5" (if rewardData.min and rewardData.max are both 5000000000)
-   *
-   * // Example 2:
-   * const reward = new MissionReward(mission, rewardData);
-   * console.log(reward.uiAmount); // Output: "1-10" (if rewardData.min is 1000000000 and rewardData.max is 10000000000)
-   */
-  public get uiAmount() {
-    const min = parseInt(this.min.toString());
-    const max = parseInt(this.max.toString());
-    if (this.isCurrency()) {
-      const decimals = 10 ** this.currency().mint.decimals;
-      if (min === max) return (min / decimals).toString();
-      return `${min / decimals}-${max / decimals}`;
-    } else {
-      if (min === max) return min.toString();
-      return `${min}-${max}`;
-    }
-  }
-}
-
-/**
- * Represents a Mission Reward of type `MissionCurrencyRewards`.
- * @category Helpers
- */
-export class MissionCurrencyRewards extends MissionReward {
-  /**
-   * Creates a new `MissionCurrencyRewards` instance.
-   * @param _mission - The `NectarMission` instance that the reward belongs to.
-   * @param _reward - The underlying `Reward` object representing the reward data.
-   */
-  constructor(_mission: NectarMission, _reward: Reward) {
-    super(_mission, _reward);
-  }
-
-  /**
-   * Gets the currency associated with the reward.
-   * @returns The currency instance.
-   * @throws {Error} If the reward is not a currency.
-   * @example
-   * const currencyReward = new MissionCurrencyRewards(mission, rewardData);
-   * const currency = currencyReward.currency();
-   * console.log(currency.symbol); // Output: "USD" (assuming rewardData.rewardType.address points to a valid currency token)
-   */
-  public currency() {
-    if (this._reward.rewardType.__kind === "Currency") {
-      return this._mission
-        .pool()
-        .honeycomb()
-        .currency(this._reward.rewardType.address);
-    } else {
-      throw new Error("Reward is not a currency");
-    }
-  }
-}
-
-/**
- * Represents a Participation Reward.
- * @category Helpers
- */
-export class ParticipationReward {
-  /**
-   * Creates a new `ParticipationReward` instance.
-   * @param _participation - The `NectarMissionParticipation` instance that the reward belongs to.
-   * @param _reward - The underlying `EarnedReward` object representing the reward data.
-   */
-  constructor(
-    protected _participation: NectarMissionParticipation,
-    protected _reward: EarnedReward
-  ) {}
-
-  /**
-   * Gets the amount of the reward.
-   * @returns The amount of the reward.
-   * @example
-   * const participationReward = new ParticipationReward(participation, rewardData);
-   * const amount = participationReward.amount;
-   * console.log(amount); // Output: 100
-   */
-  public get amount() {
-    return this._reward.amount;
-  }
-
-  /**
-   * Checks if the reward has been collected.
-   * @returns True if the reward has been collected, false otherwise.
-   * @example
-   * const participationReward = new ParticipationReward(participation, rewardData);
-   * const isCollected = participationReward.collected;
-   * console.log(isCollected); // Output: true
-   */
-  public get collected() {
-    return this._reward.collected;
-  }
-
-  /**
-   * Gets the `NectarMissionParticipation` instance associated with the reward.
-   * @returns The `NectarMissionParticipation` instance.
-   * @example
-   * const participationReward = new ParticipationReward(participation, rewardData);
-   * const participation = participationReward.participation();
-   * console.log(participation.wallet); // Output: Wallet public key of the participant
-   */
-  public participation() {
-    return this._participation;
-  }
-
-  /**
-   * Checks if the reward is of type `ParticipationCurrencyRewards`.
-   * @returns True if the reward is of type `ParticipationCurrencyRewards`, false otherwise.
-   * @example
-   * const participationReward = new ParticipationReward(participation, rewardData);
-   * if (participationReward.isCurrency()) {
-   *   const currencyReward = participationReward as ParticipationCurrencyRewards;
-   *   const currency = currencyReward.currency();
-   *   console.log(currency.symbol); // Output: "USD" (assuming rewardData.rewardType is of type "Currency")
-   * }
-   */
-  public isCurrency(): this is ParticipationCurrencyRewards {
-    return this._reward.rewardType.__kind === "Currency";
-  }
-}
-
-/**
- * Represents a Participation Reward of type `ParticipationCurrencyRewards`.
- * @category Helpers
- */
-export class ParticipationCurrencyRewards extends ParticipationReward {
-  constructor(
-    _participation: NectarMissionParticipation,
-    _reward: EarnedReward
-  ) {
-    super(_participation, _reward);
-  }
-
-  /**
-   * Get the currency associated with the reward.
-   * @returns The currency object.
-   * @throws An error if the reward is not of type "Currency".
-   */
-  public currency() {
-    if (this._reward.rewardType.__kind === "Currency")
-      return this._participation
-        .mission()
-        .pool()
-        .honeycomb()
-        .currency(this._reward.rewardType.address);
-    else throw new Error("Reward is not a currency");
   }
 }
 
@@ -1395,7 +692,7 @@ export const nectarMissionsModule = (
   args: web3.PublicKey | NewMissionPoolArgs
 ) =>
   args instanceof web3.PublicKey
-    ? NectarMissions.fromAddress(honeycomb.connection, args)
+    ? NectarMissions.fromAddress(honeycomb, args)
     : NectarMissions.new(honeycomb, args);
 
 /**
@@ -1420,12 +717,7 @@ export const findProjectMissionPools = (project: HoneycombProject) =>
         try {
           project
             .honeycomb()
-            .use(
-              new NectarMissions(
-                c.pubkey,
-                MissionPool.fromAccountInfo(c.account)[0]
-              )
-            );
+            .use(new NectarMissions(MissionPool.fromAccountInfo(c.account)[0]));
         } catch (e) {
           console.error(e);
           return null;

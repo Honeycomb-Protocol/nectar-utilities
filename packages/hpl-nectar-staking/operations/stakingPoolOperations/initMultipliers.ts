@@ -3,8 +3,7 @@ import {
   createInitMultipliersInstruction,
   InitMultipliersArgs,
   PROGRAM_ID,
-} from "../generated";
-import { getMultipliersPda } from "../pdas";
+} from "../../generated";
 import {
   VAULT,
   Honeycomb,
@@ -61,7 +60,10 @@ export async function createInitMultiplierOperation(
   const programId = args.programId || PROGRAM_ID;
 
   // Get the multipliers for the staking pool
-  const [multipliers] = getMultipliersPda(args.stakingPool, programId);
+  const [multipliers] = honeycomb
+    .pda()
+    .staking()
+    .multipliers(args.stakingPool, programId);
 
   // Create the transaction instruction for initializing multipliers
   const instructions: web3.TransactionInstruction[] = [

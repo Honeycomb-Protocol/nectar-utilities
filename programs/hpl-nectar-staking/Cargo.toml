@@ -2,7 +2,7 @@
 name = "hpl-nectar-staking"
 description = "Honeycomb protocol library nectar utilities staking program"
 author = ['Sultan Nadeem <sultanndilaram@gmail.com>']
-version = "0.1.46"
+version = "0.1.45"
 edition = "2021"
 license = "MIT"
 
@@ -27,8 +27,8 @@ toml_datetime = "=0.6.1"
 hpl-utils = "0.1.4"
 hpl-macros = "0.0.2"
 hpl-events = { version = "0.1.21", features = ["no-entrypoint"] }
-hpl-hive-control = { version = "0.2.6", features = ["cpi"] }
-hpl-currency-manager = { version = "0.0.79", features = ["cpi"] }
+hpl-hive-control = { version = "0.2.10", features = ["cpi"] }
+hpl-currency-manager = { version = "0.0.81", features = ["cpi"] }
 mpl-token-metadata = { version = "1.9.0", features = ["no-entrypoint"] }
-mpl-bubblegum = { version = "0.7.0", features = ["cpi"] }
+mpl-bubblegum = { version = "0.9.2", features = ["cpi"] }
 spl-account-compression = { version = "0.1.8", features = ["cpi"] }

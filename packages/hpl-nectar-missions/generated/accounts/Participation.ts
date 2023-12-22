@@ -8,6 +8,7 @@
 import * as web3 from '@solana/web3.js'
 import * as beet from '@metaplex-foundation/beet'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
+import { Instrument, instrumentBeet } from '../types/Instrument'
 import { EarnedReward, earnedRewardBeet } from '../types/EarnedReward'
 
 /**
@@ -19,7 +20,7 @@ export type ParticipationArgs = {
   bump: number
   wallet: web3.PublicKey
   mission: web3.PublicKey
-  nft: web3.PublicKey
+  instrument: Instrument
   endTime: beet.bignum
   isRecalled: boolean
   rewards: EarnedReward[]
@@ -38,7 +39,7 @@ export class Participation implements ParticipationArgs {
     readonly bump: number,
     readonly wallet: web3.PublicKey,
     readonly mission: web3.PublicKey,
-    readonly nft: web3.PublicKey,
+    readonly instrument: Instrument,
     readonly endTime: beet.bignum,
     readonly isRecalled: boolean,
     readonly rewards: EarnedReward[]
@@ -52,7 +53,7 @@ export class Participation implements ParticipationArgs {
       args.bump,
       args.wallet,
       args.mission,
-      args.nft,
+      args.instrument,
       args.endTime,
       args.isRecalled,
       args.rewards
@@ -167,7 +168,7 @@ export class Participation implements ParticipationArgs {
       bump: this.bump,
       wallet: this.wallet.toBase58(),
       mission: this.mission.toBase58(),
-      nft: this.nft.toBase58(),
+      instrument: this.instrument.__kind,
       endTime: (() => {
         const x = <{ toNumber: () => number }>this.endTime
         if (typeof x.toNumber === 'function') {
@@ -200,7 +201,7 @@ export const participationBeet = new beet.FixableBeetStruct<
     ['bump', beet.u8],
     ['wallet', beetSolana.publicKey],
     ['mission', beetSolana.publicKey],
-    ['nft', beetSolana.publicKey],
+    ['instrument', instrumentBeet],
     ['endTime', beet.i64],
     ['isRecalled', beet.bool],
     ['rewards', beet.array(earnedRewardBeet)],

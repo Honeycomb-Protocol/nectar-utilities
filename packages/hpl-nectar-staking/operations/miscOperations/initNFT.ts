@@ -3,19 +3,19 @@ import {
   createInitCnftInstruction,
   createInitNftInstruction,
   PROGRAM_ID,
-} from "../generated";
-import { getMetadataAccount_, getNftPda } from "../pdas";
+} from "../../generated";
 import {
   VAULT,
   Operation,
   Honeycomb,
   HPL_HIVE_CONTROL_PROGRAM,
 } from "@honeycomb-protocol/hive-control";
-import { NectarStaking } from "../NectarStaking";
+import { NectarStaking } from "../../NectarStaking";
 import { SPL_ACCOUNT_COMPRESSION_PROGRAM_ID } from "@solana/spl-account-compression";
-import { AssetProof, AvailableNft } from "../types";
-import { fetchAssetProof } from "./fetch";
+import { AssetProof, AvailableNft } from "../../types";
 import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
+import { fetchAssetProof } from "../../utils";
+import { metadataPda } from "@honeycomb-protocol/currency-manager";
 
 /**
  * Represents the arguments required to create an initialization NFT operation.
@@ -59,7 +59,10 @@ export async function createInitNFTOperation(
   const programId = args.programId || PROGRAM_ID;
 
   // Get the PDA account for the NFT and its metadata
-  const [nft] = getNftPda(args.stakingPool.address, args.nft.mint, programId);
+  const [nft] = honeycomb
+    .pda()
+    .staking()
+    .nft(args.stakingPool.address, args.nft.mint, programId);
 
   const instructions: web3.TransactionInstruction[] = [];
 
@@ -106,7 +109,7 @@ export async function createInitNFTOperation(
       )
     );
   } else {
-    const [nftMetadata] = getMetadataAccount_(args.nft.mint);
+    const [nftMetadata] = metadataPda(args.nft.mint);
     instructions.push(
       createInitNftInstruction(
         {
