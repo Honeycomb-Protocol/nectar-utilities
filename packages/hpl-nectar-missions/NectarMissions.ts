@@ -443,7 +443,8 @@ export class NectarMissions extends Module<
                       )
                     );
               participationsMap.set(
-                participation.address.toString(),
+                participation.address.toString() +
+                  participation.endTime.getTime(),
                 participation
               );
             });
