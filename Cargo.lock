@@ -852,7 +852,7 @@ dependencies = [
  "hpl-currency-manager 0.0.81",
  "hpl-events",
  "hpl-hive-control",
- "hpl-nectar-staking 0.1.45 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hpl-nectar-staking 0.1.45",
  "hpl-utils",
  "mpl-bubblegum 0.9.2",
  "mpl-token-metadata",
@@ -956,9 +956,9 @@ dependencies = [
 
 [[package]]
 name = "hpl-hive-control"
-version = "0.2.10"
+version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f942e04d0d61b820523f5ec4150913953152852789e31c4d9666e57d819fe36b"
+checksum = "2dd3f3cb9ddf7c8ca0c7ac6a3018f95f1ec8d1e21d953f5078ad078cefc3d751"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -1019,28 +1019,8 @@ dependencies = [
  "hpl-events",
  "hpl-hive-control",
  "hpl-macros",
- "hpl-nectar-staking 0.1.45 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hpl-nectar-staking 0.1.45",
  "hpl-utils",
- "solana-program",
- "spl-account-compression",
- "toml_datetime 0.6.1",
- "winnow",
-]
-
-[[package]]
-name = "hpl-nectar-staking"
-version = "0.1.45"
-dependencies = [
- "anchor-lang",
- "anchor-spl",
- "getrandom 0.2.9",
- "hpl-currency-manager 0.0.81",
- "hpl-events",
- "hpl-hive-control",
- "hpl-macros",
- "hpl-utils",
- "mpl-bubblegum 0.9.2",
- "mpl-token-metadata",
  "solana-program",
  "spl-account-compression",
  "toml_datetime 0.6.1",
@@ -1062,6 +1042,26 @@ dependencies = [
  "hpl-macros",
  "hpl-utils",
  "mpl-bubblegum 0.7.0",
+ "mpl-token-metadata",
+ "solana-program",
+ "spl-account-compression",
+ "toml_datetime 0.6.1",
+ "winnow",
+]
+
+[[package]]
+name = "hpl-nectar-staking"
+version = "0.1.46"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "getrandom 0.2.9",
+ "hpl-currency-manager 0.0.81",
+ "hpl-events",
+ "hpl-hive-control",
+ "hpl-macros",
+ "hpl-utils",
+ "mpl-bubblegum 0.9.2",
  "mpl-token-metadata",
  "solana-program",
  "spl-account-compression",
