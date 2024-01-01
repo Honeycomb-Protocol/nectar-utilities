@@ -1,10 +1,10 @@
 use {
-    crate::{errors::ErrorCode, state::*},
+    crate::{bubblegum::MplBubblegum, errors::ErrorCode, state::*},
     anchor_lang::prelude::*,
     hpl_events::HplEvents,
     hpl_hive_control::{program::HplHiveControl, state::Project},
     hpl_utils::Default,
-    mpl_bubblegum::{program::Bubblegum, utils::get_asset_id},
+    mpl_bubblegum::utils::get_asset_id,
     spl_account_compression::{program::SplAccountCompression, Noop},
 };
 
@@ -60,7 +60,7 @@ pub struct StakeCNFT<'info> {
     pub hive_control: Program<'info, HplHiveControl>,
 
     /// MPL Bubblegum program for cNFTs
-    pub bubblegum_program: Program<'info, Bubblegum>,
+    pub bubblegum_program: Program<'info, MplBubblegum>,
 
     /// SPL Compression Program
     pub compression_program: Program<'info, SplAccountCompression>,
@@ -127,10 +127,6 @@ pub fn stake_cnft<'info>(
         }
     }
 
-    let creator_hash: [u8; 32] = ctx.accounts.creator_hash.key().to_bytes();
-    let data_hash: [u8; 32] = ctx.accounts.data_hash.key().to_bytes();
-    let root: [u8; 32] = ctx.accounts.root.key().to_bytes();
-
     crate::bubblegum::transfer_cnft_cpi(
         ctx.accounts.tree_authority.to_account_info(),
         ctx.accounts.wallet.to_account_info(),
@@ -140,12 +136,7 @@ pub fn stake_cnft<'info>(
         ctx.accounts.log_wrapper.to_account_info(),
         ctx.accounts.compression_program.to_account_info(),
         ctx.accounts.system_program.to_account_info(),
-        ctx.accounts.bubblegum_program.to_account_info(),
         ctx.remaining_accounts.to_vec(),
-        root,
-        data_hash,
-        creator_hash,
-        args.nonce,
         args.index,
         None,
     )?;
@@ -215,7 +206,7 @@ pub struct UnstakeCNFT<'info> {
     pub hive_control: Program<'info, HplHiveControl>,
 
     /// MPL Bubblegum program for cNFTs
-    pub bubblegum_program: Program<'info, Bubblegum>,
+    pub bubblegum_program: Program<'info, MplBubblegum>,
 
     /// SPL Compression Program
     pub compression_program: Program<'info, SplAccountCompression>,
@@ -298,12 +289,7 @@ pub fn unstake_cnft<'info>(
         ctx.accounts.log_wrapper.to_account_info(),
         ctx.accounts.compression_program.to_account_info(),
         ctx.accounts.system_program.to_account_info(),
-        ctx.accounts.bubblegum_program.to_account_info(),
         ctx.remaining_accounts.to_vec(),
-        root,
-        data_hash,
-        creator_hash,
-        args.nonce,
         args.index,
         Some(staker_signer),
     )?;

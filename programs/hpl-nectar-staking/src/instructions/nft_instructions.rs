@@ -1,3 +1,5 @@
+use crate::bubblegum;
+
 use {
     crate::{errors::ErrorCode, state::*},
     anchor_lang::prelude::*,
@@ -7,8 +9,8 @@ use {
         program::HplHiveControl,
         state::{DelegateAuthority, Project},
     },
+    hpl_utils::mpl_token_metadata::state::{Metadata, TokenMetadataAccount},
     hpl_utils::traits::Default,
-    mpl_token_metadata::state::{Metadata, TokenMetadataAccount},
     spl_account_compression::program::SplAccountCompression,
 };
 
@@ -257,31 +259,21 @@ pub fn init_cnft<'info>(
     nft.criteria = NFTCriteria::MerkleTree {
         address: ctx.accounts.merkle_tree.key(),
     };
-    let creator_hash: [u8; 32] = ctx.accounts.creator_hash.key().to_bytes();
-    let data_hash: [u8; 32] = ctx.accounts.data_hash.key().to_bytes();
-    let root: [u8; 32] = ctx.accounts.root.key().to_bytes();
 
-    msg!("Creating Leaf");
+    msg!("Verifying Leaf");
 
-    let leaf = mpl_bubblegum::state::leaf_schema::LeafSchema::new_v0(
+    bubblegum::verify_cnft_cpi(
+        ctx.accounts.merkle_tree.to_account_info(),
+        ctx.remaining_accounts.to_vec(),
         ctx.accounts.asset_id.key(),
         ctx.accounts.wallet.key(),
         ctx.accounts.wallet.key(),
+        ctx.accounts.root.key().to_bytes(),
+        ctx.accounts.data_hash.key().to_bytes(),
+        ctx.accounts.creator_hash.key().to_bytes(),
         args.nonce,
-        data_hash,
-        creator_hash,
-    );
-
-    msg!("Verifying Leaf {} bytes", leaf.to_node().len());
-
-    let cpi_ctx = CpiContext::new(
-        ctx.accounts.compression_program.to_account_info(),
-        spl_account_compression::cpi::accounts::VerifyLeaf {
-            merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-        },
-    )
-    .with_remaining_accounts(ctx.remaining_accounts.to_vec());
-    spl_account_compression::cpi::verify_leaf(cpi_ctx, root, leaf.to_node(), args.index)?;
+        args.index,
+    )?;
 
     msg!("Verified Leaf");
 

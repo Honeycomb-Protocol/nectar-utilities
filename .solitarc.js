@@ -14,6 +14,9 @@ const createConfig = (name, programId) => {
     binaryInstallDir: path.join(__dirname, ".crates"),
     programDir: path.join(__dirname, "programs", packageName),
     removeExistingIdl: false,
+    rustbin: {
+      versionRangeFallback: "0.29.0",
+    },
     idlHook: (idl) => {
       idl.types = idl.types.filter(
         (type) => type.name !== "ActionType" && type.name !== "PlatformGateArgs"

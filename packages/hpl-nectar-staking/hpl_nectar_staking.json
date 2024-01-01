@@ -2453,7 +2453,7 @@
             "name": "Stake",
             "fields": [
               {
-                "name": "nft_address",
+                "name": "nftAddress",
                 "type": "publicKey"
               },
               {
@@ -2461,7 +2461,7 @@
                 "type": "bytes"
               },
               {
-                "name": "staker_address",
+                "name": "stakerAddress",
                 "type": "publicKey"
               },
               {
@@ -2474,7 +2474,7 @@
             "name": "Unstake",
             "fields": [
               {
-                "name": "nft_address",
+                "name": "nftAddress",
                 "type": "publicKey"
               },
               {
@@ -2482,7 +2482,7 @@
                 "type": "bytes"
               },
               {
-                "name": "staker_address",
+                "name": "stakerAddress",
                 "type": "publicKey"
               },
               {
@@ -2495,7 +2495,7 @@
             "name": "ClaimRewards",
             "fields": [
               {
-                "name": "nft_address",
+                "name": "nftAddress",
                 "type": "publicKey"
               },
               {
@@ -2503,7 +2503,7 @@
                 "type": "bytes"
               },
               {
-                "name": "staker_address",
+                "name": "stakerAddress",
                 "type": "publicKey"
               },
               {
@@ -2524,7 +2524,7 @@
             "name": "StakeDuration",
             "fields": [
               {
-                "name": "min_duration",
+                "name": "minDuration",
                 "type": "u64"
               }
             ]
@@ -2533,7 +2533,7 @@
             "name": "NFTCount",
             "fields": [
               {
-                "name": "min_count",
+                "name": "minCount",
                 "type": "u64"
               }
             ]
@@ -2714,7 +2714,7 @@
   "metadata": {
     "address": "MiNESdRXUSmWY7NkAKdW9nMkjJZCaucguY3MDvkSmr6",
     "origin": "anchor",
-    "binaryVersion": "0.26.0",
-    "libVersion": "0.26.0"
+    "binaryVersion": "0.29.0",
+    "libVersion": "0.28.0"
   }
 }

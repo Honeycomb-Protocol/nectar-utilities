@@ -7,11 +7,11 @@ use {
     },
     hpl_events::HplEvents,
     hpl_hive_control::{program::HplHiveControl, state::Project},
-    hpl_utils::Default,
-    mpl_token_metadata::{
+    hpl_utils::mpl_token_metadata::{
         instruction::{DelegateArgs, RevokeArgs},
         state::{Metadata, TokenMetadataAccount},
     },
+    hpl_utils::Default,
 };
 
 /// Accounts used in stake instruction
@@ -106,7 +106,7 @@ pub struct Stake<'info> {
 
     /// METAPLEX TOKEN METADATA PROGRAM
     /// CHECK: This is not dangerous because we don't read or write from this account
-    #[account(address = mpl_token_metadata::ID)]
+    #[account(address = hpl_utils::mpl_token_metadata::ID)]
     pub token_metadata_program: AccountInfo<'info>,
 
     /// HPL Events Program
@@ -277,7 +277,7 @@ pub fn stake(ctx: Context<Stake>) -> Result<()> {
 
             let args: Result<DelegateArgs> = match metadata.token_standard {
                 Some(token_standard) => match token_standard {
-                    mpl_token_metadata::state::TokenStandard::ProgrammableNonFungible => {
+                    hpl_utils::mpl_token_metadata::state::TokenStandard::ProgrammableNonFungible => {
                         Ok(DelegateArgs::StakingV1 {
                             amount: 1,
                             authorization_data: None,
@@ -448,7 +448,7 @@ pub struct Unstake<'info> {
 
     /// METAPLEX TOKEN METADATA PROGRAM
     /// CHECK: This is not dangerous because we don't read or write from this account
-    #[account(address = mpl_token_metadata::ID)]
+    #[account(address = hpl_utils::mpl_token_metadata::ID)]
     pub token_metadata_program: AccountInfo<'info>,
 
     /// HPL Events Program
@@ -526,7 +526,7 @@ pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
 
             let args: Result<RevokeArgs> = match metadata.token_standard {
                 Some(token_standard) => match token_standard {
-                    mpl_token_metadata::state::TokenStandard::ProgrammableNonFungible => {
+                    hpl_utils::mpl_token_metadata::state::TokenStandard::ProgrammableNonFungible => {
                         Ok(RevokeArgs::StakingV1)
                     }
                     _ => Ok(RevokeArgs::StandardV1),
