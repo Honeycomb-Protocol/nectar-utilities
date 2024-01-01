@@ -1,7 +1,5 @@
 [workspace]
-members = [
-    "programs/*"
-]
+members = ["programs/hpl-nectar-staking"]
 
 [profile.release]
 overflow-checks = true
