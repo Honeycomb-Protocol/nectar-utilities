@@ -24,7 +24,10 @@
     "publishall": "node ./scripts/publishall.js"
   },
   "dependencies": {
+    "@honeycomb-protocol/buzz-guild": "^0.0.1-beta.13",
+    "@honeycomb-protocol/currency-manager": "^0.0.81",
     "@honeycomb-protocol/events": "^0.1.21",
+    "@honeycomb-protocol/hive-control": "^0.2.13",
     "@metaplex-foundation/js": "^0.18.1",
     "@metaplex-foundation/mpl-bubblegum": "^0.7.0",
     "@metaplex-foundation/mpl-token-auth-rules": "^1.2.0",
