@@ -139,7 +139,7 @@ describe("Nectar Utilities", () => {
         .nfts()
         .create({
           name: `NFT #${i}`,
-          symbol: `TEST`,
+          symbol: `NFT`,
           sellerFeeBasisPoints: 100,
           uri: "https://arweave.net/WhyRt90kgI7f0EG9GPfB8TIBTIBgX3X12QaF9ObFerE",
           collection: collection.mint.address,
@@ -163,7 +163,7 @@ describe("Nectar Utilities", () => {
       await mintOneCNFT(adminHC, {
         dropWalletKey: userHC.identity().address.toString(),
         name: `cNFT #${i}`,
-        symbol: "TEST",
+        symbol: "cNFT",
         uri: "https://arweave.net/WhyRt90kgI7f0EG9GPfB8TIBTIBgX3X12QaF9ObFerE",
         tree: treeKeypair,
         collection: collection.mint.address,
@@ -234,7 +234,7 @@ describe("Nectar Utilities", () => {
     //   "GWZwbVCxjzkLgnqtvAGV2LNB26g4XJhNotCDhSrS893C"
     // );
     const address = new web3.PublicKey(
-      "C8UviNNx3ezSKFfExac3P9L3uBJFgWc5ecdqHFFBDfNc"
+      "6nb9735fAnr9Aa3y2wWGf7j9AJjtQq7JfGVHAKd4K8uz"
     );
     adminHC.use(await HoneycombProject.fromAddress(adminHC, address));
     await findProjectCurrencies(adminHC.project());
@@ -246,7 +246,7 @@ describe("Nectar Utilities", () => {
 
     universalLut = (await getOrFetchLoockupTable(
       userHC.connection,
-      new web3.PublicKey("8zKtJXrGf9JNNP9Yw3LmrBc8aPDuFroYEthtGAAEajQt")
+      new web3.PublicKey("7W3Z84qEKgFSfgKNWPK5nWNV8jAfbszECcrYCWUwsD9L")
     ))!;
 
     console.log(
@@ -257,7 +257,7 @@ describe("Nectar Utilities", () => {
     );
   });
 
-  it.skip("Load/Create Staking Pool", async () => {
+  it("Load/Create Staking Pool", async () => {
     await findProjectStakingPools(adminHC.project());
 
     if (!adminHC.staking) {
@@ -331,7 +331,7 @@ describe("Nectar Utilities", () => {
     console.log("GuildKit", adminHC.guildKit().address.toString());
   });
 
-  it.skip("Load/Create Mission Pool", async () => {
+  it("Load/Create Mission Pool", async () => {
     await findProjectMissionPools(adminHC.project());
 
     if (!adminHC.missions) {
@@ -350,7 +350,7 @@ describe("Nectar Utilities", () => {
     console.log("Missions", adminHC.missions().address.toString());
   });
 
-  it.skip("Load/Create Mission", async () => {
+  it("Load/Create Mission", async () => {
     const missions = await adminHC.missions().missions();
 
     if (!missions.length) {
@@ -383,7 +383,7 @@ describe("Nectar Utilities", () => {
     }
   });
 
-  it.skip("Fetch for user", async () => {
+  it("Fetch for user", async () => {
     userHC.use(
       await HoneycombProject.fromAddress(userHC, adminHC.project().address)
     );
@@ -405,7 +405,7 @@ describe("Nectar Utilities", () => {
       "https://devnet.helius-rpc.com/?api-key=ccca5bb2-58dc-4b94-838b-664df478cf45";
   });
 
-  it.skip("Create and Load Lookup Table", async () => {
+  it("Create and Load Lookup Table", async () => {
     if (!universalLut) {
       const addresses = [
         HPL_EVENTS_PROGRAM,
@@ -485,7 +485,7 @@ describe("Nectar Utilities", () => {
       );
   });
 
-  it.skip("Fetch or Create user/profile", async () => {
+  it("Fetch or Create user/profile", async () => {
     const user = await userHC
       .profiles()
       .userFromUsername("Test2")

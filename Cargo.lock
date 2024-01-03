@@ -51,9 +51,9 @@ dependencies = [
 
 [[package]]
 name = "ahash"
-version = "0.8.7"
+version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "77c3a9648d43b9cd48db467b3f87fdd6e146bcc88ab0180006cef2179fe11d01"
+checksum = "91429305e9f0a25f6205c5b8e0d2db09e0708a7a6df0f42212bb56c32c8ac97a"
 dependencies = [
  "cfg-if",
  "getrandom 0.2.11",
@@ -494,15 +494,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "borsh"
-version = "1.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26d4d6dafc1a3bb54687538972158f07b2c948bc57d5890df22c0739098b3028"
-dependencies = [
- "cfg_aliases",
-]
-
-[[package]]
 name = "borsh-derive"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -644,12 +635,6 @@ name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
-
-[[package]]
-name = "cfg_aliases"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd16c4719339c4530435d38e511904438d07cce7950afa3718a84ac36c10e89e"
 
 [[package]]
 name = "chrono"
@@ -989,7 +974,7 @@ version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43a3c133739dddd0d2990f9a4bdf8eb4b21ef50e4851ca85ab661199821d510e"
 dependencies = [
- "ahash 0.8.7",
+ "ahash 0.8.6",
 ]
 
 [[package]]
@@ -1056,6 +1041,23 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.45",
+]
+
+[[package]]
+name = "hpl-buzz-guild"
+version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e044b32e9305d80e2693d6b6d13f26c0a76691a3ea7a3c3635ee5da3eee9914"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "hpl-events",
+ "hpl-hive-control",
+ "hpl-macros",
+ "hpl-nectar-staking 0.1.46 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hpl-payment-manager",
+ "hpl-utils",
+ "spl-account-compression",
 ]
 
 [[package]]
@@ -1132,7 +1134,23 @@ dependencies = [
 
 [[package]]
 name = "hpl-nectar-missions"
-version = "0.1.43"
+version = "0.1.44"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "hpl-buzz-guild",
+ "hpl-currency-manager",
+ "hpl-events",
+ "hpl-hive-control",
+ "hpl-macros",
+ "hpl-nectar-staking 0.1.46",
+ "hpl-utils",
+ "spl-account-compression",
+]
+
+[[package]]
+name = "hpl-nectar-staking"
+version = "0.1.46"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -1140,7 +1158,6 @@ dependencies = [
  "hpl-events",
  "hpl-hive-control",
  "hpl-macros",
- "hpl-nectar-staking",
  "hpl-utils",
  "mpl-bubblegum",
  "spl-account-compression",
@@ -1149,6 +1166,25 @@ dependencies = [
 [[package]]
 name = "hpl-nectar-staking"
 version = "0.1.46"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e11e69af9dcc8ef4fabdbbdd151893a5683d14f9e29493246a07aab41a82c607"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "hpl-currency-manager",
+ "hpl-events",
+ "hpl-hive-control",
+ "hpl-macros",
+ "hpl-utils",
+ "mpl-bubblegum",
+ "spl-account-compression",
+]
+
+[[package]]
+name = "hpl-payment-manager"
+version = "0.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5493e37944cd46edd6f8629c58904e4000a682b085b6d51be8f058a9f80328f7"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -1375,11 +1411,11 @@ dependencies = [
 
 [[package]]
 name = "mpl-bubblegum"
-version = "1.0.0"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed2b46151f15d312a10739cd2c23a73ffc8e7c384dbda9c9e93cdbf52e901b60"
+checksum = "c5a1b35011638a594a660e8ec1fce8612fb1da428b31feeb2fdcdfca95162554"
 dependencies = [
- "borsh 1.3.0",
+ "borsh 0.10.3",
  "kaigan",
  "num-derive 0.3.3",
  "num-traits",
@@ -2079,7 +2115,7 @@ version = "1.16.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d229588852b514378c88ea74ef6fb93c5575758d2aa3a6a300872ccf5be51772"
 dependencies = [
- "ahash 0.8.7",
+ "ahash 0.8.6",
  "blake3",
  "block-buffer 0.10.4",
  "bs58 0.4.0",
