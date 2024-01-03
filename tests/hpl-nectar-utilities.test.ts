@@ -43,7 +43,6 @@ import {
   BuzzGuildKit,
   GuildVisibility,
   JoiningCriteria,
-  conditionNull,
   findProjectGuildKits,
 } from "@honeycomb-protocol/buzz-guild";
 
@@ -315,11 +314,7 @@ describe("Nectar Utilities", () => {
       adminHC.use(
         await BuzzGuildKit.new(
           adminHC,
-          {
-            args: {
-              payment: conditionNull(),
-            },
-          },
+          {},
           {
             commitment: "processed",
             preflightCommitment: "processed",
