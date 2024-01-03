@@ -1,5 +1,5 @@
 [workspace]
-members = ["programs/hpl-nectar-missions"]
+members = ["programs/*"]
 
 [profile.release]
 overflow-checks = true

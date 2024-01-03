@@ -1054,7 +1054,7 @@ dependencies = [
  "hpl-events",
  "hpl-hive-control",
  "hpl-macros",
- "hpl-nectar-staking 0.1.46 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hpl-nectar-staking 0.1.46",
  "hpl-payment-manager",
  "hpl-utils",
  "spl-account-compression",
@@ -1143,7 +1143,7 @@ dependencies = [
  "hpl-events",
  "hpl-hive-control",
  "hpl-macros",
- "hpl-nectar-staking 0.1.46",
+ "hpl-nectar-staking 0.1.47",
  "hpl-utils",
  "spl-account-compression",
 ]
@@ -1151,6 +1151,8 @@ dependencies = [
 [[package]]
 name = "hpl-nectar-staking"
 version = "0.1.46"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e11e69af9dcc8ef4fabdbbdd151893a5683d14f9e29493246a07aab41a82c607"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -1165,9 +1167,7 @@ dependencies = [
 
 [[package]]
 name = "hpl-nectar-staking"
-version = "0.1.46"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e11e69af9dcc8ef4fabdbbdd151893a5683d14f9e29493246a07aab41a82c607"
+version = "0.1.47"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
