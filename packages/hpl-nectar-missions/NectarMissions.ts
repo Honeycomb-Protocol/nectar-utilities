@@ -274,8 +274,8 @@ export class NectarMissions extends Module<
   }
 
   public guilds(): Promise<BuzzGuild[]> {
-    return Promise.all(this.guildKits().map((kit) => kit.guilds())).then((x) =>
-      x.flat()
+    return Promise.all(this.guildKits().map((kit) => kit.allGuilds())).then(
+      (x) => x.flat()
     );
   }
 
