@@ -6,8 +6,8 @@
  */
 
 import * as web3 from '@solana/web3.js'
-import * as beet from '@metaplex-foundation/beet'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
+import * as beet from '@metaplex-foundation/beet'
 /**
  * This type is used to derive the {@link Event} type as well as the de/serializer.
  * However don't refer to it in your code but use the {@link Event} type instead.
@@ -18,27 +18,8 @@ import * as beetSolana from '@metaplex-foundation/beet-solana'
  * @private
  */
 export type EventRecord = {
-  NewNft: { address: web3.PublicKey; state: Uint8Array }
-  NftUsed: { address: web3.PublicKey; state: Uint8Array }
   NewStaker: { address: web3.PublicKey; state: Uint8Array }
-  Stake: {
-    nftAddress: web3.PublicKey
-    nft: Uint8Array
-    stakerAddress: web3.PublicKey
-    staker: Uint8Array
-  }
-  Unstake: {
-    nftAddress: web3.PublicKey
-    nft: Uint8Array
-    stakerAddress: web3.PublicKey
-    staker: Uint8Array
-  }
-  ClaimRewards: {
-    nftAddress: web3.PublicKey
-    nft: Uint8Array
-    stakerAddress: web3.PublicKey
-    amount: beet.bignum
-  }
+  StakerChange: { stakerAddress: web3.PublicKey; staker: Uint8Array }
 }
 
 /**
@@ -54,48 +35,18 @@ export type EventRecord = {
  */
 export type Event = beet.DataEnumKeyAsKind<EventRecord>
 
-export const isEventNewNft = (x: Event): x is Event & { __kind: 'NewNft' } =>
-  x.__kind === 'NewNft'
-export const isEventNftUsed = (x: Event): x is Event & { __kind: 'NftUsed' } =>
-  x.__kind === 'NftUsed'
 export const isEventNewStaker = (
   x: Event
 ): x is Event & { __kind: 'NewStaker' } => x.__kind === 'NewStaker'
-export const isEventStake = (x: Event): x is Event & { __kind: 'Stake' } =>
-  x.__kind === 'Stake'
-export const isEventUnstake = (x: Event): x is Event & { __kind: 'Unstake' } =>
-  x.__kind === 'Unstake'
-export const isEventClaimRewards = (
+export const isEventStakerChange = (
   x: Event
-): x is Event & { __kind: 'ClaimRewards' } => x.__kind === 'ClaimRewards'
+): x is Event & { __kind: 'StakerChange' } => x.__kind === 'StakerChange'
 
 /**
  * @category userTypes
  * @category generated
  */
 export const eventBeet = beet.dataEnum<EventRecord>([
-  [
-    'NewNft',
-    new beet.FixableBeetArgsStruct<EventRecord['NewNft']>(
-      [
-        ['address', beetSolana.publicKey],
-        ['state', beet.bytes],
-      ],
-      'EventRecord["NewNft"]'
-    ),
-  ],
-
-  [
-    'NftUsed',
-    new beet.FixableBeetArgsStruct<EventRecord['NftUsed']>(
-      [
-        ['address', beetSolana.publicKey],
-        ['state', beet.bytes],
-      ],
-      'EventRecord["NftUsed"]'
-    ),
-  ],
-
   [
     'NewStaker',
     new beet.FixableBeetArgsStruct<EventRecord['NewStaker']>(
@@ -108,41 +59,13 @@ export const eventBeet = beet.dataEnum<EventRecord>([
   ],
 
   [
-    'Stake',
-    new beet.FixableBeetArgsStruct<EventRecord['Stake']>(
+    'StakerChange',
+    new beet.FixableBeetArgsStruct<EventRecord['StakerChange']>(
       [
-        ['nftAddress', beetSolana.publicKey],
-        ['nft', beet.bytes],
         ['stakerAddress', beetSolana.publicKey],
         ['staker', beet.bytes],
       ],
-      'EventRecord["Stake"]'
-    ),
-  ],
-
-  [
-    'Unstake',
-    new beet.FixableBeetArgsStruct<EventRecord['Unstake']>(
-      [
-        ['nftAddress', beetSolana.publicKey],
-        ['nft', beet.bytes],
-        ['stakerAddress', beetSolana.publicKey],
-        ['staker', beet.bytes],
-      ],
-      'EventRecord["Unstake"]'
-    ),
-  ],
-
-  [
-    'ClaimRewards',
-    new beet.FixableBeetArgsStruct<EventRecord['ClaimRewards']>(
-      [
-        ['nftAddress', beetSolana.publicKey],
-        ['nft', beet.bytes],
-        ['stakerAddress', beetSolana.publicKey],
-        ['amount', beet.u64],
-      ],
-      'EventRecord["ClaimRewards"]'
+      'EventRecord["StakerChange"]'
     ),
   ],
 ]) as beet.FixableBeet<Event, Event>

@@ -8,36 +8,57 @@
 import * as splToken from '@solana/spl-token'
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
+import {
+  ClaimRewardsArgs,
+  claimRewardsArgsBeet,
+} from '../types/ClaimRewardsArgs'
 
 /**
  * @category Instructions
  * @category ClaimRewards
  * @category generated
  */
-export const claimRewardsStruct = new beet.BeetArgsStruct<{
-  instructionDiscriminator: number[] /* size: 8 */
-}>(
-  [['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]],
+export type ClaimRewardsInstructionArgs = {
+  args: ClaimRewardsArgs
+}
+/**
+ * @category Instructions
+ * @category ClaimRewards
+ * @category generated
+ */
+export const claimRewardsStruct = new beet.FixableBeetArgsStruct<
+  ClaimRewardsInstructionArgs & {
+    instructionDiscriminator: number[] /* size: 8 */
+  }
+>(
+  [
+    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
+    ['args', claimRewardsArgsBeet],
+  ],
   'ClaimRewardsInstructionArgs'
 )
 /**
  * Accounts required by the _claimRewards_ instruction
  *
  * @property [_writable_] project
+ * @property [] characterModel
+ * @property [_writable_] merkleTree
  * @property [] stakingPool
  * @property [] stakingPoolDelegate
  * @property [] multipliers (optional)
- * @property [_writable_] nft
+ * @property [] staker
  * @property [] currency
  * @property [_writable_] mint
  * @property [] holderAccount
  * @property [_writable_] tokenAccount
- * @property [] staker
  * @property [_writable_, **signer**] wallet
  * @property [_writable_] vault
  * @property [] hiveControl
+ * @property [] characterManager
  * @property [] currencyManagerProgram
  * @property [] hplEvents
+ * @property [] compressionProgram
+ * @property [] logWrapper
  * @property [] clock
  * @property [] instructionsSysvar
  * @category Instructions
@@ -46,22 +67,26 @@ export const claimRewardsStruct = new beet.BeetArgsStruct<{
  */
 export type ClaimRewardsInstructionAccounts = {
   project: web3.PublicKey
+  characterModel: web3.PublicKey
+  merkleTree: web3.PublicKey
   stakingPool: web3.PublicKey
   stakingPoolDelegate: web3.PublicKey
   multipliers?: web3.PublicKey
-  nft: web3.PublicKey
+  staker: web3.PublicKey
   currency: web3.PublicKey
   mint: web3.PublicKey
   holderAccount: web3.PublicKey
   tokenAccount: web3.PublicKey
-  staker: web3.PublicKey
   wallet: web3.PublicKey
   vault: web3.PublicKey
   systemProgram?: web3.PublicKey
   hiveControl: web3.PublicKey
-  tokenProgram?: web3.PublicKey
+  characterManager: web3.PublicKey
   currencyManagerProgram: web3.PublicKey
   hplEvents: web3.PublicKey
+  tokenProgram?: web3.PublicKey
+  compressionProgram: web3.PublicKey
+  logWrapper: web3.PublicKey
   clock: web3.PublicKey
   instructionsSysvar: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
@@ -80,20 +105,34 @@ export const claimRewardsInstructionDiscriminator = [
  * Otherwise an Error is raised.
  *
  * @param accounts that will be accessed while the instruction is processed
+ * @param args to provide as instruction data to the program
+ *
  * @category Instructions
  * @category ClaimRewards
  * @category generated
  */
 export function createClaimRewardsInstruction(
   accounts: ClaimRewardsInstructionAccounts,
+  args: ClaimRewardsInstructionArgs,
   programId = new web3.PublicKey('MiNESdRXUSmWY7NkAKdW9nMkjJZCaucguY3MDvkSmr6')
 ) {
   const [data] = claimRewardsStruct.serialize({
     instructionDiscriminator: claimRewardsInstructionDiscriminator,
+    ...args,
   })
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.project,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.characterModel,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.merkleTree,
       isWritable: true,
       isSigner: false,
     },
@@ -117,8 +156,8 @@ export function createClaimRewardsInstruction(
     })
   }
   keys.push({
-    pubkey: accounts.nft,
-    isWritable: true,
+    pubkey: accounts.staker,
+    isWritable: false,
     isSigner: false,
   })
   keys.push({
@@ -142,11 +181,6 @@ export function createClaimRewardsInstruction(
     isSigner: false,
   })
   keys.push({
-    pubkey: accounts.staker,
-    isWritable: false,
-    isSigner: false,
-  })
-  keys.push({
     pubkey: accounts.wallet,
     isWritable: true,
     isSigner: true,
@@ -167,7 +201,7 @@ export function createClaimRewardsInstruction(
     isSigner: false,
   })
   keys.push({
-    pubkey: accounts.tokenProgram ?? splToken.TOKEN_PROGRAM_ID,
+    pubkey: accounts.characterManager,
     isWritable: false,
     isSigner: false,
   })
@@ -178,6 +212,21 @@ export function createClaimRewardsInstruction(
   })
   keys.push({
     pubkey: accounts.hplEvents,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.tokenProgram ?? splToken.TOKEN_PROGRAM_ID,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.compressionProgram,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.logWrapper,
     isWritable: false,
     isSigner: false,
   })

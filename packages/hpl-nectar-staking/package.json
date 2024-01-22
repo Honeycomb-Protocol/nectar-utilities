@@ -2,17 +2,12 @@
   "name": "@honeycomb-protocol/nectar-staking",
   "version": "0.1.47",
   "private": false,
-  "dependencies": {
-    "@metaplex-foundation/mpl-bubblegum": "^0.7.0",
-    "@metaplex-foundation/mpl-token-auth-rules": "^1.2.0",
-    "@metaplex-foundation/mpl-token-metadata": "^2.10.0",
-    "@msgpack/msgpack": "^3.0.0-beta2"
-  },
   "peerDependencies": {
     "@solana/spl-token": "^0.3.8",
     "@solana/web3.js": "^1.87.1",
     "@honeycomb-protocol/events": "^0.1.24",
     "@honeycomb-protocol/hive-control": "^0.2.13",
-    "@honeycomb-protocol/currency-manager": "^0.0.83"
+    "@honeycomb-protocol/currency-manager": "^0.0.83",
+    "@honeycomb-protocol/character-manager": "0.0.2-beta.1"
   }
 }

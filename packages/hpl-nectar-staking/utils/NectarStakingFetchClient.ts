@@ -1,17 +1,11 @@
-import {
-  Commitment,
-  GetMultipleAccountsConfig,
-  PublicKey,
-} from "@solana/web3.js";
-import { AvailableNft, Metadata, StakedNft } from "../types";
-import { Multipliers, NFTv1, Staker, StakingPool } from "../generated";
+import { Commitment, PublicKey } from "@solana/web3.js";
+import { Multipliers, Staker, StakingPool } from "../generated";
 import {
   FetchModule,
   FetchClient,
   ForceScenario,
 } from "@honeycomb-protocol/hive-control";
-import { fetchHeliusAssets } from "./helius";
-import { checkCriteria } from "./misc";
+import { HplCharacter } from "@honeycomb-protocol/character-manager";
 
 /**
  * Extends the Honeycomb interface with the `fetch` method to access the NectarStakingFetchClient.
@@ -83,97 +77,6 @@ export class NectarStakingFetchClient extends FetchClient {
    * @param forceFetch Wether to use cache data or forcefully refetch.
    * @returns An instance of HoneycombProject.
    */
-  public async nft(
-    address: PublicKey,
-    commitment: Commitment = "processed",
-    forceFetch?: ForceScenario
-  ): Promise<NFTv1 | null> {
-    try {
-      return NFTv1.fromAccountInfo(
-        await this.getAccount(address, { forceFetch, commitment })
-      )[0];
-    } catch {
-      return null;
-    }
-  }
-
-  /**
-   * Creates an instance of HoneycombProject using the provided connection and project address.
-   * @param address - The public address of the Public Info account.
-   * @param commitment The Solana block commitment.
-   * @param forceFetch Wether to use cache data or forcefully refetch.
-   * @returns An instance of HoneycombProject.
-   */
-  public async nfts(
-    pool: PublicKey,
-    staker?: PublicKey
-  ): Promise<NFTv1[] | null>;
-
-  /**
-   * Creates an instance of HoneycombProject using the provided connection and project address.
-   * @param address - The public address of the Public Info account.
-   * @param commitment The Solana block commitment.
-   * @param forceFetch Wether to use cache data or forcefully refetch.
-   * @returns An instance of HoneycombProject.
-   */
-  public async nfts(
-    pool: PublicKey,
-    mints: PublicKey[]
-  ): Promise<NFTv1[] | null>;
-
-  public async nfts(
-    pool: PublicKey,
-    stakerOrMints?: PublicKey | PublicKey[],
-    commitment: Commitment = "processed"
-  ): Promise<NFTv1[] | null> {
-    if (Array.isArray(stakerOrMints)) {
-      try {
-        return this.honeycomb()
-          .rpc()
-          .getMultipleAccounts(
-            stakerOrMints.map(
-              (m) => this.honeycomb().pda().staking().nft(pool, m)[0]
-            ),
-            commitment
-          )
-          .then((nfts) =>
-            nfts.map((account) => NFTv1.fromAccountInfo(account)[0])
-          );
-      } catch {
-        return null;
-      }
-    } else {
-      const gpa = NFTv1.gpaBuilder();
-      gpa.addFilter("stakingPool", pool);
-
-      if (stakerOrMints) {
-        if (PublicKey.isOnCurve(stakerOrMints))
-          stakerOrMints = this.honeycomb()
-            .pda()
-            .staking()
-            .staker(pool, stakerOrMints)[0];
-        gpa.addFilter("staker", stakerOrMints);
-      }
-
-      try {
-        return gpa
-          .run(this.honeycomb().processedConnection)
-          .then((nfts) =>
-            nfts.map(({ account }) => NFTv1.fromAccountInfo(account)[0])
-          );
-      } catch {
-        return null;
-      }
-    }
-  }
-
-  /**
-   * Creates an instance of HoneycombProject using the provided connection and project address.
-   * @param address - The public address of the Public Info account.
-   * @param commitment The Solana block commitment.
-   * @param forceFetch Wether to use cache data or forcefully refetch.
-   * @returns An instance of HoneycombProject.
-   */
   public async staker(
     address: PublicKey,
     commitment: Commitment = "processed",
@@ -188,77 +91,14 @@ export class NectarStakingFetchClient extends FetchClient {
     }
   }
 
-  public async stakedNfts(args: {
-    pool: PublicKey;
-    wallet: PublicKey;
-    heliusRpc: string;
-  }): Promise<StakedNft[] | null> {
-    const pdaAccounts = await this.nfts(args.pool, args.wallet);
-    if (pdaAccounts == null) return null;
-    if (!pdaAccounts.length) return [];
+  public async rewards(character: HplCharacter, till = new Date()) {
+    if (character.usedBy.__kind !== "Staking")
+      return { rewards: 0, multipliers: 0 };
 
-    try {
-      const metadatas = await fetchHeliusAssets(args.heliusRpc, {
-        mintList: pdaAccounts.map((nft) => nft.mint),
-      });
-
-      return metadatas.map((nft) => ({
-        ...nft,
-        ...pdaAccounts.find((x) => x.mint.equals(nft.mint)),
-      }));
-    } catch {
-      return null;
-    }
-  }
-
-  public async availableNfts(args: {
-    pool: PublicKey;
-    wallet: PublicKey;
-    heliusRpc: string;
-    allowedMints?: PublicKey[];
-  }): Promise<AvailableNft[] | null> {
-    const staking = this.honeycomb().staking(args.pool);
-
-    const ownedNfts = await Promise.all(
-      staking.collections.map((collection) =>
-        fetchHeliusAssets(args.heliusRpc, {
-          walletAddress: args.wallet,
-          collectionAddress: collection,
-        })
-      )
-    ).then((x) => x.flat().filter((x) => !!x && !x.frozen));
-
-    let filteredNfts: AvailableNft[] = [];
-
-    if (staking.allowedMints) {
-      const allowedMints: PublicKey[] =
-        args?.allowedMints ||
-        (await this.nfts(args.pool).then((nfts) => nfts.map((n) => n.mint)));
-
-      filteredNfts = ownedNfts.filter(
-        (nft) => nft.mint && allowedMints.includes(nft.mint)
-      );
-    }
-
-    filteredNfts = [
-      ...filteredNfts,
-      ...ownedNfts.filter((nft) => checkCriteria(nft, staking)),
-    ];
-
-    let tempFilterSet = new Set();
-    filteredNfts = filteredNfts.filter((nft, index, self) => {
-      if (tempFilterSet.has(nft.mint)) return false;
-      tempFilterSet.add(nft.mint);
-      return true;
-    });
-
-    return filteredNfts;
-  }
-
-  public async rewards(nft: StakedNft, till = new Date()) {
-    const staking = this.honeycomb().staking(nft.stakingPool);
-    const staker = await this.staker(nft.staker);
-    let secondsElapsed = till.getTime() / 1000 - Number(nft.lastClaim);
+    const staking = this.honeycomb().staking(character.usedBy.pool);
+    const staker = await this.staker(character.usedBy.staker);
+    let secondsElapsed =
+      till.getTime() / 1000 - Number(character.usedBy.claimedAt);
 
     const maxRewardsDuration =
       staking.maxRewardsDuration && Number(staking.maxRewardsDuration);
@@ -314,8 +154,8 @@ export class NectarStakingFetchClient extends FetchClient {
       for (const multiplier of multipliers.creatorMultipliers) {
         if (
           multiplier.multiplierType.__kind === "Creator" &&
-          nft.criteria.__kind === "Creator" &&
-          nft.criteria.address.equals(multiplier.multiplierType.creator)
+          character.source.criteria.__kind === "Creator" &&
+          character.source.criteria[0].equals(multiplier.multiplierType.creator)
         ) {
           creatorMultiplier = Number(multiplier.value);
           break;
@@ -328,8 +168,10 @@ export class NectarStakingFetchClient extends FetchClient {
       for (const multiplier of multipliers.collectionMultipliers) {
         if (
           multiplier.multiplierType.__kind === "Collection" &&
-          nft.criteria.__kind === "Collection" &&
-          nft.criteria.address.equals(multiplier.multiplierType.collection)
+          character.source.criteria.__kind === "Collection" &&
+          character.source.criteria[0].equals(
+            multiplier.multiplierType.collection
+          )
         ) {
           collectionMultiplier = Number(multiplier.value);
           break;

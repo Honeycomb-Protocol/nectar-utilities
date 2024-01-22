@@ -138,24 +138,67 @@ createErrorFromCodeLookup.set(0x1775, () => new CantStakeYetError())
 createErrorFromNameLookup.set('CantStakeYet', () => new CantStakeYetError())
 
 /**
- * NFTAlreadyUsed: 'NFT already used by something'
+ * CharacterNotStaked: 'Character is not staked'
  *
  * @category Errors
  * @category generated
  */
-export class NFTAlreadyUsedError extends Error {
+export class CharacterNotStakedError extends Error {
   readonly code: number = 0x1776
-  readonly name: string = 'NFTAlreadyUsed'
+  readonly name: string = 'CharacterNotStaked'
   constructor() {
-    super('NFT already used by something')
+    super('Character is not staked')
     if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, NFTAlreadyUsedError)
+      Error.captureStackTrace(this, CharacterNotStakedError)
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1776, () => new NFTAlreadyUsedError())
-createErrorFromNameLookup.set('NFTAlreadyUsed', () => new NFTAlreadyUsedError())
+createErrorFromCodeLookup.set(0x1776, () => new CharacterNotStakedError())
+createErrorFromNameLookup.set(
+  'CharacterNotStaked',
+  () => new CharacterNotStakedError()
+)
+
+/**
+ * CharacterUsed: 'Character is used by some other service'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class CharacterUsedError extends Error {
+  readonly code: number = 0x1777
+  readonly name: string = 'CharacterUsed'
+  constructor() {
+    super('Character is used by some other service')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, CharacterUsedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1777, () => new CharacterUsedError())
+createErrorFromNameLookup.set('CharacterUsed', () => new CharacterUsedError())
+
+/**
+ * StakerMismatch: 'Character is staked by another staker'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class StakerMismatchError extends Error {
+  readonly code: number = 0x1778
+  readonly name: string = 'StakerMismatch'
+  constructor() {
+    super('Character is staked by another staker')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, StakerMismatchError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1778, () => new StakerMismatchError())
+createErrorFromNameLookup.set('StakerMismatch', () => new StakerMismatchError())
 
 /**
  * CantUnstakeYet: 'Can't unstake yet'
@@ -164,7 +207,7 @@ createErrorFromNameLookup.set('NFTAlreadyUsed', () => new NFTAlreadyUsedError())
  * @category generated
  */
 export class CantUnstakeYetError extends Error {
-  readonly code: number = 0x1777
+  readonly code: number = 0x1779
   readonly name: string = 'CantUnstakeYet'
   constructor() {
     super("Can't unstake yet")
@@ -174,7 +217,7 @@ export class CantUnstakeYetError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1777, () => new CantUnstakeYetError())
+createErrorFromCodeLookup.set(0x1779, () => new CantUnstakeYetError())
 createErrorFromNameLookup.set('CantUnstakeYet', () => new CantUnstakeYetError())
 
 /**
@@ -184,7 +227,7 @@ createErrorFromNameLookup.set('CantUnstakeYet', () => new CantUnstakeYetError())
  * @category generated
  */
 export class DepositAccountNotProvidedError extends Error {
-  readonly code: number = 0x1778
+  readonly code: number = 0x177a
   readonly name: string = 'DepositAccountNotProvided'
   constructor() {
     super('Deposit account is not provided')
@@ -195,7 +238,7 @@ export class DepositAccountNotProvidedError extends Error {
 }
 
 createErrorFromCodeLookup.set(
-  0x1778,
+  0x177a,
   () => new DepositAccountNotProvidedError()
 )
 createErrorFromNameLookup.set(
@@ -210,7 +253,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class NotImplementedError extends Error {
-  readonly code: number = 0x1779
+  readonly code: number = 0x177b
   readonly name: string = 'NotImplemented'
   constructor() {
     super('Not Implemented')
@@ -220,7 +263,7 @@ export class NotImplementedError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1779, () => new NotImplementedError())
+createErrorFromCodeLookup.set(0x177b, () => new NotImplementedError())
 createErrorFromNameLookup.set('NotImplemented', () => new NotImplementedError())
 
 /**

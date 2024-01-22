@@ -1,48 +1,39 @@
 import * as web3 from "@solana/web3.js";
-import * as splToken from "@solana/spl-token";
-import {
-  createUnstakeCnftInstruction,
-  createUnstakeInstruction,
-  LockType,
-  PROGRAM_ID,
-} from "../../generated";
-import { AssetProof, StakedNft } from "../../types";
+import { createUnstakeInstruction, PROGRAM_ID } from "../../generated";
 import {
   VAULT,
   Honeycomb,
   Operation,
   HPL_HIVE_CONTROL_PROGRAM,
 } from "@honeycomb-protocol/hive-control";
-import { PROGRAM_ID as BUBBLEGUM_PROGRAM_ID } from "@metaplex-foundation/mpl-bubblegum";
-import { PROGRAM_ID as AUTHORIZATION_PROGRAM_ID } from "@metaplex-foundation/mpl-token-auth-rules";
 import { NectarStaking } from "../../NectarStaking";
-import { createClaimRewardsOperation } from "./claimRewards";
+import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
+import {
+  AssetProof,
+  HPL_CHARACTER_MANAGER_PROGRAM,
+  HplCharacter,
+  HplCharacterModel,
+} from "@honeycomb-protocol/character-manager";
 import {
   SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
   SPL_NOOP_PROGRAM_ID,
 } from "@solana/spl-account-compression";
-import { HPL_EVENTS_PROGRAM } from "@honeycomb-protocol/events";
-import { fetchAssetProof } from "../../utils";
-import {
-  METADATA_PROGRAM_ID,
-  metadataPda,
-} from "@honeycomb-protocol/currency-manager";
 
 /**
- * Represents the arguments required to create an unstake operation.
+ * Represents the arguments required to create a unstake operation.
  * @category Types
  */
 type CreateUnstakeOperationArgs = {
   stakingPool: NectarStaking;
-  nft: StakedNft;
-  shouldSkipClaimRewards?: boolean;
+  characterModel: HplCharacterModel;
+  character: HplCharacter;
   proof?: AssetProof;
   isFirst?: boolean;
   programId?: web3.PublicKey;
 };
 
 /**
- * Creates an unstake operation to unstake an NFT from the specified staking pool.
+ * Creates a unstake operation to unstake an NFT into the specified staking pool.
  *
  * @category Operation Builder
  * @param honeycomb - The Honeycomb instance to use for creating the operation.
@@ -53,12 +44,25 @@ type CreateUnstakeOperationArgs = {
  * // Assuming you have initialized the `honeycomb` instance and imported necessary types
  *
  * const stakingPool = new NectarStaking(honeycomb, "your_staking_pool_address");
+ * const nftMint = new web3.PublicKey("your_nft_mint_address");
  *
- * // Assuming you have an initialized `StakedNft` object `stakedNft`
+ * const availableNft: AvailableNft = {
+ *   address: new web3.PublicKey("your_nft_account_address"),
+ *   tokenMint: nftMint,
+ *   tokenStandard: TokenStandard.ProgrammableNonFungible, // or TokenStandard.NonFungible
+ *   state: "unlocked", // or "frozen"
+ *   creator: new web3.PublicKey("nft_creator_address"),
+ *   collection: new web3.PublicKey("nft_collection_address"),
+ *   creators: [{ address: new web3.PublicKey("nft_creator_address"), share: 100 }],
+ *   programmableConfig: {
+ *     ruleSet: new web3.PublicKey("authorization_rules_program_address"),
+ *     maxUnstakePerWallet: 10, // Only required for TokenStandard.ProgrammableNonFungible
+ *   },
+ * };
  *
  * const createUnstakeArgs: CreateUnstakeOperationArgs = {
  *   stakingPool,
- *   nft: stakedNft,
+ *   nft: availableNft,
  * };
  *
  * const operationResult = await createUnstakeOperation(honeycomb, createUnstakeArgs);
@@ -71,153 +75,54 @@ export async function createUnstakeOperation(
 ) {
   const programId = args.programId || PROGRAM_ID;
 
-  const [nft] = honeycomb
-    .pda()
-    .staking()
-    .nft(args.stakingPool.address, args.nft.mint);
+  // Get the PDA account for the unstaker
   const [staker] = honeycomb
     .pda()
     .staking()
     .staker(args.stakingPool.address, honeycomb.identity().address);
 
-  const instructions = [];
+  const proofPack =
+    args.proof || (await args.character.proof(honeycomb.rpcEndpoint));
 
-  if (args.nft.isCompressed) {
-    const [treeAuthority] = web3.PublicKey.findProgramAddressSync(
-      [args.nft.compression.tree.toBuffer()],
-      BUBBLEGUM_PROGRAM_ID
-    );
-    if (!args.proof && !args.nft.compression.proof)
-      args.nft.compression.proof = await fetchAssetProof(
-        args.stakingPool.helius_rpc,
-        args.nft.mint
-      );
+  if (!proofPack) throw new Error("Proof not found for this character");
 
-    instructions.push(
-      web3.ComputeBudgetProgram.setComputeUnitLimit({
-        units: 1_000_000,
-      }),
-      createUnstakeCnftInstruction(
-        {
-          project: args.stakingPool.project().address,
-          vault: VAULT,
-          stakingPool: args.stakingPool.address,
-          nft,
-          treeAuthority,
-          merkleTree: args.nft.compression.tree,
-          staker,
-          wallet: honeycomb.identity().address,
-          creatorHash: args.nft.compression.creatorHash,
-          hiveControl: HPL_HIVE_CONTROL_PROGRAM,
-          bubblegumProgram: BUBBLEGUM_PROGRAM_ID,
-          compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-          hplEvents: HPL_EVENTS_PROGRAM,
-          logWrapper: SPL_NOOP_PROGRAM_ID,
-          clock: web3.SYSVAR_CLOCK_PUBKEY,
-          instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-          dataHash: args.nft.compression.dataHash,
-          root: (args.proof || args.nft.compression.proof).root,
-          anchorRemainingAccounts: (
-            args.proof || args.nft.compression.proof
-          ).proof.map((p) => ({
-            pubkey: p,
-            isSigner: false,
-            isWritable: false,
-          })),
-        },
-        {
-          args: {
-            nonce: args.nft.compression.leafId,
-            index: args.nft.compression.leafId,
-          },
-        },
-        programId
-      )
-    );
-  } else {
-    const nftAccount = splToken.getAssociatedTokenAddressSync(
-      args.nft.mint,
-      honeycomb.identity().address
-    );
-    const [nftMetadata] = metadataPda(args.nft.mint);
-    const [nftEdition] = metadataPda(args.nft.mint, {
-      __kind: "edition",
-    });
+  const { root, proof } = proofPack;
 
-    let nftTokenRecord: web3.PublicKey | undefined,
-      depositAccount: web3.PublicKey | undefined,
-      depositTokenRecord: web3.PublicKey | undefined;
-
-    if (args.stakingPool.lockType === LockType.Custoday) {
-      [depositAccount] = honeycomb.pda().staking().deposit(args.nft.mint);
-    }
-
-    if (args.nft.isProgrammableNft) {
-      [nftTokenRecord] = metadataPda(args.nft.mint, {
-        __kind: "token_record",
-        tokenAccount: nftAccount,
-      });
-      if (depositAccount && args.stakingPool.lockType === LockType.Custoday) {
-        [depositTokenRecord] = metadataPda(args.nft.mint, {
-          __kind: "token_record",
-          tokenAccount: depositAccount,
-        });
-      }
-    }
-
-    instructions.push(
-      web3.ComputeBudgetProgram.setComputeUnitLimit({
-        units: 1_000_000,
-      }),
-      createUnstakeInstruction(
-        {
-          project: args.stakingPool.project().address,
-          vault: VAULT,
-          stakingPool: args.stakingPool.address,
-          nft,
-          nftMint: args.nft.mint,
-          nftAccount,
-          nftMetadata,
-          nftEdition,
-          nftTokenRecord: nftTokenRecord || programId,
-          depositAccount: depositAccount || programId,
-          depositTokenRecord: depositTokenRecord || programId,
-          staker,
-          wallet: honeycomb.identity().address,
-          associatedTokenProgram: splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
-          hiveControl: HPL_HIVE_CONTROL_PROGRAM,
-          tokenMetadataProgram: METADATA_PROGRAM_ID,
-          clock: web3.SYSVAR_CLOCK_PUBKEY,
-          instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-          authorizationRulesProgram: args.nft.programmableConfig?.ruleSet
-            ? AUTHORIZATION_PROGRAM_ID
-            : programId,
-          authorizationRules: args.nft.programmableConfig?.ruleSet || programId,
-          hplEvents: HPL_EVENTS_PROGRAM,
-        },
-        programId
-      )
-    );
-  }
-
-  const operation = new Operation(honeycomb, instructions);
-  if (luts.length > 0) operation.add_lut(...luts);
-
-  if (args.shouldSkipClaimRewards) return { operation };
-
-  operation.addPreOperations(
-    await createClaimRewardsOperation(
-      honeycomb,
+  const operation = new Operation(honeycomb, [
+    createUnstakeInstruction(
       {
-        stakingPool: honeycomb.staking(args.stakingPool.address),
-        nft: args.nft,
-        isFirst: args.isFirst,
-        programId: args.programId,
+        project: args.stakingPool.project().address,
+        characterModel: args.characterModel.address,
+        merkleTree: args.character.merkleTree,
+        stakingPool: args.stakingPool.address,
+        staker,
+        wallet: honeycomb.identity().address,
+        vault: VAULT,
+        hiveControl: HPL_HIVE_CONTROL_PROGRAM,
+        characterManager: HPL_CHARACTER_MANAGER_PROGRAM,
+        hplEvents: HPL_EVENTS_PROGRAM,
+        compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+        logWrapper: SPL_NOOP_PROGRAM_ID,
+        clock: web3.SYSVAR_CLOCK_PUBKEY,
+        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+        anchorRemainingAccounts: proof.map((pubkey) => ({
+          pubkey,
+          isSigner: false,
+          isWritable: false,
+        })),
       },
-      luts
-    ).then(({ operation }) => operation)
-  );
-
+      {
+        args: {
+          root: Array.from(root.toBytes()),
+          leafIdx: args.character.leafIdx,
+          sourceHash: Array.from(args.character.sourceHash),
+          usedBy: args.character.usedBy,
+        },
+      },
+      programId
+    ),
+  ]);
+  if (luts.length > 0) operation.add_lut(...luts);
   return {
     operation,
   };
