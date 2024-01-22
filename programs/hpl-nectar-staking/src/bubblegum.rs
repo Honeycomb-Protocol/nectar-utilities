@@ -21,6 +21,10 @@ pub fn transfer_cnft_cpi<'info>(
     system_program: AccountInfo<'info>,
     remaining_accounts: Vec<AccountInfo<'info>>,
 
+    root: [u8; 32],
+    data_hash: [u8; 32],
+    creator_hash: [u8; 32],
+    nonce: u64,
     index: u32,
     signer_seeds: Option<&[&[&[u8]]; 1]>, // Optional signer seeds
 ) -> Result<()> {
@@ -39,6 +43,11 @@ pub fn transfer_cnft_cpi<'info>(
         .log_wrapper(log_wrapper.key())
         .compression_program(compression_program.key())
         .system_program(system_program.key())
+        .root(root)
+        .data_hash(data_hash)
+        .creator_hash(creator_hash)
+        .nonce(nonce)
+        .index(index)
         .add_remaining_accounts(
             &remaining_accounts
                 .iter()
@@ -92,12 +101,6 @@ pub fn verify_cnft_cpi<'info>(
     nonce: u64,
     index: u32,
 ) -> Result<()> {
-    msg!(
-        "attempting to transfer an nft {} from tree {}",
-        index,
-        merkle_tree.key()
-    );
-
     let leaf = mpl_bubblegum::types::LeafSchema::V1 {
         id,
         owner,

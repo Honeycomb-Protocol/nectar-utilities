@@ -137,6 +137,10 @@ pub fn stake_cnft<'info>(
         ctx.accounts.compression_program.to_account_info(),
         ctx.accounts.system_program.to_account_info(),
         ctx.remaining_accounts.to_vec(),
+        ctx.accounts.root.key().to_bytes(),
+        ctx.accounts.data_hash.key().to_bytes(),
+        ctx.accounts.creator_hash.key().to_bytes(),
+        args.nonce,
         args.index,
         None,
     )?;
@@ -290,6 +294,10 @@ pub fn unstake_cnft<'info>(
         ctx.accounts.compression_program.to_account_info(),
         ctx.accounts.system_program.to_account_info(),
         ctx.remaining_accounts.to_vec(),
+        ctx.accounts.root.key().to_bytes(),
+        ctx.accounts.data_hash.key().to_bytes(),
+        ctx.accounts.creator_hash.key().to_bytes(),
+        args.nonce,
         args.index,
         Some(staker_signer),
     )?;
