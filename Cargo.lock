@@ -1222,6 +1222,8 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "hpl-buzz-guild",
+ "hpl-character-manager",
+ "hpl-compression",
  "hpl-currency-manager",
  "hpl-events",
  "hpl-hive-control",
@@ -1261,7 +1263,6 @@ dependencies = [
  "hpl-hive-control",
  "hpl-macros",
  "hpl-utils",
- "mpl-bubblegum",
  "spl-account-compression",
 ]
 

@@ -1,9 +1,8 @@
-pub mod bubblegum;
 pub mod errors;
 pub mod instructions;
 pub mod state;
 
-use {anchor_lang::prelude::*, instructions::*, state::NFTUsedBy};
+use {anchor_lang::prelude::*, instructions::*};
 
 declare_id!("MiNESdRXUSmWY7NkAKdW9nMkjJZCaucguY3MDvkSmr6");
 hpl_macros::platform_gate!();
@@ -80,79 +79,6 @@ pub mod hpl_nectar_staking {
         instructions::add_multiplier(ctx, args)
     }
 
-    pub fn init_nft(ctx: Context<InitNFT>) -> Result<()> {
-        msg!("Initializing NFT");
-        platform_gate_cpi(
-            hpl_hive_control::state::SerializableActions::PublicLow,
-            None,
-            ctx.accounts.project.to_account_info(),
-            ctx.accounts.wallet.to_account_info(),
-            ctx.accounts.wallet.to_account_info(),
-            ctx.accounts.vault.to_account_info(),
-            &ctx.accounts.delegate_authority,
-            ctx.accounts.system_program.to_account_info(),
-            ctx.accounts.hive_control.to_account_info(),
-            ctx.accounts.instructions_sysvar.to_account_info(),
-        )?;
-
-        instructions::init_nft(ctx)
-    }
-
-    pub fn init_cnft<'info>(
-        ctx: Context<'_, '_, '_, 'info, InitCNFT<'info>>,
-        args: CNFTArgs,
-    ) -> Result<()> {
-        msg!("Initializing cNFT");
-        platform_gate_cpi(
-            hpl_hive_control::state::SerializableActions::PublicLow,
-            None,
-            ctx.accounts.project.to_account_info(),
-            ctx.accounts.wallet.to_account_info(),
-            ctx.accounts.wallet.to_account_info(),
-            ctx.accounts.vault.to_account_info(),
-            &ctx.accounts.delegate_authority,
-            ctx.accounts.system_program.to_account_info(),
-            ctx.accounts.hive_control.to_account_info(),
-            ctx.accounts.instructions_sysvar.to_account_info(),
-        )?;
-
-        instructions::init_cnft(ctx, args)
-    }
-
-    pub fn use_nft<'info>(ctx: Context<UseNft>, used_by: NFTUsedBy) -> Result<()> {
-        platform_gate_cpi(
-            hpl_hive_control::state::SerializableActions::PublicLow,
-            None,
-            ctx.accounts.project.to_account_info(),
-            ctx.accounts.wallet.to_account_info(),
-            ctx.accounts.wallet.to_account_info(),
-            ctx.accounts.vault.to_account_info(),
-            &None,
-            ctx.accounts.system_program.to_account_info(),
-            ctx.accounts.hive_control.to_account_info(),
-            ctx.accounts.instructions_sysvar.to_account_info(),
-        )?;
-
-        instructions::use_nft(ctx, used_by)
-    }
-
-    pub fn close_nft(ctx: Context<CloseNft>) -> Result<()> {
-        platform_gate_cpi(
-            hpl_hive_control::state::SerializableActions::ManageStakingPool,
-            None,
-            ctx.accounts.project.to_account_info(),
-            ctx.accounts.authority.to_account_info(),
-            ctx.accounts.authority.to_account_info(),
-            ctx.accounts.vault.to_account_info(),
-            &None,
-            ctx.accounts.system_program.to_account_info(),
-            ctx.accounts.hive_control.to_account_info(),
-            ctx.accounts.instructions_sysvar.to_account_info(),
-        )?;
-
-        instructions::close_nft(ctx)
-    }
-
     pub fn init_staker(ctx: Context<InitStaker>) -> Result<()> {
         platform_gate_cpi(
             hpl_hive_control::state::SerializableActions::PublicLow,
@@ -170,43 +96,9 @@ pub mod hpl_nectar_staking {
         instructions::init_staker(ctx)
     }
 
-    pub fn stake(ctx: Context<Stake>) -> Result<()> {
-        platform_gate_cpi(
-            hpl_hive_control::state::SerializableActions::PublicLow,
-            None,
-            ctx.accounts.project.to_account_info(),
-            ctx.accounts.wallet.to_account_info(),
-            ctx.accounts.wallet.to_account_info(),
-            ctx.accounts.vault.to_account_info(),
-            &None,
-            ctx.accounts.system_program.to_account_info(),
-            ctx.accounts.hive_control.to_account_info(),
-            ctx.accounts.instructions_sysvar.to_account_info(),
-        )?;
-
-        instructions::stake(ctx)
-    }
-
-    pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
-        platform_gate_cpi(
-            hpl_hive_control::state::SerializableActions::PublicLow,
-            None,
-            ctx.accounts.project.to_account_info(),
-            ctx.accounts.wallet.to_account_info(),
-            ctx.accounts.wallet.to_account_info(),
-            ctx.accounts.vault.to_account_info(),
-            &None,
-            ctx.accounts.system_program.to_account_info(),
-            ctx.accounts.hive_control.to_account_info(),
-            ctx.accounts.instructions_sysvar.to_account_info(),
-        )?;
-
-        instructions::unstake(ctx)
-    }
-
-    pub fn stake_cnft<'info>(
-        ctx: Context<'_, '_, '_, 'info, StakeCNFT<'info>>,
-        args: CNFTArgs,
+    pub fn stake<'info>(
+        ctx: Context<'_, '_, '_, 'info, Stake<'info>>,
+        args: StakeArgs,
     ) -> Result<()> {
         platform_gate_cpi(
             hpl_hive_control::state::SerializableActions::PublicLow,
@@ -221,12 +113,12 @@ pub mod hpl_nectar_staking {
             ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
-        instructions::stake_cnft(ctx, args)
+        instructions::stake(ctx, args)
     }
 
-    pub fn unstake_cnft<'info>(
-        ctx: Context<'_, '_, '_, 'info, UnstakeCNFT<'info>>,
-        args: CNFTArgs,
+    pub fn unstake<'info>(
+        ctx: Context<'_, '_, '_, 'info, Unstake<'info>>,
+        args: StakeArgs,
     ) -> Result<()> {
         platform_gate_cpi(
             hpl_hive_control::state::SerializableActions::PublicLow,
@@ -241,10 +133,13 @@ pub mod hpl_nectar_staking {
             ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
-        instructions::unstake_cnft(ctx, args)
+        instructions::unstake(ctx, args)
     }
 
-    pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
+    pub fn claim_rewards<'info>(
+        ctx: Context<'_, '_, '_, 'info, ClaimRewards<'info>>,
+        args: ClaimRewardsArgs,
+    ) -> Result<()> {
         platform_gate_cpi(
             hpl_hive_control::state::SerializableActions::FeeExempt,
             None,
@@ -258,23 +153,6 @@ pub mod hpl_nectar_staking {
             ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
-        instructions::claim_rewards(ctx)
-    }
-
-    pub fn distribute_rewards(ctx: Context<DistriuteRewards>) -> Result<()> {
-        platform_gate_cpi(
-            hpl_hive_control::state::SerializableActions::ManageStakingPool,
-            None,
-            ctx.accounts.project.to_account_info(),
-            ctx.accounts.authority.to_account_info(),
-            ctx.accounts.authority.to_account_info(),
-            ctx.accounts.vault.to_account_info(),
-            &None,
-            ctx.accounts.system_program.to_account_info(),
-            ctx.accounts.hive_control.to_account_info(),
-            ctx.accounts.instructions_sysvar.to_account_info(),
-        )?;
-
-        instructions::distribute_rewards(ctx)
+        instructions::claim_rewards(ctx, args)
     }
 }
