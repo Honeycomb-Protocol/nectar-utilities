@@ -18,12 +18,13 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = { version = "0.28.0", features = ["init-if-needed"] }
-anchor-spl = "0.28.0"
-hpl-macros = "0.0.2"
-hpl-utils = "0.1.11"
-hpl-events = { version = "0.1.24", features = ["no-entrypoint"] }
-hpl-hive-control = { version = "0.2.13", features = ["cpi"] }
-hpl-currency-manager = { version = "0.0.83", features = ["cpi"] }
-mpl-bubblegum = { version = "1.1.0" }
-spl-account-compression = { version = "0.2.0", features = ["cpi"] }
+anchor-lang = { workspace = true, features = ["init-if-needed"] }
+anchor-spl = { workspace = true }
+hpl-macros = { workspace = true }
+hpl-utils = { workspace = true }
+hpl-events = { workspace = true }
+hpl-compression = { workspace = true }
+hpl-hive-control = { workspace = true }
+hpl-character-manager = { workspace = true }
+hpl-currency-manager = { workspace = true }
+spl-account-compression = { workspace = true }
