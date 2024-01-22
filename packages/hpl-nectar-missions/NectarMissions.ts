@@ -31,7 +31,11 @@ import {
   NectarMissionParticipationGuild,
   NectarMissionParticipationNft,
 } from "./Participation";
-import { BuzzGuild, BuzzGuildKit } from "@honeycomb-protocol/buzz-guild";
+import {
+  BuzzGuild,
+  BuzzGuildKit,
+  fetchGuildsFromOffchainWithIds,
+} from "@honeycomb-protocol/buzz-guild";
 
 /**
  * The module declaration for `@honeycomb-protocol/hive-control`.
@@ -403,13 +407,24 @@ export class NectarMissions extends Module<
     );
 
     const stakedNfts = await this.stakedNfts();
-    const guilds = await this.guilds();
     const item = this.cache.get(
       "participations",
       this.honeycomb().identity().address.toString()
     );
     if (!item || item.size === 0 || forceFetch === ForceScenario.Force) {
-      await fetch().then((participations) =>
+      await fetch().then(async (participations) => {
+        let guildIds = [];
+        participations.forEach((p) => {
+          if (p.instrument.__kind === "Guild") {
+            guildIds.push(p.instrument.fields[0].toString());
+          }
+        });
+
+        const guilds = await fetchGuildsFromOffchainWithIds(
+          guildIds,
+          this.guildKits()[0]
+        );
+
         this.cache.updateSync(
           "participations",
           this.honeycomb().identity().address.toString(),
@@ -450,8 +465,8 @@ export class NectarMissions extends Module<
             });
             return participationsMap;
           }
-        )
-      );
+        );
+      });
     }
 
     return Array.from(
