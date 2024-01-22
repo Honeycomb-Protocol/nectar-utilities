@@ -1080,9 +1080,9 @@ dependencies = [
 
 [[package]]
 name = "hpl-character-manager"
-version = "0.0.2-beta.1"
+version = "0.0.2-beta.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ffb324efe5c33cb0ed4580167630d3aa18d5d04c64cb309d3ba44fc1c6f26d1"
+checksum = "10fffbec85bc65c97ef8b36850f111ceb963346d88563cab7424c0bd980f2d83"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -1097,9 +1097,9 @@ dependencies = [
 
 [[package]]
 name = "hpl-compression"
-version = "0.1.8-beta.12"
+version = "0.1.8-beta.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c62a601544ff8adec9eebf0956046dc274f4add498f8547b9e96069b0425806"
+checksum = "3dc2b89866014835a7b5b01d640fc3a518caabd4935f6b35581d7bf4a7cf8260"
 dependencies = [
  "anchor-lang",
  "hpl-attribute-compressed-account",
