@@ -6,14 +6,14 @@ use {super::RewardType, anchor_lang::prelude::*, hpl_utils::Default};
 #[account]
 #[derive(PartialEq, Eq, Debug)]
 pub struct Participation {
-    pub bump: u8,
-    pub wallet: Pubkey,
+    pub bump: u8, // Not needed anymore
+    pub wallet: Pubkey, // Not needed, present in character
     pub mission: Pubkey,
-    pub instrument: Instrument,
+    pub instrument: Instrument, // Not needed, present in character
     /// The end time of the mission in unix timestamp
     /// It is calculated by start_time + mission.duration
-    pub end_time: i64,
-    pub is_recalled: bool,
+    pub end_time: i64, // Replace with enum, time-based or task based (task based is not defined yet)
+    pub is_recalled: bool, // Not needed, present in character
     pub rewards: Vec<EarnedReward>,
 }
 impl Default for Participation {
@@ -32,9 +32,9 @@ impl Default for Participation {
 
 #[derive(AnchorSerialize, AnchorDeserialize, PartialEq, Eq, Clone, Debug)]
 pub struct EarnedReward {
-    pub amount: u64,
-    pub reward_type: RewardType,
-    pub collected: bool,
+    pub amount: u64, // Store delta here
+    pub reward_type: RewardType, // change to reward_idx, compression purposes. Represents which reward is being picked from the rewards vec.
+    pub collected: bool, // Remove, we'll remove this from the vec if the reward is colleted
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, PartialEq, Eq, Clone, Debug)]

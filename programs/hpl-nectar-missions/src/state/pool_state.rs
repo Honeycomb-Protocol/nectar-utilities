@@ -5,16 +5,16 @@ use {anchor_lang::prelude::*, hpl_utils::Default};
 /// Category: pool_state
 #[account]
 pub struct MissionPool {
-    pub bump: u8,
-    pub project: Pubkey,
-    pub name: String,
-    pub factions_merkle_root: [u8; 32],
-    pub randomizer_round: u8,
-    pub staking_pools: Vec<u8>,
-    pub guild_kits: Vec<u8>,
+    pub bump: u8, // 1
+    pub project: Pubkey, // 32
+    pub name: String, // 40
+    pub factions_merkle_root: [u8; 32], // 32
+    pub randomizer_round: u8, // 1
+    pub character_models: Vec<Pubkey>, // 4 + (32 * n) 
+    pub guild_kits: Vec<u8>, // 4 + (1 * n)
 }
 impl Default for MissionPool {
-    const LEN: usize = 8 + 144;
+    const LEN: usize = 8 + 1 + 32 + 40 + 32 + 1 + 4 + 4;
 
     fn set_defaults(&mut self) {
         self.bump = 0;
@@ -22,7 +22,7 @@ impl Default for MissionPool {
         self.name = String::default();
         self.factions_merkle_root = [0; 32];
         self.randomizer_round = 0;
-        self.staking_pools = vec![];
+        self.character_models = vec![];
         self.guild_kits = vec![];
     }
 }

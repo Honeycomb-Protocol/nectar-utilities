@@ -1080,9 +1080,9 @@ dependencies = [
 
 [[package]]
 name = "hpl-character-manager"
-version = "0.0.2-beta.1"
+version = "0.0.2-beta.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ffb324efe5c33cb0ed4580167630d3aa18d5d04c64cb309d3ba44fc1c6f26d1"
+checksum = "a86c7824b3b62587bb123b3a24831441c4d7febb3af6b36a0c4828572df1a677"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -1097,9 +1097,9 @@ dependencies = [
 
 [[package]]
 name = "hpl-compression"
-version = "0.1.8-beta.12"
+version = "0.1.8-beta.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c62a601544ff8adec9eebf0956046dc274f4add498f8547b9e96069b0425806"
+checksum = "2a8884e931e0f9fff2e520db8dde2e23fe5c22254d2770cc11286a9884b638c8"
 dependencies = [
  "anchor-lang",
  "hpl-attribute-compressed-account",
@@ -1228,8 +1228,8 @@ dependencies = [
  "hpl-events",
  "hpl-hive-control",
  "hpl-macros",
- "hpl-nectar-staking 0.1.47",
  "hpl-utils",
+ "rand 0.8.5",
  "spl-account-compression",
 ]
 
@@ -1867,6 +1867,7 @@ version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "34af8d1a0e25924bc5b7c43c079c942339d8f0a8b57c39049bef581b46327404"
 dependencies = [
+ "libc",
  "rand_chacha 0.3.1",
  "rand_core 0.6.4",
 ]

@@ -7,7 +7,8 @@ use {
         program::HplHiveControl,
         state::{DelegateAuthority, Project, Service},
     },
-    hpl_nectar_staking::state::StakingPool,
+    // hpl_nectar_staking::state::StakingPool, // use character models
+    hpl_character_manager::state::CharacterModel,
     hpl_utils::traits::Default,
 };
 
@@ -90,12 +91,15 @@ pub struct UpdateMissionPool<'info> {
     pub project: Box<Account<'info, Project>>,
 
     /// MissionPool state account
-    #[account(mut, has_one = project)]
+    #[account(
+        mut, 
+        has_one = project
+    )]
     pub mission_pool: Account<'info, MissionPool>,
 
-    /// Collection mint address to be used for the mission_pool
-    #[account(has_one = project)]
-    pub staking_pool: Option<Account<'info, StakingPool>>,
+    /// Character model address to be used for the mission_pool
+    #[account(has_one = project)] 
+    pub character_model: Option<Account<'info, CharacterModel>>,
 
     /// GuildKit from which the Guilds can participate in the mission_pool
     #[account(has_one = project)]
@@ -142,29 +146,16 @@ pub fn update_mission_pool(
         .factions_merkle_root
         .unwrap_or(mission_pool.factions_merkle_root);
 
-    if let Some(staking_pool) = &ctx.accounts.staking_pool {
-        let index = ctx
-            .accounts
-            .project
-            .services
-            .iter()
-            .position(|x| {
-                if let Service::Staking { pool_id } = x {
-                    pool_id.eq(&staking_pool.key())
-                } else {
-                    false
-                }
-            })
-            .unwrap();
-
+    if let Some(character_model) = &ctx.accounts.character_model {
         hpl_utils::reallocate(
-            1,
+            32,
             mission_pool.to_account_info(),
             ctx.accounts.payer.to_account_info(),
             &ctx.accounts.rent,
             &ctx.accounts.system_program,
         )?;
-        mission_pool.staking_pools.push(index as u8);
+
+        mission_pool.character_models.push(character_model.key());
     }
 
     if let Some(guild_kit) = &ctx.accounts.guild_kit {

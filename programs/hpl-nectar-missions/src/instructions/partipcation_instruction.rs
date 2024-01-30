@@ -16,12 +16,18 @@ use {
         instructions::ManageProfileDataArgs,
         program::HplHiveControl,
         state::{DelegateAuthority, Profile, ProfileData, ProfileIdentity, Project, Service},
+    }, 
+    // replace nectar staking with character manager and use character
+    hpl_character_manager::{
+        cpi::{accounts::UseCharacter, use_character}, 
+        program::HplCharacterManager,
+        state::{CharacterUsedBy, CharacterSchema},
     },
-    hpl_nectar_staking::{
-        cpi::{accounts::UseNft, use_nft},
-        program::HplNectarStaking,
-        state::{NFTUsedBy, NFTv1, Staker, StakingPool},
-    },
+    // hpl_nectar_staking::{
+    //     cpi::{accounts::UseNft, use_nft}, 
+    //     program::HplNectarStaking,
+    //     state::{NFTUsedBy, NFTv1, Staker, StakingPool},
+    // },
     hpl_utils::traits::Default,
     spl_account_compression::program::SplAccountCompression,
 };
@@ -33,6 +39,7 @@ pub struct Participate<'info> {
     pub project: Box<Account<'info, Project>>,
 
     /// StakingPool state account
+    /// Replace with character model
     #[account(has_one = project)]
     pub staking_pool: Box<Account<'info, StakingPool>>,
 

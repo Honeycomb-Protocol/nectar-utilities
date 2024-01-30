@@ -5,7 +5,7 @@ impl Randomizer {
     pub const ROUNDS: usize = 10;
 
     pub fn get_random(&self, round: usize, random_slot: u64) -> u8 {
-        let vec = self.randoms[round % self.randoms.len()];
+        let vec: [u8; 101] = self.randoms[round % self.randoms.len()];
         let index = (random_slot % 101 as u64) as usize;
         vec[index]
     }
@@ -14,6 +14,12 @@ impl Randomizer {
         let range = max - min;
         let random = self.get_random(round, random_slot) as u64;
         min + ((random * range) / 100)
+    }
+
+    pub fn get_result_from_delta(min: u64, max: u64, delta: u8) -> u64 {
+        let range = max - min;
+        let result = min + ((delta as u64 * range) / 255);
+        result as u64
     }
 }
 

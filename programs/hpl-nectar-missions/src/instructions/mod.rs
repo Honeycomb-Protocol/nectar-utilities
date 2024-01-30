@@ -1,9 +1,11 @@
-pub mod guild_partipcation_instruction;
 pub mod mission_instruction;
-pub mod partipcation_instruction;
+pub mod participation_instruction;
+// pub mod partipcation_instruction;
 pub mod pool_instruction;
 
 pub use {
-    guild_partipcation_instruction::*, mission_instruction::*, partipcation_instruction::*,
+    mission_instruction::*, 
+    participation_instruction::*,
+    // partipcation_instruction::*, 
     pool_instruction::*,
 };
