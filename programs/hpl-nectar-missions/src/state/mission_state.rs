@@ -43,7 +43,8 @@ impl Mission {
     pub fn get_duration(&self) -> u64 {
         match self.requirement {
             MissionRequirement::Time { duration } => duration,
-            _ => panic!("Mission requirement is not time"),
+            // Uncomment this code when we add more requirement types
+            // _ => panic!("Mission requirement is not time"),
         }
     }
 }

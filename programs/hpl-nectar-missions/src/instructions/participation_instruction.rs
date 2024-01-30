@@ -7,7 +7,8 @@ use {
         errors::ErrorCode, state::{
             Mission,
             MissionPool,
-        }, utils::Randomizer
+            RewardType,
+        }, utils::Randomizer 
     },
     hpl_character_manager::{
         cpi::{
@@ -22,7 +23,6 @@ use {
         program::HplCharacterManager, 
         state::{
             CharacterModel, 
-            CharacterSchema, 
             CharacterSource,
             CharacterUsedBy, 
             DataOrHash,
@@ -31,8 +31,8 @@ use {
     },
     hpl_currency_manager::{
         cpi::{
-            accounts::BurnCurrency,
-            burn_currency,
+            accounts::{BurnCurrency, MintCurrency},
+            burn_currency, mint_currency,
         },
         program::HplCurrencyManager,
         state::HolderAccount,
@@ -40,11 +40,17 @@ use {
     },
     hpl_events::HplEvents,
     hpl_hive_control::{
+        cpi::{
+            accounts::ManageProfileData,
+            manage_profile_data,
+        },
+        instructions::ManageProfileDataArgs,
         program::HplHiveControl,
         state::{
             Project,
             DelegateAuthority,
             Profile,
+            ProfileData,
             ProfileIdentity,
         },
     },
@@ -142,7 +148,7 @@ pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, a
         .rewards
         .iter()
         .enumerate()
-        .map(| (i, reward) | {
+        .map(| ( i, .. ) | {
             let delta = rng.gen_range(0..=255) as u8;
             EarnedReward {
                 reward_idx: i as u8,
@@ -203,6 +209,7 @@ pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, a
                 id: ctx.accounts.mission.key(),
                 end_time: (ctx.accounts.clock.unix_timestamp as u64 + ctx.accounts.mission.get_duration()),
                 rewards: earned_rewards,
+                rewards_collected: false,
             },
         }
     )?;
@@ -311,7 +318,6 @@ pub struct CollectRewardsArgs {
     pub leaf_idx: u32,
     pub source: CharacterSource,
     pub used_by: CharacterUsedBy,
-    pub rewards: Vec<EarnedReward>,
 }
 
 pub fn collect_rewards(ctx: Context<CollectRewards>, args: CollectRewardsArgs) -> Result<()> {
@@ -343,12 +349,152 @@ pub fn collect_rewards(ctx: Context<CollectRewards>, args: CollectRewardsArgs) -
 
     // Check if the person is eligible for a reward (time check)
     if let CharacterUsedBy::Mission { end_time, .. } = args.used_by {
-        if (ctx.accounts.clock.unix_timestamp as u64) < end_time {
-            // Throw error here
+        if end_time > ctx.accounts.clock.unix_timestamp.try_into().unwrap() {
+            return Err(ErrorCode::NotEnded.into());
         }
     }
-    // Give rewards to the player
 
+    // Give rewards to the player
+    let earned_rewards = match args.used_by {
+        CharacterUsedBy::Mission { rewards, .. } => rewards,
+        _ => panic!("Character is not on a mission"),
+    };
+
+    for earned_reward in earned_rewards.iter() {
+        let reward = ctx.accounts.mission.rewards.get(earned_reward.reward_idx as usize).unwrap();
+        match reward.reward_type {
+            RewardType::Xp => {
+                if ctx.accounts.profile.is_none() {
+                    return Err(ErrorCode::ProfileNotProvided.into());
+                }
+
+                let profile = ctx.accounts.profile.clone().unwrap();
+                let mut xp = Randomizer::get_result_from_delta(reward.min, reward.max, earned_reward.delta);
+
+                if let Some(profile_data) = profile.app_context.get("nectar_missions_xp") {
+                    match profile_data {
+                        ProfileData::SingleValue(value) => xp += value.parse::<u64>().unwrap(),
+                        _ => {}
+                    }
+                }
+
+                manage_profile_data(
+                    CpiContext::new(
+                        ctx.accounts.hive_control.to_account_info(),
+                        ManageProfileData {
+                            project: ctx.accounts.project.to_account_info(),
+                            profile: profile.to_account_info(),
+                            delegate_authority: None,
+                            authority: ctx.accounts.wallet.to_account_info(),
+                            payer: ctx.accounts.wallet.to_account_info(),
+                            rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
+                            system_program: ctx.accounts.system_program.to_account_info(),
+                            hpl_events: ctx.accounts.hpl_events.to_account_info(),
+                            clock: ctx.accounts.clock.to_account_info(),
+                            vault: ctx.accounts.vault.to_account_info(),
+                            instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
+                        },
+                    ),
+                    ManageProfileDataArgs {
+                        label: String::from("nectar_missions_xp"),
+                        value: Some(ProfileData::SingleValue(String::from((xp).to_string()))),
+                        is_app_context: true,
+                    },
+                )?;
+            },
+            RewardType::Currency { .. } => {
+                if ctx.accounts.mint.is_none()
+                    || ctx.accounts.holder_account.is_none()
+                    || ctx.accounts.token_account.is_none()
+                    || ctx.accounts.mission_pool_delegate.is_none()
+                {
+                    return Err(ErrorCode::HolderAccountsNotProvided.into());
+                }
+
+                let mission_pool_seeds = &[
+                    b"mission_pool".as_ref(),
+                    ctx.accounts.mission_pool.project.as_ref(),
+                    ctx.accounts.mission_pool.name.as_bytes(),
+                    &[ctx.accounts.mission_pool.bump],
+                ];
+                let signer = &[&mission_pool_seeds[..]];
+
+                let reward_amount = Randomizer::get_result_from_delta(reward.min, reward.max, earned_reward.delta);
+
+                mint_currency(
+                    CpiContext::new_with_signer(
+                        ctx.accounts.currency_manager_program.to_account_info(),
+                        MintCurrency {
+                            project: ctx.accounts.project.to_account_info(),
+                            currency: ctx.accounts.currency.clone().unwrap().to_account_info(),
+                            mint: ctx.accounts.mint.clone().unwrap().to_account_info(),
+                            holder_account: ctx
+                                .accounts
+                                .holder_account
+                                .clone()
+                                .unwrap()
+                                .to_account_info(),
+                            token_account: ctx
+                                .accounts
+                                .token_account
+                                .clone()
+                                .unwrap()
+                                .to_account_info(),
+                            delegate_authority: Some(
+                                ctx.accounts
+                                    .mission_pool_delegate
+                                    .clone()
+                                    .unwrap()
+                                    .to_account_info(),
+                            ),
+                            authority: ctx.accounts.mission_pool.to_account_info(),
+                            payer: ctx.accounts.wallet.to_account_info(),
+                            instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
+                            vault: ctx.accounts.vault.to_account_info(),
+                            system_program: ctx.accounts.system_program.to_account_info(),
+                            hive_control: ctx.accounts.hive_control.to_account_info(),
+                            token_program: ctx.accounts.token_program.to_account_info(),
+                        },
+                        signer,
+                    ),
+                    reward_amount,
+                )?;
+            },
+        }
+    }
 
     Ok(())
+}
+
+#[derive(Accounts)]
+pub struct Recall<'info> {
+    #[account(mut)]
+    pub project: Box<Account<'info, Project>>,
+
+    /// MissionPool account
+    #[account(has_one = project)]
+    pub mission_pool: Box<Account<'info, MissionPool>>,
+
+    /// Mission account
+    #[account(has_one = mission_pool)]
+    pub mission: Box<Account<'info, Mission>>,
+
+
+    #[account(mut)]
+    pub wallet: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+
+    /// HPL Hive Control Program
+    pub hive_control: Program<'info, HplHiveControl>,
+
+    pub hpl_events: Program<'info, HplEvents>,
+    pub clock: Sysvar<'info, Clock>,
+    /// NATIVE INSTRUCTIONS SYSVAR
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
+    pub instructions_sysvar: AccountInfo<'info>,
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    #[account(mut)]
+    pub vault: AccountInfo<'info>,
 }

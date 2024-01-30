@@ -1080,9 +1080,9 @@ dependencies = [
 
 [[package]]
 name = "hpl-character-manager"
-version = "0.0.2-beta.8"
+version = "0.0.2-beta.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a86c7824b3b62587bb123b3a24831441c4d7febb3af6b36a0c4828572df1a677"
+checksum = "dd399da12302432694bf0de4e8ea5d0fba3fc891e7abed8fccf1d1e7981da4ca"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
