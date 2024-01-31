@@ -6,7 +6,6 @@ author = ['Sultan Nadeem <sultanndilaram@gmail.com>']
 edition = "2021"
 license = "MIT"
 
-
 [lib]
 crate-type = ["cdylib", "lib"]
 name = "hpl_nectar_missions"
@@ -30,9 +29,4 @@ hpl-character-manager = { workspace = true }
 hpl-currency-manager = { workspace = true }
 rand = { workspace = true }
 spl-account-compression = { workspace = true }
-
-# NEED TO REMOVE
-# hpl-nectar-staking = { version = "0.1.46", path = "../hpl-nectar-staking", features = [
-#   "cpi",
-# ] }
 hpl-buzz-guild = { version = "0.0.1", features = ["cpi"] }
