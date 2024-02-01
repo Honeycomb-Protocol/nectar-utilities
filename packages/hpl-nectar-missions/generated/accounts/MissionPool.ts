@@ -20,7 +20,7 @@ export type MissionPoolArgs = {
   name: string
   factionsMerkleRoot: number[] /* size: 32 */
   randomizerRound: number
-  stakingPools: Uint8Array
+  characterModels: web3.PublicKey[]
   guildKits: Uint8Array
 }
 
@@ -39,7 +39,7 @@ export class MissionPool implements MissionPoolArgs {
     readonly name: string,
     readonly factionsMerkleRoot: number[] /* size: 32 */,
     readonly randomizerRound: number,
-    readonly stakingPools: Uint8Array,
+    readonly characterModels: web3.PublicKey[],
     readonly guildKits: Uint8Array
   ) {}
 
@@ -53,7 +53,7 @@ export class MissionPool implements MissionPoolArgs {
       args.name,
       args.factionsMerkleRoot,
       args.randomizerRound,
-      args.stakingPools,
+      args.characterModels,
       args.guildKits
     )
   }
@@ -168,7 +168,7 @@ export class MissionPool implements MissionPoolArgs {
       name: this.name,
       factionsMerkleRoot: this.factionsMerkleRoot,
       randomizerRound: this.randomizerRound,
-      stakingPools: this.stakingPools,
+      characterModels: this.characterModels,
       guildKits: this.guildKits,
     }
   }
@@ -191,7 +191,7 @@ export const missionPoolBeet = new beet.FixableBeetStruct<
     ['name', beet.utf8String],
     ['factionsMerkleRoot', beet.uniformFixedSizeArray(beet.u8, 32)],
     ['randomizerRound', beet.u8],
-    ['stakingPools', beet.bytes],
+    ['characterModels', beet.array(beetSolana.publicKey)],
     ['guildKits', beet.bytes],
   ],
   MissionPool.fromArgs,

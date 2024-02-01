@@ -7,12 +7,16 @@
 
 import * as beet from '@metaplex-foundation/beet'
 import { Currency, currencyBeet } from './Currency'
+import {
+  MissionRequirement,
+  missionRequirementBeet,
+} from './MissionRequirement'
 import { Reward, rewardBeet } from './Reward'
 export type UpdateMissionArgs = {
   name: beet.COption<string>
   minXp: beet.COption<beet.bignum>
   cost: beet.COption<Currency>
-  duration: beet.COption<beet.bignum>
+  requirement: beet.COption<MissionRequirement>
   removeAllRewards: beet.COption<boolean>
   addRewards: beet.COption<Reward[]>
   removeRewardIndices: beet.COption<Uint8Array>
@@ -28,7 +32,7 @@ export const updateMissionArgsBeet =
       ['name', beet.coption(beet.utf8String)],
       ['minXp', beet.coption(beet.u64)],
       ['cost', beet.coption(currencyBeet)],
-      ['duration', beet.coption(beet.i64)],
+      ['requirement', beet.coption(missionRequirementBeet)],
       ['removeAllRewards', beet.coption(beet.bool)],
       ['addRewards', beet.coption(beet.array(rewardBeet))],
       ['removeRewardIndices', beet.coption(beet.bytes)],

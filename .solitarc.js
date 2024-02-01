@@ -116,6 +116,154 @@ const createConfig = (name, programId, customs) => {
 
       idl.accounts = idl.accounts.map(mapTypes);
 
+      const missingTypes = [
+        {
+          "name": "CharacterUsedBy",
+          "type": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "None"
+              },
+              {
+                "name": "Staking",
+                "fields": [
+                  {
+                    "name": "pool",
+                    "type": "publicKey"
+                  },
+                  {
+                    "name": "staker",
+                    "type": "publicKey"
+                  },
+                  {
+                    "name": "stakedAt",
+                    "type": "i64"
+                  },
+                  {
+                    "name": "claimedAt",
+                    "type": "i64"
+                  }
+                ]
+              },
+              {
+                "name": "Mission",
+                "fields": [
+                  {
+                    "name": "id",
+                    "type": "publicKey"
+                  },
+                  {
+                    "name": "rewards",
+                    "type": {
+                      "vec": {
+                        "defined": "EarnedReward"
+                      }
+                    }
+                  },
+                  {
+                    "name": "endTime",
+                    "type": "u64"
+                  },
+                  {
+                    "name": "rewardsCollected",
+                    "type": "bool"
+                  }
+                ]
+              },
+              {
+                "name": "Guild",
+                "fields": [
+                  {
+                    "name": "id",
+                    "type": "publicKey"
+                  },
+                  {
+                    "name": "role",
+                    "type": {
+                      "defined": "GuildRole"
+                    }
+                  },
+                  {
+                    "name": "order",
+                    "type": "u8"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "CharacterSource",
+          "type": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Wrapped",
+                "fields": [
+                  {
+                    "name": "mint",
+                    "type": "publicKey"
+                  },
+                  {
+                    "name": "criteria",
+                    "type": {
+                      "defined": "NftWrapCriteria"
+                    }
+                  },
+                  {
+                    "name": "isCompressed",
+                    "type": "bool"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "GuildRole",
+          "type": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Chief"
+              },
+              {
+                "name": "Member"
+              }
+            ]
+          }
+        },
+        {
+          "name": "NftWrapCriteria",
+          "type": {
+            "kind": "enum",
+            "variants": [
+              {
+                "name": "Collection",
+                "fields": [
+                  "publicKey"
+                ]
+              },
+              {
+                "name": "Creator",
+                "fields": [
+                  "publicKey"
+                ]
+              },
+              {
+                "name": "MerkleTree",
+                "fields": [
+                  "publicKey"
+                ]
+              }
+            ]
+          }
+        },
+      ];
+
+      idl.types.push(...missingTypes);
+
       return idl;
     },
   };

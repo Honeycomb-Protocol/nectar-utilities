@@ -14,26 +14,34 @@
           "name": "missionPool",
           "isMut": true,
           "isSigner": false,
-          "docs": ["MissionPool state account"]
+          "docs": [
+            "MissionPool state account"
+          ]
         },
         {
           "name": "delegateAuthority",
           "isMut": false,
           "isSigner": false,
           "isOptional": true,
-          "docs": ["[Option] Project delegate authority"]
+          "docs": [
+            "[Option] Project delegate authority"
+          ]
         },
         {
           "name": "authority",
           "isMut": false,
           "isSigner": true,
-          "docs": ["The wallet that holds the authority over the assembler"]
+          "docs": [
+            "The wallet that holds the authority over the assembler"
+          ]
         },
         {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "docs": ["The wallet that pays for the rent"]
+          "docs": [
+            "The wallet that pays for the rent"
+          ]
         },
         {
           "name": "vault",
@@ -44,13 +52,17 @@
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["SYSTEM PROGRAM"]
+          "docs": [
+            "SYSTEM PROGRAM"
+          ]
         },
         {
           "name": "hiveControl",
           "isMut": false,
           "isSigner": false,
-          "docs": ["HPL Hive Control Program"]
+          "docs": [
+            "HPL Hive Control Program"
+          ]
         },
         {
           "name": "hplEvents",
@@ -71,7 +83,9 @@
           "name": "instructionsSysvar",
           "isMut": false,
           "isSigner": false,
-          "docs": ["NATIVE INSTRUCTIONS SYSVAR"]
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
+          ]
         }
       ],
       "args": [
@@ -95,14 +109,18 @@
           "name": "missionPool",
           "isMut": true,
           "isSigner": false,
-          "docs": ["MissionPool state account"]
+          "docs": [
+            "MissionPool state account"
+          ]
         },
         {
-          "name": "stakingPool",
+          "name": "characterModel",
           "isMut": false,
           "isSigner": false,
           "isOptional": true,
-          "docs": ["Collection mint address to be used for the mission_pool"]
+          "docs": [
+            "Character model address to be used for the mission_pool"
+          ]
         },
         {
           "name": "guildKit",
@@ -123,25 +141,33 @@
           "name": "authority",
           "isMut": true,
           "isSigner": true,
-          "docs": ["The wallet that holds authority for this action"]
+          "docs": [
+            "The wallet that holds authority for this action"
+          ]
         },
         {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "docs": ["The wallet that pays for the rent"]
+          "docs": [
+            "The wallet that pays for the rent"
+          ]
         },
         {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["NATIVE SYSTEM PROGRAM"]
+          "docs": [
+            "NATIVE SYSTEM PROGRAM"
+          ]
         },
         {
           "name": "hiveControl",
           "isMut": false,
           "isSigner": false,
-          "docs": ["HPL Hive Control Program"]
+          "docs": [
+            "HPL Hive Control Program"
+          ]
         },
         {
           "name": "rent",
@@ -152,7 +178,9 @@
           "name": "instructionsSysvar",
           "isMut": false,
           "isSigner": false,
-          "docs": ["NATIVE INSTRUCTIONS SYSVAR"]
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
+          ]
         },
         {
           "name": "vault",
@@ -181,32 +209,42 @@
           "name": "missionPool",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mission state account"]
+          "docs": [
+            "Mission state account"
+          ]
         },
         {
           "name": "mission",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mission state account"]
+          "docs": [
+            "Mission state account"
+          ]
         },
         {
           "name": "delegateAuthority",
           "isMut": false,
           "isSigner": false,
           "isOptional": true,
-          "docs": ["[Option] Project delegate authority"]
+          "docs": [
+            "[Option] Project delegate authority"
+          ]
         },
         {
           "name": "authority",
           "isMut": false,
           "isSigner": true,
-          "docs": ["The wallet that holds the authority over the assembler"]
+          "docs": [
+            "The wallet that holds the authority over the assembler"
+          ]
         },
         {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "docs": ["The wallet that pays for the rent"]
+          "docs": [
+            "The wallet that pays for the rent"
+          ]
         },
         {
           "name": "vault",
@@ -217,25 +255,33 @@
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["SYSTEM PROGRAM"]
+          "docs": [
+            "SYSTEM PROGRAM"
+          ]
         },
         {
           "name": "hiveControl",
           "isMut": false,
           "isSigner": false,
-          "docs": ["HPL Hive Control Program"]
+          "docs": [
+            "HPL Hive Control Program"
+          ]
         },
         {
           "name": "rentSysvar",
           "isMut": false,
           "isSigner": false,
-          "docs": ["RENT SYSVAR"]
+          "docs": [
+            "RENT SYSVAR"
+          ]
         },
         {
           "name": "instructionsSysvar",
           "isMut": false,
           "isSigner": false,
-          "docs": ["NATIVE INSTRUCTIONS SYSVAR"]
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
+          ]
         }
       ],
       "args": [
@@ -259,32 +305,42 @@
           "name": "missionPool",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Missions pool account"]
+          "docs": [
+            "Missions pool account"
+          ]
         },
         {
           "name": "mission",
           "isMut": true,
           "isSigner": false,
-          "docs": ["Mission state account"]
+          "docs": [
+            "Mission state account"
+          ]
         },
         {
           "name": "delegateAuthority",
           "isMut": false,
           "isSigner": false,
           "isOptional": true,
-          "docs": ["[Option] Project delegate authority"]
+          "docs": [
+            "[Option] Project delegate authority"
+          ]
         },
         {
           "name": "authority",
           "isMut": false,
           "isSigner": true,
-          "docs": ["The wallet that holds the authority over the assembler"]
+          "docs": [
+            "The wallet that holds the authority over the assembler"
+          ]
         },
         {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
-          "docs": ["The wallet that pays for the rent"]
+          "docs": [
+            "The wallet that pays for the rent"
+          ]
         },
         {
           "name": "vault",
@@ -295,25 +351,33 @@
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["SYSTEM PROGRAM"]
+          "docs": [
+            "SYSTEM PROGRAM"
+          ]
         },
         {
           "name": "hiveControl",
           "isMut": false,
           "isSigner": false,
-          "docs": ["HPL Hive Control Program"]
+          "docs": [
+            "HPL Hive Control Program"
+          ]
         },
         {
           "name": "rentSysvar",
           "isMut": false,
           "isSigner": false,
-          "docs": ["RENT SYSVAR"]
+          "docs": [
+            "RENT SYSVAR"
+          ]
         },
         {
           "name": "instructionsSysvar",
           "isMut": false,
           "isSigner": false,
-          "docs": ["NATIVE INSTRUCTIONS SYSVAR"]
+          "docs": [
+            "NATIVE INSTRUCTIONS SYSVAR"
+          ]
         }
       ],
       "args": [
@@ -334,34 +398,24 @@
           "isSigner": false
         },
         {
-          "name": "stakingPool",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["StakingPool state account"]
-        },
-        {
           "name": "missionPool",
           "isMut": false,
-          "isSigner": false,
-          "docs": ["MissionPool account"]
+          "isSigner": false
         },
         {
           "name": "mission",
           "isMut": false,
-          "isSigner": false,
-          "docs": ["Mission state account"]
+          "isSigner": false
         },
         {
-          "name": "nft",
-          "isMut": true,
-          "isSigner": false,
-          "docs": ["NFT state account"]
-        },
-        {
-          "name": "staker",
+          "name": "characterModel",
           "isMut": false,
-          "isSigner": false,
-          "docs": ["Staker state account"]
+          "isSigner": false
+        },
+        {
+          "name": "merkleTree",
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "currency",
@@ -384,12 +438,6 @@
           "isSigner": false
         },
         {
-          "name": "participation",
-          "isMut": true,
-          "isSigner": false,
-          "docs": ["Participation state account"]
-        },
-        {
           "name": "wallet",
           "isMut": true,
           "isSigner": true
@@ -405,10 +453,25 @@
           "isSigner": false
         },
         {
+          "name": "compressionProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "hiveControl",
           "isMut": false,
           "isSigner": false,
-          "docs": ["HPL Hive Control Program"]
+          "docs": [
+            "HPL Hive Control Program"
+          ]
+        },
+        {
+          "name": "characterManager",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Character Manager Program"
+          ]
         },
         {
           "name": "tokenProgram",
@@ -417,11 +480,6 @@
         },
         {
           "name": "currencyManagerProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "nectarStakingProgram",
           "isMut": false,
           "isSigner": false
         },
@@ -442,6 +500,11 @@
         },
         {
           "name": "instructionsSysvar",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "logWrapper",
           "isMut": false,
           "isSigner": false
         }
@@ -459,6 +522,11 @@
       "name": "collectRewards",
       "accounts": [
         {
+          "name": "characterModel",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "project",
           "isMut": true,
           "isSigner": false
@@ -482,36 +550,28 @@
           "name": "mission",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mission state account"]
-        },
-        {
-          "name": "participation",
-          "isMut": true,
-          "isSigner": false,
-          "docs": ["Participation state account"]
-        },
-        {
-          "name": "nft",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["Staked NFT state account"]
+          "docs": [
+            "Mission state account"
+          ]
         },
         {
           "name": "profile",
           "isMut": true,
           "isSigner": false,
           "isOptional": true,
-          "docs": ["User profile account"]
-        },
-        {
-          "name": "currency",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
+          "docs": [
+            "User profile account"
+          ]
         },
         {
           "name": "mint",
           "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "currency",
+          "isMut": false,
           "isSigner": false,
           "isOptional": true
         },
@@ -538,358 +598,132 @@
           "isSigner": false
         },
         {
+          "name": "merkleTree",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Solana System Program"]
+          "docs": [
+            "Solana System Program"
+          ]
         },
         {
           "name": "hiveControl",
           "isMut": false,
           "isSigner": false,
-          "docs": ["HPL Hive Control Program"]
+          "docs": [
+            "HPL Hive Control Program"
+          ]
+        },
+        {
+          "name": "characterManager",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "HPL Character Manager Program"
+          ]
         },
         {
           "name": "currencyManagerProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["HPL Currency Manager Program"]
+          "docs": [
+            "HPL Currency Manager Program"
+          ]
         },
         {
           "name": "hplEvents",
           "isMut": false,
           "isSigner": false,
-          "docs": ["HPL Events Program"]
+          "docs": [
+            "HPL Events Program"
+          ]
         },
         {
           "name": "compressionProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["SPL Compression Program"]
+          "docs": [
+            "SPL Compression Program"
+          ]
         },
         {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["SPL Token Program"]
+          "docs": [
+            "SPL Token Program"
+          ]
         },
         {
           "name": "rentSysvar",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Solana Rent Sysvar"]
+          "docs": [
+            "Solana Rent Sysvar"
+          ]
         },
         {
           "name": "instructionsSysvar",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Solana Instructions Sysvar"]
+          "docs": [
+            "Solana Instructions Sysvar"
+          ]
         },
         {
           "name": "clock",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Solana Clock Sysvar"]
+          "docs": [
+            "Solana Clock Sysvar"
+          ]
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": "CollectRewardsArgs"
+          }
+        }
+      ]
     },
     {
       "name": "recall",
       "accounts": [
         {
+          "name": "characterModel",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "project",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "stakingPool",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["StakingPool state account"]
-        },
-        {
-          "name": "nft",
-          "isMut": true,
-          "isSigner": false,
-          "docs": ["NFT state account"]
-        },
-        {
-          "name": "staker",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["Staker state account"]
-        },
-        {
           "name": "missionPool",
           "isMut": false,
-          "isSigner": false,
-          "docs": ["MissionPool account"]
+          "isSigner": false
         },
         {
           "name": "mission",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Mission account"]
-        },
-        {
-          "name": "participation",
-          "isMut": true,
-          "isSigner": false,
-          "docs": ["Participation state account"]
-        },
-        {
-          "name": "wallet",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "hiveControl",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["HPL Hive Control Program"]
-        },
-        {
-          "name": "nectarStakingProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "instructionsSysvar",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["NATIVE INSTRUCTIONS SYSVAR"]
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "participateGuild",
-      "accounts": [
-        {
-          "name": "project",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "stakingPool",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["StakingPool state account"]
-        },
-        {
-          "name": "missionPool",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["MissionPool account"]
-        },
-        {
-          "name": "guildKit",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["GUILD KIT"]
-        },
-        {
-          "name": "guild",
-          "isMut": true,
-          "isSigner": false,
-          "docs": ["Guild state account"]
-        },
-        {
-          "name": "chiefNft",
-          "isMut": true,
-          "isSigner": false,
-          "docs": ["Chief NFT"]
-        },
-        {
-          "name": "mission",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["Mission state account"]
-        },
-        {
-          "name": "staker",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["Staker state account"]
-        },
-        {
-          "name": "currency",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "mint",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "holderAccount",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "tokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "participation",
-          "isMut": true,
-          "isSigner": false,
-          "docs": ["Participation state account"]
-        },
-        {
-          "name": "wallet",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "hiveControl",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["HPL Hive Control Program"]
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "currencyManagerProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "nectarStakingProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "buzzGuildProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rentSysvar",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "instructionsSysvar",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "collectRewardsForGuild",
-      "accounts": [
-        {
-          "name": "project",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "missionPool",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "missionPoolDelegate",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
           "docs": [
-            "MissionsPool delegate account for this project",
-            "It is required to mint rewards"
+            "Mission state account"
           ]
         },
         {
-          "name": "mission",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["Mission state account"]
-        },
-        {
-          "name": "participation",
-          "isMut": true,
-          "isSigner": false,
-          "docs": ["Participation state account"]
-        },
-        {
-          "name": "profile",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": ["User profile account"]
-        },
-        {
-          "name": "currency",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "mint",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "holderAccount",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "tokenAccount",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
           "name": "wallet",
           "isMut": true,
           "isSigner": true
@@ -900,167 +734,80 @@
           "isSigner": false
         },
         {
+          "name": "merkleTree",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Solana System Program"]
+          "docs": [
+            "Solana System Program"
+          ]
         },
         {
           "name": "hiveControl",
           "isMut": false,
           "isSigner": false,
-          "docs": ["HPL Hive Control Program"]
+          "docs": [
+            "HPL Hive Control Program"
+          ]
         },
         {
-          "name": "currencyManagerProgram",
+          "name": "characterManager",
           "isMut": false,
           "isSigner": false,
-          "docs": ["HPL Currency Manager Program"]
+          "docs": [
+            "HPL Character Manager Program"
+          ]
         },
         {
           "name": "hplEvents",
           "isMut": false,
           "isSigner": false,
-          "docs": ["HPL Events Program"]
+          "docs": [
+            "HPL Events Program"
+          ]
         },
         {
           "name": "compressionProgram",
           "isMut": false,
           "isSigner": false,
-          "docs": ["SPL Compression Program"]
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["SPL Token Program"]
-        },
-        {
-          "name": "rentSysvar",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["Solana Rent Sysvar"]
+          "docs": [
+            "SPL Compression Program"
+          ]
         },
         {
           "name": "instructionsSysvar",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Solana Instructions Sysvar"]
+          "docs": [
+            "Solana Instructions Sysvar"
+          ]
         },
         {
           "name": "clock",
           "isMut": false,
           "isSigner": false,
-          "docs": ["Solana Clock Sysvar"]
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "recallGuild",
-      "accounts": [
-        {
-          "name": "project",
-          "isMut": true,
-          "isSigner": false
+          "docs": [
+            "Solana Clock Sysvar"
+          ]
         },
         {
-          "name": "stakingPool",
+          "name": "logWrapper",
           "isMut": false,
-          "isSigner": false,
-          "docs": ["StakingPool state account"]
-        },
-        {
-          "name": "missionPool",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["MissionPool account"]
-        },
-        {
-          "name": "guildKit",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["GUILD KIT"]
-        },
-        {
-          "name": "guild",
-          "isMut": true,
-          "isSigner": false,
-          "docs": ["Guild state account"]
-        },
-        {
-          "name": "chiefNft",
-          "isMut": true,
-          "isSigner": false,
-          "docs": ["Chief NFT"]
-        },
-        {
-          "name": "mission",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["Mission account"]
-        },
-        {
-          "name": "staker",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["Staker state account"]
-        },
-        {
-          "name": "participation",
-          "isMut": true,
-          "isSigner": false,
-          "docs": ["Participation state account"]
-        },
-        {
-          "name": "wallet",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "hiveControl",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["HPL Hive Control Program"]
-        },
-        {
-          "name": "nectarStakingProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "buzzGuildProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "instructionsSysvar",
-          "isMut": false,
-          "isSigner": false,
-          "docs": ["NATIVE INSTRUCTIONS SYSVAR"]
-        },
-        {
-          "name": "vault",
-          "isMut": true,
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": "RecallCharacterArgs"
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -1097,9 +844,10 @@
             }
           },
           {
-            "name": "duration",
-            "docs": ["The duration of the mission in seconds"],
-            "type": "i64"
+            "name": "requirement",
+            "type": {
+              "defined": "MissionRequirement"
+            }
           },
           {
             "name": "rewards",
@@ -1188,7 +936,10 @@
           {
             "name": "factionsMerkleRoot",
             "type": {
-              "array": ["u8", 32]
+              "array": [
+                "u8",
+                32
+              ]
             }
           },
           {
@@ -1196,8 +947,10 @@
             "type": "u8"
           },
           {
-            "name": "stakingPools",
-            "type": "bytes"
+            "name": "characterModels",
+            "type": {
+              "vec": "publicKey"
+            }
           },
           {
             "name": "guildKits",
@@ -1228,9 +981,10 @@
             }
           },
           {
-            "name": "duration",
-            "docs": ["The duration of the mission in seconds"],
-            "type": "i64"
+            "name": "requirement",
+            "type": {
+              "defined": "MissionRequirement"
+            }
           },
           {
             "name": "rewards",
@@ -1269,10 +1023,14 @@
             }
           },
           {
-            "name": "duration",
-            "docs": ["The duration of the mission in seconds"],
+            "name": "requirement",
+            "docs": [
+              "The duration of the mission in seconds"
+            ],
             "type": {
-              "option": "i64"
+              "option": {
+                "defined": "MissionRequirement"
+              }
             }
           },
           {
@@ -1306,19 +1064,91 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "faction",
+            "name": "root",
             "type": {
-              "option": "string"
+              "array": [
+                "u8",
+                32
+              ]
             }
           },
           {
-            "name": "merkleProof",
+            "name": "leafIdx",
+            "type": "u32"
+          },
+          {
+            "name": "sourceHash",
             "type": {
-              "option": {
-                "vec": {
-                  "array": ["u8", 32]
-                }
-              }
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CollectRewardsArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "leafIdx",
+            "type": "u32"
+          },
+          {
+            "name": "source",
+            "type": {
+              "defined": "CharacterSource"
+            }
+          },
+          {
+            "name": "usedBy",
+            "type": {
+              "defined": "CharacterUsedBy"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RecallCharacterArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "leafIdx",
+            "type": "u32"
+          },
+          {
+            "name": "source",
+            "type": {
+              "defined": "CharacterSource"
+            }
+          },
+          {
+            "name": "usedBy",
+            "type": {
+              "defined": "CharacterUsedBy"
             }
           }
         ]
@@ -1336,7 +1166,10 @@
           {
             "name": "factionsMerkleRoot",
             "type": {
-              "array": ["u8", 32]
+              "array": [
+                "u8",
+                32
+              ]
             }
           }
         ]
@@ -1351,7 +1184,10 @@
             "name": "factionsMerkleRoot",
             "type": {
               "option": {
-                "array": ["u8", 32]
+                "array": [
+                  "u8",
+                  32
+                ]
               }
             }
           }
@@ -1453,6 +1289,26 @@
       }
     },
     {
+      "name": "MissionRequirement",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Time",
+            "fields": [
+              {
+                "name": "duration",
+                "docs": [
+                  "The duration of the mission in unix timestamp (in seconds)"
+                ],
+                "type": "u64"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "name": "RewardType",
       "type": {
         "kind": "enum",
@@ -1479,11 +1335,158 @@
         "variants": [
           {
             "name": "Nft",
-            "fields": ["publicKey"]
+            "fields": [
+              "publicKey"
+            ]
           },
           {
             "name": "Guild",
-            "fields": ["publicKey"]
+            "fields": [
+              "publicKey"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "CharacterUsedBy",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "None"
+          },
+          {
+            "name": "Staking",
+            "fields": [
+              {
+                "name": "pool",
+                "type": "publicKey"
+              },
+              {
+                "name": "staker",
+                "type": "publicKey"
+              },
+              {
+                "name": "stakedAt",
+                "type": "i64"
+              },
+              {
+                "name": "claimedAt",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "Mission",
+            "fields": [
+              {
+                "name": "id",
+                "type": "publicKey"
+              },
+              {
+                "name": "rewards",
+                "type": {
+                  "vec": {
+                    "defined": "EarnedReward"
+                  }
+                }
+              },
+              {
+                "name": "endTime",
+                "type": "u64"
+              },
+              {
+                "name": "rewardsCollected",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "Guild",
+            "fields": [
+              {
+                "name": "id",
+                "type": "publicKey"
+              },
+              {
+                "name": "role",
+                "type": {
+                  "defined": "GuildRole"
+                }
+              },
+              {
+                "name": "order",
+                "type": "u8"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "CharacterSource",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Wrapped",
+            "fields": [
+              {
+                "name": "mint",
+                "type": "publicKey"
+              },
+              {
+                "name": "criteria",
+                "type": {
+                  "defined": "NftWrapCriteria"
+                }
+              },
+              {
+                "name": "isCompressed",
+                "type": "bool"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "GuildRole",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Chief"
+          },
+          {
+            "name": "Member"
+          }
+        ]
+      }
+    },
+    {
+      "name": "NftWrapCriteria",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Collection",
+            "fields": [
+              "publicKey"
+            ]
+          },
+          {
+            "name": "Creator",
+            "fields": [
+              "publicKey"
+            ]
+          },
+          {
+            "name": "MerkleTree",
+            "fields": [
+              "publicKey"
+            ]
           }
         ]
       }
@@ -1565,6 +1568,6 @@
     "address": "HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj",
     "origin": "anchor",
     "binaryVersion": "0.29.0",
-    "libVersion": "0.28.0"
+    "libVersion": "0.29.0"
   }
 }

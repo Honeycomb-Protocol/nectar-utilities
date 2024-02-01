@@ -8,61 +8,81 @@
 import * as splToken from '@solana/spl-token'
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
+import {
+  CollectRewardsArgs,
+  collectRewardsArgsBeet,
+} from '../types/CollectRewardsArgs'
 
 /**
  * @category Instructions
  * @category CollectRewards
  * @category generated
  */
-export const collectRewardsStruct = new beet.BeetArgsStruct<{
-  instructionDiscriminator: number[] /* size: 8 */
-}>(
-  [['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]],
+export type CollectRewardsInstructionArgs = {
+  args: CollectRewardsArgs
+}
+/**
+ * @category Instructions
+ * @category CollectRewards
+ * @category generated
+ */
+export const collectRewardsStruct = new beet.FixableBeetArgsStruct<
+  CollectRewardsInstructionArgs & {
+    instructionDiscriminator: number[] /* size: 8 */
+  }
+>(
+  [
+    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
+    ['args', collectRewardsArgsBeet],
+  ],
   'CollectRewardsInstructionArgs'
 )
 /**
  * Accounts required by the _collectRewards_ instruction
  *
+ * @property [] characterModel
  * @property [_writable_] project
  * @property [] missionPool
  * @property [] missionPoolDelegate (optional)
  * @property [] mission
- * @property [_writable_] participation
- * @property [] nft
  * @property [_writable_] profile (optional)
- * @property [] currency (optional)
  * @property [_writable_] mint (optional)
+ * @property [] currency (optional)
  * @property [] holderAccount (optional)
  * @property [_writable_] tokenAccount (optional)
  * @property [_writable_, **signer**] wallet
  * @property [_writable_] vault
+ * @property [_writable_] merkleTree
  * @property [] hiveControl
+ * @property [] characterManager
  * @property [] currencyManagerProgram
  * @property [] hplEvents
  * @property [] compressionProgram
  * @property [] rentSysvar
  * @property [] instructionsSysvar
  * @property [] clock
+ * @property [] logWrapper
  * @category Instructions
  * @category CollectRewards
  * @category generated
  */
 export type CollectRewardsInstructionAccounts = {
+  characterModel: web3.PublicKey
   project: web3.PublicKey
   missionPool: web3.PublicKey
   missionPoolDelegate?: web3.PublicKey
   mission: web3.PublicKey
-  participation: web3.PublicKey
-  nft: web3.PublicKey
   profile?: web3.PublicKey
-  currency?: web3.PublicKey
   mint?: web3.PublicKey
+  currency?: web3.PublicKey
   holderAccount?: web3.PublicKey
   tokenAccount?: web3.PublicKey
   wallet: web3.PublicKey
   vault: web3.PublicKey
+  merkleTree: web3.PublicKey
   systemProgram?: web3.PublicKey
   hiveControl: web3.PublicKey
+  characterManager: web3.PublicKey
   currencyManagerProgram: web3.PublicKey
   hplEvents: web3.PublicKey
   compressionProgram: web3.PublicKey
@@ -70,6 +90,7 @@ export type CollectRewardsInstructionAccounts = {
   rentSysvar: web3.PublicKey
   instructionsSysvar: web3.PublicKey
   clock: web3.PublicKey
+  logWrapper: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -86,18 +107,27 @@ export const collectRewardsInstructionDiscriminator = [
  * Otherwise an Error is raised.
  *
  * @param accounts that will be accessed while the instruction is processed
+ * @param args to provide as instruction data to the program
+ *
  * @category Instructions
  * @category CollectRewards
  * @category generated
  */
 export function createCollectRewardsInstruction(
   accounts: CollectRewardsInstructionAccounts,
+  args: CollectRewardsInstructionArgs,
   programId = new web3.PublicKey('HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj')
 ) {
   const [data] = collectRewardsStruct.serialize({
     instructionDiscriminator: collectRewardsInstructionDiscriminator,
+    ...args,
   })
   const keys: web3.AccountMeta[] = [
+    {
+      pubkey: accounts.characterModel,
+      isWritable: false,
+      isSigner: false,
+    },
     {
       pubkey: accounts.project,
       isWritable: true,
@@ -122,16 +152,6 @@ export function createCollectRewardsInstruction(
     isWritable: false,
     isSigner: false,
   })
-  keys.push({
-    pubkey: accounts.participation,
-    isWritable: true,
-    isSigner: false,
-  })
-  keys.push({
-    pubkey: accounts.nft,
-    isWritable: false,
-    isSigner: false,
-  })
   if (accounts.profile != null) {
     if (accounts.missionPoolDelegate == null) {
       throw new Error(
@@ -144,26 +164,10 @@ export function createCollectRewardsInstruction(
       isSigner: false,
     })
   }
-  if (accounts.currency != null) {
+  if (accounts.mint != null) {
     if (accounts.missionPoolDelegate == null || accounts.profile == null) {
       throw new Error(
-        "When providing 'currency' then 'accounts.missionPoolDelegate', 'accounts.profile' need(s) to be provided as well."
-      )
-    }
-    keys.push({
-      pubkey: accounts.currency,
-      isWritable: false,
-      isSigner: false,
-    })
-  }
-  if (accounts.mint != null) {
-    if (
-      accounts.missionPoolDelegate == null ||
-      accounts.profile == null ||
-      accounts.currency == null
-    ) {
-      throw new Error(
-        "When providing 'mint' then 'accounts.missionPoolDelegate', 'accounts.profile', 'accounts.currency' need(s) to be provided as well."
+        "When providing 'mint' then 'accounts.missionPoolDelegate', 'accounts.profile' need(s) to be provided as well."
       )
     }
     keys.push({
@@ -172,15 +176,31 @@ export function createCollectRewardsInstruction(
       isSigner: false,
     })
   }
+  if (accounts.currency != null) {
+    if (
+      accounts.missionPoolDelegate == null ||
+      accounts.profile == null ||
+      accounts.mint == null
+    ) {
+      throw new Error(
+        "When providing 'currency' then 'accounts.missionPoolDelegate', 'accounts.profile', 'accounts.mint' need(s) to be provided as well."
+      )
+    }
+    keys.push({
+      pubkey: accounts.currency,
+      isWritable: false,
+      isSigner: false,
+    })
+  }
   if (accounts.holderAccount != null) {
     if (
       accounts.missionPoolDelegate == null ||
       accounts.profile == null ||
-      accounts.currency == null ||
-      accounts.mint == null
+      accounts.mint == null ||
+      accounts.currency == null
     ) {
       throw new Error(
-        "When providing 'holderAccount' then 'accounts.missionPoolDelegate', 'accounts.profile', 'accounts.currency', 'accounts.mint' need(s) to be provided as well."
+        "When providing 'holderAccount' then 'accounts.missionPoolDelegate', 'accounts.profile', 'accounts.mint', 'accounts.currency' need(s) to be provided as well."
       )
     }
     keys.push({
@@ -193,12 +213,12 @@ export function createCollectRewardsInstruction(
     if (
       accounts.missionPoolDelegate == null ||
       accounts.profile == null ||
-      accounts.currency == null ||
       accounts.mint == null ||
+      accounts.currency == null ||
       accounts.holderAccount == null
     ) {
       throw new Error(
-        "When providing 'tokenAccount' then 'accounts.missionPoolDelegate', 'accounts.profile', 'accounts.currency', 'accounts.mint', 'accounts.holderAccount' need(s) to be provided as well."
+        "When providing 'tokenAccount' then 'accounts.missionPoolDelegate', 'accounts.profile', 'accounts.mint', 'accounts.currency', 'accounts.holderAccount' need(s) to be provided as well."
       )
     }
     keys.push({
@@ -218,12 +238,22 @@ export function createCollectRewardsInstruction(
     isSigner: false,
   })
   keys.push({
+    pubkey: accounts.merkleTree,
+    isWritable: true,
+    isSigner: false,
+  })
+  keys.push({
     pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
     isWritable: false,
     isSigner: false,
   })
   keys.push({
     pubkey: accounts.hiveControl,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.characterManager,
     isWritable: false,
     isSigner: false,
   })
@@ -259,6 +289,11 @@ export function createCollectRewardsInstruction(
   })
   keys.push({
     pubkey: accounts.clock,
+    isWritable: false,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.logWrapper,
     isWritable: false,
     isSigner: false,
   })
