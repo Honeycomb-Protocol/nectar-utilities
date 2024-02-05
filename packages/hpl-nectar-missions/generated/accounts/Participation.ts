@@ -100,7 +100,7 @@ export class Participation implements ParticipationArgs {
    */
   static gpaBuilder(
     programId: web3.PublicKey = new web3.PublicKey(
-      'HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj'
+      'HfeNqMkATpLJQBmTFs32YZFFbyiEmH9EKsNrCzsyEqTb'
     )
   ) {
     return beetSolana.GpaBuilder.fromStruct(programId, participationBeet)

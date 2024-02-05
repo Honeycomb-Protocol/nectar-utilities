@@ -1,12 +1,13 @@
+const LEN: usize = 101;
 pub struct Randomizer {
-    pub randoms: [[u8; 101]; 100],
+    pub randoms: [[u8; LEN]; 100],
 }
 impl Randomizer {
     pub const ROUNDS: usize = 10;
 
     pub fn get_random(&self, round: usize, random_slot: u64) -> u8 {
-        let vec: [u8; 101] = self.randoms[round % self.randoms.len()];
-        let index = (random_slot % 101 as u64) as usize;
+        let vec: [u8; LEN] = self.randoms[round % self.randoms.len()];
+        let index = (random_slot % LEN as u64) as usize;
         vec[index]
     }
 

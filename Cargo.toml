@@ -24,5 +24,4 @@ hpl-hive-control = { version = "0.2.13", features = ["cpi"] }
 hpl-character-manager = { version = "0.0.2-beta.9", features = ["cpi"] }
 hpl-currency-manager = { version = "0.0.83", features = ["cpi"] }
 mpl-bubblegum = { version = "1.1.0" }
-rand = "0.8.5"
 spl-account-compression = { version = "0.2.0", features = ["cpi"] }

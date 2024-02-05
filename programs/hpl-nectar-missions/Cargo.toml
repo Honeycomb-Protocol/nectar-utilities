@@ -27,6 +27,5 @@ hpl-compression = { workspace = true }
 hpl-hive-control = { workspace = true }
 hpl-character-manager = { workspace = true }
 hpl-currency-manager = { workspace = true }
-rand = { workspace = true }
 spl-account-compression = { workspace = true }
 hpl-buzz-guild = { version = "0.0.1", features = ["cpi"] }

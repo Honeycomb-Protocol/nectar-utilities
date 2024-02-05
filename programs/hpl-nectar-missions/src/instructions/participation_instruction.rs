@@ -6,7 +6,7 @@ use {
             MissionPool,
             RewardType,
         }, 
-        utils::Randomizer 
+        utils::{Randomizer, RANDOMIZER} 
     }, 
     anchor_lang::prelude::*, 
     anchor_spl::token::{
@@ -56,17 +56,11 @@ use {
         instructions::ManageProfileDataArgs,
         program::HplHiveControl,
         state::{
-            Project,
-            DelegateAuthority,
-            Profile,
-            ProfileData,
-            ProfileIdentity,
+            DelegateAuthority, Profile, ProfileData, ProfileIdentity, Project
         },
-    }, 
-    rand::Rng, 
+    },
     spl_account_compression::{
-        Noop,
-        program::SplAccountCompression,
+        program::SplAccountCompression, Noop
     }
 };
 
@@ -136,9 +130,6 @@ pub struct ParticipateArgs {
 }
 pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, args: ParticipateArgs) -> Result<()> {
 
-    // RNG to generate delta values for reward_idxs
-    let mut rng = rand::thread_rng(); 
-
     // Check if this character is allowed to go on this mission
     if !ctx.accounts.mission_pool.character_models.iter().any(|&pubkey| pubkey == ctx.accounts.character_model.key()) {
         panic!("Character model is not allowed on this mission");
@@ -153,7 +144,11 @@ pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, a
         .iter()
         .enumerate()
         .map(| ( i, .. ) | {
-            let delta = rng.gen_range(0..=255) as u8;
+            let delta = RANDOMIZER.get_random(
+                ctx.accounts.mission_pool.randomizer_round as usize,
+                ctx.accounts.clock.slot,
+            );
+            ctx.accounts.mission_pool.increase_randomizer_round();
             EarnedReward {
                 reward_idx: i as u8,
                 delta
