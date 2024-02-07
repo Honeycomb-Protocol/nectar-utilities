@@ -19,7 +19,7 @@ impl Randomizer {
 
     pub fn get_result_from_delta(min: u64, max: u64, delta: u8) -> u64 {
         let range = max - min;
-        let result = min + ((delta as u64 * range) / 255);
+        let result = min + ((delta as u64 * range) / 100);
         result as u64
     }
 }
