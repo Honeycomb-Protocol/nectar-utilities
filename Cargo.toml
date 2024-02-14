@@ -16,8 +16,8 @@ codegen-units = 1
 [workspace.dependencies]
 anchor-lang = "0.28.0"
 anchor-spl = "0.28.0"
-# hpl-macros = "0.0.2"
-hpl-macros = { path = "../hive-control/macros/all" }
+hpl-macros = "0.0.2"
+# hpl-macros = { path = "../hive-control/macros/all" }
 hpl-utils = "0.1.11"
 hpl-events = { version = "0.1.24", features = ["no-entrypoint"] }
 hpl-compression = { version = "=0.1.8-beta.14" }
