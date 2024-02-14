@@ -38,13 +38,13 @@ export const participateStruct = new beet.BeetArgsStruct<
  * Accounts required by the _participate_ instruction
  *
  * @property [_writable_] project
- * @property [] missionPool
- * @property [] mission
- * @property [] characterModel
+ * @property [_writable_] missionPool
+ * @property [_writable_] mission
+ * @property [_writable_] characterModel
  * @property [_writable_] merkleTree
  * @property [] currency
  * @property [_writable_] mint
- * @property [] holderAccount
+ * @property [_writable_] holderAccount
  * @property [_writable_] tokenAccount
  * @property [_writable_, **signer**] wallet
  * @property [_writable_] profile
@@ -120,17 +120,17 @@ export function createParticipateInstruction(
     },
     {
       pubkey: accounts.missionPool,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {
       pubkey: accounts.mission,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {
       pubkey: accounts.characterModel,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {
@@ -150,7 +150,7 @@ export function createParticipateInstruction(
     },
     {
       pubkey: accounts.holderAccount,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {

@@ -399,17 +399,17 @@
         },
         {
           "name": "missionPool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "mission",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "characterModel",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -429,7 +429,7 @@
         },
         {
           "name": "holderAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {

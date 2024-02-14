@@ -69,13 +69,13 @@ pub struct Participate<'info> {
     #[account(mut)]
     pub project: Box<Account<'info, Project>>,
 
-    #[account()]
+    #[account(mut)]
     pub mission_pool: Box<Account<'info, MissionPool>>,
 
-    #[account()]
+    #[account(mut)]
     pub mission: Box<Account<'info, Mission>>,
 
-    #[account( has_one = project )]
+    #[account(mut, has_one = project )]
     pub character_model: Box<Account<'info, CharacterModel>>,
 
     /// CHECK: unsafe
@@ -88,7 +88,7 @@ pub struct Participate<'info> {
     #[account(mut)]
     pub mint: Box<Account<'info, Mint>>,
 
-    #[account(has_one = currency, has_one = token_account, constraint = holder_account.owner == wallet.key())]
+    #[account(mut, has_one = currency, has_one = token_account, constraint = holder_account.owner == wallet.key())]
     pub holder_account: Box<Account<'info, HolderAccount>>,
     
     #[account(mut)]
@@ -203,7 +203,7 @@ pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, a
     msg!("Currency burned. Using character for mission.");
 
     use_character(
-        CpiContext::new(
+        CpiContext::new_with_signer(
             ctx.accounts.character_manager.to_account_info(),
             UseCharacter {
                 project: ctx.accounts.project.to_account_info(),
@@ -218,7 +218,13 @@ pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, a
                 instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
                 compression_program: ctx.accounts.compression_program.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
-            }
+            },
+            &[&[
+                b"mission".as_ref(),
+                ctx.accounts.mission_pool.key().as_ref(),
+                ctx.accounts.mission.name.as_bytes(),
+                &[ctx.accounts.mission.bump],
+            ]],
         ).with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         UseCharacterArgs {
             root: args.root,
@@ -397,7 +403,7 @@ pub fn collect_rewards<'info>(
                 character_model: ctx.accounts.character_model.to_account_info(),
                 hive_control: ctx.accounts.hive_control.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),
-                owner: ctx.accounts.mission.to_account_info(),
+                owner: ctx.accounts.wallet.to_account_info(),
                 user: ctx.accounts.mission.to_account_info(),
                 merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
                 clock: ctx.accounts.clock.to_account_info(),

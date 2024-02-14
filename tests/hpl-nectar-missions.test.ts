@@ -33,6 +33,7 @@ import {
     AssetProof,
 } from "@honeycomb-protocol/character-manager";
 import {
+    HPL_NECTAR_MISSIONS_PROGRAM,
     PROGRAM_ID as HPL_NECTAR_MISSIONS_PROGRAM_ID, 
     createCollectRewardsInstruction, 
     createCreateMissionInstruction,
@@ -456,6 +457,8 @@ describe("Nectar Missions Tests", () => {
                     rent: web3.SYSVAR_RENT_PUBKEY,
                     instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
                     vault: VAULT,
+                    guildKit: HPL_NECTAR_MISSIONS_PROGRAM_ID,
+                    delegateAuthority: adminHC.identity().delegateAuthority()?.address || HPL_NECTAR_MISSIONS_PROGRAM_ID,
                 },
                 {
                     args: {
@@ -468,7 +471,7 @@ describe("Nectar Missions Tests", () => {
         await operation.send({ commitment: "processed" });
     });
 
-    it.skip("Creates a currency", async () => {
+    it("Creates a currency", async () => {
         const currencyMintKeypair = web3.Keypair.generate();
 
         const [ metadataPublicKey ] = web3.PublicKey.findProgramAddressSync(
@@ -535,7 +538,7 @@ describe("Nectar Missions Tests", () => {
         adminHC.use(await HplCurrency.fromAddress(adminHC, currencyPublicKey, "processed"));
     });
 
-    it.skip("Create a Mission", async () => {
+    it("Create a Mission", async () => {
         const missionName = "Important mission";
         const [mpPublicKey] = web3.PublicKey.findProgramAddressSync(
             [
@@ -593,33 +596,13 @@ describe("Nectar Missions Tests", () => {
         mission = mpPublicKey;
     });
 
-    it.skip("Create holder account and mint", async () => {
-        // const [ holderAccountPublicKey ] = web3.PublicKey.findProgramAddressSync(
-        //     [
-        //         Buffer.from("holder_account"),
-        //         userHC.identity().address.toBuffer(),
-        //         currencyMint.toBuffer()
-        //     ],
-        //     HPL_CURRENCY_MANAGER_PROGRAM_ID
-        // );
-
+    it("Create holder account and mint", async () => {
         const holderAccount = await adminHC.currency().newHolderAccount(userHC.identity().address);
 
         await holderAccount.mint(1_000_000_000);
-
-        // const operation = new Operation(adminHC, [
-        //     createCreateHolderAccountInstruction(
-        //         {
-        //             project,
-        //             currency,
-        //             mint: currencyMint,
-
-        //         }
-        //     )
-        // ]);
     });
 
-    it.skip("Create user", async () => {
+    it("Create user", async () => {
         const username = "TestUser";
         const [ userPublicKey ] = web3.PublicKey.findProgramAddressSync(
             [
@@ -663,9 +646,10 @@ describe("Nectar Missions Tests", () => {
         await operation.send({ commitment: "processed" });
 
         hiveControlUser = userPublicKey;
+        console.log("User:", userPublicKey.toBase58());
     });
 
-    it.skip("Create user profile", async () => {
+    it("Create user profile", async () => {
         const [ userProfilePublicKey ] = web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("profile"),
@@ -703,10 +687,14 @@ describe("Nectar Missions Tests", () => {
             )
         ]);
 
+        await operation.send({ commitment: "processed" });
+
         hiveControlUserProfile = userProfilePublicKey;
+        console.log("User profile:", userProfilePublicKey.toBase58());
     });
 
-    it.skip("Participate in the mission", async () => {
+    // testing
+    it("Participate in the mission", async () => {
         const tokenAccounts = await adminHC.connection.getTokenAccountsByOwner(
             userHC.identity().address,
             { mint: currencyMint }
@@ -723,9 +711,20 @@ describe("Nectar Missions Tests", () => {
 
         const proof: AssetProof = await fetchAssetProof(userHC.rpcEndpoint, wrappedCharacterNfts[0].mint);
 
+        const proofSecond = await HplCharacter.fetchWithTreeAndLeaf(
+            userHC.rpcEndpoint,
+            activeCharactersTree,
+            0
+        );
+
         console.log("Proof:", JSON.stringify(proof));
 
         const operation = new Operation(userHC, [
+            web3.ComputeBudgetProgram.setComputeUnitLimit(
+                {
+                    units: 1_200_000
+                }
+            ),
             createParticipateInstruction(
                 {
                     project,
@@ -750,20 +749,27 @@ describe("Nectar Missions Tests", () => {
                     rentSysvar: web3.SYSVAR_RENT_PUBKEY,
                     instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
                     logWrapper: SPL_NOOP_PROGRAM_ID,
+                    anchorRemainingAccounts: proof.proof.map((p) => ({
+                            pubkey: p,
+                            isSigner: false,
+                            isWritable: false,
+                        })
+                    ),
                 },
                 {
                     args: {
                         root: Array.from(proof.root.toBytes()),
-                        leafIdx: wrappedCharacterNfts[0].compression!.leafId,
-                        sourceHash: Array.from(wrappedCharacterNfts[0].compression!.dataHash.toBuffer()),
+                        leafIdx: proofSecond.leafIdx,
+                        sourceHash: Array.from(proofSecond.sourceHash),
                     }
                 }
             )
         ]);
 
-        await operation.send({ commitment: "processed" });
+        await operation.send({ skipPreflight: true });
     });
 
+    // to be tested
     it.skip("Collect rewards for participating in the mission", async () => {
         const [ holderAccountPublicKey ] = web3.PublicKey.findProgramAddressSync(
             [
@@ -778,6 +784,8 @@ describe("Nectar Missions Tests", () => {
             userHC.identity().address,
             { mint: currencyMint }
         );
+
+        const proof: AssetProof = await fetchAssetProof(userHC.rpcEndpoint, wrappedCharacterNfts[0].mint);
 
         // const operation = new Operation(userHC, [
         //     createCollectRewardsInstruction(
@@ -805,10 +813,21 @@ describe("Nectar Missions Tests", () => {
         //             instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
         //             logWrapper: SPL_NOOP_PROGRAM_ID,
         //             clock: web3.SYSVAR_CLOCK_PUBKEY,
-
+        //             anchorRemainingAccounts: proof.proof.map((p) => ({
+        //                     pubkey: p,
+        //                     isSigner: false,
+        //                     isWritable: false,
+        //                 })
+        //             ),
         //         },
         //         {
         //             args: {
+        //                 root: Array.from(proof.root.toBytes()),
+        //                 leafIdx: wrappedCharacterNfts[0].compression!.leafId,
+        //                 source: {
+        //                     __kind: "Character",
+                            
+        //                 },
 
         //             }
         //         }
