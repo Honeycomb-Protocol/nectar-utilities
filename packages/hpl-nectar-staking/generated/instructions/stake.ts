@@ -45,7 +45,6 @@ export const stakeStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] vault
  * @property [] hiveControl
  * @property [] characterManager
- * @property [] hplEvents
  * @property [] compressionProgram
  * @property [] logWrapper
  * @property [] clock
@@ -65,7 +64,6 @@ export type StakeInstructionAccounts = {
   systemProgram?: web3.PublicKey
   hiveControl: web3.PublicKey
   characterManager: web3.PublicKey
-  hplEvents: web3.PublicKey
   compressionProgram: web3.PublicKey
   logWrapper: web3.PublicKey
   clock: web3.PublicKey
@@ -144,11 +142,6 @@ export function createStakeInstruction(
     },
     {
       pubkey: accounts.characterManager,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.hplEvents,
       isWritable: false,
       isSigner: false,
     },

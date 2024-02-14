@@ -48,7 +48,6 @@ export const recallStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] merkleTree
  * @property [] hiveControl
  * @property [] characterManager
- * @property [] hplEvents
  * @property [] compressionProgram
  * @property [] instructionsSysvar
  * @property [] clock
@@ -68,7 +67,6 @@ export type RecallInstructionAccounts = {
   systemProgram?: web3.PublicKey
   hiveControl: web3.PublicKey
   characterManager: web3.PublicKey
-  hplEvents: web3.PublicKey
   compressionProgram: web3.PublicKey
   instructionsSysvar: web3.PublicKey
   clock: web3.PublicKey
@@ -93,7 +91,7 @@ export const recallInstructionDiscriminator = [
 export function createRecallInstruction(
   accounts: RecallInstructionAccounts,
   args: RecallInstructionArgs,
-  programId = new web3.PublicKey('BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ')
+  programId = new web3.PublicKey('HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj')
 ) {
   const [data] = recallStruct.serialize({
     instructionDiscriminator: recallInstructionDiscriminator,
@@ -147,11 +145,6 @@ export function createRecallInstruction(
     },
     {
       pubkey: accounts.characterManager,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.hplEvents,
       isWritable: false,
       isSigner: false,
     },

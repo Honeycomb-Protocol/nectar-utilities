@@ -65,11 +65,6 @@
           ]
         },
         {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "clockSysvar",
           "isMut": false,
           "isSigner": false
@@ -120,15 +115,6 @@
           "isOptional": true,
           "docs": [
             "Character model address to be used for the mission_pool"
-          ]
-        },
-        {
-          "name": "guildKit",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "GuildKit from which the Guilds can participate in the mission_pool"
           ]
         },
         {
@@ -492,11 +478,6 @@
           "isSigner": false
         },
         {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "clock",
           "isMut": false,
           "isSigner": false
@@ -643,14 +624,6 @@
           ]
         },
         {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Events Program"
-          ]
-        },
-        {
           "name": "compressionProgram",
           "isMut": false,
           "isSigner": false,
@@ -771,14 +744,6 @@
           ]
         },
         {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Events Program"
-          ]
-        },
-        {
           "name": "compressionProgram",
           "isMut": false,
           "isSigner": false,
@@ -862,57 +827,6 @@
             "type": {
               "vec": {
                 "defined": "Reward"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "Participation",
-      "docs": [
-        "Participation state account",
-        "PDA: ['participation', nft]",
-        "Category: participation_state"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "wallet",
-            "type": "publicKey"
-          },
-          {
-            "name": "mission",
-            "type": "publicKey"
-          },
-          {
-            "name": "instrument",
-            "type": {
-              "defined": "Instrument"
-            }
-          },
-          {
-            "name": "endTime",
-            "docs": [
-              "The end time of the mission in unix timestamp",
-              "It is calculated by start_time + mission.duration"
-            ],
-            "type": "i64"
-          },
-          {
-            "name": "isRecalled",
-            "type": "bool"
-          },
-          {
-            "name": "rewards",
-            "type": {
-              "vec": {
-                "defined": "EarnedReward"
               }
             }
           }
@@ -1241,62 +1155,6 @@
       }
     },
     {
-      "name": "EarnedReward",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "amount",
-            "type": "u64"
-          },
-          {
-            "name": "rewardType",
-            "type": {
-              "defined": "RewardType"
-            }
-          },
-          {
-            "name": "collected",
-            "type": "bool"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Event",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "NewParticipation",
-            "fields": [
-              {
-                "name": "address",
-                "type": "publicKey"
-              },
-              {
-                "name": "state",
-                "type": "bytes"
-              }
-            ]
-          },
-          {
-            "name": "RecallParticipation",
-            "fields": [
-              {
-                "name": "address",
-                "type": "publicKey"
-              },
-              {
-                "name": "state",
-                "type": "bytes"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
       "name": "MissionRequirement",
       "type": {
         "kind": "enum",
@@ -1337,21 +1195,160 @@
       }
     },
     {
-      "name": "Instrument",
+      "name": "CharacterSource",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "Nft",
+            "name": "Wrapped",
+            "fields": [
+              {
+                "name": "mint",
+                "type": "publicKey"
+              },
+              {
+                "name": "criteria",
+                "type": {
+                  "defined": "NftWrapCriteria"
+                }
+              },
+              {
+                "name": "isCompressed",
+                "type": "bool"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "NftWrapCriteria",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Collection",
             "fields": [
               "publicKey"
             ]
           },
           {
-            "name": "Guild",
+            "name": "Creator",
             "fields": [
               "publicKey"
             ]
+          },
+          {
+            "name": "MerkleTree",
+            "fields": [
+              "publicKey"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "CharacterUsedBy",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "None"
+          },
+          {
+            "name": "Staking",
+            "fields": [
+              {
+                "name": "pool",
+                "type": "publicKey"
+              },
+              {
+                "name": "staker",
+                "type": "publicKey"
+              },
+              {
+                "name": "stakedAt",
+                "type": "i64"
+              },
+              {
+                "name": "claimedAt",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "Mission",
+            "fields": [
+              {
+                "name": "id",
+                "type": "publicKey"
+              },
+              {
+                "name": "rewards",
+                "type": {
+                  "vec": {
+                    "defined": "EarnedReward"
+                  }
+                }
+              },
+              {
+                "name": "endTime",
+                "type": "u64"
+              },
+              {
+                "name": "rewardsCollected",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "Guild",
+            "fields": [
+              {
+                "name": "id",
+                "type": "publicKey"
+              },
+              {
+                "name": "role",
+                "type": {
+                  "defined": "GuildRole"
+                }
+              },
+              {
+                "name": "order",
+                "type": "u8"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "EarnedReward",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "delta",
+            "type": "u8"
+          },
+          {
+            "name": "rewardIdx",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GuildRole",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Chief"
+          },
+          {
+            "name": "Member"
           }
         ]
       }
@@ -1578,9 +1575,9 @@
     }
   ],
   "metadata": {
-    "address": "BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ",
+    "address": "HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj",
     "origin": "anchor",
     "binaryVersion": "0.29.0",
-    "libVersion": "0.29.0"
+    "libVersion": "unknown"
   }
 }

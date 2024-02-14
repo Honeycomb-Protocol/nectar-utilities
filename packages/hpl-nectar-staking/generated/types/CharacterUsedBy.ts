@@ -8,6 +8,7 @@
 import * as web3 from '@solana/web3.js'
 import * as beet from '@metaplex-foundation/beet'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
+import { EarnedReward, earnedRewardBeet } from './EarnedReward'
 import { GuildRole, guildRoleBeet } from './GuildRole'
 /**
  * This type is used to derive the {@link CharacterUsedBy} type as well as the de/serializer.
@@ -26,7 +27,12 @@ export type CharacterUsedByRecord = {
     stakedAt: beet.bignum
     claimedAt: beet.bignum
   }
-  Missions: { participation: web3.PublicKey }
+  Mission: {
+    id: web3.PublicKey
+    rewards: EarnedReward[]
+    endTime: beet.bignum
+    rewardsCollected: boolean
+  }
   Guild: { id: web3.PublicKey; role: GuildRole; order: number }
 }
 
@@ -49,9 +55,9 @@ export const isCharacterUsedByNone = (
 export const isCharacterUsedByStaking = (
   x: CharacterUsedBy
 ): x is CharacterUsedBy & { __kind: 'Staking' } => x.__kind === 'Staking'
-export const isCharacterUsedByMissions = (
+export const isCharacterUsedByMission = (
   x: CharacterUsedBy
-): x is CharacterUsedBy & { __kind: 'Missions' } => x.__kind === 'Missions'
+): x is CharacterUsedBy & { __kind: 'Mission' } => x.__kind === 'Mission'
 export const isCharacterUsedByGuild = (
   x: CharacterUsedBy
 ): x is CharacterUsedBy & { __kind: 'Guild' } => x.__kind === 'Guild'
@@ -77,10 +83,15 @@ export const characterUsedByBeet = beet.dataEnum<CharacterUsedByRecord>([
   ],
 
   [
-    'Missions',
-    new beet.BeetArgsStruct<CharacterUsedByRecord['Missions']>(
-      [['participation', beetSolana.publicKey]],
-      'CharacterUsedByRecord["Missions"]'
+    'Mission',
+    new beet.FixableBeetArgsStruct<CharacterUsedByRecord['Mission']>(
+      [
+        ['id', beetSolana.publicKey],
+        ['rewards', beet.array(earnedRewardBeet)],
+        ['endTime', beet.u64],
+        ['rewardsCollected', beet.bool],
+      ],
+      'CharacterUsedByRecord["Mission"]'
     ),
   ],
 

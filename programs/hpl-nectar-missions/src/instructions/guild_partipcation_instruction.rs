@@ -27,7 +27,6 @@ use {
         program::HplNectarStaking,
         state::{GuildRole, NFTUsedBy, NFTv1, Staker, StakingPool},
     },
-    hpl_utils::traits::Default,
     spl_account_compression::program::SplAccountCompression,
 };
 

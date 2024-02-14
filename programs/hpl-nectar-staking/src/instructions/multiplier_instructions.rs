@@ -5,7 +5,6 @@ use {
         program::HplHiveControl,
         state::{DelegateAuthority, Project},
     },
-    hpl_utils::traits::Default,
 };
 
 /// Accounts used in initialize multiplier instruction
@@ -65,7 +64,7 @@ pub struct InitMultipliersArgs {
 pub fn init_multipliers(ctx: Context<InitMultipliers>, args: InitMultipliersArgs) -> Result<()> {
     let multipliers = &mut ctx.accounts.multipliers;
     multipliers.set_defaults();
-    multipliers.bump = ctx.bumps["multipliers"];
+    multipliers.bump = ctx.bumps.multipliers;
     multipliers.decimals = args.decimals;
     multipliers.staking_pool = ctx.accounts.staking_pool.key();
     Ok(())
@@ -124,7 +123,7 @@ pub struct AddMultiplierArgs {
 pub fn add_multiplier(ctx: Context<AddMultiplier>, args: AddMultiplierArgs) -> Result<()> {
     let multipliers = &mut ctx.accounts.multipliers;
 
-    hpl_utils::reallocate(
+    hpl_toolkit::utils::reallocate(
         isize::try_from(Multiplier::LEN).unwrap(),
         multipliers.to_account_info(),
         ctx.accounts.payer.to_account_info(),

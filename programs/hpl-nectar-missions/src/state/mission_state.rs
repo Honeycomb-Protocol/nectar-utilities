@@ -1,27 +1,23 @@
-use {
-    anchor_lang::prelude::*, 
-    hpl_utils::Default,
-};
+use {anchor_lang::prelude::*, hpl_toolkit::schema::*};
 
 /// Mission account holding the details about mission
 /// PDA: ['mission', project, name]
 /// Category: mission_state
 #[account]
-// #[derive(Debug)]
+#[derive(ToSchema)]
 pub struct Mission {
-    pub bump: u8, // 1
-    pub mission_pool: Pubkey, // 32
-    pub name: String, // 40
-    pub min_xp: u64, // 8
-    pub cost: Currency, // 40
+    pub bump: u8,                        // 1
+    pub mission_pool: Pubkey,            // 32
+    pub name: String,                    // 40
+    pub min_xp: u64,                     // 8
+    pub cost: Currency,                  // 40
     pub requirement: MissionRequirement, // 1 (variant) + 8 (u64) -  (only time for now)
-    pub rewards: Vec<Reward>, // 4 (vec) + (1 (variant) + 32 (pubkey)) * n
+    pub rewards: Vec<Reward>,            // 4 (vec) + (1 (variant) + 32 (pubkey)) * n
 }
-impl Default for Mission {
-    const LEN: usize = 8 + 1 + 32 + 40 + 8 + 40 + 9;
-    
-    fn set_defaults(&mut self) {
+impl Mission {
+    pub const LEN: usize = 8 + 1 + 32 + 40 + 8 + 40 + 9;
 
+    pub fn set_defaults(&mut self) {
         const ONE_WEEK_IN_SECONDS: u64 = 60 * 60 * 24 * 7;
 
         self.bump = 0;
@@ -32,7 +28,7 @@ impl Default for Mission {
             amount: 0,
             address: Pubkey::default(),
         };
-        self.requirement = MissionRequirement::Time { 
+        self.requirement = MissionRequirement::Time {
             duration: ONE_WEEK_IN_SECONDS,
         };
         self.rewards = vec![];
@@ -49,13 +45,13 @@ impl Mission {
     }
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, ToSchema)]
 pub struct Currency {
     pub amount: u64,
     pub address: Pubkey,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, ToSchema)]
 pub enum MissionRequirement {
     Time {
         /// The duration of the mission in unix timestamp (in seconds)
@@ -64,7 +60,7 @@ pub enum MissionRequirement {
     // Add task requirement later down the line
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, ToSchema)]
 pub struct Reward {
     pub min: u64,
     pub max: u64,
@@ -74,7 +70,7 @@ impl Reward {
     pub const LEN: usize = 8 + 56;
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, Eq, PartialEq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, ToSchema)]
 pub enum RewardType {
     Xp,
     Currency { address: Pubkey },

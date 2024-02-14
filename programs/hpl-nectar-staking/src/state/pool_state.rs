@@ -1,9 +1,10 @@
-use {anchor_lang::prelude::*, hpl_utils::traits::*};
+use {anchor_lang::prelude::*, hpl_toolkit::schema::*};
 
 /// The NFT collection staking_pool state account
 /// PDA: ['staking_pool', project, key]
 /// Category: staking_pool_state
 #[account]
+#[derive(ToSchema)]
 pub struct StakingPool {
     pub bump: u8,
     pub temp_place_holder_1: u8,
@@ -61,10 +62,10 @@ pub struct StakingPool {
     /// The merkle tress for cNFTs
     pub merkle_trees: Vec<u8>,
 }
-impl Default for StakingPool {
-    const LEN: usize = 8 + 268;
+impl StakingPool {
+    pub const LEN: usize = 8 + 268;
 
-    fn set_defaults(&mut self) {
+    pub fn set_defaults(&mut self) {
         self.bump = 0;
         self.temp_place_holder_1 = 0;
         self.project = Pubkey::default();
@@ -89,7 +90,7 @@ impl Default for StakingPool {
     }
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, ToSchema)]
 pub enum LockType {
     Freeze,
     Custoday,

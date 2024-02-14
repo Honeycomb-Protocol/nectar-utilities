@@ -7,9 +7,7 @@ use {
         program::HplCharacterManager,
         state::{CharacterModel, CharacterUsedBy},
     },
-    hpl_events::HplEvents,
     hpl_hive_control::{program::HplHiveControl, state::Project},
-    hpl_utils::Default,
     spl_account_compression::{program::SplAccountCompression, Noop},
 };
 
@@ -61,9 +59,6 @@ pub struct Stake<'info> {
     /// HPL Character Manager Program
     pub character_manager: Program<'info, HplCharacterManager>,
 
-    /// HPL Events Program
-    pub hpl_events: Program<'info, HplEvents>,
-
     /// SPL account compression program.
     pub compression_program: Program<'info, SplAccountCompression>,
 
@@ -95,16 +90,9 @@ pub fn stake<'info>(ctx: Context<'_, '_, '_, 'info, Stake<'info>>, args: StakeAr
     if !staker.staking_pool.eq(&staking_pool.key()) || !staker.wallet.eq(&ctx.accounts.wallet.key())
     {
         staker.set_defaults();
-        staker.bump = ctx.bumps["staker"];
+        staker.bump = ctx.bumps.staker;
         staker.staking_pool = staking_pool.key();
         staker.wallet = ctx.accounts.wallet.key();
-
-        Event::new_staker(
-            staker.key(),
-            staker.try_to_vec().unwrap(),
-            &ctx.accounts.clock,
-        )
-        .emit(ctx.accounts.hpl_events.to_account_info())?;
     }
 
     let staking_pool_seeds = &[
@@ -152,13 +140,6 @@ pub fn stake<'info>(ctx: Context<'_, '_, '_, 'info, Stake<'info>>, args: StakeAr
     staking_pool.total_staked += 1;
     staker.total_staked += 1;
 
-    Event::staker_change(
-        staker.key(),
-        staker.try_to_vec().unwrap(),
-        &ctx.accounts.clock,
-    )
-    .emit(ctx.accounts.hpl_events.to_account_info())?;
-
     Ok(())
 }
 
@@ -200,9 +181,6 @@ pub struct Unstake<'info> {
 
     /// HPL Character Manager Program
     pub character_manager: Program<'info, HplCharacterManager>,
-
-    /// HPL Events Program
-    pub hpl_events: Program<'info, HplEvents>,
 
     /// SPL account compression program.
     pub compression_program: Program<'info, SplAccountCompression>,
@@ -279,13 +257,6 @@ pub fn unstake<'info>(
 
     staking_pool.total_staked -= 1;
     staker.total_staked -= 1;
-
-    Event::staker_change(
-        staker.key(),
-        staker.try_to_vec().unwrap(),
-        &ctx.accounts.clock,
-    )
-    .emit(ctx.accounts.hpl_events.to_account_info())?;
 
     Ok(())
 }

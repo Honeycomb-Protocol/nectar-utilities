@@ -48,7 +48,6 @@ export const createStakingPoolStruct = new beet.FixableBeetArgsStruct<
  * @property [**signer**] authority
  * @property [_writable_, **signer**] payer
  * @property [_writable_] vault
- * @property [] hplEvents
  * @property [] clockSysvar
  * @property [] rentSysvar
  * @property [] instructionsSysvar
@@ -67,7 +66,6 @@ export type CreateStakingPoolInstructionAccounts = {
   payer: web3.PublicKey
   vault: web3.PublicKey
   systemProgram?: web3.PublicKey
-  hplEvents: web3.PublicKey
   clockSysvar: web3.PublicKey
   rentSysvar: web3.PublicKey
   instructionsSysvar: web3.PublicKey
@@ -151,11 +149,6 @@ export function createCreateStakingPoolInstruction(
   })
   keys.push({
     pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
-    isWritable: false,
-    isSigner: false,
-  })
-  keys.push({
-    pubkey: accounts.hplEvents,
     isWritable: false,
     isSigner: false,
   })

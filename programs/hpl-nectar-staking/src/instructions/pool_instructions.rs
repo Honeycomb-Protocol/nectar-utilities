@@ -3,12 +3,10 @@ use {
     anchor_lang::prelude::*,
     anchor_spl::token::{self, Mint, Token},
     hpl_currency_manager::state::Currency,
-    hpl_events::HplEvents,
     hpl_hive_control::{
         program::HplHiveControl,
         state::{DelegateAuthority, Project},
     },
-    hpl_utils::traits::Default,
 };
 
 /// Accounts used in create staking_pool instruction
@@ -54,9 +52,6 @@ pub struct CreateStakingPool<'info> {
     /// SYSTEM PROGRAM
     pub system_program: Program<'info, System>,
 
-    /// HPL Events Program
-    pub hpl_events: Program<'info, HplEvents>,
-
     /// SYSVAR CLOCK
     pub clock_sysvar: Sysvar<'info, Clock>,
 
@@ -98,7 +93,7 @@ pub fn create_staking_pool(
     let staking_pool = &mut ctx.accounts.staking_pool;
     staking_pool.set_defaults();
 
-    staking_pool.bump = ctx.bumps["staking_pool"];
+    staking_pool.bump = ctx.bumps.staking_pool;
     staking_pool.project = ctx.accounts.project.key();
     staking_pool.key = ctx.accounts.key.key();
     staking_pool.currency = ctx.accounts.currency.key();
@@ -238,7 +233,7 @@ pub fn update_staking_pool(
             .iter()
             .position(|x| x.eq(&collection.key()))
             .unwrap();
-        hpl_utils::reallocate(
+        hpl_toolkit::utils::reallocate(
             1,
             staking_pool.to_account_info(),
             ctx.accounts.payer.to_account_info(),
@@ -256,7 +251,7 @@ pub fn update_staking_pool(
             .iter()
             .position(|x| x.eq(&creator.key()))
             .unwrap();
-        hpl_utils::reallocate(
+        hpl_toolkit::utils::reallocate(
             1,
             staking_pool.to_account_info(),
             ctx.accounts.payer.to_account_info(),
@@ -274,7 +269,7 @@ pub fn update_staking_pool(
             .iter()
             .position(|x| x.eq(&merkle_tree.key()))
             .unwrap();
-        hpl_utils::reallocate(
+        hpl_toolkit::utils::reallocate(
             1,
             staking_pool.to_account_info(),
             ctx.accounts.payer.to_account_info(),

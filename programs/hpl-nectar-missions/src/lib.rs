@@ -9,8 +9,14 @@ declare_id!("HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj");
 // declare_id!("BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ");
 
 use instructions::*;
-hpl_macros::platform_gate!();
+hpl_toolkit::platform_gate!();
 
+#[cfg(not(feature = "cpi"))]
+use hpl_toolkit::schema::*;
+#[cfg_attr(
+    not(feature = "cpi"),
+    account_schemas_ix_injector(MissionPool, Mission)
+)]
 #[program]
 pub mod hpl_nectar_missions {
     use super::*;
@@ -19,7 +25,7 @@ pub mod hpl_nectar_missions {
         ctx: Context<CreateMissionPool>,
         args: CreateMissionPoolArgs,
     ) -> Result<()> {
-        hpl_macros::add_service!(hpl_hive_control::state::Service::Missions {
+        hpl_toolkit::add_service!(hpl_hive_control::state::Service::Missions {
             pool_id: ctx.accounts.mission_pool.key(),
         });
 
@@ -78,8 +84,8 @@ pub mod hpl_nectar_missions {
     }
 
     pub fn participate<'info>(
-        ctx: Context<'_, '_, '_, 'info, Participate<'info>>, 
-        args: ParticipateArgs
+        ctx: Context<'_, '_, '_, 'info, Participate<'info>>,
+        args: ParticipateArgs,
     ) -> Result<()> {
         platform_gate_cpi(
             hpl_hive_control::state::SerializableActions::PublicHigh,
@@ -118,7 +124,7 @@ pub mod hpl_nectar_missions {
     }
 
     pub fn recall<'info>(
-        ctx: Context<'_, '_, '_, 'info, RecallCharacter<'info>>, 
+        ctx: Context<'_, '_, '_, 'info, RecallCharacter<'info>>,
         args: RecallCharacterArgs,
     ) -> Result<()> {
         platform_gate_cpi(

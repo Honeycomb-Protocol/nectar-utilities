@@ -104,7 +104,7 @@ export class Mission implements MissionArgs {
    */
   static gpaBuilder(
     programId: web3.PublicKey = new web3.PublicKey(
-      'BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ'
+      'HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj'
     )
   ) {
     return beetSolana.GpaBuilder.fromStruct(programId, missionBeet)

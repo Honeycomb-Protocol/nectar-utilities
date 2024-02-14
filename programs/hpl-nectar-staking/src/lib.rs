@@ -5,8 +5,14 @@ pub mod state;
 use {anchor_lang::prelude::*, instructions::*};
 
 declare_id!("MiNESdRXUSmWY7NkAKdW9nMkjJZCaucguY3MDvkSmr6");
-hpl_macros::platform_gate!();
+hpl_toolkit::platform_gate!();
 
+#[cfg(not(feature = "cpi"))]
+use hpl_toolkit::schema::*;
+#[cfg_attr(
+    not(feature = "cpi"),
+    account_schemas_ix_injector(StakingPool, Multipliers, Staker)
+)]
 #[program]
 pub mod hpl_nectar_staking {
     use super::*;
@@ -15,7 +21,7 @@ pub mod hpl_nectar_staking {
         ctx: Context<CreateStakingPool>,
         args: CreateStakingPoolArgs,
     ) -> Result<()> {
-        hpl_macros::add_service!(hpl_hive_control::state::Service::Staking {
+        hpl_toolkit::add_service!(hpl_hive_control::state::Service::Staking {
             pool_id: ctx.accounts.staking_pool.key(),
         });
 

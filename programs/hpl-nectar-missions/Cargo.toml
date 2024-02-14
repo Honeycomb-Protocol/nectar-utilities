@@ -20,12 +20,8 @@ default = []
 [dependencies]
 anchor-lang = { workspace = true, features = ["init-if-needed"] }
 anchor-spl = { workspace = true }
-hpl-macros = { workspace = true }
-hpl-utils = { workspace = true }
-hpl-events = { workspace = true }
-hpl-compression = { workspace = true }
+hpl-toolkit = { workspace = true }
 hpl-hive-control = { workspace = true }
 hpl-character-manager = { workspace = true }
 hpl-currency-manager = { workspace = true }
 spl-account-compression = { workspace = true }
-hpl-buzz-guild = { version = "0.0.1", features = ["cpi"] }

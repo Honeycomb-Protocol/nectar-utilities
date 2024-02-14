@@ -42,7 +42,6 @@ export const updateMissionPoolStruct = new beet.FixableBeetArgsStruct<
  * @property [] project
  * @property [_writable_] missionPool
  * @property [] characterModel (optional)
- * @property [] guildKit (optional)
  * @property [] delegateAuthority (optional)
  * @property [_writable_, **signer**] authority
  * @property [_writable_, **signer**] payer
@@ -57,7 +56,6 @@ export type UpdateMissionPoolInstructionAccounts = {
   project: web3.PublicKey
   missionPool: web3.PublicKey
   characterModel?: web3.PublicKey
-  guildKit?: web3.PublicKey
   delegateAuthority?: web3.PublicKey
   authority: web3.PublicKey
   payer: web3.PublicKey
@@ -91,7 +89,7 @@ export const updateMissionPoolInstructionDiscriminator = [
 export function createUpdateMissionPoolInstruction(
   accounts: UpdateMissionPoolInstructionAccounts,
   args: UpdateMissionPoolInstructionArgs,
-  programId = new web3.PublicKey('BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ')
+  programId = new web3.PublicKey('HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj')
 ) {
   const [data] = updateMissionPoolStruct.serialize({
     instructionDiscriminator: updateMissionPoolInstructionDiscriminator,
@@ -117,22 +115,10 @@ export function createUpdateMissionPoolInstruction(
       isSigner: false,
     })
   }
-  if (accounts.guildKit != null) {
+  if (accounts.delegateAuthority != null) {
     if (accounts.characterModel == null) {
       throw new Error(
-        "When providing 'guildKit' then 'accounts.characterModel' need(s) to be provided as well."
-      )
-    }
-    keys.push({
-      pubkey: accounts.guildKit,
-      isWritable: false,
-      isSigner: false,
-    })
-  }
-  if (accounts.delegateAuthority != null) {
-    if (accounts.characterModel == null || accounts.guildKit == null) {
-      throw new Error(
-        "When providing 'delegateAuthority' then 'accounts.characterModel', 'accounts.guildKit' need(s) to be provided as well."
+        "When providing 'delegateAuthority' then 'accounts.characterModel' need(s) to be provided as well."
       )
     }
     keys.push({
