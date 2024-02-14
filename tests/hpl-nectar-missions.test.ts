@@ -693,7 +693,6 @@ describe("Nectar Missions Tests", () => {
         console.log("User profile:", userProfilePublicKey.toBase58());
     });
 
-    // testing
     it("Participate in the mission", async () => {
         const tokenAccounts = await adminHC.connection.getTokenAccountsByOwner(
             userHC.identity().address,
