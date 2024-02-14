@@ -90,7 +90,7 @@ export const createMissionInstructionDiscriminator = [
 export function createCreateMissionInstruction(
   accounts: CreateMissionInstructionAccounts,
   args: CreateMissionInstructionArgs,
-  programId = new web3.PublicKey('HfeNqMkATpLJQBmTFs32YZFFbyiEmH9EKsNrCzsyEqTb')
+  programId = new web3.PublicKey('BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ')
 ) {
   const [data] = createMissionStruct.serialize({
     instructionDiscriminator: createMissionInstructionDiscriminator,

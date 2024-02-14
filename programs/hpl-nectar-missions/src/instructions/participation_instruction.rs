@@ -97,6 +97,14 @@ pub struct Participate<'info> {
     #[account(mut)]
     pub wallet: Signer<'info>,
 
+    /// User profile account
+    #[account(
+        mut, 
+        has_one = project, 
+        constraint = profile.identity == ProfileIdentity::Main, 
+    )]
+    pub profile: Box<Account<'info, Profile>>,
+
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(mut)]
     pub vault: AccountInfo<'info>,
@@ -135,7 +143,20 @@ pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, a
         panic!("Character model is not allowed on this mission");
     }
 
-    msg!("Mission pool and character model verified. Generating rewards.");
+    // Check if the profile has the minimum XP required to take part in this mission
+    if let Some(profile_data) = ctx.accounts.profile.app_context.get("nectar_missions_xp") {
+        match profile_data {
+            ProfileData::SingleValue(value) => {
+                let xp = value.parse::<u64>().unwrap();
+                if xp < ctx.accounts.mission.min_xp {
+                    return Err(ErrorCode::InsufficientXp.into());
+                }
+            },
+            _ => panic!("Invalid profile data"),
+        }
+    };
+
+    msg!("Mission pool and character model verified. Profile has enough XP to participate. Generating rewards.");
 
     let earned_rewards = ctx
         .accounts

@@ -19,8 +19,8 @@ import {
 import {
   HPL_NECTAR_STAKING_PROGRAM,
   LockType,
-  NectarStaking,
-  findProjectStakingPools,
+  // NectarStaking,
+  // findProjectStakingPools,
 } from "../packages/hpl-nectar-staking";
 import getHoneycombs from "../scripts/prepare";
 import { createNewTree, mintOneCNFT } from "./helpers";

@@ -322,6 +322,26 @@ createErrorFromNameLookup.set(
 )
 
 /**
+ * InsufficientXp: 'You don't have the required XP to take part in this mission'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class InsufficientXpError extends Error {
+  readonly code: number = 0x177e
+  readonly name: string = 'InsufficientXp'
+  constructor() {
+    super("You don't have the required XP to take part in this mission")
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, InsufficientXpError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x177e, () => new InsufficientXpError())
+createErrorFromNameLookup.set('InsufficientXp', () => new InsufficientXpError())
+
+/**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
  * @category generated

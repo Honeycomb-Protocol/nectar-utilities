@@ -443,6 +443,14 @@
           "isSigner": true
         },
         {
+          "name": "profile",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "User profile account"
+          ]
+        },
+        {
           "name": "vault",
           "isMut": true,
           "isSigner": false
@@ -1562,10 +1570,15 @@
       "code": 6013,
       "name": "MissingRequiredAccounts",
       "msg": "Missing required accounts"
+    },
+    {
+      "code": 6014,
+      "name": "InsufficientXp",
+      "msg": "You don't have the required XP to take part in this mission"
     }
   ],
   "metadata": {
-    "address": "HfeNqMkATpLJQBmTFs32YZFFbyiEmH9EKsNrCzsyEqTb",
+    "address": "BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ",
     "origin": "anchor",
     "binaryVersion": "0.29.0",
     "libVersion": "0.29.0"

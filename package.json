@@ -20,6 +20,7 @@
     "lfg:nectar-missions": "yarn build:nectar-missions && yarn deploy:nectar-missions",
     "lfg": "yarn build:all && yarn deploy:all",
     "test": "jest --verbose",
+    "test:necmis": "jest ./tests/hpl-nectar-missions.test.ts --verbose",
     "compile": "tsc",
     "rollout": "node ./scripts/rollout.js",
     "publishall": "node ./scripts/publishall.js"

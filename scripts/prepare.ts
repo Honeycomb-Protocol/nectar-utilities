@@ -7,7 +7,8 @@ import { Honeycomb, identityModule } from "@honeycomb-protocol/hive-control";
 dotenv.config();
 
 export default function () {
-  const RPC_URL = process.env.SOLANA_RPC || "https://api.devnet.solana.com";
+  // const RPC_URL = process.env.SOLANA_RPC || "https://api.devnet.solana.com";
+  const RPC_URL = "http://localhost:9091";
   const connection = new web3.Connection(RPC_URL, "processed");
 
   const adminHC = new Honeycomb(connection);

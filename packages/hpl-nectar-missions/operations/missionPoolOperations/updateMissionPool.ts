@@ -86,7 +86,6 @@ export async function createUpdateMissionPoolOperation(
       {
         project: args.project,
         missionPool: args.missionPool,
-        stakingPool: args.stakingPool || programId,
         guildKit: args.guildKit || programId,
         delegateAuthority:
           honeycomb.identity().delegateAuthority()?.address || programId,
