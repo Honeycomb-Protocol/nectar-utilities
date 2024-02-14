@@ -401,8 +401,8 @@ const configs = {
   ),
   "nectar-missions": createConfig(
     "nectar-missions",
-    // "HfeNqMkATpLJQBmTFs32YZFFbyiEmH9EKsNrCzsyEqTb"
-    "BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ"
+    "HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj"
+    // "BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ"
   ),
 };
 
