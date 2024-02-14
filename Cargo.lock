@@ -1070,7 +1070,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "hpl-events",
- "hpl-hive-control 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hpl-hive-control",
  "hpl-macros 0.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "hpl-nectar-staking 0.1.46",
  "hpl-payment-manager",
@@ -1081,12 +1081,14 @@ dependencies = [
 [[package]]
 name = "hpl-character-manager"
 version = "0.0.2-beta.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd399da12302432694bf0de4e8ea5d0fba3fc891e7abed8fccf1d1e7981da4ca"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
  "hpl-compression",
  "hpl-events",
- "hpl-hive-control 0.2.14",
+ "hpl-hive-control",
  "hpl-macros 0.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "hpl-utils",
  "mpl-bubblegum",
@@ -1143,18 +1145,6 @@ dependencies = [
 
 [[package]]
 name = "hpl-currency-manager"
-version = "0.0.83-beta.1"
-dependencies = [
- "anchor-lang",
- "anchor-spl",
- "hpl-events",
- "hpl-hive-control 0.2.14",
- "hpl-macros 0.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "hpl-utils",
-]
-
-[[package]]
-name = "hpl-currency-manager"
 version = "0.0.83"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49e7580f870dfaab6c5aea9ba0bc8b4b7860aa045553ac1a10d159a568d1ab39"
@@ -1162,7 +1152,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "hpl-events",
- "hpl-hive-control 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hpl-hive-control",
  "hpl-macros 0.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "hpl-utils",
 ]
@@ -1175,18 +1165,6 @@ checksum = "c7e9d40a49bc842daece2866a2668ddd7508482de5119a4d0f2207f381339668"
 dependencies = [
  "anchor-lang",
  "hpl-attribute-event",
-]
-
-[[package]]
-name = "hpl-hive-control"
-version = "0.2.14"
-dependencies = [
- "anchor-lang",
- "anchor-spl",
- "hpl-events",
- "hpl-macros 0.0.2",
- "hpl-utils",
- "spl-account-compression",
 ]
 
 [[package]]
@@ -1274,9 +1252,9 @@ dependencies = [
  "hpl-buzz-guild",
  "hpl-character-manager",
  "hpl-compression",
- "hpl-currency-manager 0.0.83-beta.1",
+ "hpl-currency-manager",
  "hpl-events",
- "hpl-hive-control 0.2.14",
+ "hpl-hive-control",
  "hpl-macros 0.0.2",
  "hpl-utils",
  "spl-account-compression",
@@ -1290,9 +1268,9 @@ checksum = "e11e69af9dcc8ef4fabdbbdd151893a5683d14f9e29493246a07aab41a82c607"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
- "hpl-currency-manager 0.0.83",
+ "hpl-currency-manager",
  "hpl-events",
- "hpl-hive-control 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hpl-hive-control",
  "hpl-macros 0.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "hpl-utils",
  "mpl-bubblegum",
@@ -1307,9 +1285,9 @@ dependencies = [
  "anchor-spl",
  "hpl-character-manager",
  "hpl-compression",
- "hpl-currency-manager 0.0.83-beta.1",
+ "hpl-currency-manager",
  "hpl-events",
- "hpl-hive-control 0.2.14",
+ "hpl-hive-control",
  "hpl-macros 0.0.2",
  "hpl-utils",
  "spl-account-compression",
@@ -1323,9 +1301,9 @@ checksum = "5493e37944cd46edd6f8629c58904e4000a682b085b6d51be8f058a9f80328f7"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
- "hpl-currency-manager 0.0.83",
+ "hpl-currency-manager",
  "hpl-events",
- "hpl-hive-control 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hpl-hive-control",
  "hpl-macros 0.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "hpl-utils",
  "mpl-bubblegum",
