@@ -836,7 +836,7 @@ describe("Nectar Missions Tests", () => {
                         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
                         logWrapper: SPL_NOOP_PROGRAM_ID,
                         clock: web3.SYSVAR_CLOCK_PUBKEY,
-                        anchorRemainingAccounts: proofDetails.proof.map((p) => ({
+                        anchorRemainingAccounts: proof.proof.map((p) => ({
                                 pubkey: p,
                                 isSigner: false,
                                 isWritable: false,
@@ -845,7 +845,7 @@ describe("Nectar Missions Tests", () => {
                     },
                     {
                         args: {
-                            root: Array.from(proofDetails.root.toBytes()),
+                            root: Array.from(proof.root.toBytes()),
                             leafIdx: wrappedCharacterNfts[0].compression!.leafId,
                             sourceHash: Array.from(proofSecond.sourceHash),
                             usedBy: {
