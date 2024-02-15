@@ -6,22 +6,19 @@
  */
 
 import * as beet from '@metaplex-foundation/beet'
-import { RewardType, rewardTypeBeet } from './RewardType'
 export type EarnedReward = {
-  amount: beet.bignum
-  rewardType: RewardType
-  collected: boolean
+  delta: number
+  rewardIdx: number
 }
 
 /**
  * @category userTypes
  * @category generated
  */
-export const earnedRewardBeet = new beet.FixableBeetArgsStruct<EarnedReward>(
+export const earnedRewardBeet = new beet.BeetArgsStruct<EarnedReward>(
   [
-    ['amount', beet.u64],
-    ['rewardType', rewardTypeBeet],
-    ['collected', beet.bool],
+    ['delta', beet.u8],
+    ['rewardIdx', beet.u8],
   ],
   'EarnedReward'
 )

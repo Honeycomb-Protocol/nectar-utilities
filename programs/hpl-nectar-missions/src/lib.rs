@@ -5,8 +5,8 @@ pub mod instructions;
 pub mod state;
 pub mod utils;
 
-declare_id!("HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj");
-// declare_id!("BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ");
+// declare_id!("HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj");
+declare_id!("BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ");
 
 use instructions::*;
 hpl_macros::platform_gate!();

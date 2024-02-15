@@ -869,57 +869,6 @@
       }
     },
     {
-      "name": "Participation",
-      "docs": [
-        "Participation state account",
-        "PDA: ['participation', nft]",
-        "Category: participation_state"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "wallet",
-            "type": "publicKey"
-          },
-          {
-            "name": "mission",
-            "type": "publicKey"
-          },
-          {
-            "name": "instrument",
-            "type": {
-              "defined": "Instrument"
-            }
-          },
-          {
-            "name": "endTime",
-            "docs": [
-              "The end time of the mission in unix timestamp",
-              "It is calculated by start_time + mission.duration"
-            ],
-            "type": "i64"
-          },
-          {
-            "name": "isRecalled",
-            "type": "bool"
-          },
-          {
-            "name": "rewards",
-            "type": {
-              "vec": {
-                "defined": "EarnedReward"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "MissionPool",
       "docs": [
         "MissionPool state account",
@@ -1115,9 +1064,12 @@
             "type": "u32"
           },
           {
-            "name": "source",
+            "name": "sourceHash",
             "type": {
-              "defined": "CharacterSource"
+              "array": [
+                "u8",
+                32
+              ]
             }
           },
           {
@@ -1148,9 +1100,12 @@
             "type": "u32"
           },
           {
-            "name": "source",
+            "name": "sourceHash",
             "type": {
-              "defined": "CharacterSource"
+              "array": [
+                "u8",
+                32
+              ]
             }
           },
           {
@@ -1241,28 +1196,6 @@
       }
     },
     {
-      "name": "EarnedReward",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "amount",
-            "type": "u64"
-          },
-          {
-            "name": "rewardType",
-            "type": {
-              "defined": "RewardType"
-            }
-          },
-          {
-            "name": "collected",
-            "type": "bool"
-          }
-        ]
-      }
-    },
-    {
       "name": "Event",
       "type": {
         "kind": "enum",
@@ -1331,26 +1264,6 @@
                 "name": "address",
                 "type": "publicKey"
               }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "Instrument",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Nft",
-            "fields": [
-              "publicKey"
-            ]
-          },
-          {
-            "name": "Guild",
-            "fields": [
-              "publicKey"
             ]
           }
         ]
@@ -1495,6 +1408,22 @@
             "fields": [
               "publicKey"
             ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "EarnedReward",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "delta",
+            "type": "u8"
+          },
+          {
+            "name": "rewardIdx",
+            "type": "u8"
           }
         ]
       }

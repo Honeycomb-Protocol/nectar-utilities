@@ -6,12 +6,11 @@
  */
 
 import * as beet from '@metaplex-foundation/beet'
-import { CharacterSource, characterSourceBeet } from './CharacterSource'
 import { CharacterUsedBy, characterUsedByBeet } from './CharacterUsedBy'
 export type RecallCharacterArgs = {
   root: number[] /* size: 32 */
   leafIdx: number
-  source: CharacterSource
+  sourceHash: number[] /* size: 32 */
   usedBy: CharacterUsedBy
 }
 
@@ -24,7 +23,7 @@ export const recallCharacterArgsBeet =
     [
       ['root', beet.uniformFixedSizeArray(beet.u8, 32)],
       ['leafIdx', beet.u32],
-      ['source', characterSourceBeet],
+      ['sourceHash', beet.uniformFixedSizeArray(beet.u8, 32)],
       ['usedBy', characterUsedByBeet],
     ],
     'RecallCharacterArgs'

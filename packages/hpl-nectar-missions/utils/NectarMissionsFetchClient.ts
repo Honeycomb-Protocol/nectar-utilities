@@ -1,12 +1,12 @@
 import { Commitment, PublicKey } from "@solana/web3.js";
 import { OffchainParticipation } from "../types";
-import { Mission, MissionPool, Participation } from "../generated";
+import { Mission, MissionPool } from "../generated";
 import {
   FetchModule,
   FetchClient,
   ForceScenario,
 } from "@honeycomb-protocol/hive-control";
-import { offchainToSolitaParticipation } from ".";
+// import { offchainToSolitaParticipation } from ".";
 
 /**
  * Extends the Honeycomb interface with the `fetch` method to access the NectarMissionsFetchClient.
@@ -118,19 +118,19 @@ export class NectarMissionsFetchClient extends FetchClient {
    * @param forceFetch Wether to use cache data or forcefully refetch.
    * @returns An instance of HoneycombProject.
    */
-  public async participation(
-    address: PublicKey,
-    commitment?: Commitment,
-    forceFetch?: ForceScenario
-  ): Promise<Participation | null> {
-    try {
-      return Participation.fromAccountInfo(
-        await this.getAccount(address, { forceFetch, commitment })
-      )[0];
-    } catch {
-      return null;
-    }
-  }
+  // public async participation(
+  //   address: PublicKey,
+  //   commitment?: Commitment,
+  //   forceFetch?: ForceScenario
+  // ): Promise<Participation | null> {
+  //   try {
+  //     return Participation.fromAccountInfo(
+  //       await this.getAccount(address, { forceFetch, commitment })
+  //     )[0];
+  //   } catch {
+  //     return null;
+  //   }
+  // }
 
   /**
    * Creates an instance of HoneycombProject using the provided connection and project address.
@@ -139,10 +139,10 @@ export class NectarMissionsFetchClient extends FetchClient {
    * @param forceFetch Wether to use cache data or forcefully refetch.
    * @returns An instance of HoneycombProject.
    */
-  public async participations(args: {
-    wallet: PublicKey;
-    mission?: PublicKey;
-  }): Promise<Participation[] | null>;
+  // public async participations(args: {
+  //   wallet: PublicKey;
+  //   mission?: PublicKey;
+  // }): Promise<Participation[] | null>;
 
   /**
    * Creates an instance of HoneycombProject using the provided connection and project address.
@@ -151,80 +151,80 @@ export class NectarMissionsFetchClient extends FetchClient {
    * @param forceFetch Wether to use cache data or forcefully refetch.
    * @returns An instance of HoneycombProject.
    */
-  public async participations(args: {
-    pool: PublicKey;
-    authToken?: string;
-    wallets?: string[];
-    page: number;
-    pageSize: number;
-  }): Promise<Participation[] | null>;
+  // public async participations(args: {
+  //   pool: PublicKey;
+  //   authToken?: string;
+  //   wallets?: string[];
+  //   page: number;
+  //   pageSize: number;
+  // }): Promise<Participation[] | null>;
 
-  public async participations(
-    args:
-      | {
-          wallet: PublicKey;
-          mission?: PublicKey;
-        }
-      | {
-          pool: PublicKey;
-          authToken?: string;
-          wallets?: string[];
-          page: number;
-          pageSize?: number;
-        }
-  ): Promise<Participation[] | null> {
-    if ("pool" in args) {
-      const publicInfo = await this.honeycomb().publicInfo();
-      const offchainUrl = publicInfo.get("offchain");
+  // public async participations(
+  //   args:
+  //     | {
+  //         wallet: PublicKey;
+  //         mission?: PublicKey;
+  //       }
+  //     | {
+  //         pool: PublicKey;
+  //         authToken?: string;
+  //         wallets?: string[];
+  //         page: number;
+  //         pageSize?: number;
+  //       }
+  // ): Promise<Participation[] | null> {
+  //   if ("pool" in args) {
+  //     const publicInfo = await this.honeycomb().publicInfo();
+  //     const offchainUrl = publicInfo.get("offchain");
 
-      const headers = {};
-      if (args.authToken) {
-        headers["Authorization"] = `Bearer ${args.authToken}`;
-      }
+  //     const headers = {};
+  //     if (args.authToken) {
+  //       headers["Authorization"] = `Bearer ${args.authToken}`;
+  //     }
 
-      let url = `${offchainUrl}/missions/participations/${args.page}/${
-        args.pageSize || 99999
-      }?missionPool=${args.pool}&isRecalled=false`;
+  //     let url = `${offchainUrl}/missions/participations/${args.page}/${
+  //       args.pageSize || 99999
+  //     }?missionPool=${args.pool}&isRecalled=false`;
 
-      if (args.wallets) {
-        args.wallets.forEach((wallet) => {
-          url += `&wallet=${wallet}`;
-        });
-      }
-      return fetch(url, {
-        headers,
-      })
-        .then((res) => res.json())
-        .then((res: { data: OffchainParticipation[] }) =>
-          res.data.map(offchainToSolitaParticipation)
-        );
-    } else {
-      const gpaBuilder = Participation.gpaBuilder().addFilter(
-        "wallet",
-        args.wallet
-      );
-      if (args.mission) {
-        gpaBuilder.addFilter("mission", args.mission);
-      }
-      try {
-        return gpaBuilder
-          .run(this.honeycomb().processedConnection)
-          .then((participations) =>
-            participations
-              .map((m) => {
-                try {
-                  return Participation.fromAccountInfo(m.account)[0];
-                } catch {
-                  return null;
-                }
-              })
-              .filter((x) => !!x)
-          );
-      } catch {
-        return null;
-      }
-    }
-  }
+  //     if (args.wallets) {
+  //       args.wallets.forEach((wallet) => {
+  //         url += `&wallet=${wallet}`;
+  //       });
+  //     }
+  //     return fetch(url, {
+  //       headers,
+  //     })
+  //       .then((res) => res.json())
+  //       .then((res: { data: OffchainParticipation[] }) =>
+  //         res.data.map(offchainToSolitaParticipation)
+  //       );
+  //   } else {
+  //     const gpaBuilder = Participation.gpaBuilder().addFilter(
+  //       "wallet",
+  //       args.wallet
+  //     );
+  //     if (args.mission) {
+  //       gpaBuilder.addFilter("mission", args.mission);
+  //     }
+  //     try {
+  //       return gpaBuilder
+  //         .run(this.honeycomb().processedConnection)
+  //         .then((participations) =>
+  //           participations
+  //             .map((m) => {
+  //               try {
+  //                 return Participation.fromAccountInfo(m.account)[0];
+  //               } catch {
+  //                 return null;
+  //               }
+  //             })
+  //             .filter((x) => !!x)
+  //         );
+  //     } catch {
+  //       return null;
+  //     }
+  //   }
+  // }
 
   /**
    * Creates an instance of HoneycombProject using the provided connection and project address.
@@ -233,45 +233,45 @@ export class NectarMissionsFetchClient extends FetchClient {
    * @param forceFetch Wether to use cache data or forcefully refetch.
    * @returns An instance of HoneycombProject.
    */
-  public async participationHistory(args: {
-    pool: PublicKey;
-    wallets?: string[];
-    authToken?: string;
-    page: number;
-    pageSize: number;
-  }): Promise<Participation[] | null> {
-    const publicInfo = await this.honeycomb().publicInfo();
-    const offchainUrl = publicInfo.get("offchain");
+  // public async participationHistory(args: {
+  //   pool: PublicKey;
+  //   wallets?: string[];
+  //   authToken?: string;
+  //   page: number;
+  //   pageSize: number;
+  // }): Promise<Participation[] | null> {
+  //   const publicInfo = await this.honeycomb().publicInfo();
+  //   const offchainUrl = publicInfo.get("offchain");
 
-    if (!args.authToken && !args.wallets) {
-      throw new Error(
-        "Either an authToken or wallets must be provided to fetch participation history."
-      );
-    }
+  //   if (!args.authToken && !args.wallets) {
+  //     throw new Error(
+  //       "Either an authToken or wallets must be provided to fetch participation history."
+  //     );
+  //   }
 
-    const headers = {};
-    if (args.authToken) {
-      headers["Authorization"] = `Bearer ${args.authToken}`;
-    }
+  //   const headers = {};
+  //   if (args.authToken) {
+  //     headers["Authorization"] = `Bearer ${args.authToken}`;
+  //   }
 
-    let url = `${offchainUrl}/missions/participations/${args.page}/${
-      args.pageSize || 99999
-    }?missionPool=${args.pool}&isRecalled=true`;
+  //   let url = `${offchainUrl}/missions/participations/${args.page}/${
+  //     args.pageSize || 99999
+  //   }?missionPool=${args.pool}&isRecalled=true`;
 
-    if (args.wallets) {
-      args.wallets.forEach((wallet) => {
-        url += `&wallet=${wallet}`;
-      });
-    }
+  //   if (args.wallets) {
+  //     args.wallets.forEach((wallet) => {
+  //       url += `&wallet=${wallet}`;
+  //     });
+  //   }
 
-    return fetch(url, {
-      headers,
-    })
-      .then((res) => res.json())
-      .then((res: { data: OffchainParticipation[] }) =>
-        res.data.map(offchainToSolitaParticipation)
-      );
-  }
+  //   return fetch(url, {
+  //     headers,
+  //   })
+  //     .then((res) => res.json())
+  //     .then((res: { data: OffchainParticipation[] }) =>
+  //       res.data.map(offchainToSolitaParticipation)
+  //     );
+  // }
 }
 
 /**

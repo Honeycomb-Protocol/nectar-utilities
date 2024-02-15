@@ -33,11 +33,11 @@ import {
     AssetProof,
 } from "@honeycomb-protocol/character-manager";
 import {
-    HPL_NECTAR_MISSIONS_PROGRAM,
     PROGRAM_ID as HPL_NECTAR_MISSIONS_PROGRAM_ID, 
     createCollectRewardsInstruction, 
     createCreateMissionInstruction,
     createParticipateInstruction,
+    createRecallInstruction,
     createUpdateMissionPoolInstruction,
 } from "../packages/hpl-nectar-missions";
 import {
@@ -55,6 +55,7 @@ import {
     createCreateCurrencyInstruction,
     createCreateHolderAccountInstruction,
 } from "@honeycomb-protocol/currency-manager";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 jest.setTimeout(300000);
 
@@ -87,6 +88,8 @@ describe("Nectar Missions Tests", () => {
     let currencyMint: web3.PublicKey;
 
     let mission: web3.PublicKey;
+
+    const missionDuration = 5; // 5 seconds
 
     it("Prepare", async () => {
         const setupData = getHoneycombs();
@@ -152,14 +155,14 @@ describe("Nectar Missions Tests", () => {
         }
     });
 
-    it("Create/Load Character Model", async () => {
+    it("Create/load character model", async () => {
         if (!characterModelAddress) {
             const key = web3.Keypair.generate().publicKey;
             [characterModelAddress] = web3.PublicKey.findProgramAddressSync(
                 [
-                Buffer.from("character_model"),
-                project.toBuffer(),
-                key.toBuffer(),
+                    Buffer.from("character_model"),
+                    project.toBuffer(),
+                    key.toBuffer(),
                 ],
                 CHARACTER_MANAGER_PROGRAM_ID
             );
@@ -223,7 +226,7 @@ describe("Nectar Missions Tests", () => {
         console.log("Character model address:", characterModelAddress);
     });
 
-    it("Create/Load Character Model's Merkle Tree", async () => {
+    it("Create/load character model's merkle tree", async () => {
         const trees = characterModel.merkleTrees.merkleTrees;
     
         if (Array.isArray(trees)) {
@@ -232,69 +235,69 @@ describe("Nectar Missions Tests", () => {
         }
     
         if (!activeCharactersTree) {
-          const merkleTreeKeypair = web3.Keypair.generate();
+            const merkleTreeKeypair = web3.Keypair.generate();
     
-          const depthSizePair: ValidDepthSizePair = {
-            maxDepth: 3,
-            maxBufferSize: 8,
-          };
-          const space = getConcurrentMerkleTreeAccountSize(
-            depthSizePair.maxDepth,
-            depthSizePair.maxBufferSize,
-            3
-          );
-          const lamports =
-            await adminHC.connection.getMinimumBalanceForRentExemption(space);
-          console.log("SOL", lamports / 1e9);
+            const depthSizePair: ValidDepthSizePair = {
+                maxDepth: 3,
+                maxBufferSize: 8,
+            };
+            const space = getConcurrentMerkleTreeAccountSize(
+                depthSizePair.maxDepth,
+                depthSizePair.maxBufferSize,
+                3
+            );
+            const lamports =
+                await adminHC.connection.getMinimumBalanceForRentExemption(space);
+            console.log("SOL", lamports / 1e9);
     
-          const operation = new Operation(
-            adminHC,
-            [
-              web3.SystemProgram.createAccount({
-                newAccountPubkey: merkleTreeKeypair.publicKey,
-                fromPubkey: adminHC.identity().address,
-                space: space,
-                lamports,
-                programId: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-              }),
-              createCreateNewCharactersTreeInstruction(
-                {
-                  project: characterModel.project,
-                  characterModel: characterModelAddress,
-                  merkleTree: merkleTreeKeypair.publicKey,
-                  authority: adminHC.identity().address,
-                  payer: adminHC.identity().address,
-                  vault: VAULT,
-                  systemProgram: web3.SystemProgram.programId,
-                  hplEvents: HPL_EVENTS_PROGRAM,
-                  compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-                  logWrapper: SPL_NOOP_PROGRAM_ID,
-                  clock: web3.SYSVAR_CLOCK_PUBKEY,
-                  rentSysvar: web3.SYSVAR_RENT_PUBKEY,
-                  instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-                },
-                {
-                  args: {
-                    maxDepth: depthSizePair.maxDepth,
-                    maxBufferSize: depthSizePair.maxBufferSize,
-                  },
-                }
-              ),
-            ],
-            [merkleTreeKeypair]
-          );
+            const operation = new Operation(
+                adminHC,
+                [
+                web3.SystemProgram.createAccount({
+                    newAccountPubkey: merkleTreeKeypair.publicKey,
+                    fromPubkey: adminHC.identity().address,
+                    space: space,
+                    lamports,
+                    programId: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+                }),
+                createCreateNewCharactersTreeInstruction(
+                    {
+                    project: characterModel.project,
+                    characterModel: characterModelAddress,
+                    merkleTree: merkleTreeKeypair.publicKey,
+                    authority: adminHC.identity().address,
+                    payer: adminHC.identity().address,
+                    vault: VAULT,
+                    systemProgram: web3.SystemProgram.programId,
+                    hplEvents: HPL_EVENTS_PROGRAM,
+                    compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+                    logWrapper: SPL_NOOP_PROGRAM_ID,
+                    clock: web3.SYSVAR_CLOCK_PUBKEY,
+                    rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+                    instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+                    },
+                    {
+                    args: {
+                        maxDepth: depthSizePair.maxDepth,
+                        maxBufferSize: depthSizePair.maxBufferSize,
+                    },
+                    }
+                ),
+                ],
+                [merkleTreeKeypair]
+            );
     
-          const [{ signature }] = await operation.send();
+            const [{ signature }] = await operation.send();
     
-          console.log("Created Characters Tree:", signature);
+            console.log("Created Characters Tree:", signature);
     
-          activeCharactersTree = merkleTreeKeypair.publicKey;
+            activeCharactersTree = merkleTreeKeypair.publicKey;
         }
     
         console.log(`Character model's merkle tree: ${activeCharactersTree.toString()}`);
     });
 
-    it("Wrap CNFTs to Character", async () => {
+    it("Wrap cNFT(s) to character", async () => {
         const project = characterModel.project;
         const wallet = userHC.identity().address;
 
@@ -388,7 +391,7 @@ describe("Nectar Missions Tests", () => {
             console.log("Wrapped CNFT:", JSON.stringify(nftToWrap));
 
             wrappedCharacterNfts.push(nftToWrap);
-            const newCharacter = await HplCharacter.fetchWithTreeAndLeaf(
+            const newCharacter: HplCharacter = await HplCharacter.fetchWithTreeAndLeaf(
                 userHC.rpcEndpoint,
                 activeCharactersTree,
                 i
@@ -399,7 +402,7 @@ describe("Nectar Missions Tests", () => {
         }
     });
 
-    it("Creates a mission pool", async () => {
+    it("Create mission pool", async () => {
         const name = "Test mission pool";
         const [mpPublicKey] = web3.PublicKey.findProgramAddressSync(
             [
@@ -471,7 +474,7 @@ describe("Nectar Missions Tests", () => {
         await operation.send({ commitment: "processed" });
     });
 
-    it("Creates a currency", async () => {
+    it("Create a currency", async () => {
         const currencyMintKeypair = web3.Keypair.generate();
 
         const [ metadataPublicKey ] = web3.PublicKey.findProgramAddressSync(
@@ -494,7 +497,7 @@ describe("Nectar Missions Tests", () => {
         const operation = new Operation(adminHC, [
                 web3.ComputeBudgetProgram.setComputeUnitLimit(
                     {
-                        units: 1000000
+                        units: 1_200_000
                     }
                 ),
                 createCreateCurrencyInstruction(
@@ -538,7 +541,7 @@ describe("Nectar Missions Tests", () => {
         adminHC.use(await HplCurrency.fromAddress(adminHC, currencyPublicKey, "processed"));
     });
 
-    it("Create a Mission", async () => {
+    it("Create a mission", async () => {
         const missionName = "Important mission";
         const [mpPublicKey] = web3.PublicKey.findProgramAddressSync(
             [
@@ -574,7 +577,7 @@ describe("Nectar Missions Tests", () => {
                         },
                         requirement: {
                             __kind: "Time",
-                            duration: 60
+                            duration: missionDuration
                         },
                         rewards: [
                             {
@@ -717,6 +720,7 @@ describe("Nectar Missions Tests", () => {
         );
 
         console.log("Proof:", JSON.stringify(proof));
+        console.log("Proof second:", JSON.stringify(proofSecond));
 
         const operation = new Operation(userHC, [
             web3.ComputeBudgetProgram.setComputeUnitLimit(
@@ -769,7 +773,16 @@ describe("Nectar Missions Tests", () => {
     });
 
     // to be tested
-    it.skip("Collect rewards for participating in the mission", async () => {
+    it("Collect rewards for participating in the mission", async () => {
+        console.log("Waiting for mission to end...");
+        await new Promise((resolve) => setTimeout(resolve, missionDuration * 1000)); // seconds converted to milliseconds
+
+        console.log("Collecting rewards...");
+        const tokenAccounts = await adminHC.connection.getTokenAccountsByOwner(
+            userHC.identity().address,
+            { mint: currencyMint }
+        );
+
         const [ holderAccountPublicKey ] = web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("holder_account"),
@@ -779,58 +792,153 @@ describe("Nectar Missions Tests", () => {
             HPL_CURRENCY_MANAGER_PROGRAM_ID
         );
 
+        const proof: AssetProof = await fetchAssetProof(userHC.rpcEndpoint, wrappedCharacterNfts[0].mint);
+
+        const proofSecond: HplCharacter = await HplCharacter.fetchWithTreeAndLeaf(
+            userHC.rpcEndpoint,
+            activeCharactersTree,
+            0
+        );
+
+        console.log("Proof (collect rewards):", JSON.stringify(proof));
+        console.log("Proof second (collect rewards):", JSON.stringify(proofSecond));
+
+        if(proofSecond.usedBy.__kind === "Mission") {
+            const operation = new Operation(userHC, [
+                web3.ComputeBudgetProgram.setComputeUnitLimit(
+                    {
+                        units: 1_200_000
+                    }
+                ),
+                createCollectRewardsInstruction(
+                    {
+                        characterModel: characterModelAddress,
+                        project,
+                        missionPool,
+                        missionPoolDelegate: adminHC.identity().delegateAuthority()?.address || HPL_NECTAR_MISSIONS_PROGRAM_ID,
+                        mission,
+                        profile: hiveControlUserProfile,
+                        mint: currencyMint,
+                        currency,
+                        characterManager: CHARACTER_MANAGER_PROGRAM_ID,
+                        holderAccount: holderAccountPublicKey,
+                        tokenAccount: tokenAccounts.value[0].pubkey,
+                        wallet: userHC.identity().address,
+                        vault: VAULT,
+                        merkleTree: activeCharactersTree,
+                        systemProgram: web3.SystemProgram.programId,
+                        hiveControl: HPL_HIVE_CONTROL_PROGRAM_ID,
+                        currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
+                        hplEvents: HPL_EVENTS_PROGRAM,
+                        compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+                        tokenProgram: TOKEN_PROGRAM_ID,
+                        rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+                        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+                        logWrapper: SPL_NOOP_PROGRAM_ID,
+                        clock: web3.SYSVAR_CLOCK_PUBKEY,
+                        anchorRemainingAccounts: proofDetails.proof.map((p) => ({
+                                pubkey: p,
+                                isSigner: false,
+                                isWritable: false,
+                            })
+                        ),
+                    },
+                    {
+                        args: {
+                            root: Array.from(proofDetails.root.toBytes()),
+                            leafIdx: wrappedCharacterNfts[0].compression!.leafId,
+                            sourceHash: Array.from(proofSecond.sourceHash),
+                            usedBy: {
+                                __kind: "Mission",
+                                endTime: proofSecond.usedBy.endTime,
+                                id: proofSecond.usedBy.id,
+                                rewards: proofSecond.usedBy.rewards,
+                                rewardsCollected: proofSecond.usedBy.rewardsCollected,
+                            }
+                        },
+                    }
+                )
+            ]);
+
+            await operation.send({ skipPreflight: true });
+        } else {
+            throw new Error("Character is not used by a mission");
+        }
+    });
+
+    // to be tested
+    it.skip("Recall character", async () => {
         const tokenAccounts = await adminHC.connection.getTokenAccountsByOwner(
             userHC.identity().address,
             { mint: currencyMint }
         );
 
+        const [ holderAccountPublicKey ] = web3.PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("holder_account"),
+                userHC.identity().address.toBuffer(),
+                currencyMint.toBuffer()
+            ],
+            HPL_CURRENCY_MANAGER_PROGRAM_ID
+        );
+
         const proof: AssetProof = await fetchAssetProof(userHC.rpcEndpoint, wrappedCharacterNfts[0].mint);
 
-        // const operation = new Operation(userHC, [
-        //     createCollectRewardsInstruction(
-        //         {
-        //             characterModel: characterModelAddress,
-        //             project,
-        //             missionPool,
-        //             mission,
-        //             profile: hiveControlUserProfile,
-        //             mint: currencyMint,
-        //             currency,
-        //             characterManager: CHARACTER_MANAGER_PROGRAM_ID,
-        //             holderAccount: holderAccountPublicKey,
-        //             tokenAccount: tokenAccounts.value[0].pubkey,
-        //             wallet: userHC.identity().address,
-        //             vault: VAULT,
-        //             merkleTree: activeCharactersTree,
-        //             systemProgram: web3.SystemProgram.programId,
-        //             hiveControl: HPL_HIVE_CONTROL_PROGRAM_ID,
-        //             currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
-        //             hplEvents: HPL_EVENTS_PROGRAM,
-        //             compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-        //             tokenProgram: METADATA_PROGRAM_ID,
-        //             rentSysvar: web3.SYSVAR_RENT_PUBKEY,
-        //             instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-        //             logWrapper: SPL_NOOP_PROGRAM_ID,
-        //             clock: web3.SYSVAR_CLOCK_PUBKEY,
-        //             anchorRemainingAccounts: proof.proof.map((p) => ({
-        //                     pubkey: p,
-        //                     isSigner: false,
-        //                     isWritable: false,
-        //                 })
-        //             ),
-        //         },
-        //         {
-        //             args: {
-        //                 root: Array.from(proof.root.toBytes()),
-        //                 leafIdx: wrappedCharacterNfts[0].compression!.leafId,
-        //                 source: {
-        //                     __kind: "Character",
-                            
-        //                 },
+        const proofSecond: HplCharacter = await HplCharacter.fetchWithTreeAndLeaf(
+            userHC.rpcEndpoint,
+            activeCharactersTree,
+            0
+        );
 
+        // if(proofSecond.usedBy.__kind === "Mission") {
+        //     const operation = new Operation(userHC, [
+        //         web3.ComputeBudgetProgram.setComputeUnitLimit(
+        //             {
+        //                 units: 1_200_000
         //             }
-        //         }
-        //     )
-        // ]);
+        //         ),
+        //         createRecallInstruction(
+        //             {
+        //                 characterModel: characterModelAddress,
+        //                 project,
+        //                 missionPool,
+        //                 mission,
+        //                 wallet: userHC.identity().address,
+        //                 vault: VAULT,
+        //                 merkleTree: activeCharactersTree,
+        //                 systemProgram: web3.SystemProgram.programId,
+        //                 hiveControl: HPL_HIVE_CONTROL_PROGRAM_ID,
+        //                 characterManager: CHARACTER_MANAGER_PROGRAM_ID,
+        //                 hplEvents: HPL_EVENTS_PROGRAM,
+        //                 compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+        //                 instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+        //                 clock: web3.SYSVAR_CLOCK_PUBKEY,
+        //                 logWrapper: SPL_NOOP_PROGRAM_ID,
+        //                 anchorRemainingAccounts: proof.proof.map((p) => ({
+        //                         pubkey: p,
+        //                         isSigner: false,
+        //                         isWritable: false,
+        //                     })
+        //                 ),
+        //             },
+        //             {
+        //                 args: {
+        //                     root: Array.from(proof.root.toBytes()),
+        //                     leafIdx: proofSecond.leafIdx,
+        //                     sourceHash: Array.from(proofSecond.sourceHash),
+        //                     usedBy: {
+        //                         __kind: "Mission",
+        //                         endTime: proofSecond.usedBy.endTime,
+        //                         id: proofSecond.usedBy.id,
+        //                         rewards: proofSecond.usedBy.rewards,
+        //                         rewardsCollected: proofSecond.usedBy.rewardsCollected,
+        //                     }
+        //                 },
+        //             }
+        //         )
+        //     ]);
+        // } else {
+        //     throw new Error("Character is not used by a mission");
+        // }
     });
 });

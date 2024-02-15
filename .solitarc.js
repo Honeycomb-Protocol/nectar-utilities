@@ -260,6 +260,22 @@ const createConfig = (name, programId, customs) => {
             ]
           }
         },
+        {
+          "name": "EarnedReward",
+          "type": {
+            "kind": "struct",
+            "fields": [
+              {
+                "name": "delta",
+                "type": "u8"
+              },
+              {
+                "name": "rewardIdx",
+                "type": "u8"
+              }
+            ]
+          }
+        }
       ];
 
       idl.types.push(...missingTypes);
@@ -401,8 +417,8 @@ const configs = {
   ),
   "nectar-missions": createConfig(
     "nectar-missions",
-    "HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj"
-    // "BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ"
+    // "HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj"
+    "BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ"
   ),
 };
 

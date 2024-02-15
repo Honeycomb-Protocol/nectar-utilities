@@ -136,6 +136,7 @@ pub struct ParticipateArgs {
     pub leaf_idx: u32,
     pub source_hash: [u8; 32],
 }
+
 pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, args: ParticipateArgs) -> Result<()> {
 
     // Check if this character is allowed to go on this mission
@@ -240,7 +241,7 @@ pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, a
         }
     )?;
 
-    msg!("Character used for mission.");
+    msg!("Character is now being used by the mission.");
 
     Ok(())
 }
@@ -342,7 +343,7 @@ pub struct CollectRewards<'info> {
 pub struct CollectRewardsArgs {
     pub root: [u8; 32],
     pub leaf_idx: u32,
-    pub source: CharacterSource,
+    pub source_hash: [u8; 32],
     pub used_by: CharacterUsedBy,
 }
 
@@ -356,7 +357,7 @@ pub fn collect_rewards<'info>(
     let verify_character_args = VerifyCharacterArgs {
         root: args.root,
         leaf_idx: args.leaf_idx,
-        source: DataOrHash::Data(args.source.clone()),
+        source: DataOrHash::Hash(args.source_hash.clone()),
         used_by: DataOrHash::Data(args.used_by.clone()),
     };
 
@@ -416,7 +417,7 @@ pub fn collect_rewards<'info>(
         UseCharacterArgs {
             root: args.root,
             leaf_idx: args.leaf_idx,
-            source_hash: args.source.to_node(),
+            source_hash: args.source_hash,
             current_used_by: args.used_by.clone(),
             new_used_by: CharacterUsedBy::Mission {
                 id: *mission_id,
@@ -591,7 +592,7 @@ pub struct RecallCharacter<'info> {
 pub struct RecallCharacterArgs {
     pub root: [u8; 32],
     pub leaf_idx: u32,
-    pub source: CharacterSource,
+    pub source_hash: [u8; 32],
     pub used_by: CharacterUsedBy,
 }
 
@@ -605,7 +606,7 @@ pub fn recall_character<'info>(
     let verify_character_args = VerifyCharacterArgs {
         root: args.root,
         leaf_idx: args.leaf_idx,
-        source: DataOrHash::Data(args.source.clone()),
+        source: DataOrHash::Hash(args.source_hash.clone()),
         used_by: DataOrHash::Data(args.used_by.clone()),
     };
 
@@ -657,8 +658,8 @@ pub fn recall_character<'info>(
                 character_model: ctx.accounts.character_model.to_account_info(),
                 hive_control: ctx.accounts.hive_control.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),
-                owner: ctx.accounts.mission.to_account_info(),
-                user: ctx.accounts.wallet.to_account_info(),
+                owner: ctx.accounts.wallet.to_account_info(),
+                user: ctx.accounts.mission.to_account_info(),
                 merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
                 clock: ctx.accounts.clock.to_account_info(),
                 log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
@@ -671,7 +672,7 @@ pub fn recall_character<'info>(
         UseCharacterArgs {
             root: args.root,
             leaf_idx: args.leaf_idx,
-            source_hash: args.source.to_node(),
+            source_hash: args.source_hash,
             current_used_by: args.used_by,
             new_used_by: CharacterUsedBy::None,
         }
