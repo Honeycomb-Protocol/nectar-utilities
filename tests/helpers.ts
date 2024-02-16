@@ -94,27 +94,25 @@ export async function mintOneCNFT(
     name,
     symbol,
     uri,
-    tree,
-    collection,
+    merkleTree,
+    collectionMint,
   }: {
     dropWalletKey: string;
     name: string;
     symbol: string;
     uri: string;
-    tree: Keypair;
-    collection: string | PublicKey;
+    merkleTree: PublicKey;
+    collectionMint: PublicKey;
   }
 ) {
   try {
     console.log(colors.yellow(`Minting CNFT ${name} for ${dropWalletKey}`));
-    const merkleTree = tree.publicKey;
 
     const [treeAuthority, _bump] = PublicKey.findProgramAddressSync(
       [merkleTree.toBuffer()],
       BUBBLEGUM_PROGRAM_ID
     );
 
-    const collectionMint = new PublicKey(collection);
     const [collectionMetadataAccount, _b1] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("metadata", "utf8"),
