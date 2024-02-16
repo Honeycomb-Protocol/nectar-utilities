@@ -872,7 +872,6 @@ describe("Nectar Missions Tests", () => {
         }
     });
 
-    // to be tested
     it("Recall character", async () => {
         console.log("Waiting before recalling character...");
         await new Promise((resolve) => setTimeout(resolve, (missionDuration * 2) * 1000));
