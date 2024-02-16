@@ -92,7 +92,6 @@ export async function createCreateMissionPoolOperation(
         payer: honeycomb.identity().address,
         vault: VAULT,
         hiveControl: HPL_HIVE_CONTROL_PROGRAM,
-        hplEvents: HPL_EVENTS_PROGRAM,
         clockSysvar: SYSVAR_CLOCK_PUBKEY,
         rentSysvar: SYSVAR_RENT_PUBKEY,
         instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
