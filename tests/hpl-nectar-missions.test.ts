@@ -12,6 +12,7 @@ import {
     HoneycombProject,
     METADATA_PROGRAM_ID,
     Operation,
+    ProfileDataType,
     VAULT,
     createCreateProfileInstruction,
     createInitializeUserInstruction,
@@ -147,7 +148,9 @@ describe("Nectar Missions Tests", () => {
                 await HoneycombProject.new(adminHC, {
                     name,
                     expectedMintAddresses: 0,
-                    profileDataConfigs: [],
+                    profileDataConfigs: [
+                        { label: "nectar_missions_xp", dataType: ProfileDataType.SingleValue }
+                    ],
                 })
             );
             console.log("Project: ", adminHC.project().address.toBase58());
@@ -253,36 +256,36 @@ describe("Nectar Missions Tests", () => {
             const operation = new Operation(
                 adminHC,
                 [
-                web3.SystemProgram.createAccount({
-                    newAccountPubkey: merkleTreeKeypair.publicKey,
-                    fromPubkey: adminHC.identity().address,
-                    space: space,
-                    lamports,
-                    programId: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-                }),
-                createCreateNewCharactersTreeInstruction(
-                    {
-                    project: characterModel.project,
-                    characterModel: characterModelAddress,
-                    merkleTree: merkleTreeKeypair.publicKey,
-                    authority: adminHC.identity().address,
-                    payer: adminHC.identity().address,
-                    vault: VAULT,
-                    systemProgram: web3.SystemProgram.programId,
-                    hplEvents: HPL_EVENTS_PROGRAM,
-                    compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-                    logWrapper: SPL_NOOP_PROGRAM_ID,
-                    clock: web3.SYSVAR_CLOCK_PUBKEY,
-                    rentSysvar: web3.SYSVAR_RENT_PUBKEY,
-                    instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-                    },
-                    {
-                    args: {
-                        maxDepth: depthSizePair.maxDepth,
-                        maxBufferSize: depthSizePair.maxBufferSize,
-                    },
-                    }
-                ),
+                    web3.SystemProgram.createAccount({
+                        newAccountPubkey: merkleTreeKeypair.publicKey,
+                        fromPubkey: adminHC.identity().address,
+                        space: space,
+                        lamports,
+                        programId: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+                    }),
+                    createCreateNewCharactersTreeInstruction(
+                        {
+                        project: characterModel.project,
+                        characterModel: characterModelAddress,
+                        merkleTree: merkleTreeKeypair.publicKey,
+                        authority: adminHC.identity().address,
+                        payer: adminHC.identity().address,
+                        vault: VAULT,
+                        systemProgram: web3.SystemProgram.programId,
+                        hplEvents: HPL_EVENTS_PROGRAM,
+                        compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+                        logWrapper: SPL_NOOP_PROGRAM_ID,
+                        clock: web3.SYSVAR_CLOCK_PUBKEY,
+                        rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+                        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+                        },
+                        {
+                        args: {
+                            maxDepth: depthSizePair.maxDepth,
+                            maxBufferSize: depthSizePair.maxBufferSize,
+                        },
+                        }
+                    ),
                 ],
                 [merkleTreeKeypair]
             );
@@ -602,7 +605,7 @@ describe("Nectar Missions Tests", () => {
     it("Create holder account and mint", async () => {
         const holderAccount = await adminHC.currency().newHolderAccount(userHC.identity().address);
 
-        await holderAccount.mint(1_000_000_000);
+        await holderAccount.mint(1_000_000);
     });
 
     it("Create user", async () => {
@@ -721,6 +724,7 @@ describe("Nectar Missions Tests", () => {
 
         console.log("Proof:", JSON.stringify(proof));
         console.log("Proof second:", JSON.stringify(proofSecond));
+        console.log("Source hash:", JSON.stringify(proofSecond.sourceHash));
 
         const operation = new Operation(userHC, [
             web3.ComputeBudgetProgram.setComputeUnitLimit(
@@ -772,10 +776,9 @@ describe("Nectar Missions Tests", () => {
         await operation.send({ skipPreflight: true });
     });
 
-    // to be tested
     it("Collect rewards for participating in the mission", async () => {
         console.log("Waiting for mission to end...");
-        await new Promise((resolve) => setTimeout(resolve, missionDuration * 1000)); // seconds converted to milliseconds
+        await new Promise((resolve) => setTimeout(resolve, (missionDuration * 2) * 1000));
 
         console.log("Collecting rewards...");
         const tokenAccounts = await adminHC.connection.getTokenAccountsByOwner(
@@ -800,8 +803,11 @@ describe("Nectar Missions Tests", () => {
             0
         );
 
+        // Temporary fix
+        proofSecond.source.criteria.__kind = "MerkleTree";
         console.log("Proof (collect rewards):", JSON.stringify(proof));
         console.log("Proof second (collect rewards):", JSON.stringify(proofSecond));
+        console.log("Source hash (collect rewards):", JSON.stringify(proofSecond.sourceHash));
 
         if(proofSecond.usedBy.__kind === "Mission") {
             const operation = new Operation(userHC, [
@@ -846,7 +852,7 @@ describe("Nectar Missions Tests", () => {
                     {
                         args: {
                             root: Array.from(proof.root.toBytes()),
-                            leafIdx: wrappedCharacterNfts[0].compression!.leafId,
+                            leafIdx: proofSecond.leafIdx,
                             sourceHash: Array.from(proofSecond.sourceHash),
                             usedBy: {
                                 __kind: "Mission",
@@ -867,20 +873,9 @@ describe("Nectar Missions Tests", () => {
     });
 
     // to be tested
-    it.skip("Recall character", async () => {
-        const tokenAccounts = await adminHC.connection.getTokenAccountsByOwner(
-            userHC.identity().address,
-            { mint: currencyMint }
-        );
-
-        const [ holderAccountPublicKey ] = web3.PublicKey.findProgramAddressSync(
-            [
-                Buffer.from("holder_account"),
-                userHC.identity().address.toBuffer(),
-                currencyMint.toBuffer()
-            ],
-            HPL_CURRENCY_MANAGER_PROGRAM_ID
-        );
+    it("Recall character", async () => {
+        console.log("Waiting before recalling character...");
+        await new Promise((resolve) => setTimeout(resolve, (missionDuration * 2) * 1000));
 
         const proof: AssetProof = await fetchAssetProof(userHC.rpcEndpoint, wrappedCharacterNfts[0].mint);
 
@@ -890,55 +885,63 @@ describe("Nectar Missions Tests", () => {
             0
         );
 
-        // if(proofSecond.usedBy.__kind === "Mission") {
-        //     const operation = new Operation(userHC, [
-        //         web3.ComputeBudgetProgram.setComputeUnitLimit(
-        //             {
-        //                 units: 1_200_000
-        //             }
-        //         ),
-        //         createRecallInstruction(
-        //             {
-        //                 characterModel: characterModelAddress,
-        //                 project,
-        //                 missionPool,
-        //                 mission,
-        //                 wallet: userHC.identity().address,
-        //                 vault: VAULT,
-        //                 merkleTree: activeCharactersTree,
-        //                 systemProgram: web3.SystemProgram.programId,
-        //                 hiveControl: HPL_HIVE_CONTROL_PROGRAM_ID,
-        //                 characterManager: CHARACTER_MANAGER_PROGRAM_ID,
-        //                 hplEvents: HPL_EVENTS_PROGRAM,
-        //                 compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-        //                 instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-        //                 clock: web3.SYSVAR_CLOCK_PUBKEY,
-        //                 logWrapper: SPL_NOOP_PROGRAM_ID,
-        //                 anchorRemainingAccounts: proof.proof.map((p) => ({
-        //                         pubkey: p,
-        //                         isSigner: false,
-        //                         isWritable: false,
-        //                     })
-        //                 ),
-        //             },
-        //             {
-        //                 args: {
-        //                     root: Array.from(proof.root.toBytes()),
-        //                     leafIdx: proofSecond.leafIdx,
-        //                     sourceHash: Array.from(proofSecond.sourceHash),
-        //                     usedBy: {
-        //                         __kind: "Mission",
-        //                         endTime: proofSecond.usedBy.endTime,
-        //                         id: proofSecond.usedBy.id,
-        //                         rewards: proofSecond.usedBy.rewards,
-        //                         rewardsCollected: proofSecond.usedBy.rewardsCollected,
-        //                     }
-        //                 },
-        //             }
-        //         )
-        //     ]);
-        // } else {
-        //     throw new Error("Character is not used by a mission");
-        // }
+        // Temporary fix
+        proofSecond.source.criteria.__kind = "MerkleTree";
+        console.log("Proof (recall):", JSON.stringify(proof));
+        console.log("Proof second (recall):", JSON.stringify(proofSecond));
+        console.log("Source hash (recall):", JSON.stringify(proofSecond.sourceHash));
+
+        if(proofSecond.usedBy.__kind === "Mission") {
+            const operation = new Operation(userHC, [
+                web3.ComputeBudgetProgram.setComputeUnitLimit(
+                    {
+                        units: 1_200_000
+                    }
+                ),
+                createRecallInstruction(
+                    {
+                        characterModel: characterModelAddress,
+                        project,
+                        missionPool,
+                        mission,
+                        wallet: userHC.identity().address,
+                        vault: VAULT,
+                        merkleTree: activeCharactersTree,
+                        systemProgram: web3.SystemProgram.programId,
+                        hiveControl: HPL_HIVE_CONTROL_PROGRAM_ID,
+                        characterManager: CHARACTER_MANAGER_PROGRAM_ID,
+                        hplEvents: HPL_EVENTS_PROGRAM,
+                        compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+                        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+                        clock: web3.SYSVAR_CLOCK_PUBKEY,
+                        logWrapper: SPL_NOOP_PROGRAM_ID,
+                        anchorRemainingAccounts: proof.proof.map((p) => ({
+                                pubkey: p,
+                                isSigner: false,
+                                isWritable: false,
+                            })
+                        ),
+                    },
+                    {
+                        args: {
+                            root: Array.from(proof.root.toBytes()),
+                            leafIdx: proofSecond.leafIdx,
+                            sourceHash: Array.from(proofSecond.sourceHash),
+                            usedBy: {
+                                __kind: "Mission",
+                                endTime: proofSecond.usedBy.endTime,
+                                id: proofSecond.usedBy.id,
+                                rewards: proofSecond.usedBy.rewards,
+                                rewardsCollected: proofSecond.usedBy.rewardsCollected,
+                            }
+                        },
+                    }
+                )
+            ]);
+
+            await operation.send({ skipPreflight: true });
+        } else {
+            throw new Error("Character is not used by a mission");
+        }
     });
 });
