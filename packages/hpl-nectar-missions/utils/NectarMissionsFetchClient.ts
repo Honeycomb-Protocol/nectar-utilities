@@ -1,12 +1,11 @@
 import { Commitment, PublicKey } from "@solana/web3.js";
 import { OffchainParticipation } from "../types";
-import { Mission, MissionPool, Participation } from "../generated";
+import { Mission, MissionPool } from "../generated";
 import {
   FetchModule,
   FetchClient,
   ForceScenario,
 } from "@honeycomb-protocol/hive-control";
-import { offchainToSolitaParticipation } from ".";
 
 /**
  * Extends the Honeycomb interface with the `fetch` method to access the NectarMissionsFetchClient.
@@ -122,11 +121,9 @@ export class NectarMissionsFetchClient extends FetchClient {
     address: PublicKey,
     commitment?: Commitment,
     forceFetch?: ForceScenario
-  ): Promise<Participation | null> {
+  ): Promise<any | null> {
     try {
-      return Participation.fromAccountInfo(
-        await this.getAccount(address, { forceFetch, commitment })
-      )[0];
+      return null;
     } catch {
       return null;
     }
@@ -142,7 +139,7 @@ export class NectarMissionsFetchClient extends FetchClient {
   public async participations(args: {
     wallet: PublicKey;
     mission?: PublicKey;
-  }): Promise<Participation[] | null>;
+  }): Promise<any[] | null>;
 
   /**
    * Creates an instance of HoneycombProject using the provided connection and project address.
@@ -157,7 +154,7 @@ export class NectarMissionsFetchClient extends FetchClient {
     wallets?: string[];
     page: number;
     pageSize: number;
-  }): Promise<Participation[] | null>;
+  }): Promise<any[] | null>;
 
   public async participations(
     args:
@@ -172,7 +169,7 @@ export class NectarMissionsFetchClient extends FetchClient {
           page: number;
           pageSize?: number;
         }
-  ): Promise<Participation[] | null> {
+  ): Promise<any[] | null> {
     if ("pool" in args) {
       const publicInfo = await this.honeycomb().publicInfo();
       const offchainUrl = publicInfo.get("offchain");
@@ -196,33 +193,31 @@ export class NectarMissionsFetchClient extends FetchClient {
       })
         .then((res) => res.json())
         .then((res: { data: OffchainParticipation[] }) =>
-          res.data.map(offchainToSolitaParticipation)
+          res.data.map((_) => null)
         );
     } else {
-      const gpaBuilder = Participation.gpaBuilder().addFilter(
-        "wallet",
-        args.wallet
-      );
-      if (args.mission) {
-        gpaBuilder.addFilter("mission", args.mission);
-      }
-      try {
-        return gpaBuilder
-          .run(this.honeycomb().processedConnection)
-          .then((participations) =>
-            participations
-              .map((m) => {
-                try {
-                  return Participation.fromAccountInfo(m.account)[0];
-                } catch {
-                  return null;
-                }
-              })
-              .filter((x) => !!x)
-          );
-      } catch {
-        return null;
-      }
+      return null;
+      // const gpaBuilder = any.gpaBuilder().addFilter("wallet", args.wallet);
+      // if (args.mission) {
+      //   gpaBuilder.addFilter("mission", args.mission);
+      // }
+      // try {
+      //   return gpaBuilder
+      //     .run(this.honeycomb().processedConnection)
+      //     .then((participations) =>
+      //       participations
+      //         .map((m) => {
+      //           try {
+      //             return null;
+      //           } catch {
+      //             return null;
+      //           }
+      //         })
+      //         .filter((x) => !!x)
+      //     );
+      // } catch {
+      //   return null;
+      // }
     }
   }
 
@@ -239,7 +234,7 @@ export class NectarMissionsFetchClient extends FetchClient {
     authToken?: string;
     page: number;
     pageSize: number;
-  }): Promise<Participation[] | null> {
+  }): Promise<any[] | null> {
     const publicInfo = await this.honeycomb().publicInfo();
     const offchainUrl = publicInfo.get("offchain");
 
@@ -269,7 +264,7 @@ export class NectarMissionsFetchClient extends FetchClient {
     })
       .then((res) => res.json())
       .then((res: { data: OffchainParticipation[] }) =>
-        res.data.map(offchainToSolitaParticipation)
+        res.data.map((_) => null)
       );
   }
 }
