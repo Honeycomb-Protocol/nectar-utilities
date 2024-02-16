@@ -556,7 +556,7 @@
         },
         {
           "name": "mission",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "docs": [
             "Mission state account"
@@ -725,7 +725,7 @@
         },
         {
           "name": "mission",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "docs": [
             "Mission state account"

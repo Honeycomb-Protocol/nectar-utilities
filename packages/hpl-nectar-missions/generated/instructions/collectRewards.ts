@@ -44,7 +44,7 @@ export const collectRewardsStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] project
  * @property [] missionPool
  * @property [] missionPoolDelegate (optional)
- * @property [] mission
+ * @property [_writable_] mission
  * @property [_writable_] profile (optional)
  * @property [_writable_] mint (optional)
  * @property [] currency (optional)
@@ -149,7 +149,7 @@ export function createCollectRewardsInstruction(
   }
   keys.push({
     pubkey: accounts.mission,
-    isWritable: false,
+    isWritable: true,
     isSigner: false,
   })
   if (accounts.profile != null) {

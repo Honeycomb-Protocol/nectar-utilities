@@ -42,7 +42,7 @@ export const recallStruct = new beet.FixableBeetArgsStruct<
  * @property [] characterModel
  * @property [_writable_] project
  * @property [] missionPool
- * @property [] mission
+ * @property [_writable_] mission
  * @property [_writable_, **signer**] wallet
  * @property [_writable_] vault
  * @property [_writable_] merkleTree
@@ -117,7 +117,7 @@ export function createRecallInstruction(
     },
     {
       pubkey: accounts.mission,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {
