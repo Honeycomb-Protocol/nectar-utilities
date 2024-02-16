@@ -31,13 +31,13 @@ use {
         program::HplCharacterManager, 
         state::{
             CharacterModel, 
-            CharacterSource,
+            // CharacterSource,
             CharacterUsedBy, 
             DataOrHash,
             EarnedReward, 
         }
     }, 
-    hpl_compression::ToNode, 
+    // hpl_compression::ToNode, 
     hpl_currency_manager::{
         cpi::{
             accounts::{BurnCurrency, MintCurrency},
@@ -172,8 +172,8 @@ pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, a
             );
             ctx.accounts.mission_pool.increase_randomizer_round();
             EarnedReward {
+                delta,
                 reward_idx: i as u8,
-                delta
             }
         })
         .collect::<Vec<EarnedReward>>();
@@ -266,7 +266,7 @@ pub struct CollectRewards<'info> {
     pub mission_pool_delegate: Option<Box<Account<'info, DelegateAuthority>>>,
 
     /// Mission state account
-    #[account(has_one = mission_pool)]
+    #[account(mut, has_one = mission_pool)]
     pub mission: Box<Account<'info, Mission>>,
 
     /// User profile account
@@ -368,7 +368,7 @@ pub fn collect_rewards<'info>(
                 project: ctx.accounts.project.to_account_info(),
                 character_model: ctx.accounts.character_model.to_account_info(),
                 merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-                user: ctx.accounts.wallet.to_account_info(),
+                owner: ctx.accounts.wallet.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
                 hive_control: ctx.accounts.hive_control.to_account_info(),
                 compression_program: ctx.accounts.compression_program.to_account_info(),
@@ -397,7 +397,7 @@ pub fn collect_rewards<'info>(
 
     msg!("Rewards haven't been collected. Updating the leaf.");
     use_character(
-        CpiContext::new(
+        CpiContext::new_with_signer(
             ctx.accounts.character_manager.to_account_info(),
             UseCharacter {
                 project: ctx.accounts.project.to_account_info(),
@@ -413,6 +413,12 @@ pub fn collect_rewards<'info>(
                 compression_program: ctx.accounts.compression_program.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
             },
+            &[&[
+                b"mission".as_ref(),
+                ctx.accounts.mission_pool.key().as_ref(),
+                ctx.accounts.mission.name.as_bytes(),
+                &[ctx.accounts.mission.bump],
+            ]],
         ).with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         UseCharacterArgs {
             root: args.root,
@@ -548,7 +554,7 @@ pub struct RecallCharacter<'info> {
     pub mission_pool: Box<Account<'info, MissionPool>>,
 
     /// Mission state account
-    #[account(has_one = mission_pool)]
+    #[account(mut, has_one = mission_pool)]
     pub mission: Box<Account<'info, Mission>>,
 
     #[account(mut)]
@@ -617,7 +623,7 @@ pub fn recall_character<'info>(
                 project: ctx.accounts.project.to_account_info(),
                 character_model: ctx.accounts.character_model.to_account_info(),
                 merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-                user: ctx.accounts.wallet.to_account_info(),
+                owner: ctx.accounts.wallet.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
                 hive_control: ctx.accounts.hive_control.to_account_info(),
                 compression_program: ctx.accounts.compression_program.to_account_info(),
@@ -628,7 +634,7 @@ pub fn recall_character<'info>(
         verify_character_args
     )?;
 
-    msg!("Character verified. Determining if rewards can be collected.");
+    msg!("Character verified. Determining if rewards have been collected.");
 
     // Check if the person is eligible for a reward and rewards haven't been collected
     if let CharacterUsedBy::Mission { end_time, rewards, rewards_collected, .. } = &args.used_by {
@@ -636,6 +642,9 @@ pub fn recall_character<'info>(
             return Err(ErrorCode::RewardsNotCollected.into());
         }
     }
+
+    msg!("Rewards have been collected. Character can be recalled.");
+    msg!("Recalling character.");
 
     // Recall the character
     let mission_pool_key = ctx.accounts.mission_pool.key();
