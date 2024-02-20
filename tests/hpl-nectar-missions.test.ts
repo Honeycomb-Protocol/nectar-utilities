@@ -137,8 +137,8 @@ describe("Nectar Missions Tests", () => {
                 name: `CNFT ${i}`,
                 symbol: `CNFT${i}`,
                 uri: "https://api.eboy.dev/",
-                tree: treeKeypair,
-                collection: collection,
+                merkleTree: treeKeypair.publicKey,
+                collectionMint: collection,
             });
         }
 
@@ -181,7 +181,6 @@ describe("Nectar Missions Tests", () => {
                     vault: VAULT,
                     systemProgram: web3.SystemProgram.programId,
                     hiveControl: HPL_HIVE_CONTROL_PROGRAM_ID,
-                    hplEvents: HPL_EVENTS_PROGRAM,
                     clock: web3.SYSVAR_CLOCK_PUBKEY,
                     instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
                 },
@@ -253,42 +252,41 @@ describe("Nectar Missions Tests", () => {
                 await adminHC.connection.getMinimumBalanceForRentExemption(space);
             console.log("SOL", lamports / 1e9);
     
-            const operation = new Operation(
-                adminHC,
-                [
-                    web3.SystemProgram.createAccount({
-                        newAccountPubkey: merkleTreeKeypair.publicKey,
-                        fromPubkey: adminHC.identity().address,
-                        space: space,
-                        lamports,
-                        programId: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-                    }),
-                    createCreateNewCharactersTreeInstruction(
-                        {
-                        project: characterModel.project,
-                        characterModel: characterModelAddress,
-                        merkleTree: merkleTreeKeypair.publicKey,
-                        authority: adminHC.identity().address,
-                        payer: adminHC.identity().address,
-                        vault: VAULT,
-                        systemProgram: web3.SystemProgram.programId,
-                        hplEvents: HPL_EVENTS_PROGRAM,
-                        compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-                        logWrapper: SPL_NOOP_PROGRAM_ID,
-                        clock: web3.SYSVAR_CLOCK_PUBKEY,
-                        rentSysvar: web3.SYSVAR_RENT_PUBKEY,
-                        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-                        },
-                        {
-                        args: {
-                            maxDepth: depthSizePair.maxDepth,
-                            maxBufferSize: depthSizePair.maxBufferSize,
-                        },
-                        }
-                    ),
-                ],
-                [merkleTreeKeypair]
-            );
+          const operation = new Operation(
+            adminHC,
+            [
+              web3.SystemProgram.createAccount({
+                newAccountPubkey: merkleTreeKeypair.publicKey,
+                fromPubkey: adminHC.identity().address,
+                space: space,
+                lamports,
+                programId: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+              }),
+              createCreateNewCharactersTreeInstruction(
+                {
+                  project: characterModel.project,
+                  characterModel: characterModelAddress,
+                  merkleTree: merkleTreeKeypair.publicKey,
+                  authority: adminHC.identity().address,
+                  payer: adminHC.identity().address,
+                  vault: VAULT,
+                  systemProgram: web3.SystemProgram.programId,
+                  compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+                  logWrapper: SPL_NOOP_PROGRAM_ID,
+                  clock: web3.SYSVAR_CLOCK_PUBKEY,
+                  rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+                  instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+                },
+                {
+                  args: {
+                    maxDepth: depthSizePair.maxDepth,
+                    maxBufferSize: depthSizePair.maxBufferSize,
+                  },
+                }
+              ),
+            ],
+            [merkleTreeKeypair]
+          );
     
             const [{ signature }] = await operation.send();
     
@@ -428,7 +426,6 @@ describe("Nectar Missions Tests", () => {
                         vault: VAULT,
                         systemProgram: web3.SystemProgram.programId,
                         hiveControl: new web3.PublicKey("Ha71K2v3q9wL3hDLbGx5mRnAXd6CdgzNx5GJHDbWvPRg"),
-                        hplEvents: HPL_EVENTS_PROGRAM,
                         clockSysvar: web3.SYSVAR_CLOCK_PUBKEY,
                         rentSysvar: web3.SYSVAR_RENT_PUBKEY,
                         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
@@ -463,7 +460,6 @@ describe("Nectar Missions Tests", () => {
                     rent: web3.SYSVAR_RENT_PUBKEY,
                     instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
                     vault: VAULT,
-                    guildKit: HPL_NECTAR_MISSIONS_PROGRAM_ID,
                     delegateAuthority: adminHC.identity().delegateAuthority()?.address || HPL_NECTAR_MISSIONS_PROGRAM_ID,
                 },
                 {
@@ -516,7 +512,6 @@ describe("Nectar Missions Tests", () => {
                         systemProgram: web3.SystemProgram.programId,
                         hiveControl: HPL_HIVE_CONTROL_PROGRAM_ID,
                         tokenMetadataProgram: METADATA_PROGRAM_ID,
-                        hplEvents: HPL_EVENTS_PROGRAM,
                         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
                         clockSysvar: web3.SYSVAR_CLOCK_PUBKEY,
                     },
@@ -633,7 +628,6 @@ describe("Nectar Missions Tests", () => {
                     walletResolver: walletResolverPublicKey,
                     wallet: userHC.identity().address,
                     systemProgram: web3.SystemProgram.programId,
-                    hplEvents: HPL_EVENTS_PROGRAM,
                     clock: web3.SYSVAR_CLOCK_PUBKEY,
                     rentSysvar: web3.SYSVAR_RENT_PUBKEY,
                     instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
@@ -675,7 +669,6 @@ describe("Nectar Missions Tests", () => {
                     wallet: userHC.identity().address,
                     rentSysvar: web3.SYSVAR_RENT_PUBKEY,
                     systemProgram: web3.SystemProgram.programId,
-                    hplEvents: HPL_EVENTS_PROGRAM,
                     clock: web3.SYSVAR_CLOCK_PUBKEY,
                     instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
                     vault: VAULT,
@@ -751,7 +744,6 @@ describe("Nectar Missions Tests", () => {
                     compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
                     hiveControl: HPL_HIVE_CONTROL_PROGRAM_ID,
                     currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
-                    hplEvents: HPL_EVENTS_PROGRAM,
                     clock: web3.SYSVAR_CLOCK_PUBKEY,
                     rentSysvar: web3.SYSVAR_RENT_PUBKEY,
                     instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
@@ -835,7 +827,6 @@ describe("Nectar Missions Tests", () => {
                         systemProgram: web3.SystemProgram.programId,
                         hiveControl: HPL_HIVE_CONTROL_PROGRAM_ID,
                         currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
-                        hplEvents: HPL_EVENTS_PROGRAM,
                         compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
                         tokenProgram: TOKEN_PROGRAM_ID,
                         rentSysvar: web3.SYSVAR_RENT_PUBKEY,
@@ -878,7 +869,7 @@ describe("Nectar Missions Tests", () => {
 
         const proof: AssetProof = await fetchAssetProof(userHC.rpcEndpoint, wrappedCharacterNfts[0].mint);
 
-        const proofSecond: HplCharacter = await HplCharacter.fetchWithTreeAndLeaf(
+        const proofSecond = await HplCharacter.fetchWithTreeAndLeaf(
             userHC.rpcEndpoint,
             activeCharactersTree,
             0
@@ -909,7 +900,6 @@ describe("Nectar Missions Tests", () => {
                         systemProgram: web3.SystemProgram.programId,
                         hiveControl: HPL_HIVE_CONTROL_PROGRAM_ID,
                         characterManager: CHARACTER_MANAGER_PROGRAM_ID,
-                        hplEvents: HPL_EVENTS_PROGRAM,
                         compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
                         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
                         clock: web3.SYSVAR_CLOCK_PUBKEY,
