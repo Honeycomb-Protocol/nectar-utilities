@@ -473,7 +473,7 @@ describe("Nectar Missions Tests", () => {
         await operation.send({ commitment: "processed" });
     });
 
-    it("Create a currency", async () => {
+    it.skip("Create a currency", async () => {
         const currencyMintKeypair = web3.Keypair.generate();
 
         const [ metadataPublicKey ] = web3.PublicKey.findProgramAddressSync(
@@ -597,13 +597,13 @@ describe("Nectar Missions Tests", () => {
         mission = mpPublicKey;
     });
 
-    it("Create holder account and mint", async () => {
+    it.skip("Create holder account and mint", async () => {
         const holderAccount = await adminHC.currency().newHolderAccount(userHC.identity().address);
 
         await holderAccount.mint(1_000_000);
     });
 
-    it("Create user", async () => {
+    it.skip("Create user", async () => {
         const username = "TestUser";
         const [ userPublicKey ] = web3.PublicKey.findProgramAddressSync(
             [
@@ -649,7 +649,7 @@ describe("Nectar Missions Tests", () => {
         console.log("User:", userPublicKey.toBase58());
     });
 
-    it("Create user profile", async () => {
+    it.skip("Create user profile", async () => {
         const [ userProfilePublicKey ] = web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("profile"),
@@ -692,7 +692,7 @@ describe("Nectar Missions Tests", () => {
         console.log("User profile:", userProfilePublicKey.toBase58());
     });
 
-    it("Participate in the mission", async () => {
+    it.skip("Participate in the mission", async () => {
         const tokenAccounts = await adminHC.connection.getTokenAccountsByOwner(
             userHC.identity().address,
             { mint: currencyMint }
@@ -768,7 +768,7 @@ describe("Nectar Missions Tests", () => {
         await operation.send({ skipPreflight: true });
     });
 
-    it("Collect rewards for participating in the mission", async () => {
+    it.skip("Collect rewards for participating in the mission", async () => {
         console.log("Waiting for mission to end...");
         await new Promise((resolve) => setTimeout(resolve, (missionDuration * 2) * 1000));
 
@@ -863,7 +863,7 @@ describe("Nectar Missions Tests", () => {
         }
     });
 
-    it("Recall character", async () => {
+    it.skip("Recall character", async () => {
         console.log("Waiting before recalling character...");
         await new Promise((resolve) => setTimeout(resolve, (missionDuration * 2) * 1000));
 

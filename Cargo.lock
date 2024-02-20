@@ -1038,12 +1038,10 @@ dependencies = [
 [[package]]
 name = "hpl-character-manager"
 version = "0.0.2-beta.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5a37ba125561a0adec9dbe9c19e1d68d1922ed7e09a13d62b76d3ab8c7d0464"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
- "hpl-hive-control",
+ "hpl-hive-control 0.2.19-beta.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "hpl-toolkit",
  "mpl-bubblegum",
  "mpl-token-metadata",
@@ -1053,14 +1051,22 @@ dependencies = [
 [[package]]
 name = "hpl-currency-manager"
 version = "0.0.84-beta.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2884dea903cc140ee3a950ddc7aed2e61875d0f9323eee4da9d00cbbb602b452"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
- "hpl-hive-control",
+ "hpl-hive-control 0.2.19-beta.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "hpl-toolkit",
  "mpl-token-metadata",
+]
+
+[[package]]
+name = "hpl-hive-control"
+version = "0.2.19-beta.4"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "hpl-toolkit",
+ "spl-account-compression",
 ]
 
 [[package]]
@@ -1083,7 +1089,7 @@ dependencies = [
  "anchor-spl",
  "hpl-character-manager",
  "hpl-currency-manager",
- "hpl-hive-control",
+ "hpl-hive-control 0.2.19-beta.4",
  "hpl-toolkit",
  "spl-account-compression",
 ]
@@ -1097,7 +1103,7 @@ dependencies = [
  "anchor-spl",
  "hpl-character-manager",
  "hpl-currency-manager",
- "hpl-hive-control",
+ "hpl-hive-control 0.2.19-beta.4",
  "hpl-toolkit",
  "spl-account-compression",
  "toml_edit 0.21.0",
