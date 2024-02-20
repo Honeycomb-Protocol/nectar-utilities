@@ -1,9 +1,10 @@
-use {anchor_lang::prelude::*, hpl_utils::traits::*};
+use {anchor_lang::prelude::*, hpl_toolkit::schema::*};
 
 /// The staking_pool multiplier state account
 /// PDA: ['multipliers', staking_pool]
 /// Category: multiplier_state
 #[account]
+#[derive(ToSchema)]
 pub struct Multipliers {
     pub bump: u8,
 
@@ -25,10 +26,10 @@ pub struct Multipliers {
     /// The duration multipliers for the staking_pool
     pub collection_multipliers: Vec<Multiplier>,
 }
-impl Default for Multipliers {
-    const LEN: usize = 8 + 136;
+impl Multipliers {
+    pub const LEN: usize = 8 + 136;
 
-    fn set_defaults(&mut self) {
+    pub fn set_defaults(&mut self) {
         self.bump = 0;
         self.staking_pool = Pubkey::default();
         self.decimals = 0;
@@ -39,21 +40,21 @@ impl Default for Multipliers {
     }
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, ToSchema)]
 pub struct Multiplier {
     pub value: u64,
     pub multiplier_type: MultiplierType,
 }
-impl Default for Multiplier {
-    const LEN: usize = 48;
+impl Multiplier {
+    pub const LEN: usize = 48;
 
-    fn set_defaults(&mut self) {
+    pub fn set_defaults(&mut self) {
         self.value = 0;
         self.multiplier_type = MultiplierType::StakeDuration { min_duration: 0 };
     }
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, ToSchema)]
 pub enum MultiplierType {
     /// The multiplier is applied to the stake duration
     StakeDuration { min_duration: u64 },

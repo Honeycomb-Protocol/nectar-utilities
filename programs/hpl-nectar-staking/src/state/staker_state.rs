@@ -1,10 +1,10 @@
-use {anchor_lang::prelude::*, hpl_utils::traits::*};
+use {anchor_lang::prelude::*, hpl_toolkit::schema::*};
 
 /// The staking_pool multiplier state account
 /// PDA: ['staker', wallet, staking_pool]
 /// Category: staker_state
 #[account]
-#[derive(Debug, PartialEq, Eq)]
+#[derive(ToSchema)]
 pub struct Staker {
     pub bump: u8,
 
@@ -17,10 +17,10 @@ pub struct Staker {
     /// The total amount of tokens staked
     pub total_staked: u64,
 }
-impl Default for Staker {
-    const LEN: usize = 8 + 80;
+impl Staker {
+    pub const LEN: usize = 8 + 80;
 
-    fn set_defaults(&mut self) {
+    pub fn set_defaults(&mut self) {
         self.bump = 0;
         self.staking_pool = Pubkey::default();
         self.wallet = Pubkey::default();

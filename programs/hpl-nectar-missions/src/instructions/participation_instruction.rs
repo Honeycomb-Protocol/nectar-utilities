@@ -31,13 +31,11 @@ use {
         program::HplCharacterManager, 
         state::{
             CharacterModel, 
-            // CharacterSource,
             CharacterUsedBy, 
             DataOrHash,
             EarnedReward, 
         }
     }, 
-    // hpl_compression::ToNode, 
     hpl_currency_manager::{
         cpi::{
             accounts::{BurnCurrency, MintCurrency},
@@ -47,7 +45,6 @@ use {
         state::HolderAccount,
         utils::Currency,
     }, 
-    hpl_events::HplEvents, 
     hpl_hive_control::{
         cpi::{
             accounts::ManageProfileData,
@@ -101,7 +98,7 @@ pub struct Participate<'info> {
     #[account(
         mut, 
         has_one = project, 
-        constraint = profile.identity == ProfileIdentity::Main, 
+        constraint = matches!(profile.identity, ProfileIdentity::Main), 
     )]
     pub profile: Box<Account<'info, Profile>>,
 
@@ -121,7 +118,6 @@ pub struct Participate<'info> {
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
     pub currency_manager_program: Program<'info, HplCurrencyManager>,
-    pub hpl_events: Program<'info, HplEvents>,
     pub clock: Sysvar<'info, Clock>,
     pub rent_sysvar: Sysvar<'info, Rent>,
     /// CHECK: This is not dangerous because we don't read or write from this account
@@ -273,7 +269,7 @@ pub struct CollectRewards<'info> {
     #[account(
         mut, 
         has_one = project, 
-        constraint = profile.identity == ProfileIdentity::Main, 
+        constraint = matches!(profile.identity, ProfileIdentity::Main), 
     )]
     pub profile: Option<Box<Account<'info, Profile>>>,
 
@@ -315,9 +311,6 @@ pub struct CollectRewards<'info> {
 
     /// HPL Currency Manager Program
     pub currency_manager_program: Program<'info, HplCurrencyManager>,
-
-    /// HPL Events Program
-    pub hpl_events: Program<'info, HplEvents>,
 
     /// SPL Compression Program
     pub compression_program: Program<'info, SplAccountCompression>,
@@ -368,7 +361,7 @@ pub fn collect_rewards<'info>(
                 project: ctx.accounts.project.to_account_info(),
                 character_model: ctx.accounts.character_model.to_account_info(),
                 merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-                owner: ctx.accounts.wallet.to_account_info(),
+                user: ctx.accounts.mission.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
                 hive_control: ctx.accounts.hive_control.to_account_info(),
                 compression_program: ctx.accounts.compression_program.to_account_info(),
@@ -464,7 +457,6 @@ pub fn collect_rewards<'info>(
                             payer: ctx.accounts.wallet.to_account_info(),
                             rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
                             system_program: ctx.accounts.system_program.to_account_info(),
-                            hpl_events: ctx.accounts.hpl_events.to_account_info(),
                             clock: ctx.accounts.clock.to_account_info(),
                             vault: ctx.accounts.vault.to_account_info(),
                             instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
@@ -577,9 +569,6 @@ pub struct RecallCharacter<'info> {
     /// HPL Character Manager Program
     pub character_manager: Program<'info, HplCharacterManager>,
 
-    /// HPL Events Program
-    pub hpl_events: Program<'info, HplEvents>,
-
     /// SPL Compression Program
     pub compression_program: Program<'info, SplAccountCompression>,
 
@@ -623,7 +612,7 @@ pub fn recall_character<'info>(
                 project: ctx.accounts.project.to_account_info(),
                 character_model: ctx.accounts.character_model.to_account_info(),
                 merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-                owner: ctx.accounts.wallet.to_account_info(),
+                user: ctx.accounts.mission.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
                 hive_control: ctx.accounts.hive_control.to_account_info(),
                 compression_program: ctx.accounts.compression_program.to_account_info(),

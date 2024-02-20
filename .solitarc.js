@@ -118,147 +118,141 @@ const createConfig = (name, programId, customs) => {
 
       const missingTypes = [
         {
-          "name": "CharacterUsedBy",
-          "type": {
-            "kind": "enum",
-            "variants": [
+          name: "CharacterUsedBy",
+          type: {
+            kind: "enum",
+            variants: [
               {
-                "name": "None"
+                name: "None",
               },
               {
-                "name": "Staking",
-                "fields": [
+                name: "Staking",
+                fields: [
                   {
-                    "name": "pool",
-                    "type": "publicKey"
+                    name: "pool",
+                    type: "publicKey",
                   },
                   {
-                    "name": "staker",
-                    "type": "publicKey"
+                    name: "staker",
+                    type: "publicKey",
                   },
                   {
-                    "name": "stakedAt",
-                    "type": "i64"
+                    name: "stakedAt",
+                    type: "i64",
                   },
                   {
-                    "name": "claimedAt",
-                    "type": "i64"
-                  }
-                ]
+                    name: "claimedAt",
+                    type: "i64",
+                  },
+                ],
               },
               {
-                "name": "Mission",
-                "fields": [
+                name: "Mission",
+                fields: [
                   {
-                    "name": "id",
-                    "type": "publicKey"
+                    name: "id",
+                    type: "publicKey",
                   },
                   {
-                    "name": "rewards",
-                    "type": {
-                      "vec": {
-                        "defined": "EarnedReward"
-                      }
-                    }
+                    name: "rewards",
+                    type: {
+                      vec: {
+                        defined: "EarnedReward",
+                      },
+                    },
                   },
                   {
-                    "name": "endTime",
-                    "type": "u64"
+                    name: "endTime",
+                    type: "u64",
                   },
                   {
-                    "name": "rewardsCollected",
-                    "type": "bool"
-                  }
-                ]
+                    name: "rewardsCollected",
+                    type: "bool",
+                  },
+                ],
               },
               {
-                "name": "Guild",
-                "fields": [
+                name: "Guild",
+                fields: [
                   {
-                    "name": "id",
-                    "type": "publicKey"
+                    name: "id",
+                    type: "publicKey",
                   },
                   {
-                    "name": "role",
-                    "type": {
-                      "defined": "GuildRole"
-                    }
+                    name: "role",
+                    type: {
+                      defined: "GuildRole",
+                    },
                   },
                   {
-                    "name": "order",
-                    "type": "u8"
-                  }
-                ]
-              }
-            ]
-          }
+                    name: "order",
+                    type: "u8",
+                  },
+                ],
+              },
+            ],
+          },
         },
         {
-          "name": "CharacterSource",
-          "type": {
-            "kind": "enum",
-            "variants": [
+          name: "CharacterSource",
+          type: {
+            kind: "enum",
+            variants: [
               {
-                "name": "Wrapped",
-                "fields": [
+                name: "Wrapped",
+                fields: [
                   {
-                    "name": "mint",
-                    "type": "publicKey"
+                    name: "mint",
+                    type: "publicKey",
                   },
                   {
-                    "name": "criteria",
-                    "type": {
-                      "defined": "NftWrapCriteria"
-                    }
+                    name: "criteria",
+                    type: {
+                      defined: "NftWrapCriteria",
+                    },
                   },
                   {
-                    "name": "isCompressed",
-                    "type": "bool"
-                  }
-                ]
-              }
-            ]
-          }
+                    name: "isCompressed",
+                    type: "bool",
+                  },
+                ],
+              },
+            ],
+          },
         },
         {
-          "name": "GuildRole",
-          "type": {
-            "kind": "enum",
-            "variants": [
+          name: "GuildRole",
+          type: {
+            kind: "enum",
+            variants: [
               {
-                "name": "Chief"
+                name: "Chief",
               },
               {
-                "name": "Member"
-              }
-            ]
-          }
+                name: "Member",
+              },
+            ],
+          },
         },
         {
-          "name": "NftWrapCriteria",
-          "type": {
-            "kind": "enum",
-            "variants": [
+          name: "NftWrapCriteria",
+          type: {
+            kind: "enum",
+            variants: [
               {
-                "name": "Collection",
-                "fields": [
-                  "publicKey"
-                ]
+                name: "Collection",
+                fields: ["publicKey"],
               },
               {
-                "name": "Creator",
-                "fields": [
-                  "publicKey"
-                ]
+                name: "Creator",
+                fields: ["publicKey"],
               },
               {
-                "name": "MerkleTree",
-                "fields": [
-                  "publicKey"
-                ]
-              }
-            ]
-          }
+                name: "MerkleTree",
+                fields: ["publicKey"],
+              },
+            ],
+          },
         },
         {
           "name": "EarnedReward",
@@ -270,12 +264,14 @@ const createConfig = (name, programId, customs) => {
                 "type": "u8"
               },
               {
-                "name": "rewardIdx",
-                "type": "u8"
+                "name": "MerkleTree",
+                "fields": [
+                  "publicKey"
+                ]
               }
             ]
           }
-        }
+        },
       ];
 
       idl.types.push(...missingTypes);
@@ -368,11 +364,27 @@ const configs = {
                 ],
               },
               {
-                name: "Missions",
+                name: "Mission",
                 fields: [
                   {
-                    name: "participation",
+                    name: "id",
                     type: "publicKey",
+                  },
+                  {
+                    name: "rewards",
+                    type: {
+                      vec: {
+                        defined: "EarnedReward",
+                      },
+                    },
+                  },
+                  {
+                    name: "endTime",
+                    type: "u64",
+                  },
+                  {
+                    name: "rewardsCollected",
+                    type: "bool",
                   },
                 ],
               },
@@ -399,6 +411,22 @@ const configs = {
           },
         },
         {
+          name: "EarnedReward",
+          type: {
+            kind: "struct",
+            fields: [
+              {
+                name: "delta",
+                type: "u8",
+              },
+              {
+                name: "rewardIdx",
+                type: "u8",
+              },
+            ],
+          },
+        },
+        {
           name: "GuildRole",
           type: {
             kind: "enum",
@@ -417,8 +445,165 @@ const configs = {
   ),
   "nectar-missions": createConfig(
     "nectar-missions",
-    // "HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj"
-    "BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ"
+    // "HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj",
+    "BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ",
+    {
+      types: [
+        {
+          name: "CharacterSource",
+          type: {
+            kind: "enum",
+            variants: [
+              {
+                name: "Wrapped",
+                fields: [
+                  {
+                    name: "mint",
+                    type: "publicKey",
+                  },
+                  {
+                    name: "criteria",
+                    type: {
+                      defined: "NftWrapCriteria",
+                    },
+                  },
+                  {
+                    name: "isCompressed",
+                    type: "bool",
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        {
+          name: "NftWrapCriteria",
+          type: {
+            kind: "enum",
+            variants: [
+              {
+                name: "Collection",
+                fields: ["publicKey"],
+              },
+              {
+                name: "Creator",
+                fields: ["publicKey"],
+              },
+              {
+                name: "MerkleTree",
+                fields: ["publicKey"],
+              },
+            ],
+          },
+        },
+        {
+          name: "CharacterUsedBy",
+          type: {
+            kind: "enum",
+            variants: [
+              {
+                name: "None",
+              },
+              {
+                name: "Staking",
+                fields: [
+                  {
+                    name: "pool",
+                    type: "publicKey",
+                  },
+                  {
+                    name: "staker",
+                    type: "publicKey",
+                  },
+                  {
+                    name: "stakedAt",
+                    type: "i64",
+                  },
+                  {
+                    name: "claimedAt",
+                    type: "i64",
+                  },
+                ],
+              },
+              {
+                name: "Mission",
+                fields: [
+                  {
+                    name: "id",
+                    type: "publicKey",
+                  },
+                  {
+                    name: "rewards",
+                    type: {
+                      vec: {
+                        defined: "EarnedReward",
+                      },
+                    },
+                  },
+                  {
+                    name: "endTime",
+                    type: "u64",
+                  },
+                  {
+                    name: "rewardsCollected",
+                    type: "bool",
+                  },
+                ],
+              },
+              {
+                name: "Guild",
+                fields: [
+                  {
+                    name: "id",
+                    type: "publicKey",
+                  },
+                  {
+                    name: "role",
+                    type: {
+                      defined: "GuildRole",
+                    },
+                  },
+                  {
+                    name: "order",
+                    type: "u8",
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        {
+          name: "EarnedReward",
+          type: {
+            kind: "struct",
+            fields: [
+              {
+                name: "delta",
+                type: "u8",
+              },
+              {
+                name: "rewardIdx",
+                type: "u8",
+              },
+            ],
+          },
+        },
+        {
+          name: "GuildRole",
+          type: {
+            kind: "enum",
+            variants: [
+              {
+                name: "Chief",
+              },
+              {
+                name: "Member",
+              },
+            ],
+          },
+        },
+      ],
+    }
   ),
 };
 

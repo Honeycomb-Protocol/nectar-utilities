@@ -56,7 +56,6 @@ export const collectRewardsStruct = new beet.FixableBeetArgsStruct<
  * @property [] hiveControl
  * @property [] characterManager
  * @property [] currencyManagerProgram
- * @property [] hplEvents
  * @property [] compressionProgram
  * @property [] rentSysvar
  * @property [] instructionsSysvar
@@ -84,7 +83,6 @@ export type CollectRewardsInstructionAccounts = {
   hiveControl: web3.PublicKey
   characterManager: web3.PublicKey
   currencyManagerProgram: web3.PublicKey
-  hplEvents: web3.PublicKey
   compressionProgram: web3.PublicKey
   tokenProgram?: web3.PublicKey
   rentSysvar: web3.PublicKey
@@ -116,7 +114,7 @@ export const collectRewardsInstructionDiscriminator = [
 export function createCollectRewardsInstruction(
   accounts: CollectRewardsInstructionAccounts,
   args: CollectRewardsInstructionArgs,
-  programId = new web3.PublicKey('BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ')
+  programId = new web3.PublicKey('HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj')
 ) {
   const [data] = collectRewardsStruct.serialize({
     instructionDiscriminator: collectRewardsInstructionDiscriminator,
@@ -259,11 +257,6 @@ export function createCollectRewardsInstruction(
   })
   keys.push({
     pubkey: accounts.currencyManagerProgram,
-    isWritable: false,
-    isSigner: false,
-  })
-  keys.push({
-    pubkey: accounts.hplEvents,
     isWritable: false,
     isSigner: false,
   })

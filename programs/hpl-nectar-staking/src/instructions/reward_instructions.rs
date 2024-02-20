@@ -10,17 +10,16 @@ use {
             CharacterModel, CharacterSchema, CharacterSource, CharacterUsedBy, NftWrapCriteria,
         },
     },
-    hpl_compression::ToNode,
     hpl_currency_manager::{
         cpi::{accounts::MintCurrency, mint_currency},
         program::HplCurrencyManager,
         state::{Currency, HolderAccount},
     },
-    hpl_events::HplEvents,
     hpl_hive_control::{
         program::HplHiveControl,
         state::{DelegateAuthority, Project},
     },
+    hpl_toolkit::compression::*,
     spl_account_compression::{program::SplAccountCompression, Noop},
 };
 
@@ -180,9 +179,6 @@ pub struct ClaimRewards<'info> {
 
     /// HPL Currency Manager Program
     pub currency_manager_program: Program<'info, HplCurrencyManager>,
-
-    /// HPL Events Program
-    pub hpl_events: Program<'info, HplEvents>,
 
     /// NATIVE TOKEN PROGRAM
     pub token_program: Program<'info, Token>,

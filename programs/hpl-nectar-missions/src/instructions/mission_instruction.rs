@@ -1,14 +1,10 @@
 use {
-    crate::state::*, 
-    anchor_lang::prelude::*, 
+    crate::state::*,
+    anchor_lang::prelude::*,
     hpl_hive_control::{
         program::HplHiveControl,
-        state::{
-            DelegateAuthority, 
-            Project
-        },
-    }, 
-    hpl_utils::traits::Default,
+        state::{DelegateAuthority, Project},
+    },
 };
 
 /// Accounts used in create mission instruction
@@ -79,14 +75,14 @@ pub fn create_mission(ctx: Context<CreateMission>, args: CreateMissionArgs) -> R
     let mission = &mut ctx.accounts.mission;
     mission.set_defaults();
 
-    mission.bump = ctx.bumps["mission"];
+    mission.bump = ctx.bumps.mission;
     mission.mission_pool = ctx.accounts.mission_pool.key();
     mission.name = args.name;
     mission.min_xp = args.min_xp;
     mission.cost = args.cost;
     mission.requirement = args.requirement;
 
-    hpl_utils::reallocate(
+    hpl_toolkit::utils::reallocate(
         (Reward::LEN * args.rewards.len()) as isize,
         mission.to_account_info(),
         ctx.accounts.payer.to_account_info(),
@@ -168,7 +164,7 @@ pub fn update_mission(ctx: Context<UpdateMission>, args: UpdateMissionArgs) -> R
         let curr_len = mission.rewards.len();
         mission.rewards = vec![];
         let diff = curr_len - mission.rewards.len();
-        hpl_utils::reallocate(
+        hpl_toolkit::utils::reallocate(
             (Reward::LEN * diff) as isize * -1,
             mission.to_account_info(),
             ctx.accounts.payer.to_account_info(),
@@ -186,7 +182,7 @@ pub fn update_mission(ctx: Context<UpdateMission>, args: UpdateMissionArgs) -> R
             .collect::<Vec<_>>();
 
         let diff = curr_len - mission.rewards.len();
-        hpl_utils::reallocate(
+        hpl_toolkit::utils::reallocate(
             (Reward::LEN * diff) as isize * -1,
             mission.to_account_info(),
             ctx.accounts.payer.to_account_info(),
@@ -196,7 +192,7 @@ pub fn update_mission(ctx: Context<UpdateMission>, args: UpdateMissionArgs) -> R
     }
 
     if let Some(rewards) = args.add_rewards {
-        hpl_utils::reallocate(
+        hpl_toolkit::utils::reallocate(
             (Reward::LEN * rewards.len()) as isize,
             mission.to_account_info(),
             ctx.accounts.payer.to_account_info(),
