@@ -114,7 +114,7 @@ export const collectRewardsInstructionDiscriminator = [
 export function createCollectRewardsInstruction(
   accounts: CollectRewardsInstructionAccounts,
   args: CollectRewardsInstructionArgs,
-  programId = new web3.PublicKey('HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj')
+  programId = new web3.PublicKey('BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ')
 ) {
   const [data] = collectRewardsStruct.serialize({
     instructionDiscriminator: collectRewardsInstructionDiscriminator,

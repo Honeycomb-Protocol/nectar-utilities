@@ -91,7 +91,7 @@ export const recallInstructionDiscriminator = [
 export function createRecallInstruction(
   accounts: RecallInstructionAccounts,
   args: RecallInstructionArgs,
-  programId = new web3.PublicKey('HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj')
+  programId = new web3.PublicKey('BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ')
 ) {
   const [data] = recallStruct.serialize({
     instructionDiscriminator: recallInstructionDiscriminator,

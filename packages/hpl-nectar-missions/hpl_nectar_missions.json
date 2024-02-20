@@ -1161,43 +1161,6 @@
       }
     },
     {
-<<<<<<< HEAD
-      "name": "Event",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "NewParticipation",
-            "fields": [
-              {
-                "name": "address",
-                "type": "publicKey"
-              },
-              {
-                "name": "state",
-                "type": "bytes"
-              }
-            ]
-          },
-          {
-            "name": "RecallParticipation",
-            "fields": [
-              {
-                "name": "address",
-                "type": "publicKey"
-              },
-              {
-                "name": "state",
-                "type": "bytes"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-=======
->>>>>>> dev
       "name": "MissionRequirement",
       "type": {
         "kind": "enum",
@@ -1238,8 +1201,6 @@
       }
     },
     {
-<<<<<<< HEAD
-=======
       "name": "CharacterSource",
       "type": {
         "kind": "enum",
@@ -1394,166 +1355,6 @@
           },
           {
             "name": "Member"
-          }
-        ]
-      }
-    },
-    {
->>>>>>> dev
-      "name": "CharacterUsedBy",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "None"
-          },
-          {
-            "name": "Staking",
-            "fields": [
-              {
-                "name": "pool",
-                "type": "publicKey"
-              },
-              {
-                "name": "staker",
-                "type": "publicKey"
-              },
-              {
-                "name": "stakedAt",
-                "type": "i64"
-              },
-              {
-                "name": "claimedAt",
-                "type": "i64"
-              }
-            ]
-          },
-          {
-            "name": "Mission",
-            "fields": [
-              {
-                "name": "id",
-                "type": "publicKey"
-              },
-              {
-                "name": "rewards",
-                "type": {
-                  "vec": {
-                    "defined": "EarnedReward"
-                  }
-                }
-              },
-              {
-                "name": "endTime",
-                "type": "u64"
-              },
-              {
-                "name": "rewardsCollected",
-                "type": "bool"
-              }
-            ]
-          },
-          {
-            "name": "Guild",
-            "fields": [
-              {
-                "name": "id",
-                "type": "publicKey"
-              },
-              {
-                "name": "role",
-                "type": {
-                  "defined": "GuildRole"
-                }
-              },
-              {
-                "name": "order",
-                "type": "u8"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "CharacterSource",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Wrapped",
-            "fields": [
-              {
-                "name": "mint",
-                "type": "publicKey"
-              },
-              {
-                "name": "criteria",
-                "type": {
-                  "defined": "NftWrapCriteria"
-                }
-              },
-              {
-                "name": "isCompressed",
-                "type": "bool"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "GuildRole",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Chief"
-          },
-          {
-            "name": "Member"
-          }
-        ]
-      }
-    },
-    {
-      "name": "NftWrapCriteria",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Collection",
-            "fields": [
-              "publicKey"
-            ]
-          },
-          {
-            "name": "Creator",
-            "fields": [
-              "publicKey"
-            ]
-          },
-          {
-            "name": "MerkleTree",
-            "fields": [
-              "publicKey"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "EarnedReward",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "delta",
-            "type": "u8"
-          },
-          {
-            "name": "rewardIdx",
-            "type": "u8"
           }
         ]
       }
@@ -1637,7 +1438,7 @@
     }
   ],
   "metadata": {
-    "address": "HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj",
+    "address": "BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ",
     "origin": "anchor",
     "binaryVersion": "0.29.0",
     "libVersion": "0.29.0"
