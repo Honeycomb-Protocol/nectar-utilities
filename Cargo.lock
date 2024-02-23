@@ -1071,7 +1071,7 @@ dependencies = [
 
 [[package]]
 name = "hpl-nectar-missions"
-version = "0.1.44"
+version = "0.1.44-beta.1"
 dependencies = [
  "anchor-lang",
  "anchor-spl",

@@ -1,6 +1,6 @@
 [package]
 name = "hpl-nectar-missions"
-version = "0.1.44"
+version = "0.1.44-beta.1"
 description = "Honeycomb protocol library nectar utilities missions program"
 author = ['Sultan Nadeem <sultanndilaram@gmail.com>']
 edition = "2021"
