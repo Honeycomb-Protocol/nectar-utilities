@@ -134,6 +134,10 @@ pub struct ParticipateArgs {
 }
 
 pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, args: ParticipateArgs) -> Result<()> {
+    // Check if character's provided merkle tree corresponds to its character model's trees vec
+    if !ctx.accounts.character_model.merkle_trees.merkle_trees.iter().any(|&pubkey| pubkey == ctx.accounts.merkle_tree.key()) {
+        panic!("Provided character does not belong to the character model");
+    }
 
     // Check if this character is allowed to go on this mission
     if !ctx.accounts.mission_pool.character_models.iter().any(|&pubkey| pubkey == ctx.accounts.character_model.key()) {
@@ -361,7 +365,7 @@ pub fn collect_rewards<'info>(
                 project: ctx.accounts.project.to_account_info(),
                 character_model: ctx.accounts.character_model.to_account_info(),
                 merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-                user: ctx.accounts.mission.to_account_info(),
+                owner: ctx.accounts.wallet.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
                 hive_control: ctx.accounts.hive_control.to_account_info(),
                 compression_program: ctx.accounts.compression_program.to_account_info(),
@@ -612,7 +616,7 @@ pub fn recall_character<'info>(
                 project: ctx.accounts.project.to_account_info(),
                 character_model: ctx.accounts.character_model.to_account_info(),
                 merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-                user: ctx.accounts.mission.to_account_info(),
+                owner: ctx.accounts.wallet.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
                 hive_control: ctx.accounts.hive_control.to_account_info(),
                 compression_program: ctx.accounts.compression_program.to_account_info(),

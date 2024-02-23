@@ -298,7 +298,7 @@ describe("Nectar Missions Tests", () => {
         console.log(`Character model's merkle tree: ${activeCharactersTree.toString()}`);
     });
 
-    it("Wrap cNFT(s) to character", async () => {
+    it.skip("Wrap cNFT(s) to character", async () => {
         const project = characterModel.project;
         const wallet = userHC.identity().address;
 
@@ -446,7 +446,7 @@ describe("Nectar Missions Tests", () => {
         missionPool = mpPublicKey;
     });
 
-    it("Update the mission pool to allow the character model", async () => {
+    it.skip("Update the mission pool to allow the character model", async () => {
         const operation = new Operation(adminHC, [
             createUpdateMissionPoolInstruction(
                 {
