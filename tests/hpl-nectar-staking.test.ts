@@ -65,17 +65,11 @@ export function keccak256Hash(buffers: Buffer[]): Buffer {
 }
 
 describe("Nectar Staking", () => {
-  const collection: web3.PublicKey = new web3.PublicKey(
-    "2M6dcz7wa7S5jaEZ1deTqQTKXfy59g3NDmnmbVw5kWsH"
-  );
-  const merkleTree: web3.PublicKey = new web3.PublicKey(
-    "2fvvnVih4qVSYFemMgjN8xkHwFWJKJ2P1HaYosA27cUx"
-  );
   const projectAddress: web3.PublicKey = new web3.PublicKey(
-    "7s8tzjfqQvXjH6wGCGjmYVZAUaZAiSRxc8anVTQv5ubx"
+    "FHQdKNCunFEi3Ts9K6RSJpQPb4SYHPT6XWGAYkF45VJa"
   );
   const characterModelAddress: web3.PublicKey = new web3.PublicKey(
-    "9HuxvNvciQ628s5ri1VYVPgs4TR9nReh1bwroaoMvujz"
+    "GpqRLERGt2wZjF1pv7WoVM2ifxwCN21ApajGLAWbvxwi"
   );
   let currencyAddress: web3.PublicKey;
 
@@ -225,9 +219,7 @@ describe("Nectar Staking", () => {
           project: projectAddress,
           stakingPool: stakingPoolAddress,
           currency: currencyAddress,
-          collection,
-          creator: HPL_NECTAR_STAKING_PROGRAM,
-          merkleTree,
+          characterModel: characterModelAddress,
           delegateAuthority: HPL_NECTAR_STAKING_PROGRAM,
           authority: adminHC.identity().address,
           payer: adminHC.identity().address,
@@ -452,38 +444,39 @@ describe("Nectar Staking", () => {
           root: Array.from(base58.decode(character.proof!.root)),
           leafIdx: Number(character.leaf_idx),
           sourceHash: Array.from(sourceHash),
-          usedBy: !character.usedBy
-            ? { __kind: "None" }
-            : character.usedBy.params?.__typename === "UsedByStaking"
-            ? {
-                __kind: "Staking",
-                pool: new web3.PublicKey(character.usedBy.params.pool),
-                staker: new web3.PublicKey(character.usedBy.params.staker),
-                stakedAt: character.usedBy.params.stakedAt,
-                claimedAt: character.usedBy.params.claimedAt,
-              }
-            : character.usedBy.params?.__typename === "UsedByMission"
-            ? {
-                __kind: "Mission",
-                id: new web3.PublicKey(character.usedBy.params.id),
-                rewards: character.usedBy.params.rewards.map((reward) => ({
-                  delta: reward.delta,
-                  rewardIdx: reward.rewardIdx,
-                })),
-                endTime: character.usedBy.params.endTime,
-                rewardsCollected: character.usedBy.params.rewardsCollected,
-              }
-            : character.usedBy.params?.__typename === "UsedByGuild"
-            ? {
-                __kind: "Guild",
-                id: new web3.PublicKey(character.usedBy.params.id),
-                order: character.usedBy.params.order,
-                role:
-                  character.usedBy.params.role.kind == "Chief"
-                    ? GuildRole.Chief
-                    : GuildRole.Member,
-              }
-            : { __kind: "None" },
+          usedBy:
+            !character.usedBy || !character.usedBy.params
+              ? { __kind: "None" }
+              : "staker" in character.usedBy.params
+              ? {
+                  __kind: "Staking",
+                  pool: new web3.PublicKey(character.usedBy.params.pool),
+                  staker: new web3.PublicKey(character.usedBy.params.staker),
+                  stakedAt: character.usedBy.params.stakedAt,
+                  claimedAt: character.usedBy.params.claimedAt,
+                }
+              : "rewards" in character.usedBy.params
+              ? {
+                  __kind: "Mission",
+                  id: new web3.PublicKey(character.usedBy.params.id),
+                  rewards: character.usedBy.params.rewards.map((reward) => ({
+                    delta: reward.delta,
+                    rewardIdx: reward.rewardIdx,
+                  })),
+                  endTime: character.usedBy.params.endTime,
+                  rewardsCollected: character.usedBy.params.rewardsCollected,
+                }
+              : "role" in character.usedBy.params
+              ? {
+                  __kind: "Guild",
+                  id: new web3.PublicKey(character.usedBy.params.id),
+                  order: character.usedBy.params.order,
+                  role:
+                    character.usedBy.params.role.kind == "Chief"
+                      ? GuildRole.Chief
+                      : GuildRole.Member,
+                }
+              : { __kind: "None" },
         },
       }
     );

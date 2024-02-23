@@ -7,15 +7,11 @@ use {anchor_lang::prelude::*, hpl_toolkit::schema::*};
 #[derive(ToSchema)]
 pub struct StakingPool {
     pub bump: u8,
-    pub temp_place_holder_1: u8,
     pub project: Pubkey,
     pub key: Pubkey,
 
     /// The mint of the token distributed to stakers
     pub currency: Pubkey,
-
-    /// The account owning tokens distributed to stakers
-    pub temp_place_holder_2: Pubkey,
 
     /// Lock type { Freeze, Custody }
     pub lock_type: LockType,
@@ -54,24 +50,16 @@ pub struct StakingPool {
     pub end_time: Option<i64>,
 
     /// The collection mint addresses to be used for the staking_pool
-    pub collections: Vec<u8>,
-
-    /// The creator addresses to be used for the staking_pool
-    pub creators: Vec<u8>,
-
-    /// The merkle tress for cNFTs
-    pub merkle_trees: Vec<u8>,
+    pub character_models: Vec<Pubkey>,
 }
 impl StakingPool {
     pub const LEN: usize = 8 + 268;
 
     pub fn set_defaults(&mut self) {
         self.bump = 0;
-        self.temp_place_holder_1 = 0;
         self.project = Pubkey::default();
         self.key = Pubkey::default();
         self.currency = Pubkey::default();
-        self.temp_place_holder_2 = Pubkey::default();
         self.lock_type = LockType::Freeze;
         self.name = "".to_string();
         self.rewards_per_duration = 0;
@@ -84,9 +72,11 @@ impl StakingPool {
         self.total_staked = 0;
         self.start_time = None;
         self.end_time = None;
-        self.collections = vec![];
-        self.creators = vec![];
-        self.merkle_trees = vec![];
+        self.character_models = vec![];
+    }
+
+    pub fn verify_character_model(&self, character_model: &Pubkey) -> bool {
+        self.character_models.contains(character_model)
     }
 }
 

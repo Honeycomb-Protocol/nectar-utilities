@@ -18,7 +18,7 @@ pub struct Stake<'info> {
     #[account()]
     pub project: Box<Account<'info, Project>>,
 
-    #[account(has_one = project)]
+    #[account(constraint = staking_pool.verify_character_model(&character_model.key()))]
     pub character_model: Box<Account<'info, CharacterModel>>,
 
     /// CHECK: unsafe
@@ -150,7 +150,7 @@ pub struct Unstake<'info> {
     #[account()]
     pub project: Box<Account<'info, Project>>,
 
-    #[account(has_one = project)]
+    #[account(constraint = staking_pool.verify_character_model(&character_model.key()))]
     pub character_model: Box<Account<'info, CharacterModel>>,
 
     /// CHECK: unsafe

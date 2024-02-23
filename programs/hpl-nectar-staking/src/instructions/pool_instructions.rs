@@ -1,7 +1,8 @@
 use {
     crate::state::*,
     anchor_lang::prelude::*,
-    anchor_spl::token::{self, Mint, Token},
+    anchor_spl::token::{self, Token},
+    hpl_character_manager::state::CharacterModel,
     hpl_currency_manager::state::Currency,
     hpl_hive_control::{
         program::HplHiveControl,
@@ -122,15 +123,8 @@ pub struct UpdateStakingPool<'info> {
     pub currency: Option<Account<'info, Currency>>,
 
     /// Collection mint address to be used for the staking_pool
-    pub collection: Option<Account<'info, Mint>>,
-
-    /// Creator address to be used for the staking_pool
-    /// CHECK: This is not dangerous because we don't read or write from this account
-    pub creator: Option<AccountInfo<'info>>,
-
-    /// Merkle tree address for cNFTs
-    /// CHECK: This account is modified in the downstream program
-    pub merkle_tree: Option<AccountInfo<'info>>,
+    #[account(has_one = project)]
+    pub character_model: Option<Account<'info, CharacterModel>>,
 
     /// The wallet that holds authority for this action
     #[account(mut)]
@@ -225,58 +219,15 @@ pub fn update_staking_pool(
         staking_pool.currency = currency.key();
     }
 
-    if let Some(collection) = &ctx.accounts.collection {
-        let index = ctx
-            .accounts
-            .project
-            .collections
-            .iter()
-            .position(|x| x.eq(&collection.key()))
-            .unwrap();
+    if let Some(character_model) = &ctx.accounts.character_model {
         hpl_toolkit::utils::reallocate(
-            1,
+            32,
             staking_pool.to_account_info(),
             ctx.accounts.payer.to_account_info(),
             &ctx.accounts.rent,
             &ctx.accounts.system_program,
         )?;
-        staking_pool.collections.push(index as u8);
-    }
-
-    if let Some(creator) = &ctx.accounts.creator {
-        let index = ctx
-            .accounts
-            .project
-            .creators
-            .iter()
-            .position(|x| x.eq(&creator.key()))
-            .unwrap();
-        hpl_toolkit::utils::reallocate(
-            1,
-            staking_pool.to_account_info(),
-            ctx.accounts.payer.to_account_info(),
-            &ctx.accounts.rent,
-            &ctx.accounts.system_program,
-        )?;
-        staking_pool.creators.push(index as u8);
-    }
-
-    if let Some(merkle_tree) = &ctx.accounts.merkle_tree {
-        let index = ctx
-            .accounts
-            .project
-            .merkle_trees
-            .iter()
-            .position(|x| x.eq(&merkle_tree.key()))
-            .unwrap();
-        hpl_toolkit::utils::reallocate(
-            1,
-            staking_pool.to_account_info(),
-            ctx.accounts.payer.to_account_info(),
-            &ctx.accounts.rent,
-            &ctx.accounts.system_program,
-        )?;
-        staking_pool.merkle_trees.push(index as u8);
+        staking_pool.character_models.push(character_model.key());
     }
 
     Ok(())
