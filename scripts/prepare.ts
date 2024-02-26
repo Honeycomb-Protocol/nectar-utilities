@@ -8,7 +8,7 @@ dotenv.config();
 
 export default function () {
   // const RPC_URL = process.env.SOLANA_RPC || "https://api.devnet.solana.com";
-  const RPC_URL = "http://localhost:8899";
+  const RPC_URL = "http://localhost:9091";
   const connection = new web3.Connection(RPC_URL, "processed");
 
   const adminHC = new Honeycomb(connection);

@@ -629,6 +629,8 @@ pub fn recall_character<'info>(
 
     // msg!("Character verified. Determining if rewards have been collected.");
 
+    msg!("Determining if rewards have been collected.");
+    
     // Check if the person is eligible for a reward and rewards haven't been collected
     if let CharacterUsedBy::Mission { end_time, rewards, rewards_collected, .. } = &args.used_by {
         if *end_time < ctx.accounts.clock.unix_timestamp.try_into().unwrap() && !rewards.is_empty() && !rewards_collected {

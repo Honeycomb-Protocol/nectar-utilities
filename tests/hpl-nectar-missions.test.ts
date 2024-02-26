@@ -298,7 +298,7 @@ describe("Nectar Missions Tests", () => {
         console.log(`Character model's merkle tree: ${activeCharactersTree.toString()}`);
     });
 
-    it.skip("Wrap cNFT(s) to character", async () => {
+    it("Wrap cNFT(s) to character", async () => {
         const project = characterModel.project;
         const wallet = userHC.identity().address;
 
@@ -312,7 +312,7 @@ describe("Nectar Missions Tests", () => {
         for(let i = 0; i < numCharacters; i++) {
             const nftToWrap = nfts[i];
 
-            // console.log(nftToWrap);
+            console.log(nftToWrap);
 
             if (!nftToWrap.compression) continue;
 
@@ -395,7 +395,7 @@ describe("Nectar Missions Tests", () => {
             const newCharacter: HplCharacter = await HplCharacter.fetchWithTreeAndLeaf(
                 userHC.rpcEndpoint,
                 activeCharactersTree,
-                i
+                0
             );
     
             console.log("Character", JSON.stringify(newCharacter));
@@ -446,7 +446,7 @@ describe("Nectar Missions Tests", () => {
         missionPool = mpPublicKey;
     });
 
-    it.skip("Update the mission pool to allow the character model", async () => {
+    it("Update the mission pool to allow the character model", async () => {
         const operation = new Operation(adminHC, [
             createUpdateMissionPoolInstruction(
                 {
@@ -473,7 +473,7 @@ describe("Nectar Missions Tests", () => {
         await operation.send({ commitment: "processed" });
     });
 
-    it.skip("Create a currency", async () => {
+    it("Create a currency", async () => {
         const currencyMintKeypair = web3.Keypair.generate();
 
         const [ metadataPublicKey ] = web3.PublicKey.findProgramAddressSync(
@@ -584,7 +584,15 @@ describe("Nectar Missions Tests", () => {
                                 },
                                 min: 50,
                                 max: 100,
-                            }
+                            },
+                            // {
+                            //     rewardType: {
+                            //         __kind: "Currency",
+                            //         address: currency
+                            //     },
+                            //     min: 4000,
+                            //     max: 5000,
+                            // },
                         ]
                     }
                 }
