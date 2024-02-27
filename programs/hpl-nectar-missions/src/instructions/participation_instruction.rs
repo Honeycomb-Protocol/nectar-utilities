@@ -17,22 +17,14 @@ use {
     }, 
     hpl_character_manager::{
         cpi::{
-            accounts::{
-                UseCharacter,
-                VerifyCharacter,
-            }, 
+            accounts::UseCharacter, 
             use_character,
-            verify_character,
         }, 
-        instructions::{ 
-            UseCharacterArgs, 
-            VerifyCharacterArgs,
-        }, 
+        instructions::UseCharacterArgs, 
         program::HplCharacterManager, 
         state::{
             CharacterModel, 
-            CharacterUsedBy, 
-            DataOrHash,
+            CharacterUsedBy,
             EarnedReward, 
         }
     }, 
