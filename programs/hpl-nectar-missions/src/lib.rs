@@ -15,7 +15,7 @@ hpl_toolkit::platform_gate!();
 use hpl_toolkit::schema::*;
 #[cfg_attr(
     not(feature = "cpi"),
-    account_schemas_ix_injector(MissionPool, Mission)
+    account_schemas_ix_injector(MissionPool Mission)
 )]
 #[program]
 pub mod hpl_nectar_missions {

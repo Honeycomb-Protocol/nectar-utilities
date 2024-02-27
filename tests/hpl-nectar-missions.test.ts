@@ -584,15 +584,7 @@ describe("Nectar Missions Tests", () => {
                                 },
                                 min: 50,
                                 max: 100,
-                            },
-                            // {
-                            //     rewardType: {
-                            //         __kind: "Currency",
-                            //         address: currency
-                            //     },
-                            //     min: 4000,
-                            //     max: 5000,
-                            // },
+                            }
                         ]
                     }
                 }
@@ -605,13 +597,13 @@ describe("Nectar Missions Tests", () => {
         mission = mpPublicKey;
     });
 
-    it.skip("Create holder account and mint", async () => {
+    it("Create holder account and mint", async () => {
         const holderAccount = await adminHC.currency().newHolderAccount(userHC.identity().address);
 
         await holderAccount.mint(1_000_000);
     });
 
-    it.skip("Create user", async () => {
+    it("Create user", async () => {
         const username = "TestUser";
         const [ userPublicKey ] = web3.PublicKey.findProgramAddressSync(
             [
@@ -657,7 +649,7 @@ describe("Nectar Missions Tests", () => {
         console.log("User:", userPublicKey.toBase58());
     });
 
-    it.skip("Create user profile", async () => {
+    it("Create user profile", async () => {
         const [ userProfilePublicKey ] = web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("profile"),
@@ -700,7 +692,7 @@ describe("Nectar Missions Tests", () => {
         console.log("User profile:", userProfilePublicKey.toBase58());
     });
 
-    it.skip("Participate in the mission", async () => {
+    it("Participate in the mission", async () => {
         const tokenAccounts = await adminHC.connection.getTokenAccountsByOwner(
             userHC.identity().address,
             { mint: currencyMint }
@@ -776,7 +768,7 @@ describe("Nectar Missions Tests", () => {
         await operation.send({ skipPreflight: true });
     });
 
-    it.skip("Collect rewards for participating in the mission", async () => {
+    it("Collect rewards for participating in the mission", async () => {
         console.log("Waiting for mission to end...");
         await new Promise((resolve) => setTimeout(resolve, (missionDuration * 2) * 1000));
 
@@ -803,8 +795,6 @@ describe("Nectar Missions Tests", () => {
             0
         );
 
-        // Temporary fix
-        proofSecond.source.criteria.__kind = "MerkleTree";
         console.log("Proof (collect rewards):", JSON.stringify(proof));
         console.log("Proof second (collect rewards):", JSON.stringify(proofSecond));
         console.log("Source hash (collect rewards):", JSON.stringify(proofSecond.sourceHash));
@@ -871,7 +861,7 @@ describe("Nectar Missions Tests", () => {
         }
     });
 
-    it.skip("Recall character", async () => {
+    it("Recall character", async () => {
         console.log("Waiting before recalling character...");
         await new Promise((resolve) => setTimeout(resolve, (missionDuration * 2) * 1000));
 
@@ -883,8 +873,6 @@ describe("Nectar Missions Tests", () => {
             0
         );
 
-        // Temporary fix
-        proofSecond.source.criteria.__kind = "MerkleTree";
         console.log("Proof (recall):", JSON.stringify(proof));
         console.log("Proof second (recall):", JSON.stringify(proofSecond));
         console.log("Source hash (recall):", JSON.stringify(proofSecond.sourceHash));

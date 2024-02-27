@@ -348,35 +348,10 @@ pub fn collect_rewards<'info>(
     ctx: Context<'_, '_, '_, 'info, CollectRewards<'info>>, 
     args: CollectRewardsArgs
 ) -> Result<()> {
-    // Verify if the character is on the mission
     msg!("Collecting rewards (mission).");
-    // msg!("Verifying character data.");
-    // let verify_character_args = VerifyCharacterArgs {
-    //     root: args.root,
-    //     leaf_idx: args.leaf_idx,
-    //     source: DataOrHash::Hash(args.source_hash.clone()),
-    //     used_by: DataOrHash::Data(args.used_by.clone()),
-    // };
 
-    // verify_character(
-    //     CpiContext::new(
-    //         ctx.accounts.character_manager.to_account_info(),
-    //         VerifyCharacter {
-    //             project: ctx.accounts.project.to_account_info(),
-    //             character_model: ctx.accounts.character_model.to_account_info(),
-    //             merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-    //             owner: ctx.accounts.wallet.to_account_info(),
-    //             system_program: ctx.accounts.system_program.to_account_info(),
-    //             hive_control: ctx.accounts.hive_control.to_account_info(),
-    //             compression_program: ctx.accounts.compression_program.to_account_info(),
-    //             log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
-    //             instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
-    //         },
-    //     ),
-    //     verify_character_args
-    // )?;
+    msg!("Determining if the character is eligible for rewards.");
 
-    // msg!("Character verified. Determining if the character is eligible for rewards.");
     let (mission_id, earned_rewards, mission_end_time, mission_rewards_collected) = match &args.used_by {
         CharacterUsedBy::Mission { id, rewards, end_time, rewards_collected } => (id, rewards, end_time, rewards_collected),
         _ => panic!("Character is not on a mission"),
@@ -599,38 +574,10 @@ pub fn recall_character<'info>(
     ctx: Context<'_, '_, '_, 'info, RecallCharacter<'info>>, 
     args: RecallCharacterArgs
 ) -> Result<()> {
-    // Verify if the character is on the mission
-    // msg!("Verifying character data.");
-
-    // let verify_character_args = VerifyCharacterArgs {
-    //     root: args.root,
-    //     leaf_idx: args.leaf_idx,
-    //     source: DataOrHash::Hash(args.source_hash.clone()),
-    //     used_by: DataOrHash::Data(args.used_by.clone()),
-    // };
-
-    // verify_character(
-    //     CpiContext::new(
-    //         ctx.accounts.character_manager.to_account_info(),
-    //         VerifyCharacter {
-    //             project: ctx.accounts.project.to_account_info(),
-    //             character_model: ctx.accounts.character_model.to_account_info(),
-    //             merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-    //             owner: ctx.accounts.wallet.to_account_info(),
-    //             system_program: ctx.accounts.system_program.to_account_info(),
-    //             hive_control: ctx.accounts.hive_control.to_account_info(),
-    //             compression_program: ctx.accounts.compression_program.to_account_info(),
-    //             log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
-    //             instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
-    //         },
-    //     ),
-    //     verify_character_args
-    // )?;
-
-    // msg!("Character verified. Determining if rewards have been collected.");
+    msg!("Recalling character (mission).");
 
     msg!("Determining if rewards have been collected.");
-    
+
     // Check if the person is eligible for a reward and rewards haven't been collected
     if let CharacterUsedBy::Mission { end_time, rewards, rewards_collected, .. } = &args.used_by {
         if *end_time < ctx.accounts.clock.unix_timestamp.try_into().unwrap() && !rewards.is_empty() && !rewards_collected {
