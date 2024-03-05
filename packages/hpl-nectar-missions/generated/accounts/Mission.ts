@@ -22,6 +22,7 @@ import { Reward, rewardBeet } from '../types/Reward'
  */
 export type MissionArgs = {
   bump: number
+  project: web3.PublicKey
   missionPool: web3.PublicKey
   name: string
   minXp: beet.bignum
@@ -41,6 +42,7 @@ export const missionDiscriminator = [170, 56, 116, 75, 24, 11, 109, 12]
 export class Mission implements MissionArgs {
   private constructor(
     readonly bump: number,
+    readonly project: web3.PublicKey,
     readonly missionPool: web3.PublicKey,
     readonly name: string,
     readonly minXp: beet.bignum,
@@ -55,6 +57,7 @@ export class Mission implements MissionArgs {
   static fromArgs(args: MissionArgs) {
     return new Mission(
       args.bump,
+      args.project,
       args.missionPool,
       args.name,
       args.minXp,
@@ -170,6 +173,7 @@ export class Mission implements MissionArgs {
   pretty() {
     return {
       bump: this.bump,
+      project: this.project.toBase58(),
       missionPool: this.missionPool.toBase58(),
       name: this.name,
       minXp: (() => {
@@ -203,6 +207,7 @@ export const missionBeet = new beet.FixableBeetStruct<
   [
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['bump', beet.u8],
+    ['project', beetSolana.publicKey],
     ['missionPool', beetSolana.publicKey],
     ['name', beet.utf8String],
     ['minXp', beet.u64],

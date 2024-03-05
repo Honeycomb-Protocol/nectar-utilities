@@ -76,6 +76,7 @@ pub fn create_mission(ctx: Context<CreateMission>, args: CreateMissionArgs) -> R
     mission.set_defaults();
 
     mission.bump = ctx.bumps.mission;
+    mission.project = ctx.accounts.project.key();
     mission.mission_pool = ctx.accounts.mission_pool.key();
     mission.name = args.name;
     mission.min_xp = args.min_xp;

@@ -7,6 +7,7 @@ use {anchor_lang::prelude::*, hpl_toolkit::schema::*};
 #[derive(ToSchema)]
 pub struct Mission {
     pub bump: u8,                        // 1
+    pub project: Pubkey,                 // 32
     pub mission_pool: Pubkey,            // 32
     pub name: String,                    // 40
     pub min_xp: u64,                     // 8
@@ -15,12 +16,13 @@ pub struct Mission {
     pub rewards: Vec<Reward>,            // 4 (vec) + (1 (variant) + 32 (pubkey)) * n
 }
 impl Mission {
-    pub const LEN: usize = 8 + 1 + 32 + 40 + 8 + 40 + 9;
+    pub const LEN: usize = 8 + 1 + 32 + 32 + 40 + 8 + 40 + 9;
 
     pub fn set_defaults(&mut self) {
         const ONE_WEEK_IN_SECONDS: u64 = 60 * 60 * 24 * 7;
 
         self.bump = 0;
+        self.project = Pubkey::default();
         self.mission_pool = Pubkey::default();
         self.name = String::default();
         self.min_xp = 0;

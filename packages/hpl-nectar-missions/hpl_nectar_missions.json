@@ -799,6 +799,10 @@
             "type": "u8"
           },
           {
+            "name": "project",
+            "type": "publicKey"
+          },
+          {
             "name": "missionPool",
             "type": "publicKey"
           },
