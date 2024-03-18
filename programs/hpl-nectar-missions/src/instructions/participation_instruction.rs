@@ -99,6 +99,7 @@ pub struct Participate<'info> {
     pub vault: AccountInfo<'info>,
 
     pub system_program: Program<'info, System>,
+
     pub compression_program: Program<'info, SplAccountCompression>,
 
     /// HPL Hive Control Program
@@ -107,8 +108,10 @@ pub struct Participate<'info> {
     /// HPL Character Manager Program
     pub character_manager: Program<'info, HplCharacterManager>,
 
+    /// SPL Token Program
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
+
     pub currency_manager_program: Program<'info, HplCurrencyManager>,
     pub clock: Sysvar<'info, Clock>,
     pub rent_sysvar: Sysvar<'info, Rent>,
@@ -312,6 +315,7 @@ pub struct CollectRewards<'info> {
     pub compression_program: Program<'info, SplAccountCompression>,
 
     /// SPL Token Program
+    #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
 
     /// Solana Rent Sysvar

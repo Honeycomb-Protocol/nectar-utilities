@@ -54,7 +54,6 @@ import {
     HPL_CURRENCY_MANAGER_PROGRAM as HPL_CURRENCY_MANAGER_PROGRAM_ID,
     HplCurrency,
     createCreateCurrencyInstruction,
-    createCreateHolderAccountInstruction,
 } from "@honeycomb-protocol/currency-manager";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
@@ -541,7 +540,7 @@ describe("Nectar Missions Tests", () => {
 
     it("Create a mission", async () => {
         const missionName = "Important mission";
-        const [mpPublicKey] = web3.PublicKey.findProgramAddressSync(
+        const [mPublicKey] = web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("mission"),
                 missionPool.toBuffer(),
@@ -555,7 +554,7 @@ describe("Nectar Missions Tests", () => {
                 {
                     project,
                     missionPool,
-                    mission: mpPublicKey,
+                    mission: mPublicKey,
                     authority: admin.publicKey,
                     delegateAuthority: adminHC.identity().delegateAuthority()?.address || HPL_NECTAR_MISSIONS_PROGRAM_ID,
                     payer: admin.publicKey,
@@ -601,17 +600,17 @@ describe("Nectar Missions Tests", () => {
 
         await operation.send({ commitment: "processed" });
 
-        console.log("Mission:", mpPublicKey.toBase58());
-        mission = mpPublicKey;
+        console.log("Mission:", mPublicKey.toBase58());
+        mission = mPublicKey;
     });
 
-    it.skip("Create holder account and mint", async () => {
+    it("Create holder account and mint", async () => {
         const holderAccount = await adminHC.currency().newHolderAccount(userHC.identity().address);
 
         await holderAccount.mint(1_000_000);
     });
 
-    it.skip("Create user", async () => {
+    it("Create user", async () => {
         const username = "TestUser";
         const [ userPublicKey ] = web3.PublicKey.findProgramAddressSync(
             [
@@ -657,7 +656,7 @@ describe("Nectar Missions Tests", () => {
         console.log("User:", userPublicKey.toBase58());
     });
 
-    it.skip("Create user profile", async () => {
+    it("Create user profile", async () => {
         const [ userProfilePublicKey ] = web3.PublicKey.findProgramAddressSync(
             [
                 Buffer.from("profile"),
@@ -700,7 +699,7 @@ describe("Nectar Missions Tests", () => {
         console.log("User profile:", userProfilePublicKey.toBase58());
     });
 
-    it.skip("Participate in the mission", async () => {
+    it("Participate in the mission", async () => {
         const tokenAccounts = await adminHC.connection.getTokenAccountsByOwner(
             userHC.identity().address,
             { mint: currencyMint }
