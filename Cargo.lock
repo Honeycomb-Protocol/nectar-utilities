@@ -1037,42 +1037,44 @@ dependencies = [
 
 [[package]]
 name = "hpl-character-manager"
-version = "0.0.2-beta.15"
+version = "0.0.2-beta.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41491ecb9376782312d3720a1d217b0a67b14c815db65a9ab26117f350e01433"
+checksum = "ca30360924bf022afb1ff123e1912cf3ec3b68dd36ce2f055c0250cff3c00d1f"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
  "hpl-hive-control",
  "hpl-toolkit",
  "mpl-bubblegum",
- "mpl-token-metadata",
+ "mpl-token-metadata 1.13.2",
  "spl-account-compression",
 ]
 
 [[package]]
 name = "hpl-currency-manager"
-version = "0.0.84-beta.4"
+version = "0.0.84-beta.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1aa0b483dd28dc2350e404f50558fa1dbcae44e62b9a773897d2835878da083f"
+checksum = "bf5551018ca541d7bacd86a67ee98c9dd8a65fbd053f503665a32ba2620a83ad"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
  "hpl-hive-control",
  "hpl-toolkit",
- "mpl-token-metadata",
+ "mpl-token-metadata 1.13.2",
 ]
 
 [[package]]
 name = "hpl-hive-control"
-version = "0.2.19-beta.6"
+version = "0.2.19-beta.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25307175d5c3ab00f2f58d398219d428825f2ec701db7ab6c32b736cd0b94eef"
+checksum = "50e1e2052cd7b8da1266c78df0ac513eae53f6ab443345bb14cda93f5eeda0c1"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
  "hpl-toolkit",
+ "mpl-token-metadata 3.2.3",
  "spl-account-compression",
+ "spl-concurrent-merkle-tree",
 ]
 
 [[package]]
@@ -1105,9 +1107,9 @@ dependencies = [
 
 [[package]]
 name = "hpl-toolkit"
-version = "0.0.3-beta.11"
+version = "0.0.3-beta.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d6a4cd04c06e6a16f7a168cbd98d890c4171ce0b38331541cbfe449f57e49b1"
+checksum = "e98d5dfe89f347d2b6fe5f2a3b97c3622b8878a0ba9238ecfc8a70ca9b43795b"
 dependencies = [
  "anchor-lang",
  "hpl-toolkit-attribute-account-schemas-ix-injector",
@@ -1484,6 +1486,19 @@ dependencies = [
  "solana-program",
  "spl-associated-token-account",
  "spl-token",
+ "thiserror",
+]
+
+[[package]]
+name = "mpl-token-metadata"
+version = "3.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba8ee05284d79b367ae8966d558e1a305a781fc80c9df51f37775169117ba64f"
+dependencies = [
+ "borsh 0.10.3",
+ "num-derive 0.3.3",
+ "num-traits 0.2.18",
+ "solana-program",
  "thiserror",
 ]
 

@@ -14,10 +14,10 @@ codegen-units = 1
 [workspace.dependencies]
 anchor-lang = "0.29.0"
 anchor-spl = "0.29.0"
-hpl-toolkit = "0.0.3-beta.11"
-hpl-hive-control = { version = "0.2.19-beta.6", features = ["cpi"] }
-hpl-character-manager = { version = "0.0.2-beta.15", features = ["cpi"] }
-hpl-currency-manager = { version = "0.0.84-beta.4", features = ["cpi"] }
+hpl-toolkit = "0.0.3-beta.14"
+hpl-hive-control = { version = "0.2.19-beta.11", features = ["cpi"] }
+hpl-character-manager = { version = "0.0.2-beta.17", features = ["cpi"] }
+hpl-currency-manager = { version = "0.0.84-beta.6", features = ["cpi"] }
 rand = "0.8.5"
 spl-account-compression = { version = "0.3.0", features = ["cpi"] }
 ahash = "=0.8.6"

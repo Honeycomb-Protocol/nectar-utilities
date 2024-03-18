@@ -429,14 +429,6 @@
           "isSigner": true
         },
         {
-          "name": "profile",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "User profile account"
-          ]
-        },
-        {
           "name": "vault",
           "isMut": true,
           "isSigner": false
@@ -541,15 +533,6 @@
           "isSigner": false,
           "docs": [
             "Mission state account"
-          ]
-        },
-        {
-          "name": "profile",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "User profile account"
           ]
         },
         {

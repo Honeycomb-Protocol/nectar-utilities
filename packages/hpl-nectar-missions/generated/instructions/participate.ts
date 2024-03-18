@@ -47,7 +47,6 @@ export const participateStruct = new beet.BeetArgsStruct<
  * @property [_writable_] holderAccount
  * @property [_writable_] tokenAccount
  * @property [_writable_, **signer**] wallet
- * @property [_writable_] profile
  * @property [_writable_] vault
  * @property [] compressionProgram
  * @property [] hiveControl
@@ -72,7 +71,6 @@ export type ParticipateInstructionAccounts = {
   holderAccount: web3.PublicKey
   tokenAccount: web3.PublicKey
   wallet: web3.PublicKey
-  profile: web3.PublicKey
   vault: web3.PublicKey
   systemProgram?: web3.PublicKey
   compressionProgram: web3.PublicKey
@@ -160,11 +158,6 @@ export function createParticipateInstruction(
       pubkey: accounts.wallet,
       isWritable: true,
       isSigner: true,
-    },
-    {
-      pubkey: accounts.profile,
-      isWritable: true,
-      isSigner: false,
     },
     {
       pubkey: accounts.vault,

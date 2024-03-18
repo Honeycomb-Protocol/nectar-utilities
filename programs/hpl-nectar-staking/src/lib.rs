@@ -21,9 +21,9 @@ pub mod hpl_nectar_staking {
         ctx: Context<CreateStakingPool>,
         args: CreateStakingPoolArgs,
     ) -> Result<()> {
-        hpl_toolkit::add_service!(hpl_hive_control::state::Service::Staking {
-            pool_id: ctx.accounts.staking_pool.key(),
-        });
+        // hpl_toolkit::add_service!(hpl_hive_control::state::Service::Staking {
+        //     pool_id: ctx.accounts.staking_pool.key(),
+        // });
 
         instructions::create_staking_pool(ctx, args)
     }
