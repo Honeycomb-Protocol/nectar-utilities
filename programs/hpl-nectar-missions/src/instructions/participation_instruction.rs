@@ -143,7 +143,6 @@ pub fn participate<'info>(
             EarnedReward {
                 delta,
                 reward_idx: i as u8,
-                delta,
             }
         })
         .collect::<Vec<EarnedReward>>();
@@ -315,25 +314,7 @@ pub fn collect_rewards<'info>(
 ) -> Result<()> {
     msg!("Collecting rewards (mission).");
 
-    verify_character(
-        CpiContext::new(
-            ctx.accounts.character_manager.to_account_info(),
-            VerifyCharacter {
-                project: ctx.accounts.project.to_account_info(),
-                character_model: ctx.accounts.character_model.to_account_info(),
-                merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-                owner: ctx.accounts.wallet.to_account_info(),
-                system_program: ctx.accounts.system_program.to_account_info(),
-                hive_control: ctx.accounts.hive_control.to_account_info(),
-                compression_program: ctx.accounts.compression_program.to_account_info(),
-                log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
-                instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
-            },
-        ),
-        verify_character_args,
-    )?;
-
-    msg!("Character verified. Determining if the character is eligible for rewards.");
+    msg!("Determining if the character is eligible for rewards.");
     let (mission_id, earned_rewards, mission_end_time, mission_rewards_collected) =
         match &args.used_by {
             CharacterUsedBy::Mission {
@@ -572,32 +553,7 @@ pub fn recall_character<'info>(
 ) -> Result<()> {
     msg!("Recalling character (mission).");
 
-    let verify_character_args = VerifyCharacterArgs {
-        root: args.root,
-        leaf_idx: args.leaf_idx,
-        source: DataOrHash::Data(args.source.clone()),
-        used_by: DataOrHash::Data(args.used_by.clone()),
-    };
-
-    verify_character(
-        CpiContext::new(
-            ctx.accounts.character_manager.to_account_info(),
-            VerifyCharacter {
-                project: ctx.accounts.project.to_account_info(),
-                character_model: ctx.accounts.character_model.to_account_info(),
-                merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-                owner: ctx.accounts.wallet.to_account_info(),
-                system_program: ctx.accounts.system_program.to_account_info(),
-                hive_control: ctx.accounts.hive_control.to_account_info(),
-                compression_program: ctx.accounts.compression_program.to_account_info(),
-                log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
-                instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
-            },
-        ),
-        verify_character_args,
-    )?;
-
-    msg!("Character verified. Determining if rewards can be collected.");
+    msg!("Determining if rewards can be collected.");
 
     // Check if the person is eligible for a reward and rewards haven't been collected
     if let CharacterUsedBy::Mission {
