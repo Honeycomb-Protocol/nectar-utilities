@@ -17,11 +17,9 @@ import { LockType, lockTypeBeet } from '../types/LockType'
  */
 export type StakingPoolArgs = {
   bump: number
-  tempPlaceHolder1: number
   project: web3.PublicKey
   key: web3.PublicKey
   currency: web3.PublicKey
-  tempPlaceHolder2: web3.PublicKey
   lockType: LockType
   name: string
   rewardsPerDuration: beet.bignum
@@ -34,9 +32,7 @@ export type StakingPoolArgs = {
   totalStaked: beet.bignum
   startTime: beet.COption<beet.bignum>
   endTime: beet.COption<beet.bignum>
-  collections: Uint8Array
-  creators: Uint8Array
-  merkleTrees: Uint8Array
+  characterModels: web3.PublicKey[]
 }
 
 export const stakingPoolDiscriminator = [203, 19, 214, 220, 220, 154, 24, 102]
@@ -50,11 +46,9 @@ export const stakingPoolDiscriminator = [203, 19, 214, 220, 220, 154, 24, 102]
 export class StakingPool implements StakingPoolArgs {
   private constructor(
     readonly bump: number,
-    readonly tempPlaceHolder1: number,
     readonly project: web3.PublicKey,
     readonly key: web3.PublicKey,
     readonly currency: web3.PublicKey,
-    readonly tempPlaceHolder2: web3.PublicKey,
     readonly lockType: LockType,
     readonly name: string,
     readonly rewardsPerDuration: beet.bignum,
@@ -67,9 +61,7 @@ export class StakingPool implements StakingPoolArgs {
     readonly totalStaked: beet.bignum,
     readonly startTime: beet.COption<beet.bignum>,
     readonly endTime: beet.COption<beet.bignum>,
-    readonly collections: Uint8Array,
-    readonly creators: Uint8Array,
-    readonly merkleTrees: Uint8Array
+    readonly characterModels: web3.PublicKey[]
   ) {}
 
   /**
@@ -78,11 +70,9 @@ export class StakingPool implements StakingPoolArgs {
   static fromArgs(args: StakingPoolArgs) {
     return new StakingPool(
       args.bump,
-      args.tempPlaceHolder1,
       args.project,
       args.key,
       args.currency,
-      args.tempPlaceHolder2,
       args.lockType,
       args.name,
       args.rewardsPerDuration,
@@ -95,9 +85,7 @@ export class StakingPool implements StakingPoolArgs {
       args.totalStaked,
       args.startTime,
       args.endTime,
-      args.collections,
-      args.creators,
-      args.merkleTrees
+      args.characterModels
     )
   }
 
@@ -207,11 +195,9 @@ export class StakingPool implements StakingPoolArgs {
   pretty() {
     return {
       bump: this.bump,
-      tempPlaceHolder1: this.tempPlaceHolder1,
       project: this.project.toBase58(),
       key: this.key.toBase58(),
       currency: this.currency.toBase58(),
-      tempPlaceHolder2: this.tempPlaceHolder2.toBase58(),
       lockType: 'LockType.' + LockType[this.lockType],
       name: this.name,
       rewardsPerDuration: (() => {
@@ -254,9 +240,7 @@ export class StakingPool implements StakingPoolArgs {
       })(),
       startTime: this.startTime,
       endTime: this.endTime,
-      collections: this.collections,
-      creators: this.creators,
-      merkleTrees: this.merkleTrees,
+      characterModels: this.characterModels,
     }
   }
 }
@@ -274,11 +258,9 @@ export const stakingPoolBeet = new beet.FixableBeetStruct<
   [
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['bump', beet.u8],
-    ['tempPlaceHolder1', beet.u8],
     ['project', beetSolana.publicKey],
     ['key', beetSolana.publicKey],
     ['currency', beetSolana.publicKey],
-    ['tempPlaceHolder2', beetSolana.publicKey],
     ['lockType', lockTypeBeet],
     ['name', beet.utf8String],
     ['rewardsPerDuration', beet.u64],
@@ -291,9 +273,7 @@ export const stakingPoolBeet = new beet.FixableBeetStruct<
     ['totalStaked', beet.u64],
     ['startTime', beet.coption(beet.i64)],
     ['endTime', beet.coption(beet.i64)],
-    ['collections', beet.bytes],
-    ['creators', beet.bytes],
-    ['merkleTrees', beet.bytes],
+    ['characterModels', beet.array(beetSolana.publicKey)],
   ],
   StakingPool.fromArgs,
   'StakingPool'

@@ -25,9 +25,9 @@ pub mod hpl_nectar_missions {
         ctx: Context<CreateMissionPool>,
         args: CreateMissionPoolArgs,
     ) -> Result<()> {
-        hpl_toolkit::add_service!(hpl_hive_control::state::Service::Missions {
-            pool_id: ctx.accounts.mission_pool.key(),
-        });
+        // hpl_toolkit::add_service!(hpl_hive_control::state::Service::Missions {
+        //     pool_id: ctx.accounts.mission_pool.key(),
+        // });
 
         instructions::create_mission_pool(ctx, args)
     }

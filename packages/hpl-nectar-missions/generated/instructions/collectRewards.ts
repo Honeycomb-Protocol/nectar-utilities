@@ -44,8 +44,7 @@ export const collectRewardsStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] project
  * @property [] missionPool
  * @property [] missionPoolDelegate (optional)
- * @property [_writable_] mission
- * @property [_writable_] profile (optional)
+ * @property [] mission
  * @property [_writable_] mint (optional)
  * @property [] currency (optional)
  * @property [] holderAccount (optional)
@@ -71,7 +70,6 @@ export type CollectRewardsInstructionAccounts = {
   missionPool: web3.PublicKey
   missionPoolDelegate?: web3.PublicKey
   mission: web3.PublicKey
-  profile?: web3.PublicKey
   mint?: web3.PublicKey
   currency?: web3.PublicKey
   holderAccount?: web3.PublicKey
@@ -150,22 +148,10 @@ export function createCollectRewardsInstruction(
     isWritable: true,
     isSigner: false,
   })
-  if (accounts.profile != null) {
+  if (accounts.mint != null) {
     if (accounts.missionPoolDelegate == null) {
       throw new Error(
-        "When providing 'profile' then 'accounts.missionPoolDelegate' need(s) to be provided as well."
-      )
-    }
-    keys.push({
-      pubkey: accounts.profile,
-      isWritable: true,
-      isSigner: false,
-    })
-  }
-  if (accounts.mint != null) {
-    if (accounts.missionPoolDelegate == null || accounts.profile == null) {
-      throw new Error(
-        "When providing 'mint' then 'accounts.missionPoolDelegate', 'accounts.profile' need(s) to be provided as well."
+        "When providing 'mint' then 'accounts.missionPoolDelegate' need(s) to be provided as well."
       )
     }
     keys.push({
@@ -175,13 +161,9 @@ export function createCollectRewardsInstruction(
     })
   }
   if (accounts.currency != null) {
-    if (
-      accounts.missionPoolDelegate == null ||
-      accounts.profile == null ||
-      accounts.mint == null
-    ) {
+    if (accounts.missionPoolDelegate == null || accounts.mint == null) {
       throw new Error(
-        "When providing 'currency' then 'accounts.missionPoolDelegate', 'accounts.profile', 'accounts.mint' need(s) to be provided as well."
+        "When providing 'currency' then 'accounts.missionPoolDelegate', 'accounts.mint' need(s) to be provided as well."
       )
     }
     keys.push({
@@ -193,12 +175,11 @@ export function createCollectRewardsInstruction(
   if (accounts.holderAccount != null) {
     if (
       accounts.missionPoolDelegate == null ||
-      accounts.profile == null ||
       accounts.mint == null ||
       accounts.currency == null
     ) {
       throw new Error(
-        "When providing 'holderAccount' then 'accounts.missionPoolDelegate', 'accounts.profile', 'accounts.mint', 'accounts.currency' need(s) to be provided as well."
+        "When providing 'holderAccount' then 'accounts.missionPoolDelegate', 'accounts.mint', 'accounts.currency' need(s) to be provided as well."
       )
     }
     keys.push({
@@ -210,13 +191,12 @@ export function createCollectRewardsInstruction(
   if (accounts.tokenAccount != null) {
     if (
       accounts.missionPoolDelegate == null ||
-      accounts.profile == null ||
       accounts.mint == null ||
       accounts.currency == null ||
       accounts.holderAccount == null
     ) {
       throw new Error(
-        "When providing 'tokenAccount' then 'accounts.missionPoolDelegate', 'accounts.profile', 'accounts.mint', 'accounts.currency', 'accounts.holderAccount' need(s) to be provided as well."
+        "When providing 'tokenAccount' then 'accounts.missionPoolDelegate', 'accounts.mint', 'accounts.currency', 'accounts.holderAccount' need(s) to be provided as well."
       )
     }
     keys.push({

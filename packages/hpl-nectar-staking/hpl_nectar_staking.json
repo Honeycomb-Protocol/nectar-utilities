@@ -140,30 +140,12 @@
           ]
         },
         {
-          "name": "collection",
+          "name": "characterModel",
           "isMut": false,
           "isSigner": false,
           "isOptional": true,
           "docs": [
             "Collection mint address to be used for the staking_pool"
-          ]
-        },
-        {
-          "name": "creator",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "Creator address to be used for the staking_pool"
-          ]
-        },
-        {
-          "name": "merkleTree",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "Merkle tree address for cNFTs"
           ]
         },
         {
@@ -975,10 +957,6 @@
             "type": "u8"
           },
           {
-            "name": "tempPlaceHolder1",
-            "type": "u8"
-          },
-          {
             "name": "project",
             "type": "publicKey"
           },
@@ -990,13 +968,6 @@
             "name": "currency",
             "docs": [
               "The mint of the token distributed to stakers"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "tempPlaceHolder2",
-            "docs": [
-              "The account owning tokens distributed to stakers"
             ],
             "type": "publicKey"
           },
@@ -1097,25 +1068,13 @@
             }
           },
           {
-            "name": "collections",
+            "name": "characterModels",
             "docs": [
               "The collection mint addresses to be used for the staking_pool"
             ],
-            "type": "bytes"
-          },
-          {
-            "name": "creators",
-            "docs": [
-              "The creator addresses to be used for the staking_pool"
-            ],
-            "type": "bytes"
-          },
-          {
-            "name": "merkleTrees",
-            "docs": [
-              "The merkle tress for cNFTs"
-            ],
-            "type": "bytes"
+            "type": {
+              "vec": "publicKey"
+            }
           }
         ]
       }

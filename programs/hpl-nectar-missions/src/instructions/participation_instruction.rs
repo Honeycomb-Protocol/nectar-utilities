@@ -1,33 +1,20 @@
 use {
     crate::{
-        errors::ErrorCode, 
-        state::{
-            Mission,
-            MissionPool,
-            RewardType,
-        }, 
-        utils::{Randomizer, RANDOMIZER} 
-    }, 
-    anchor_lang::prelude::*, 
-    anchor_spl::token::{
-        self, 
-        Mint, 
-        Token, 
-        TokenAccount, 
-    }, 
+        errors::ErrorCode,
+        state::{Mission, MissionPool, RewardType},
+        utils::{Randomizer, RANDOMIZER},
+    },
+    anchor_lang::prelude::*,
+    anchor_spl::token::{self, Mint, Token, TokenAccount},
     hpl_character_manager::{
         cpi::{
-            accounts::UseCharacter, 
-            use_character,
-        }, 
-        instructions::UseCharacterArgs, 
-        program::HplCharacterManager, 
-        state::{
-            CharacterModel, 
-            CharacterUsedBy,
-            EarnedReward, 
-        }
-    }, 
+            accounts::{UseCharacter, VerifyCharacter},
+            use_character, verify_character,
+        },
+        instructions::{UseCharacterArgs, VerifyCharacterArgs},
+        program::HplCharacterManager,
+        state::{CharacterModel, CharacterSource, CharacterUsedBy, EarnedReward},
+    },
     hpl_currency_manager::{
         cpi::{
             accounts::{BurnCurrency, MintCurrency},
@@ -36,21 +23,13 @@ use {
         program::HplCurrencyManager,
         state::HolderAccount,
         utils::Currency,
-    }, 
-    hpl_hive_control::{
-        cpi::{
-            accounts::ManageProfileData,
-            manage_profile_data,
-        },
-        instructions::ManageProfileDataArgs,
-        program::HplHiveControl,
-        state::{
-            DelegateAuthority, Profile, ProfileData, ProfileIdentity, Project
-        },
     },
-    spl_account_compression::{
-        program::SplAccountCompression, Noop
-    }
+    hpl_hive_control::{
+        program::HplHiveControl,
+        state::{DelegateAuthority, Project},
+    },
+    hpl_toolkit::{compression::ToNode, DataOrHash},
+    spl_account_compression::{program::SplAccountCompression, Noop},
 };
 
 #[derive(Accounts)]
@@ -73,26 +52,18 @@ pub struct Participate<'info> {
 
     #[account(has_one = mint, constraint = mission.cost.address == currency.key())]
     pub currency: Box<Account<'info, Currency>>,
-    
+
     #[account(mut)]
     pub mint: Box<Account<'info, Mint>>,
 
     #[account(mut, has_one = currency, has_one = token_account, constraint = holder_account.owner == wallet.key())]
     pub holder_account: Box<Account<'info, HolderAccount>>,
-    
+
     #[account(mut)]
     pub token_account: Box<Account<'info, TokenAccount>>,
 
     #[account(mut)]
     pub wallet: Signer<'info>,
-
-    /// User profile account
-    #[account(
-        mut, 
-        has_one = project, 
-        constraint = matches!(profile.identity, ProfileIdentity::Main), 
-    )]
-    pub profile: Box<Account<'info, Profile>>,
 
     /// CHECK: This is not dangerous because we don't read or write from this account
     #[account(mut)]
@@ -127,30 +98,33 @@ pub struct ParticipateArgs {
     pub leaf_idx: u32,
     pub source_hash: [u8; 32],
 }
-
-pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, args: ParticipateArgs) -> Result<()> {
-    // Check if character's provided merkle tree corresponds to its character model's trees vec
-    if !ctx.accounts.character_model.merkle_trees.merkle_trees.iter().any(|&pubkey| pubkey == ctx.accounts.merkle_tree.key()) {
-        panic!("Provided character does not belong to the character model");
-    }
-
+pub fn participate<'info>(
+    ctx: Context<'_, '_, '_, 'info, Participate<'info>>,
+    args: ParticipateArgs,
+) -> Result<()> {
     // Check if this character is allowed to go on this mission
-    if !ctx.accounts.mission_pool.character_models.iter().any(|&pubkey| pubkey == ctx.accounts.character_model.key()) {
+    if !ctx
+        .accounts
+        .mission_pool
+        .character_models
+        .iter()
+        .any(|&pubkey| pubkey == ctx.accounts.character_model.key())
+    {
         panic!("Character model is not allowed on this mission");
     }
 
     // Check if the profile has the minimum XP required to take part in this mission
-    if let Some(profile_data) = ctx.accounts.profile.app_context.get("nectar_missions_xp") {
-        match profile_data {
-            ProfileData::SingleValue(value) => {
-                let xp = value.parse::<u64>().unwrap();
-                if xp < ctx.accounts.mission.min_xp {
-                    return Err(ErrorCode::InsufficientXp.into());
-                }
-            },
-            _ => panic!("Invalid profile data"),
-        }
-    };
+    // if let Some(profile_data) = ctx.accounts.profile.app_context.get("nectar_missions_xp") {
+    //     match profile_data {
+    //         ProfileData::SingleValue(value) => {
+    //             let xp = value.parse::<u64>().unwrap();
+    //             if xp < ctx.accounts.mission.min_xp {
+    //                 return Err(ErrorCode::InsufficientXp.into());
+    //             }
+    //         },
+    //         _ => panic!("Invalid profile data"),
+    //     }
+    // };
 
     msg!("Mission pool and character model verified. Profile has enough XP to participate. Generating rewards.");
 
@@ -160,7 +134,7 @@ pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, a
         .rewards
         .iter()
         .enumerate()
-        .map(| ( i, .. ) | {
+        .map(|(i, ..)| {
             let delta = RANDOMIZER.get_random(
                 ctx.accounts.mission_pool.randomizer_round as usize,
                 ctx.accounts.clock.slot,
@@ -169,6 +143,7 @@ pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, a
             EarnedReward {
                 delta,
                 reward_idx: i as u8,
+                delta,
             }
         })
         .collect::<Vec<EarnedReward>>();
@@ -191,9 +166,9 @@ pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, a
                 system_program: ctx.accounts.system_program.to_account_info(),
                 hive_control: ctx.accounts.hive_control.to_account_info(),
                 token_program: ctx.accounts.token_program.to_account_info(),
-            }
-        ), 
-        ctx.accounts.mission.cost.amount
+            },
+        ),
+        ctx.accounts.mission.cost.amount,
     )?;
 
     msg!("Currency burned. Using character for mission.");
@@ -221,7 +196,8 @@ pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, a
                 ctx.accounts.mission.name.as_bytes(),
                 &[ctx.accounts.mission.bump],
             ]],
-        ).with_remaining_accounts(ctx.remaining_accounts.to_vec()),
+        )
+        .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         UseCharacterArgs {
             root: args.root,
             leaf_idx: args.leaf_idx,
@@ -229,11 +205,12 @@ pub fn participate<'info>(ctx: Context<'_, '_, '_, 'info, Participate<'info>>, a
             current_used_by: CharacterUsedBy::None,
             new_used_by: CharacterUsedBy::Mission {
                 id: ctx.accounts.mission.key(),
-                end_time: (ctx.accounts.clock.unix_timestamp as u64 + ctx.accounts.mission.get_duration()),
+                end_time: (ctx.accounts.clock.unix_timestamp as u64
+                    + ctx.accounts.mission.get_duration()),
                 rewards: earned_rewards,
                 rewards_collected: false,
             },
-        }
+        },
     )?;
 
     msg!("Character is now being used by the mission.");
@@ -263,14 +240,6 @@ pub struct CollectRewards<'info> {
     /// Mission state account
     #[account(mut, has_one = mission_pool)]
     pub mission: Box<Account<'info, Mission>>,
-
-    /// User profile account
-    #[account(
-        mut, 
-        has_one = project, 
-        constraint = matches!(profile.identity, ProfileIdentity::Main), 
-    )]
-    pub profile: Option<Box<Account<'info, Profile>>>,
 
     #[account(mut)]
     pub mint: Option<Box<Account<'info, Mint>>>,
@@ -341,23 +310,46 @@ pub struct CollectRewardsArgs {
 }
 
 pub fn collect_rewards<'info>(
-    ctx: Context<'_, '_, '_, 'info, CollectRewards<'info>>, 
-    args: CollectRewardsArgs
+    ctx: Context<'_, '_, '_, 'info, CollectRewards<'info>>,
+    args: CollectRewardsArgs,
 ) -> Result<()> {
     msg!("Collecting rewards (mission).");
 
-    msg!("Determining if the character is eligible for rewards.");
+    verify_character(
+        CpiContext::new(
+            ctx.accounts.character_manager.to_account_info(),
+            VerifyCharacter {
+                project: ctx.accounts.project.to_account_info(),
+                character_model: ctx.accounts.character_model.to_account_info(),
+                merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
+                owner: ctx.accounts.wallet.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+                hive_control: ctx.accounts.hive_control.to_account_info(),
+                compression_program: ctx.accounts.compression_program.to_account_info(),
+                log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+                instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
+            },
+        ),
+        verify_character_args,
+    )?;
 
-    let (mission_id, earned_rewards, mission_end_time, mission_rewards_collected) = match &args.used_by {
-        CharacterUsedBy::Mission { id, rewards, end_time, rewards_collected } => (id, rewards, end_time, rewards_collected),
-        _ => panic!("Character is not on a mission"),
-    };
+    msg!("Character verified. Determining if the character is eligible for rewards.");
+    let (mission_id, earned_rewards, mission_end_time, mission_rewards_collected) =
+        match &args.used_by {
+            CharacterUsedBy::Mission {
+                id,
+                rewards,
+                end_time,
+                rewards_collected,
+            } => (id, rewards, end_time, rewards_collected),
+            _ => panic!("Character is not on a mission"),
+        };
 
     // Check if the person is eligible for rewards (time check)
     if *mission_end_time > ctx.accounts.clock.unix_timestamp.try_into().unwrap() {
         return Err(ErrorCode::NotEnded.into());
     }
-    
+
     msg!("Character is eligible for rewards. Checking if rewards have already been collected.");
     if *mission_rewards_collected {
         return Err(ErrorCode::RewardNotAvailable.into());
@@ -387,7 +379,8 @@ pub fn collect_rewards<'info>(
                 ctx.accounts.mission.name.as_bytes(),
                 &[ctx.accounts.mission.bump],
             ]],
-        ).with_remaining_accounts(ctx.remaining_accounts.to_vec()),
+        )
+        .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         UseCharacterArgs {
             root: args.root,
             leaf_idx: args.leaf_idx,
@@ -399,51 +392,57 @@ pub fn collect_rewards<'info>(
                 rewards: earned_rewards.clone(),
                 rewards_collected: true,
             },
-        }
+        },
     )?;
 
     msg!("Collecting rewards.");
     for earned_reward in earned_rewards.iter() {
-        let reward = ctx.accounts.mission.rewards.get(earned_reward.reward_idx as usize).unwrap();
+        let reward = ctx
+            .accounts
+            .mission
+            .rewards
+            .get(earned_reward.reward_idx as usize)
+            .unwrap();
         match reward.reward_type {
             RewardType::Xp => {
-                if ctx.accounts.profile.is_none() {
-                    return Err(ErrorCode::ProfileNotProvided.into());
-                }
+                // if ctx.accounts.profile.is_none() {
+                //     return Err(ErrorCode::ProfileNotProvided.into());
+                // }
 
-                let profile = ctx.accounts.profile.clone().unwrap();
-                let mut xp = Randomizer::get_result_from_delta(reward.min, reward.max, earned_reward.delta);
+                // let profile = ctx.accounts.profile.clone().unwrap();
+                // let mut xp =
+                //     Randomizer::get_result_from_delta(reward.min, reward.max, earned_reward.delta);
 
-                if let Some(profile_data) = profile.app_context.get("nectar_missions_xp") {
-                    match profile_data {
-                        ProfileData::SingleValue(value) => xp += value.parse::<u64>().unwrap(),
-                        _ => {}
-                    }
-                }
+                // if let Some(profile_data) = profile.app_context.get("nectar_missions_xp") {
+                //     match profile_data {
+                //         ProfileData::SingleValue(value) => xp += value.parse::<u64>().unwrap(),
+                //         _ => {}
+                //     }
+                // }
 
-                manage_profile_data(
-                    CpiContext::new(
-                        ctx.accounts.hive_control.to_account_info(),
-                        ManageProfileData {
-                            project: ctx.accounts.project.to_account_info(),
-                            profile: profile.to_account_info(),
-                            delegate_authority: None,
-                            authority: ctx.accounts.wallet.to_account_info(),
-                            payer: ctx.accounts.wallet.to_account_info(),
-                            rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
-                            system_program: ctx.accounts.system_program.to_account_info(),
-                            clock: ctx.accounts.clock.to_account_info(),
-                            vault: ctx.accounts.vault.to_account_info(),
-                            instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
-                        },
-                    ),
-                    ManageProfileDataArgs {
-                        label: String::from("nectar_missions_xp"),
-                        value: Some(ProfileData::SingleValue(String::from((xp).to_string()))),
-                        is_app_context: true,
-                    },
-                )?;
-            },
+                // manage_profile_data(
+                //     CpiContext::new(
+                //         ctx.accounts.hive_control.to_account_info(),
+                //         ManageProfileData {
+                //             project: ctx.accounts.project.to_account_info(),
+                //             profile: profile.to_account_info(),
+                //             delegate_authority: None,
+                //             authority: ctx.accounts.wallet.to_account_info(),
+                //             payer: ctx.accounts.wallet.to_account_info(),
+                //             rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
+                //             system_program: ctx.accounts.system_program.to_account_info(),
+                //             clock: ctx.accounts.clock.to_account_info(),
+                //             vault: ctx.accounts.vault.to_account_info(),
+                //             instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
+                //         },
+                //     ),
+                //     ManageProfileDataArgs {
+                //         label: String::from("nectar_missions_xp"),
+                //         value: Some(ProfileData::SingleValue(String::from((xp).to_string()))),
+                //         is_app_context: true,
+                //     },
+                // )?;
+            }
             RewardType::Currency { .. } => {
                 if ctx.accounts.mint.is_none()
                     || ctx.accounts.holder_account.is_none()
@@ -461,7 +460,8 @@ pub fn collect_rewards<'info>(
                 ];
                 let signer = &[&mission_pool_seeds[..]];
 
-                let reward_amount = Randomizer::get_result_from_delta(reward.min, reward.max, earned_reward.delta);
+                let reward_amount =
+                    Randomizer::get_result_from_delta(reward.min, reward.max, earned_reward.delta);
 
                 mint_currency(
                     CpiContext::new_with_signer(
@@ -501,7 +501,7 @@ pub fn collect_rewards<'info>(
                     ),
                     reward_amount,
                 )?;
-            },
+            }
         }
     }
     msg!("Rewards collected.");
@@ -567,16 +567,50 @@ pub struct RecallCharacterArgs {
 }
 
 pub fn recall_character<'info>(
-    ctx: Context<'_, '_, '_, 'info, RecallCharacter<'info>>, 
-    args: RecallCharacterArgs
+    ctx: Context<'_, '_, '_, 'info, RecallCharacter<'info>>,
+    args: RecallCharacterArgs,
 ) -> Result<()> {
     msg!("Recalling character (mission).");
 
-    msg!("Determining if rewards have been collected.");
+    let verify_character_args = VerifyCharacterArgs {
+        root: args.root,
+        leaf_idx: args.leaf_idx,
+        source: DataOrHash::Data(args.source.clone()),
+        used_by: DataOrHash::Data(args.used_by.clone()),
+    };
+
+    verify_character(
+        CpiContext::new(
+            ctx.accounts.character_manager.to_account_info(),
+            VerifyCharacter {
+                project: ctx.accounts.project.to_account_info(),
+                character_model: ctx.accounts.character_model.to_account_info(),
+                merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
+                owner: ctx.accounts.wallet.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+                hive_control: ctx.accounts.hive_control.to_account_info(),
+                compression_program: ctx.accounts.compression_program.to_account_info(),
+                log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+                instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
+            },
+        ),
+        verify_character_args,
+    )?;
+
+    msg!("Character verified. Determining if rewards can be collected.");
 
     // Check if the person is eligible for a reward and rewards haven't been collected
-    if let CharacterUsedBy::Mission { end_time, rewards, rewards_collected, .. } = &args.used_by {
-        if *end_time < ctx.accounts.clock.unix_timestamp.try_into().unwrap() && !rewards.is_empty() && !rewards_collected {
+    if let CharacterUsedBy::Mission {
+        end_time,
+        rewards,
+        rewards_collected,
+        ..
+    } = &args.used_by
+    {
+        if *end_time < ctx.accounts.clock.unix_timestamp.try_into().unwrap()
+            && !rewards.is_empty()
+            && !rewards_collected
+        {
             return Err(ErrorCode::RewardsNotCollected.into());
         }
     }
@@ -614,15 +648,16 @@ pub fn recall_character<'info>(
                 compression_program: ctx.accounts.compression_program.to_account_info(),
                 system_program: ctx.accounts.system_program.to_account_info(),
             },
-            mission_signer
-        ).with_remaining_accounts(ctx.remaining_accounts.to_vec()),
+            mission_signer,
+        )
+        .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         UseCharacterArgs {
             root: args.root,
             leaf_idx: args.leaf_idx,
             source_hash: args.source_hash,
             current_used_by: args.used_by,
             new_used_by: CharacterUsedBy::None,
-        }
+        },
     )?;
 
     msg!("Character recalled.");
