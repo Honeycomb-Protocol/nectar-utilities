@@ -403,7 +403,12 @@ pub fn collect_rewards<'info>(
     msg!("Collecting rewards (mission).");
 
     msg!("Determining if the character is eligible for rewards.");
-    let (mission_id, earned_rewards, mission_end_time, mission_rewards_collected) =
+    let (
+        mission_id, 
+        earned_rewards, 
+        mission_end_time, 
+        mission_rewards_collected,
+    ) =
         match &args.character_used_by {
             CharacterUsedBy::Mission {
                 id,
