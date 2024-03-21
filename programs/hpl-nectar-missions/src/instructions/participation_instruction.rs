@@ -88,6 +88,7 @@ pub struct Participate<'info> {
     #[account(mut)]
     pub character_merkle_tree: AccountInfo<'info>,
 
+    /// CHECK: unsafe
     #[account(mut)]
     pub profile_merkle_tree: AccountInfo<'info>,
 
