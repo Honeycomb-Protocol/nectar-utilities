@@ -1,35 +1,73 @@
 use {
     crate::{
         errors::ErrorCode,
-        state::{Mission, MissionPool, RewardType},
-        utils::{Randomizer, RANDOMIZER},
+        state::{
+            Mission,
+            MissionPool,
+            RewardType,
+        },
+        utils::{
+            Randomizer, 
+            RANDOMIZER,
+        },
     },
     anchor_lang::prelude::*,
-    anchor_spl::token::{self, Mint, Token, TokenAccount},
+    anchor_spl::token::{
+        self,
+        Mint,
+        Token,
+        TokenAccount
+    },
     hpl_character_manager::{
         cpi::{
-            accounts::{UseCharacter, VerifyCharacter},
-            use_character, verify_character,
+            accounts::UseCharacter,
+            use_character,
         },
-        instructions::{UseCharacterArgs, VerifyCharacterArgs},
+        instructions::UseCharacterArgs,
         program::HplCharacterManager,
-        state::{CharacterModel, CharacterSource, CharacterUsedBy, EarnedReward},
+        state::{
+            CharacterModel,
+            CharacterUsedBy,
+            EarnedReward,
+        },
     },
     hpl_currency_manager::{
         cpi::{
-            accounts::{BurnCurrency, MintCurrency},
-            burn_currency, mint_currency,
-        },
-        program::HplCurrencyManager,
-        state::HolderAccount,
-        utils::Currency,
+            accounts::{
+                BurnCurrency,
+                MintCurrency,
+            },
+            burn_currency, 
+            mint_currency,
+        }, 
+        program::HplCurrencyManager, 
+        state::HolderAccount, 
+        utils::Currency
     },
     hpl_hive_control::{
-        program::HplHiveControl,
-        state::{DelegateAuthority, Project},
+        cpi::{
+            accounts::{UpdateProfile, VerifyProfile}, 
+            update_profile,
+            verify_profile,
+        }, 
+        instructions::{
+            UpdateProfileArgs,
+            VerifyProfileArgs,
+        }, 
+        program::HplHiveControl, 
+        state::{
+            CustomDataUpdates, 
+            DelegateAuthority, 
+            PlatformData, 
+            PlatformDataUpdates, 
+            Project,
+        },
     },
-    hpl_toolkit::{compression::ToNode, DataOrHash},
-    spl_account_compression::{program::SplAccountCompression, Noop},
+    hpl_toolkit::{DataOrHash, HashMap, ToNode},
+    spl_account_compression::{
+        program::SplAccountCompression, 
+        Noop,
+    },
 };
 
 #[derive(Accounts)]
@@ -94,9 +132,16 @@ pub struct Participate<'info> {
 
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct ParticipateArgs {
-    pub root: [u8; 32],
-    pub leaf_idx: u32,
-    pub source_hash: [u8; 32],
+    pub character_root: [u8; 32],
+    pub character_leaf_idx: u32,
+    pub character_source_hash: [u8; 32],
+    pub profile_root: [u8; 32],
+    pub profile_leaf_idx: u32,
+    pub profile_user_id: u64,
+    pub profile_identity: String,
+    pub profile_info_hash: [u8; 32],
+    pub profile_platform_data: PlatformData,
+    pub profile_custom_data_hash: [u8; 32],
 }
 pub fn participate<'info>(
     ctx: Context<'_, '_, '_, 'info, Participate<'info>>,
@@ -114,6 +159,38 @@ pub fn participate<'info>(
     }
 
     // Check if the profile has the minimum XP required to take part in this mission
+    if args.profile_platform_data.xp < ctx.accounts.mission.min_xp {
+        return Err(ErrorCode::InsufficientXp.into());
+    }
+    
+    let platform_data_hash = args.profile_platform_data.to_node();
+
+    verify_profile(
+        CpiContext::new(
+            ctx.accounts.hive_control.to_account_info(),
+            VerifyProfile {
+                merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
+                authority: ctx.accounts.wallet.to_account_info(),
+                vault: ctx.accounts.vault.to_account_info(),
+                clock: ctx.accounts.clock.to_account_info(),
+                compression_program: ctx.accounts.compression_program.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+                instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
+                rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
+                log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+            },
+        ),
+        VerifyProfileArgs {
+            root: args.profile_root,
+            project: ctx.accounts.project.key(),
+            leaf_idx: args.profile_leaf_idx,
+            user_id: args.profile_user_id,
+            info_hash: args.profile_info_hash,
+            platform_data_hash: platform_data_hash,
+            custom_data_hash: args.profile_custom_data_hash,
+            identity: args.profile_identity.clone(),
+        }
+    )?;
     // if let Some(profile_data) = ctx.accounts.profile.app_context.get("nectar_missions_xp") {
     //     match profile_data {
     //         ProfileData::SingleValue(value) => {
@@ -198,9 +275,9 @@ pub fn participate<'info>(
         )
         .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         UseCharacterArgs {
-            root: args.root,
-            leaf_idx: args.leaf_idx,
-            source_hash: args.source_hash,
+            root: args.character_root,
+            leaf_idx: args.character_leaf_idx,
+            source_hash: args.character_source_hash,
             current_used_by: CharacterUsedBy::None,
             new_used_by: CharacterUsedBy::Mission {
                 id: ctx.accounts.mission.key(),
@@ -265,7 +342,11 @@ pub struct CollectRewards<'info> {
 
     /// CHECK: unsafe
     #[account(mut)]
-    pub merkle_tree: AccountInfo<'info>,
+    pub character_merkle_tree: AccountInfo<'info>,
+
+    /// CHECK: unsafe
+    #[account(mut)]
+    pub profile_merkle_tree: AccountInfo<'info>,
 
     /// Solana System Program
     pub system_program: Program<'info, System>,
@@ -302,10 +383,17 @@ pub struct CollectRewards<'info> {
 
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct CollectRewardsArgs {
-    pub root: [u8; 32],
-    pub leaf_idx: u32,
-    pub source_hash: [u8; 32],
-    pub used_by: CharacterUsedBy,
+    pub character_root: [u8; 32],
+    pub character_leaf_idx: u32,
+    pub character_source_hash: [u8; 32],
+    pub character_used_by: CharacterUsedBy,
+    pub profile_root: [u8; 32],
+    pub profile_leaf_idx: u32,
+    pub profile_user_id: u64,
+    pub profile_user_identity: String,
+    pub profile_info_hash: [u8; 32],
+    pub profile_platform_data: PlatformData,
+    pub profile_custom_data_hash: [u8; 32],
 }
 
 pub fn collect_rewards<'info>(
@@ -316,7 +404,7 @@ pub fn collect_rewards<'info>(
 
     msg!("Determining if the character is eligible for rewards.");
     let (mission_id, earned_rewards, mission_end_time, mission_rewards_collected) =
-        match &args.used_by {
+        match &args.character_used_by {
             CharacterUsedBy::Mission {
                 id,
                 rewards,
@@ -347,7 +435,7 @@ pub fn collect_rewards<'info>(
                 vault: ctx.accounts.vault.to_account_info(),
                 owner: ctx.accounts.wallet.to_account_info(),
                 user: ctx.accounts.mission.to_account_info(),
-                merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
+                merkle_tree: ctx.accounts.character_merkle_tree.to_account_info(),
                 clock: ctx.accounts.clock.to_account_info(),
                 log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
                 instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
@@ -363,10 +451,10 @@ pub fn collect_rewards<'info>(
         )
         .with_remaining_accounts(ctx.remaining_accounts.to_vec()),
         UseCharacterArgs {
-            root: args.root,
-            leaf_idx: args.leaf_idx,
-            source_hash: args.source_hash,
-            current_used_by: args.used_by.clone(),
+            root: args.character_root,
+            leaf_idx: args.character_leaf_idx,
+            source_hash: args.character_source_hash,
+            current_used_by: args.character_used_by.clone(),
             new_used_by: CharacterUsedBy::Mission {
                 id: *mission_id,
                 end_time: *mission_end_time,
@@ -386,43 +474,51 @@ pub fn collect_rewards<'info>(
             .unwrap();
         match reward.reward_type {
             RewardType::Xp => {
-                // if ctx.accounts.profile.is_none() {
-                //     return Err(ErrorCode::ProfileNotProvided.into());
-                // }
+                msg!("Reward type is XP. Adding XP to the profile.");
 
-                // let profile = ctx.accounts.profile.clone().unwrap();
-                // let mut xp =
-                //     Randomizer::get_result_from_delta(reward.min, reward.max, earned_reward.delta);
+                let add_xp =
+                    Randomizer::get_result_from_delta(reward.min, reward.max, earned_reward.delta);
 
-                // if let Some(profile_data) = profile.app_context.get("nectar_missions_xp") {
-                //     match profile_data {
-                //         ProfileData::SingleValue(value) => xp += value.parse::<u64>().unwrap(),
-                //         _ => {}
-                //     }
-                // }
+                let new_platform_data = PlatformDataUpdates {
+                    add_achievements: vec![],
+                    add_xp: add_xp,
+                    current_achievements: args.profile_platform_data.achievements.clone(),
+                    current_xp: args.profile_platform_data.xp.clone(),
+                    custom: CustomDataUpdates {
+                        current: args.profile_platform_data.custom.clone(),
+                        add: HashMap::new(),
+                        remove: vec![],
+                    },
+                };
 
-                // manage_profile_data(
-                //     CpiContext::new(
-                //         ctx.accounts.hive_control.to_account_info(),
-                //         ManageProfileData {
-                //             project: ctx.accounts.project.to_account_info(),
-                //             profile: profile.to_account_info(),
-                //             delegate_authority: None,
-                //             authority: ctx.accounts.wallet.to_account_info(),
-                //             payer: ctx.accounts.wallet.to_account_info(),
-                //             rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
-                //             system_program: ctx.accounts.system_program.to_account_info(),
-                //             clock: ctx.accounts.clock.to_account_info(),
-                //             vault: ctx.accounts.vault.to_account_info(),
-                //             instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
-                //         },
-                //     ),
-                //     ManageProfileDataArgs {
-                //         label: String::from("nectar_missions_xp"),
-                //         value: Some(ProfileData::SingleValue(String::from((xp).to_string()))),
-                //         is_app_context: true,
-                //     },
-                // )?;
+                update_profile(
+                    CpiContext::new(
+                        ctx.accounts.hive_control.to_account_info(), 
+                        UpdateProfile {
+                            merkle_tree: ctx.accounts.profile_merkle_tree.to_account_info(),
+                            authority: ctx.accounts.wallet.to_account_info(),
+                            vault: ctx.accounts.vault.to_account_info(),
+                            clock: ctx.accounts.clock.to_account_info(),
+                            compression_program: ctx.accounts.compression_program.to_account_info(),
+                            system_program: ctx.accounts.system_program.to_account_info(),
+                            instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
+                            log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
+                            rent_sysvar: ctx.accounts.rent_sysvar.to_account_info(),
+                        }
+                    ), 
+                    UpdateProfileArgs {
+                        root: args.profile_root,
+                        leaf_idx: args.profile_leaf_idx,
+                        user_id: args.profile_user_id,
+                        info: DataOrHash::Hash(args.profile_info_hash),
+                        platform_data: DataOrHash::Data(new_platform_data),
+                        custom_data: DataOrHash::Hash(args.profile_custom_data_hash),
+                        project: ctx.accounts.project.key(),
+                        identity: args.profile_user_identity.clone(),
+                    }
+                )?;
+
+                msg!("XP added to the profile.");
             }
             RewardType::Currency { .. } => {
                 if ctx.accounts.mint.is_none()
