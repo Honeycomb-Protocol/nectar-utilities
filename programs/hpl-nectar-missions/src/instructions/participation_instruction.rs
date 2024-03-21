@@ -86,7 +86,10 @@ pub struct Participate<'info> {
 
     /// CHECK: unsafe
     #[account(mut)]
-    pub merkle_tree: AccountInfo<'info>,
+    pub character_merkle_tree: AccountInfo<'info>,
+
+    #[account(mut)]
+    pub profile_merkle_tree: AccountInfo<'info>,
 
     #[account(has_one = mint, constraint = mission.cost.address == currency.key())]
     pub currency: Box<Account<'info, Currency>>,
@@ -169,7 +172,7 @@ pub fn participate<'info>(
         CpiContext::new(
             ctx.accounts.hive_control.to_account_info(),
             VerifyProfile {
-                merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
+                merkle_tree: ctx.accounts.profile_merkle_tree.to_account_info(),
                 authority: ctx.accounts.wallet.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),
                 clock: ctx.accounts.clock.to_account_info(),
@@ -259,7 +262,7 @@ pub fn participate<'info>(
                 owner: ctx.accounts.wallet.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),
                 user: ctx.accounts.mission.to_account_info(),
-                merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
+                merkle_tree: ctx.accounts.character_merkle_tree.to_account_info(),
                 clock: ctx.accounts.clock.to_account_info(),
                 log_wrapper: ctx.accounts.log_wrapper.to_account_info(),
                 instructions_sysvar: ctx.accounts.instructions_sysvar.to_account_info(),
