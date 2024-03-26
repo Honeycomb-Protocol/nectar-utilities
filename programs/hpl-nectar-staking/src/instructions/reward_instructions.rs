@@ -15,10 +15,7 @@ use {
         program::HplCurrencyManager,
         state::{Currency, HolderAccount},
     },
-    hpl_hive_control::{
-        program::HplHiveControl,
-        state::{DelegateAuthority, Project},
-    },
+    hpl_hive_control::{program::HplHiveControl, state::Project},
     hpl_toolkit::compression::*,
     spl_account_compression::{program::SplAccountCompression, Noop},
 };
@@ -135,11 +132,6 @@ pub struct ClaimRewards<'info> {
     #[account(has_one = project, has_one = currency)]
     pub staking_pool: Box<Account<'info, StakingPool>>,
 
-    /// StakingPool delegate account for this project
-    /// It is required to mint rewards
-    #[account(has_one = project, constraint = staking_pool_delegate.authority.eq(&staking_pool.key()))]
-    pub staking_pool_delegate: Box<Account<'info, DelegateAuthority>>,
-
     /// Staker state account
     #[account(has_one = staking_pool)]
     pub multipliers: Option<Account<'info, Multipliers>>,
@@ -155,7 +147,7 @@ pub struct ClaimRewards<'info> {
     pub mint: Box<Account<'info, Mint>>,
 
     #[account(has_one = currency, has_one = token_account, constraint = holder_account.owner == wallet.key())]
-    pub holder_account: Account<'info, HolderAccount>,
+    pub holder_account: Box<Account<'info, HolderAccount>>,
 
     #[account(mut)]
     pub token_account: Account<'info, TokenAccount>,
@@ -204,6 +196,7 @@ pub struct ClaimRewardsArgs {
     leaf_idx: u32,
     source: CharacterSource,
     used_by: CharacterUsedBy,
+    claimed_at: i64,
 }
 
 /// Claim rewards
@@ -219,7 +212,12 @@ pub fn claim_rewards<'info>(
         used_by: args.used_by.clone(),
     };
 
-    let mut seconds_elapsed: u64 = ctx.accounts.clock.unix_timestamp.try_into().unwrap();
+    let current_time = ctx.accounts.clock.unix_timestamp;
+    if args.claimed_at > (current_time + 180) {
+        return Err(HplNectarStakingError::ClaimedAtOutsideOffset.into());
+    }
+
+    let mut seconds_elapsed: u64 = args.claimed_at.try_into().unwrap();
 
     if let CharacterUsedBy::Staking {
         pool,
@@ -235,7 +233,7 @@ pub fn claim_rewards<'info>(
             return Err(HplNectarStakingError::StakerMismatch.into());
         }
         seconds_elapsed -= u64::try_from(claimed_at.clone()).unwrap();
-        *claimed_at = ctx.accounts.clock.unix_timestamp;
+        *claimed_at = args.claimed_at;
     } else {
         return Err(HplNectarStakingError::CharacterNotStaked.into());
     }
@@ -280,7 +278,7 @@ pub fn claim_rewards<'info>(
                 mint: ctx.accounts.mint.to_account_info(),
                 holder_account: ctx.accounts.holder_account.to_account_info(),
                 token_account: ctx.accounts.token_account.to_account_info(),
-                delegate_authority: Some(ctx.accounts.staking_pool_delegate.to_account_info()),
+                delegate_authority: None,
                 authority: ctx.accounts.staking_pool.to_account_info(),
                 payer: ctx.accounts.wallet.to_account_info(),
                 vault: ctx.accounts.vault.to_account_info(),

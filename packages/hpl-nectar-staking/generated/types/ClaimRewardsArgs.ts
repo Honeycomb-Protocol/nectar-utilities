@@ -13,6 +13,7 @@ export type ClaimRewardsArgs = {
   leafIdx: number
   source: CharacterSource
   usedBy: CharacterUsedBy
+  claimedAt: beet.bignum
 }
 
 /**
@@ -26,6 +27,7 @@ export const claimRewardsArgsBeet =
       ['leafIdx', beet.u32],
       ['source', characterSourceBeet],
       ['usedBy', characterUsedByBeet],
+      ['claimedAt', beet.i64],
     ],
     'ClaimRewardsArgs'
   )

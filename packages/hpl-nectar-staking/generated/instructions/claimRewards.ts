@@ -44,7 +44,6 @@ export const claimRewardsStruct = new beet.FixableBeetArgsStruct<
  * @property [] characterModel
  * @property [_writable_] merkleTree
  * @property [] stakingPool
- * @property [] stakingPoolDelegate
  * @property [] multipliers (optional)
  * @property [] staker
  * @property [] currency
@@ -69,7 +68,6 @@ export type ClaimRewardsInstructionAccounts = {
   characterModel: web3.PublicKey
   merkleTree: web3.PublicKey
   stakingPool: web3.PublicKey
-  stakingPoolDelegate: web3.PublicKey
   multipliers?: web3.PublicKey
   staker: web3.PublicKey
   currency: web3.PublicKey
@@ -136,11 +134,6 @@ export function createClaimRewardsInstruction(
     },
     {
       pubkey: accounts.stakingPool,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.stakingPoolDelegate,
       isWritable: false,
       isSigner: false,
     },

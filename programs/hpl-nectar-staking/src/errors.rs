@@ -20,6 +20,9 @@ pub enum HplNectarStakingError {
     #[msg("Can't stake yet")]
     CantStakeYet,
 
+    #[msg("Claimed at provided fall outside the offset")]
+    ClaimedAtOutsideOffset,
+
     #[msg("Character is not staked")]
     CharacterNotStaked,
 

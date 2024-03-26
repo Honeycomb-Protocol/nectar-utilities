@@ -138,13 +138,36 @@ createErrorFromCodeLookup.set(0x1775, () => new CantStakeYetError())
 createErrorFromNameLookup.set('CantStakeYet', () => new CantStakeYetError())
 
 /**
+ * ClaimedAtOutsideOffset: 'Claimed at provided fall outside the offset'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class ClaimedAtOutsideOffsetError extends Error {
+  readonly code: number = 0x1776
+  readonly name: string = 'ClaimedAtOutsideOffset'
+  constructor() {
+    super('Claimed at provided fall outside the offset')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, ClaimedAtOutsideOffsetError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1776, () => new ClaimedAtOutsideOffsetError())
+createErrorFromNameLookup.set(
+  'ClaimedAtOutsideOffset',
+  () => new ClaimedAtOutsideOffsetError()
+)
+
+/**
  * CharacterNotStaked: 'Character is not staked'
  *
  * @category Errors
  * @category generated
  */
 export class CharacterNotStakedError extends Error {
-  readonly code: number = 0x1776
+  readonly code: number = 0x1777
   readonly name: string = 'CharacterNotStaked'
   constructor() {
     super('Character is not staked')
@@ -154,7 +177,7 @@ export class CharacterNotStakedError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1776, () => new CharacterNotStakedError())
+createErrorFromCodeLookup.set(0x1777, () => new CharacterNotStakedError())
 createErrorFromNameLookup.set(
   'CharacterNotStaked',
   () => new CharacterNotStakedError()
@@ -167,7 +190,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class CharacterUsedError extends Error {
-  readonly code: number = 0x1777
+  readonly code: number = 0x1778
   readonly name: string = 'CharacterUsed'
   constructor() {
     super('Character is used by some other service')
@@ -177,7 +200,7 @@ export class CharacterUsedError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1777, () => new CharacterUsedError())
+createErrorFromCodeLookup.set(0x1778, () => new CharacterUsedError())
 createErrorFromNameLookup.set('CharacterUsed', () => new CharacterUsedError())
 
 /**
@@ -187,7 +210,7 @@ createErrorFromNameLookup.set('CharacterUsed', () => new CharacterUsedError())
  * @category generated
  */
 export class StakerMismatchError extends Error {
-  readonly code: number = 0x1778
+  readonly code: number = 0x1779
   readonly name: string = 'StakerMismatch'
   constructor() {
     super('Character is staked by another staker')
@@ -197,7 +220,7 @@ export class StakerMismatchError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1778, () => new StakerMismatchError())
+createErrorFromCodeLookup.set(0x1779, () => new StakerMismatchError())
 createErrorFromNameLookup.set('StakerMismatch', () => new StakerMismatchError())
 
 /**
@@ -207,7 +230,7 @@ createErrorFromNameLookup.set('StakerMismatch', () => new StakerMismatchError())
  * @category generated
  */
 export class CantUnstakeYetError extends Error {
-  readonly code: number = 0x1779
+  readonly code: number = 0x177a
   readonly name: string = 'CantUnstakeYet'
   constructor() {
     super("Can't unstake yet")
@@ -217,7 +240,7 @@ export class CantUnstakeYetError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1779, () => new CantUnstakeYetError())
+createErrorFromCodeLookup.set(0x177a, () => new CantUnstakeYetError())
 createErrorFromNameLookup.set('CantUnstakeYet', () => new CantUnstakeYetError())
 
 /**
@@ -227,7 +250,7 @@ createErrorFromNameLookup.set('CantUnstakeYet', () => new CantUnstakeYetError())
  * @category generated
  */
 export class DepositAccountNotProvidedError extends Error {
-  readonly code: number = 0x177a
+  readonly code: number = 0x177b
   readonly name: string = 'DepositAccountNotProvided'
   constructor() {
     super('Deposit account is not provided')
@@ -238,7 +261,7 @@ export class DepositAccountNotProvidedError extends Error {
 }
 
 createErrorFromCodeLookup.set(
-  0x177a,
+  0x177b,
   () => new DepositAccountNotProvidedError()
 )
 createErrorFromNameLookup.set(
@@ -253,7 +276,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class NotImplementedError extends Error {
-  readonly code: number = 0x177b
+  readonly code: number = 0x177c
   readonly name: string = 'NotImplemented'
   constructor() {
     super('Not Implemented')
@@ -263,7 +286,7 @@ export class NotImplementedError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x177b, () => new NotImplementedError())
+createErrorFromCodeLookup.set(0x177c, () => new NotImplementedError())
 createErrorFromNameLookup.set('NotImplemented', () => new NotImplementedError())
 
 /**

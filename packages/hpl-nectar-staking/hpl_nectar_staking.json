@@ -725,15 +725,6 @@
           ]
         },
         {
-          "name": "stakingPoolDelegate",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "StakingPool delegate account for this project",
-            "It is required to mint rewards"
-          ]
-        },
-        {
           "name": "multipliers",
           "isMut": false,
           "isSigner": false,
@@ -1306,6 +1297,10 @@
             "type": {
               "defined": "CharacterUsedBy"
             }
+          },
+          {
+            "name": "claimedAt",
+            "type": "i64"
           }
         ]
       }
@@ -1758,31 +1753,36 @@
     },
     {
       "code": 6006,
+      "name": "ClaimedAtOutsideOffset",
+      "msg": "Claimed at provided fall outside the offset"
+    },
+    {
+      "code": 6007,
       "name": "CharacterNotStaked",
       "msg": "Character is not staked"
     },
     {
-      "code": 6007,
+      "code": 6008,
       "name": "CharacterUsed",
       "msg": "Character is used by some other service"
     },
     {
-      "code": 6008,
+      "code": 6009,
       "name": "StakerMismatch",
       "msg": "Character is staked by another staker"
     },
     {
-      "code": 6009,
+      "code": 6010,
       "name": "CantUnstakeYet",
       "msg": "Can't unstake yet"
     },
     {
-      "code": 6010,
+      "code": 6011,
       "name": "DepositAccountNotProvided",
       "msg": "Deposit account is not provided"
     },
     {
-      "code": 6011,
+      "code": 6012,
       "name": "NotImplemented",
       "msg": "Not Implemented"
     }

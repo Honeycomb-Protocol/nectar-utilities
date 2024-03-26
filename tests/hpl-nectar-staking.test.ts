@@ -1,7 +1,9 @@
 import base58 from "bs58";
 import keccak from "keccak";
 import {
+  HPL_CURRENCY_MANAGER_PROGRAM,
   HplCurrency,
+  HplHolderAccount,
   PermissionedCurrencyKind,
 } from "@honeycomb-protocol/currency-manager";
 import {
@@ -22,6 +24,7 @@ import {
   HPL_NECTAR_STAKING_PROGRAM,
   LockType,
   createAddMultiplierInstruction,
+  createClaimRewardsInstruction,
   createCreateStakingPoolInstruction,
   createInitMultipliersInstruction,
   createStakeInstruction,
@@ -66,10 +69,10 @@ export function keccak256Hash(buffers: Buffer[]): Buffer {
 
 describe("Nectar Staking", () => {
   const projectAddress: web3.PublicKey = new web3.PublicKey(
-    "FHQdKNCunFEi3Ts9K6RSJpQPb4SYHPT6XWGAYkF45VJa"
+    "DP52bwVNJ2BR679ySifWWxtC8CdEsYbBLE6b1zQBiys4"
   );
   const characterModelAddress: web3.PublicKey = new web3.PublicKey(
-    "GpqRLERGt2wZjF1pv7WoVM2ifxwCN21ApajGLAWbvxwi"
+    "5rb63VRuwyinkJ3rFtb43doioWifS2nbzLGxHJfhFYPn"
   );
   let currencyAddress: web3.PublicKey;
 
@@ -88,6 +91,7 @@ describe("Nectar Staking", () => {
 
   let characterModel: CharacterModel;
   let currency: HplCurrency;
+  let holderAccount: HplHolderAccount;
   let universalLut: web3.AddressLookupTableAccount;
   let character: Character;
 
@@ -161,7 +165,9 @@ describe("Nectar Staking", () => {
     await adminHC
       .currency()
       .newHolderAccount(userHC.identity().address)
-      .then((hA) => hA.mint(10_000 * 1_000_000_000));
+      .then((hA) =>
+        hA.mint(10_000 * 1_000_000_000).then((_) => (holderAccount = hA))
+      );
 
     // ============ LOAD CURRENCY SETUP END ============
   });
@@ -386,6 +392,111 @@ describe("Nectar Staking", () => {
       .then((res) => (character = res.character[0]));
   });
 
+  it("Claim Character", async () => {
+    const wallet = userHC.identity().address;
+
+    const [staker] = web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("staker"), wallet.toBuffer(), stakingPoolAddress.toBuffer()],
+      HPL_NECTAR_STAKING_PROGRAM
+    );
+
+    const sourceHash = keccak256Hash([
+      Buffer.from("Wrapped"),
+      Buffer.from(base58.decode(character.source.params.mint)),
+      Buffer.from(
+        keccak256Hash([
+          Buffer.from(character.source.params.criteria.kind),
+          Buffer.from(base58.decode(character.source.params.criteria.params)),
+        ])
+      ),
+      Buffer.from(
+        keccak256Hash([
+          Buffer.from(character.source.params.is_compressed ? [1] : [0]),
+        ])
+      ),
+    ]);
+
+    const computeBudgetIx = web3.ComputeBudgetProgram.setComputeUnitLimit({
+      units: 400000,
+    });
+
+    const unstakeIx = createClaimRewardsInstruction(
+      {
+        project: projectAddress,
+        characterModel: characterModelAddress,
+        merkleTree: new web3.PublicKey(
+          characterModel.merkle_trees.merkle_trees[
+            characterModel.merkle_trees.active
+          ]
+        ),
+        stakingPool: stakingPoolAddress,
+        multipliers: HPL_NECTAR_STAKING_PROGRAM,
+        mint: currency.mint.address,
+        currency: currency.address,
+        holderAccount: holderAccount.address,
+        tokenAccount: holderAccount.tokenAccount,
+        staker,
+        wallet,
+        vault: VAULT,
+        hiveControl: HPL_HIVE_CONTROL_PROGRAM,
+        characterManager: HPL_CHARACTER_MANAGER_PROGRAM,
+        currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM,
+        compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+        logWrapper: SPL_NOOP_PROGRAM_ID,
+        clock: web3.SYSVAR_CLOCK_PUBKEY,
+        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+        anchorRemainingAccounts: character.proof!.proof.map((pubkey) => ({
+          pubkey: new web3.PublicKey(pubkey),
+          isSigner: false,
+          isWritable: false,
+        })),
+      },
+      {
+        args: {
+          claimedAt: Date.now() / 1000,
+          root: Array.from(base58.decode(character.proof!.root)),
+          leafIdx: Number(character.leaf_idx),
+          source: {
+            __kind: "Wrapped",
+            mint: new web3.PublicKey(character.source.params.mint),
+            criteria: {
+              __kind: character.source.params.criteria.kind as any,
+              fields: [
+                new web3.PublicKey(character.source.params.criteria.params),
+              ],
+            },
+            isCompressed: character.source.params.is_compressed,
+          },
+          usedBy:
+            !character.usedBy || !character.usedBy.params
+              ? { __kind: "None" }
+              : "staker" in character.usedBy.params
+              ? {
+                  __kind: "Staking",
+                  pool: new web3.PublicKey(character.usedBy.params.pool),
+                  staker: new web3.PublicKey(character.usedBy.params.staker),
+                  stakedAt: character.usedBy.params.stakedAt,
+                  claimedAt: character.usedBy.params.claimedAt,
+                }
+              : { __kind: "None" },
+        },
+      }
+    );
+
+    const operation = new Operation(userHC, [computeBudgetIx, unstakeIx]);
+    await operation.send();
+
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    // Refetch chara
+    await client
+      .findCharacters({
+        ids: [character.id],
+        includeProof: true,
+      })
+      .then((res) => (character = res.character[0]));
+  });
+
   it("Unstake Character", async () => {
     const wallet = userHC.identity().address;
 
@@ -454,27 +565,6 @@ describe("Nectar Staking", () => {
                   staker: new web3.PublicKey(character.usedBy.params.staker),
                   stakedAt: character.usedBy.params.stakedAt,
                   claimedAt: character.usedBy.params.claimedAt,
-                }
-              : "rewards" in character.usedBy.params
-              ? {
-                  __kind: "Mission",
-                  id: new web3.PublicKey(character.usedBy.params.id),
-                  rewards: character.usedBy.params.rewards.map((reward) => ({
-                    delta: reward.delta,
-                    rewardIdx: reward.rewardIdx,
-                  })),
-                  endTime: character.usedBy.params.endTime,
-                  rewardsCollected: character.usedBy.params.rewardsCollected,
-                }
-              : "role" in character.usedBy.params
-              ? {
-                  __kind: "Guild",
-                  id: new web3.PublicKey(character.usedBy.params.id),
-                  order: character.usedBy.params.order,
-                  role:
-                    character.usedBy.params.role.kind == "Chief"
-                      ? GuildRole.Chief
-                      : GuildRole.Member,
                 }
               : { __kind: "None" },
         },
