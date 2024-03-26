@@ -9,6 +9,10 @@ import * as web3 from '@solana/web3.js'
 import * as beet from '@metaplex-foundation/beet'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
 import { Currency, currencyBeet } from '../types/Currency'
+import {
+  MissionRequirement,
+  missionRequirementBeet,
+} from '../types/MissionRequirement'
 import { Reward, rewardBeet } from '../types/Reward'
 
 /**
@@ -22,7 +26,7 @@ export type MissionArgs = {
   name: string
   minXp: beet.bignum
   cost: Currency
-  duration: beet.bignum
+  requirement: MissionRequirement
   rewards: Reward[]
 }
 
@@ -41,7 +45,7 @@ export class Mission implements MissionArgs {
     readonly name: string,
     readonly minXp: beet.bignum,
     readonly cost: Currency,
-    readonly duration: beet.bignum,
+    readonly requirement: MissionRequirement,
     readonly rewards: Reward[]
   ) {}
 
@@ -55,7 +59,7 @@ export class Mission implements MissionArgs {
       args.name,
       args.minXp,
       args.cost,
-      args.duration,
+      args.requirement,
       args.rewards
     )
   }
@@ -180,17 +184,7 @@ export class Mission implements MissionArgs {
         return x
       })(),
       cost: this.cost,
-      duration: (() => {
-        const x = <{ toNumber: () => number }>this.duration
-        if (typeof x.toNumber === 'function') {
-          try {
-            return x.toNumber()
-          } catch (_) {
-            return x
-          }
-        }
-        return x
-      })(),
+      requirement: this.requirement.__kind,
       rewards: this.rewards,
     }
   }
@@ -213,7 +207,7 @@ export const missionBeet = new beet.FixableBeetStruct<
     ['name', beet.utf8String],
     ['minXp', beet.u64],
     ['cost', currencyBeet],
-    ['duration', beet.i64],
+    ['requirement', missionRequirementBeet],
     ['rewards', beet.array(rewardBeet)],
   ],
   Mission.fromArgs,

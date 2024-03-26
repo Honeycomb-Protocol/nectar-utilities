@@ -23,7 +23,7 @@ export type ParticipateInstructionArgs = {
  * @category Participate
  * @category generated
  */
-export const participateStruct = new beet.FixableBeetArgsStruct<
+export const participateStruct = new beet.BeetArgsStruct<
   ParticipateInstructionArgs & {
     instructionDiscriminator: number[] /* size: 8 */
   }
@@ -38,52 +38,50 @@ export const participateStruct = new beet.FixableBeetArgsStruct<
  * Accounts required by the _participate_ instruction
  *
  * @property [_writable_] project
- * @property [] stakingPool
- * @property [] missionPool
- * @property [] mission
- * @property [_writable_] nft
- * @property [] staker
+ * @property [_writable_] missionPool
+ * @property [_writable_] mission
+ * @property [_writable_] characterModel
+ * @property [_writable_] merkleTree
  * @property [] currency
  * @property [_writable_] mint
- * @property [] holderAccount
+ * @property [_writable_] holderAccount
  * @property [_writable_] tokenAccount
- * @property [_writable_] participation
  * @property [_writable_, **signer**] wallet
  * @property [_writable_] vault
+ * @property [] compressionProgram
  * @property [] hiveControl
+ * @property [] characterManager
  * @property [] currencyManagerProgram
- * @property [] nectarStakingProgram
- * @property [] hplEvents
  * @property [] clock
  * @property [] rentSysvar
  * @property [] instructionsSysvar
+ * @property [] logWrapper
  * @category Instructions
  * @category Participate
  * @category generated
  */
 export type ParticipateInstructionAccounts = {
   project: web3.PublicKey
-  stakingPool: web3.PublicKey
   missionPool: web3.PublicKey
   mission: web3.PublicKey
-  nft: web3.PublicKey
-  staker: web3.PublicKey
+  characterModel: web3.PublicKey
+  merkleTree: web3.PublicKey
   currency: web3.PublicKey
   mint: web3.PublicKey
   holderAccount: web3.PublicKey
   tokenAccount: web3.PublicKey
-  participation: web3.PublicKey
   wallet: web3.PublicKey
   vault: web3.PublicKey
   systemProgram?: web3.PublicKey
+  compressionProgram: web3.PublicKey
   hiveControl: web3.PublicKey
+  characterManager: web3.PublicKey
   tokenProgram?: web3.PublicKey
   currencyManagerProgram: web3.PublicKey
-  nectarStakingProgram: web3.PublicKey
-  hplEvents: web3.PublicKey
   clock: web3.PublicKey
   rentSysvar: web3.PublicKey
   instructionsSysvar: web3.PublicKey
+  logWrapper: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -117,28 +115,23 @@ export function createParticipateInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.stakingPool,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
       pubkey: accounts.missionPool,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.mission,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.nft,
       isWritable: true,
       isSigner: false,
     },
     {
-      pubkey: accounts.staker,
-      isWritable: false,
+      pubkey: accounts.mission,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.characterModel,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.merkleTree,
+      isWritable: true,
       isSigner: false,
     },
     {
@@ -153,16 +146,11 @@ export function createParticipateInstruction(
     },
     {
       pubkey: accounts.holderAccount,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.tokenAccount,
       isWritable: true,
       isSigner: false,
     },
     {
-      pubkey: accounts.participation,
+      pubkey: accounts.tokenAccount,
       isWritable: true,
       isSigner: false,
     },
@@ -182,7 +170,17 @@ export function createParticipateInstruction(
       isSigner: false,
     },
     {
+      pubkey: accounts.compressionProgram,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.hiveControl,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.characterManager,
       isWritable: false,
       isSigner: false,
     },
@@ -193,16 +191,6 @@ export function createParticipateInstruction(
     },
     {
       pubkey: accounts.currencyManagerProgram,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.nectarStakingProgram,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.hplEvents,
       isWritable: false,
       isSigner: false,
     },
@@ -218,6 +206,11 @@ export function createParticipateInstruction(
     },
     {
       pubkey: accounts.instructionsSysvar,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.logWrapper,
       isWritable: false,
       isSigner: false,
     },

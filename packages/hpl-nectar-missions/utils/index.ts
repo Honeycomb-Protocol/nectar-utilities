@@ -1,6 +1,8 @@
-export * from "./pdas";
 export * from "./merkleTree";
 export * from "./lookupTables";
+export * from "./NectarMissionsPdaClient";
+export * from "./NectarMissionsCreateClient";
+export * from "./NectarMissionsFetchClient";
 
 export function removeDuplicateFromArrayOf<T = any, C = any>(
   array: T[],

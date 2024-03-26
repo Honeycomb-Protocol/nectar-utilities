@@ -2,7 +2,7 @@
 name = "hpl-nectar-staking"
 description = "Honeycomb protocol library nectar utilities staking program"
 author = ['Sultan Nadeem <sultanndilaram@gmail.com>']
-version = "0.1.45"
+version = "0.1.47"
 edition = "2021"
 license = "MIT"
 
@@ -18,17 +18,12 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = { version = "0.26.0", features = ["init-if-needed"] }
-anchor-spl = "0.26.0"
-getrandom = { version = "0.2.9", features = ["custom"] }
-solana-program = "=1.14.17"
-winnow = "=0.4.1"
-toml_datetime = "=0.6.1"
-hpl-utils = "0.1.4"
-hpl-macros = "0.0.2"
-hpl-events = { version = "0.1.21", features = ["no-entrypoint"] }
-hpl-hive-control = { version = "0.2.6", features = ["cpi"] }
-hpl-currency-manager = { version = "0.0.79", features = ["cpi"] }
-mpl-token-metadata = { version = "1.9.0", features = ["no-entrypoint"] }
-mpl-bubblegum = { version = "0.9.2", features = ["cpi"] }
-spl-account-compression = { version = "0.1.8", features = ["cpi"] }
+anchor-lang = { workspace = true, features = ["init-if-needed"] }
+anchor-spl = { workspace = true }
+hpl-toolkit = { workspace = true }
+hpl-hive-control = { workspace = true }
+hpl-character-manager = { workspace = true }
+hpl-currency-manager = { workspace = true }
+spl-account-compression = { workspace = true }
+ahash = { workspace = true }
+toml_edit = { workspace = true }

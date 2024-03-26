@@ -1,5 +1,5 @@
 {
-  "version": "0.1.45",
+  "version": "0.1.47",
   "name": "hpl_nectar_staking",
   "instructions": [
     {
@@ -67,14 +67,6 @@
           "isSigner": false,
           "docs": [
             "SYSTEM PROGRAM"
-          ]
-        },
-        {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Events Program"
           ]
         },
         {
@@ -148,30 +140,12 @@
           ]
         },
         {
-          "name": "collection",
+          "name": "characterModel",
           "isMut": false,
           "isSigner": false,
           "isOptional": true,
           "docs": [
             "Collection mint address to be used for the staking_pool"
-          ]
-        },
-        {
-          "name": "creator",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "Creator address to be used for the staking_pool"
-          ]
-        },
-        {
-          "name": "merkleTree",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "Merkle tree address for cNFTs"
           ]
         },
         {
@@ -427,388 +401,6 @@
       ]
     },
     {
-      "name": "initNft",
-      "accounts": [
-        {
-          "name": "stakingPool",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "StakingPool state account"
-          ]
-        },
-        {
-          "name": "nft",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT state account"
-          ]
-        },
-        {
-          "name": "nftMint",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Mint address of the NFT"
-          ]
-        },
-        {
-          "name": "nftMetadata",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT token metadata"
-          ]
-        },
-        {
-          "name": "wallet",
-          "isMut": true,
-          "isSigner": true,
-          "docs": [
-            "The wallet that pays for the rent"
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE SYSTEM PROGRAM"
-          ]
-        },
-        {
-          "name": "hiveControl",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Hive Control Program"
-          ]
-        },
-        {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Events Program"
-          ]
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE CLOCK SYSVAR"
-          ]
-        },
-        {
-          "name": "instructionsSysvar",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE INSTRUCTIONS SYSVAR"
-          ]
-        },
-        {
-          "name": "project",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "delegateAuthority",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "initCnft",
-      "accounts": [
-        {
-          "name": "project",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "stakingPool",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "StakingPool state account"
-          ]
-        },
-        {
-          "name": "nft",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT state account"
-          ]
-        },
-        {
-          "name": "assetId",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "cNFT asset id"
-          ]
-        },
-        {
-          "name": "merkleTree",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "dataHash",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "root",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "creatorHash",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "wallet",
-          "isMut": true,
-          "isSigner": true,
-          "docs": [
-            "The wallet ownning the cNFT"
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE SYSTEM PROGRAM"
-          ]
-        },
-        {
-          "name": "hiveControl",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Hive Control Program"
-          ]
-        },
-        {
-          "name": "compressionProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "SPL Compression Program"
-          ]
-        },
-        {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Events Program"
-          ]
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE CLOCK SYSVAR"
-          ]
-        },
-        {
-          "name": "instructionsSysvar",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE INSTRUCTIONS SYSVAR"
-          ]
-        },
-        {
-          "name": "delegateAuthority",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "args",
-          "type": {
-            "defined": "CNFTArgs"
-          }
-        }
-      ]
-    },
-    {
-      "name": "useNft",
-      "accounts": [
-        {
-          "name": "project",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "stakingPool",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "StakingPool state account"
-          ]
-        },
-        {
-          "name": "staker",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "StakingPool state account"
-          ]
-        },
-        {
-          "name": "nft",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT state account"
-          ]
-        },
-        {
-          "name": "wallet",
-          "isMut": true,
-          "isSigner": true,
-          "docs": [
-            "The wallet ownning the cNFT"
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE SYSTEM PROGRAM"
-          ]
-        },
-        {
-          "name": "hiveControl",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Hive Control Program"
-          ]
-        },
-        {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Events Program"
-          ]
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE CLOCK SYSVAR"
-          ]
-        },
-        {
-          "name": "instructionsSysvar",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE INSTRUCTIONS SYSVAR"
-          ]
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "usedBy",
-          "type": {
-            "defined": "NFTUsedBy"
-          }
-        }
-      ]
-    },
-    {
-      "name": "closeNft",
-      "accounts": [
-        {
-          "name": "project",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "nft",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT state account"
-          ]
-        },
-        {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true,
-          "docs": [
-            "The wallet ownning the cNFT"
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE SYSTEM PROGRAM"
-          ]
-        },
-        {
-          "name": "hiveControl",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Hive Control Program"
-          ]
-        },
-        {
-          "name": "instructionsSysvar",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE INSTRUCTIONS SYSVAR"
-          ]
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "initStaker",
       "accounts": [
         {
@@ -852,14 +444,6 @@
           ]
         },
         {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Events Program"
-          ]
-        },
-        {
           "name": "clock",
           "isMut": false,
           "isSigner": false,
@@ -892,386 +476,14 @@
       "name": "stake",
       "accounts": [
         {
-          "name": "stakingPool",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "StakingPool state account"
-          ]
-        },
-        {
-          "name": "nft",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT state account"
-          ]
-        },
-        {
-          "name": "nftMint",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Mint address of the NFT"
-          ]
-        },
-        {
-          "name": "nftAccount",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Token account of the NFT"
-          ]
-        },
-        {
-          "name": "nftMetadata",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT token metadata"
-          ]
-        },
-        {
-          "name": "nftEdition",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT edition"
-          ]
-        },
-        {
-          "name": "nftTokenRecord",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "NFT token record"
-          ]
-        },
-        {
-          "name": "staker",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Staker state account"
-          ]
-        },
-        {
-          "name": "depositAccount",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The account that will hold the nft sent on expedition"
-          ]
-        },
-        {
-          "name": "depositTokenRecord",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "Deposit token_record"
-          ]
-        },
-        {
-          "name": "wallet",
-          "isMut": true,
-          "isSigner": true,
-          "docs": [
-            "The wallet that pays for the rent"
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE SYSTEM PROGRAM"
-          ]
-        },
-        {
-          "name": "hiveControl",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Hive Control Program"
-          ]
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE TOKEN PROGRAM"
-          ]
-        },
-        {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "ASSOCIATED TOKEN PROGRAM"
-          ]
-        },
-        {
-          "name": "tokenMetadataProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "METAPLEX TOKEN METADATA PROGRAM"
-          ]
-        },
-        {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Events Program"
-          ]
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE CLOCK SYSVAR"
-          ]
-        },
-        {
-          "name": "instructionsSysvar",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE INSTRUCTIONS SYSVAR"
-          ]
-        },
-        {
           "name": "project",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "authorizationRulesProgram",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "authorizationRules",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "unstake",
-      "accounts": [
-        {
-          "name": "stakingPool",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "StakingPool state account"
-          ]
-        },
-        {
-          "name": "nft",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT state account"
-          ]
-        },
-        {
-          "name": "nftMint",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Mint address of the NFT"
-          ]
-        },
-        {
-          "name": "nftAccount",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Token account of the NFT"
-          ]
-        },
-        {
-          "name": "nftMetadata",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT token metadata"
-          ]
-        },
-        {
-          "name": "nftEdition",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT edition"
-          ]
-        },
-        {
-          "name": "nftTokenRecord",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "NFT token record"
-          ]
-        },
-        {
-          "name": "depositAccount",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "The account that will hold the nft sent on expedition"
-          ]
-        },
-        {
-          "name": "depositTokenRecord",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "Deposit token_record"
-          ]
-        },
-        {
-          "name": "staker",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Staker state account"
-          ]
-        },
-        {
-          "name": "wallet",
-          "isMut": true,
-          "isSigner": true,
-          "docs": [
-            "The wallet that pays for the rent"
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE SYSTEM PROGRAM"
-          ]
-        },
-        {
-          "name": "hiveControl",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Hive Control Program"
-          ]
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE TOKEN PROGRAM"
-          ]
-        },
-        {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "ASSOCIATED TOKEN PROGRAM"
-          ]
-        },
-        {
-          "name": "tokenMetadataProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "METAPLEX TOKEN METADATA PROGRAM"
-          ]
-        },
-        {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Events Program"
-          ]
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE CLOCK SYSVAR"
-          ]
-        },
-        {
-          "name": "instructionsSysvar",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE INSTRUCTIONS SYSVAR"
-          ]
-        },
-        {
-          "name": "project",
+          "name": "characterModel",
           "isMut": false,
           "isSigner": false
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "authorizationRulesProgram",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "authorizationRules",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "stakeCnft",
-      "accounts": [
-        {
-          "name": "stakingPool",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "StakingPool state account"
-          ]
-        },
-        {
-          "name": "nft",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT state account"
-          ]
         },
         {
           "name": "merkleTree",
@@ -1279,24 +491,12 @@
           "isSigner": false
         },
         {
-          "name": "treeAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "creatorHash",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "dataHash",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "root",
-          "isMut": false,
-          "isSigner": false
+          "name": "stakingPool",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "StakingPool state account"
+          ]
         },
         {
           "name": "staker",
@@ -1315,6 +515,11 @@
           ]
         },
         {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
@@ -1331,11 +536,11 @@
           ]
         },
         {
-          "name": "bubblegumProgram",
+          "name": "characterManager",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "MPL Bubblegum program for cNFTs"
+            "HPL Character Manager Program"
           ]
         },
         {
@@ -1343,15 +548,7 @@
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "SPL Compression Program"
-          ]
-        },
-        {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Events Program"
+            "SPL account compression program."
           ]
         },
         {
@@ -1359,7 +556,7 @@
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "SPL NOOP Program"
+            "SPL Noop program."
           ]
         },
         {
@@ -1377,45 +574,29 @@
           "docs": [
             "NATIVE INSTRUCTIONS SYSVAR"
           ]
-        },
-        {
-          "name": "project",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
         }
       ],
       "args": [
         {
           "name": "args",
           "type": {
-            "defined": "CNFTArgs"
+            "defined": "StakeArgs"
           }
         }
       ]
     },
     {
-      "name": "unstakeCnft",
+      "name": "unstake",
       "accounts": [
         {
-          "name": "stakingPool",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "StakingPool state account"
-          ]
+          "name": "project",
+          "isMut": false,
+          "isSigner": false
         },
         {
-          "name": "nft",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT state account"
-          ]
+          "name": "characterModel",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "merkleTree",
@@ -1423,24 +604,12 @@
           "isSigner": false
         },
         {
-          "name": "treeAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "creatorHash",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "dataHash",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "root",
-          "isMut": false,
-          "isSigner": false
+          "name": "stakingPool",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "StakingPool state account"
+          ]
         },
         {
           "name": "staker",
@@ -1459,6 +628,11 @@
           ]
         },
         {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
@@ -1475,11 +649,11 @@
           ]
         },
         {
-          "name": "bubblegumProgram",
+          "name": "characterManager",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "MPL Bubblegum program for cNFTs"
+            "HPL Character Manager Program"
           ]
         },
         {
@@ -1487,15 +661,7 @@
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "SPL Compression Program"
-          ]
-        },
-        {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Events Program"
+            "SPL account compression program."
           ]
         },
         {
@@ -1503,7 +669,7 @@
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "SPL NOOP Program"
+            "SPL Noop program."
           ]
         },
         {
@@ -1521,23 +687,13 @@
           "docs": [
             "NATIVE INSTRUCTIONS SYSVAR"
           ]
-        },
-        {
-          "name": "project",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
         }
       ],
       "args": [
         {
           "name": "args",
           "type": {
-            "defined": "CNFTArgs"
+            "defined": "StakeArgs"
           }
         }
       ]
@@ -1551,6 +707,16 @@
           "isSigner": false
         },
         {
+          "name": "characterModel",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "merkleTree",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "stakingPool",
           "isMut": false,
           "isSigner": false,
@@ -1559,29 +725,20 @@
           ]
         },
         {
-          "name": "stakingPoolDelegate",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "StakingPool delegate account for this project",
-            "It is required to mint rewards"
-          ]
-        },
-        {
           "name": "multipliers",
           "isMut": false,
           "isSigner": false,
           "isOptional": true,
           "docs": [
-            "Multpliers state account"
+            "Staker state account"
           ]
         },
         {
-          "name": "nft",
-          "isMut": true,
+          "name": "staker",
+          "isMut": false,
           "isSigner": false,
           "docs": [
-            "NFT state account"
+            "Staker state account"
           ]
         },
         {
@@ -1603,14 +760,6 @@
           "name": "tokenAccount",
           "isMut": true,
           "isSigner": false
-        },
-        {
-          "name": "staker",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "Staker state account"
-          ]
         },
         {
           "name": "wallet",
@@ -1642,11 +791,11 @@
           ]
         },
         {
-          "name": "tokenProgram",
+          "name": "characterManager",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "NATIVE TOKEN PROGRAM"
+            "HPL Character Manager Program"
           ]
         },
         {
@@ -1658,150 +807,6 @@
           ]
         },
         {
-          "name": "hplEvents",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Events Program"
-          ]
-        },
-        {
-          "name": "clock",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "SYSVAR CLOCK"
-          ]
-        },
-        {
-          "name": "instructionsSysvar",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE INSTRUCTIONS SYSVAR"
-          ]
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "distributeRewards",
-      "accounts": [
-        {
-          "name": "project",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "stakingPool",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "StakingPool state account"
-          ]
-        },
-        {
-          "name": "stakingPoolDelegate",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "StakingPool delegate account for this project",
-            "It is required to mint rewards"
-          ]
-        },
-        {
-          "name": "multipliers",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "Multpliers state account"
-          ]
-        },
-        {
-          "name": "nft",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "NFT state account"
-          ]
-        },
-        {
-          "name": "currency",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "mint",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "vaultHolderAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "vaultTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "holderAccount",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "tokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "staker",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Staker state account"
-          ]
-        },
-        {
-          "name": "wallet",
-          "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "The wallet that owns the NFT"
-          ]
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true,
-          "docs": [
-            "The authority of the project"
-          ]
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "NATIVE SYSTEM PROGRAM"
-          ]
-        },
-        {
-          "name": "hiveControl",
-          "isMut": false,
-          "isSigner": false,
-          "docs": [
-            "HPL Hive Control Program"
-          ]
-        },
-        {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false,
@@ -1810,19 +815,19 @@
           ]
         },
         {
-          "name": "currencyManagerProgram",
+          "name": "compressionProgram",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "HPL Currency Manager Program"
+            "SPL account compression program."
           ]
         },
         {
-          "name": "hplEvents",
+          "name": "logWrapper",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "HPL Events Program"
+            "SPL Noop program."
           ]
         },
         {
@@ -1830,7 +835,7 @@
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "SYSVAR CLOCK"
+            "NATIVE CLOCK SYSVAR"
           ]
         },
         {
@@ -1842,7 +847,14 @@
           ]
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": "ClaimRewardsArgs"
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -1922,98 +934,6 @@
       }
     },
     {
-      "name": "NFTv1",
-      "docs": [
-        "PDA: ['nft', mint, staking_pool]",
-        "Category: nft_state"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "stakingPool",
-            "docs": [
-              "The staking_pool this NFT is staked in"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "staker",
-            "docs": [
-              "wallet of the staker"
-            ],
-            "type": {
-              "option": "publicKey"
-            }
-          },
-          {
-            "name": "mint",
-            "docs": [
-              "The mint of the NFT"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "lastClaim",
-            "docs": [
-              "Last time the owner claimed rewards"
-            ],
-            "type": "i64"
-          },
-          {
-            "name": "stakedAt",
-            "docs": [
-              "Accumulated staked at"
-            ],
-            "type": "i64"
-          },
-          {
-            "name": "lastStakedAt",
-            "docs": [
-              "Last staked at"
-            ],
-            "type": "i64"
-          },
-          {
-            "name": "lastUnstakedAt",
-            "docs": [
-              "Last unstraked_at"
-            ],
-            "type": "i64"
-          },
-          {
-            "name": "isCompressed",
-            "docs": [
-              "Is it cNFT"
-            ],
-            "type": "bool"
-          },
-          {
-            "name": "criteria",
-            "docs": [
-              "The criteria to which this NFT falls"
-            ],
-            "type": {
-              "defined": "NFTCriteria"
-            }
-          },
-          {
-            "name": "usedBy",
-            "docs": [
-              "NFT being used by a HPL Service"
-            ],
-            "type": {
-              "defined": "NFTUsedBy"
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "StakingPool",
       "docs": [
         "The NFT collection staking_pool state account",
@@ -2028,10 +948,6 @@
             "type": "u8"
           },
           {
-            "name": "tempPlaceHolder1",
-            "type": "u8"
-          },
-          {
             "name": "project",
             "type": "publicKey"
           },
@@ -2043,13 +959,6 @@
             "name": "currency",
             "docs": [
               "The mint of the token distributed to stakers"
-            ],
-            "type": "publicKey"
-          },
-          {
-            "name": "tempPlaceHolder2",
-            "docs": [
-              "The account owning tokens distributed to stakers"
             ],
             "type": "publicKey"
           },
@@ -2150,25 +1059,13 @@
             }
           },
           {
-            "name": "collections",
+            "name": "characterModels",
             "docs": [
               "The collection mint addresses to be used for the staking_pool"
             ],
-            "type": "bytes"
-          },
-          {
-            "name": "creators",
-            "docs": [
-              "The creator addresses to be used for the staking_pool"
-            ],
-            "type": "bytes"
-          },
-          {
-            "name": "merkleTrees",
-            "docs": [
-              "The merkle tress for cNFTs"
-            ],
-            "type": "bytes"
+            "type": {
+              "vec": "publicKey"
+            }
           }
         ]
       }
@@ -2239,22 +1136,6 @@
             "type": {
               "defined": "MultiplierType"
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "CNFTArgs",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "nonce",
-            "type": "u64"
-          },
-          {
-            "name": "index",
-            "type": "u32"
           }
         ]
       }
@@ -2388,6 +1269,79 @@
       }
     },
     {
+      "name": "ClaimRewardsArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "leafIdx",
+            "type": "u32"
+          },
+          {
+            "name": "source",
+            "type": {
+              "defined": "CharacterSource"
+            }
+          },
+          {
+            "name": "usedBy",
+            "type": {
+              "defined": "CharacterUsedBy"
+            }
+          },
+          {
+            "name": "claimedAt",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StakeArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "leafIdx",
+            "type": "u32"
+          },
+          {
+            "name": "sourceHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "usedBy",
+            "type": {
+              "defined": "CharacterUsedBy"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "Multiplier",
       "type": {
         "kind": "struct",
@@ -2406,116 +1360,6 @@
       }
     },
     {
-      "name": "Event",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "NewNft",
-            "fields": [
-              {
-                "name": "address",
-                "type": "publicKey"
-              },
-              {
-                "name": "state",
-                "type": "bytes"
-              }
-            ]
-          },
-          {
-            "name": "NftUsed",
-            "fields": [
-              {
-                "name": "address",
-                "type": "publicKey"
-              },
-              {
-                "name": "state",
-                "type": "bytes"
-              }
-            ]
-          },
-          {
-            "name": "NewStaker",
-            "fields": [
-              {
-                "name": "address",
-                "type": "publicKey"
-              },
-              {
-                "name": "state",
-                "type": "bytes"
-              }
-            ]
-          },
-          {
-            "name": "Stake",
-            "fields": [
-              {
-                "name": "nft_address",
-                "type": "publicKey"
-              },
-              {
-                "name": "nft",
-                "type": "bytes"
-              },
-              {
-                "name": "staker_address",
-                "type": "publicKey"
-              },
-              {
-                "name": "staker",
-                "type": "bytes"
-              }
-            ]
-          },
-          {
-            "name": "Unstake",
-            "fields": [
-              {
-                "name": "nft_address",
-                "type": "publicKey"
-              },
-              {
-                "name": "nft",
-                "type": "bytes"
-              },
-              {
-                "name": "staker_address",
-                "type": "publicKey"
-              },
-              {
-                "name": "staker",
-                "type": "bytes"
-              }
-            ]
-          },
-          {
-            "name": "ClaimRewards",
-            "fields": [
-              {
-                "name": "nft_address",
-                "type": "publicKey"
-              },
-              {
-                "name": "nft",
-                "type": "bytes"
-              },
-              {
-                "name": "staker_address",
-                "type": "publicKey"
-              },
-              {
-                "name": "amount",
-                "type": "u64"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
       "name": "MultiplierType",
       "type": {
         "kind": "enum",
@@ -2524,7 +1368,7 @@
             "name": "StakeDuration",
             "fields": [
               {
-                "name": "min_duration",
+                "name": "minDuration",
                 "type": "u64"
               }
             ]
@@ -2533,7 +1377,7 @@
             "name": "NFTCount",
             "fields": [
               {
-                "name": "min_count",
+                "name": "minCount",
                 "type": "u64"
               }
             ]
@@ -2560,37 +1404,40 @@
       }
     },
     {
-      "name": "NFTCriteria",
+      "name": "LockType",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "None"
+            "name": "Freeze"
           },
           {
-            "name": "Collection",
-            "fields": [
-              {
-                "name": "address",
-                "type": "publicKey"
-              }
-            ]
-          },
+            "name": "Custoday"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CharacterSource",
+      "type": {
+        "kind": "enum",
+        "variants": [
           {
-            "name": "Creator",
+            "name": "Wrapped",
             "fields": [
               {
-                "name": "address",
+                "name": "mint",
                 "type": "publicKey"
-              }
-            ]
-          },
-          {
-            "name": "MerkleTree",
-            "fields": [
+              },
               {
-                "name": "address",
-                "type": "publicKey"
+                "name": "criteria",
+                "type": {
+                  "defined": "NftWrapCriteria"
+                }
+              },
+              {
+                "name": "isCompressed",
+                "type": "bool"
               }
             ]
           }
@@ -2598,7 +1445,33 @@
       }
     },
     {
-      "name": "NFTUsedBy",
+      "name": "NftWrapCriteria",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Collection",
+            "fields": [
+              "publicKey"
+            ]
+          },
+          {
+            "name": "Creator",
+            "fields": [
+              "publicKey"
+            ]
+          },
+          {
+            "name": "MerkleTree",
+            "fields": [
+              "publicKey"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "CharacterUsedBy",
       "type": {
         "kind": "enum",
         "variants": [
@@ -2606,7 +1479,50 @@
             "name": "None"
           },
           {
-            "name": "Missions"
+            "name": "Staking",
+            "fields": [
+              {
+                "name": "pool",
+                "type": "publicKey"
+              },
+              {
+                "name": "staker",
+                "type": "publicKey"
+              },
+              {
+                "name": "stakedAt",
+                "type": "i64"
+              },
+              {
+                "name": "claimedAt",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "Mission",
+            "fields": [
+              {
+                "name": "id",
+                "type": "publicKey"
+              },
+              {
+                "name": "rewards",
+                "type": {
+                  "vec": {
+                    "defined": "EarnedReward"
+                  }
+                }
+              },
+              {
+                "name": "endTime",
+                "type": "u64"
+              },
+              {
+                "name": "rewardsCollected",
+                "type": "bool"
+              }
+            ]
           },
           {
             "name": "Guild",
@@ -2620,6 +1536,143 @@
                 "type": {
                   "defined": "GuildRole"
                 }
+              },
+              {
+                "name": "order",
+                "type": "u8"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "EarnedReward",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "delta",
+            "type": "u8"
+          },
+          {
+            "name": "rewardIdx",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GuildRole",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Chief"
+          },
+          {
+            "name": "Member"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CharacterUsedBy",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "None"
+          },
+          {
+            "name": "Staking",
+            "fields": [
+              {
+                "name": "pool",
+                "type": "publicKey"
+              },
+              {
+                "name": "staker",
+                "type": "publicKey"
+              },
+              {
+                "name": "stakedAt",
+                "type": "i64"
+              },
+              {
+                "name": "claimedAt",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "Mission",
+            "fields": [
+              {
+                "name": "id",
+                "type": "publicKey"
+              },
+              {
+                "name": "rewards",
+                "type": {
+                  "vec": {
+                    "defined": "EarnedReward"
+                  }
+                }
+              },
+              {
+                "name": "endTime",
+                "type": "u64"
+              },
+              {
+                "name": "rewardsCollected",
+                "type": "bool"
+              }
+            ]
+          },
+          {
+            "name": "Guild",
+            "fields": [
+              {
+                "name": "id",
+                "type": "publicKey"
+              },
+              {
+                "name": "role",
+                "type": {
+                  "defined": "GuildRole"
+                }
+              },
+              {
+                "name": "order",
+                "type": "u8"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "CharacterSource",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Wrapped",
+            "fields": [
+              {
+                "name": "mint",
+                "type": "publicKey"
+              },
+              {
+                "name": "criteria",
+                "type": {
+                  "defined": "NftWrapCriteria"
+                }
+              },
+              {
+                "name": "isCompressed",
+                "type": "bool"
               }
             ]
           }
@@ -2641,15 +1694,27 @@
       }
     },
     {
-      "name": "LockType",
+      "name": "NftWrapCriteria",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "Freeze"
+            "name": "Collection",
+            "fields": [
+              "publicKey"
+            ]
           },
           {
-            "name": "Custoday"
+            "name": "Creator",
+            "fields": [
+              "publicKey"
+            ]
+          },
+          {
+            "name": "MerkleTree",
+            "fields": [
+              "publicKey"
+            ]
           }
         ]
       }
@@ -2688,21 +1753,36 @@
     },
     {
       "code": 6006,
-      "name": "NFTAlreadyUsed",
-      "msg": "NFT already used by something"
+      "name": "ClaimedAtOutsideOffset",
+      "msg": "Claimed at provided fall outside the offset"
     },
     {
       "code": 6007,
+      "name": "CharacterNotStaked",
+      "msg": "Character is not staked"
+    },
+    {
+      "code": 6008,
+      "name": "CharacterUsed",
+      "msg": "Character is used by some other service"
+    },
+    {
+      "code": 6009,
+      "name": "StakerMismatch",
+      "msg": "Character is staked by another staker"
+    },
+    {
+      "code": 6010,
       "name": "CantUnstakeYet",
       "msg": "Can't unstake yet"
     },
     {
-      "code": 6008,
+      "code": 6011,
       "name": "DepositAccountNotProvided",
       "msg": "Deposit account is not provided"
     },
     {
-      "code": 6009,
+      "code": 6012,
       "name": "NotImplemented",
       "msg": "Not Implemented"
     }
@@ -2710,7 +1790,7 @@
   "metadata": {
     "address": "MiNESdRXUSmWY7NkAKdW9nMkjJZCaucguY3MDvkSmr6",
     "origin": "anchor",
-    "binaryVersion": "0.26.0",
-    "libVersion": "0.26.0"
+    "binaryVersion": "0.29.0",
+    "libVersion": "unknown"
   }
 }

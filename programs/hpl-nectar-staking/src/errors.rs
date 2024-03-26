@@ -1,7 +1,7 @@
 use anchor_lang::prelude::error_code;
 
 #[error_code]
-pub enum ErrorCode {
+pub enum HplNectarStakingError {
     #[msg("Opertaion overflowed")]
     Overflow,
 
@@ -20,8 +20,17 @@ pub enum ErrorCode {
     #[msg("Can't stake yet")]
     CantStakeYet,
 
-    #[msg("NFT already used by something")]
-    NFTAlreadyUsed,
+    #[msg("Claimed at provided fall outside the offset")]
+    ClaimedAtOutsideOffset,
+
+    #[msg("Character is not staked")]
+    CharacterNotStaked,
+
+    #[msg("Character is used by some other service")]
+    CharacterUsed,
+
+    #[msg("Character is staked by another staker")]
+    StakerMismatch,
 
     #[msg("Can't unstake yet")]
     CantUnstakeYet,

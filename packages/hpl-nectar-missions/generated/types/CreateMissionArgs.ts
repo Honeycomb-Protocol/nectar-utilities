@@ -7,12 +7,16 @@
 
 import * as beet from '@metaplex-foundation/beet'
 import { Currency, currencyBeet } from './Currency'
+import {
+  MissionRequirement,
+  missionRequirementBeet,
+} from './MissionRequirement'
 import { Reward, rewardBeet } from './Reward'
 export type CreateMissionArgs = {
   name: string
   minXp: beet.bignum
   cost: Currency
-  duration: beet.bignum
+  requirement: MissionRequirement
   rewards: Reward[]
 }
 
@@ -26,7 +30,7 @@ export const createMissionArgsBeet =
       ['name', beet.utf8String],
       ['minXp', beet.u64],
       ['cost', currencyBeet],
-      ['duration', beet.i64],
+      ['requirement', missionRequirementBeet],
       ['rewards', beet.array(rewardBeet)],
     ],
     'CreateMissionArgs'

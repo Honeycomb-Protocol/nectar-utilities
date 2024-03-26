@@ -1,9 +1,7 @@
 use {
     crate::state::*,
     anchor_lang::prelude::*,
-    hpl_events::HplEvents,
     hpl_hive_control::{program::HplHiveControl, state::Project},
-    hpl_utils::traits::Default,
 };
 
 /// Accounts used in initialize staker instruction
@@ -36,9 +34,6 @@ pub struct InitStaker<'info> {
     /// HPL Hive Control Program
     pub hive_control: Program<'info, HplHiveControl>,
 
-    /// HPL Events Program
-    pub hpl_events: Program<'info, HplEvents>,
-
     /// NATIVE CLOCK SYSVAR
     pub clock: Sysvar<'info, Clock>,
 
@@ -63,15 +58,9 @@ pub fn init_staker(ctx: Context<InitStaker>) -> Result<()> {
         return Ok(());
     }
     staker.set_defaults();
-    staker.bump = ctx.bumps["staker"];
+    staker.bump = ctx.bumps.staker;
     staker.staking_pool = ctx.accounts.staking_pool.key();
     staker.wallet = ctx.accounts.wallet.key();
 
-    Event::new_staker(
-        staker.key(),
-        staker.try_to_vec().unwrap(),
-        &ctx.accounts.clock,
-    )
-    .emit(ctx.accounts.hpl_events.to_account_info())?;
     Ok(())
 }

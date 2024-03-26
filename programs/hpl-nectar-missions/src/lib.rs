@@ -6,10 +6,17 @@ pub mod state;
 pub mod utils;
 
 declare_id!("HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj");
+// declare_id!("BNdAHQMniLicundk1jo4qKWyNr9C8bK7oUrzgSwoSGmZ");
 
 use instructions::*;
-hpl_macros::platform_gate!();
+hpl_toolkit::platform_gate!();
 
+#[cfg(not(feature = "cpi"))]
+use hpl_toolkit::schema::*;
+#[cfg_attr(
+    not(feature = "cpi"),
+    account_schemas_ix_injector(MissionPool, Mission)
+)]
 #[program]
 pub mod hpl_nectar_missions {
     use super::*;
@@ -18,9 +25,9 @@ pub mod hpl_nectar_missions {
         ctx: Context<CreateMissionPool>,
         args: CreateMissionPoolArgs,
     ) -> Result<()> {
-        hpl_macros::add_service!(hpl_hive_control::state::Service::Missions {
-            pool_id: ctx.accounts.mission_pool.key(),
-        });
+        // hpl_toolkit::add_service!(hpl_hive_control::state::Service::Missions {
+        //     pool_id: ctx.accounts.mission_pool.key(),
+        // });
 
         instructions::create_mission_pool(ctx, args)
     }
@@ -76,7 +83,10 @@ pub mod hpl_nectar_missions {
         instructions::update_mission(ctx, args)
     }
 
-    pub fn participate(ctx: Context<Participate>, args: ParticipateArgs) -> Result<()> {
+    pub fn participate<'info>(
+        ctx: Context<'_, '_, '_, 'info, Participate<'info>>,
+        args: ParticipateArgs,
+    ) -> Result<()> {
         platform_gate_cpi(
             hpl_hive_control::state::SerializableActions::PublicHigh,
             None,
@@ -93,7 +103,10 @@ pub mod hpl_nectar_missions {
         instructions::participate(ctx, args)
     }
 
-    pub fn collect_rewards(ctx: Context<CollectRewards>) -> Result<()> {
+    pub fn collect_rewards<'info>(
+        ctx: Context<'_, '_, '_, 'info, CollectRewards<'info>>,
+        args: CollectRewardsArgs,
+    ) -> Result<()> {
         platform_gate_cpi(
             hpl_hive_control::state::SerializableActions::FeeExempt,
             None,
@@ -107,10 +120,13 @@ pub mod hpl_nectar_missions {
             ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
-        instructions::collect_rewards(ctx)
+        instructions::collect_rewards(ctx, args)
     }
 
-    pub fn recall(ctx: Context<Recall>) -> Result<()> {
+    pub fn recall<'info>(
+        ctx: Context<'_, '_, '_, 'info, RecallCharacter<'info>>,
+        args: RecallCharacterArgs,
+    ) -> Result<()> {
         platform_gate_cpi(
             hpl_hive_control::state::SerializableActions::FeeExempt,
             None,
@@ -124,6 +140,57 @@ pub mod hpl_nectar_missions {
             ctx.accounts.instructions_sysvar.to_account_info(),
         )?;
 
-        instructions::recall(ctx)
+        instructions::recall_character(ctx, args)
     }
+
+    // pub fn participate_guild(ctx: Context<ParticipateGuild>) -> Result<()> {
+    //     platform_gate_cpi(
+    //         hpl_hive_control::state::SerializableActions::PublicHigh,
+    //         None,
+    //         ctx.accounts.project.to_account_info(),
+    //         ctx.accounts.wallet.to_account_info(),
+    //         ctx.accounts.wallet.to_account_info(),
+    //         ctx.accounts.vault.to_account_info(),
+    //         &None,
+    //         ctx.accounts.system_program.to_account_info(),
+    //         ctx.accounts.hive_control.to_account_info(),
+    //         ctx.accounts.instructions_sysvar.to_account_info(),
+    //     )?;
+
+    //     instructions::participate_guild(ctx)
+    // }
+
+    // pub fn collect_rewards_for_guild(ctx: Context<CollectRewardsForGuild>) -> Result<()> {
+    //     platform_gate_cpi(
+    //         hpl_hive_control::state::SerializableActions::FeeExempt,
+    //         None,
+    //         ctx.accounts.project.to_account_info(),
+    //         ctx.accounts.wallet.to_account_info(),
+    //         ctx.accounts.wallet.to_account_info(),
+    //         ctx.accounts.vault.to_account_info(),
+    //         &None,
+    //         ctx.accounts.system_program.to_account_info(),
+    //         ctx.accounts.hive_control.to_account_info(),
+    //         ctx.accounts.instructions_sysvar.to_account_info(),
+    //     )?;
+
+    //     instructions::collect_rewards_for_guild(ctx)
+    // }
+
+    // pub fn recall_guild(ctx: Context<RecallGuild>) -> Result<()> {
+    //     platform_gate_cpi(
+    //         hpl_hive_control::state::SerializableActions::FeeExempt,
+    //         None,
+    //         ctx.accounts.project.to_account_info(),
+    //         ctx.accounts.wallet.to_account_info(),
+    //         ctx.accounts.wallet.to_account_info(),
+    //         ctx.accounts.vault.to_account_info(),
+    //         &None,
+    //         ctx.accounts.system_program.to_account_info(),
+    //         ctx.accounts.hive_control.to_account_info(),
+    //         ctx.accounts.instructions_sysvar.to_account_info(),
+    //     )?;
+
+    //     instructions::recall_guild(ctx)
+    // }
 }

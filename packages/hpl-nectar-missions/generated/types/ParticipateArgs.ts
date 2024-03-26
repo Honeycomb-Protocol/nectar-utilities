@@ -7,22 +7,20 @@
 
 import * as beet from '@metaplex-foundation/beet'
 export type ParticipateArgs = {
-  faction: beet.COption<string>
-  merkleProof: beet.COption<number[] /* size: 32 */[]>
+  root: number[] /* size: 32 */
+  leafIdx: number
+  sourceHash: number[] /* size: 32 */
 }
 
 /**
  * @category userTypes
  * @category generated
  */
-export const participateArgsBeet =
-  new beet.FixableBeetArgsStruct<ParticipateArgs>(
-    [
-      ['faction', beet.coption(beet.utf8String)],
-      [
-        'merkleProof',
-        beet.coption(beet.array(beet.uniformFixedSizeArray(beet.u8, 32))),
-      ],
-    ],
-    'ParticipateArgs'
-  )
+export const participateArgsBeet = new beet.BeetArgsStruct<ParticipateArgs>(
+  [
+    ['root', beet.uniformFixedSizeArray(beet.u8, 32)],
+    ['leafIdx', beet.u32],
+    ['sourceHash', beet.uniformFixedSizeArray(beet.u8, 32)],
+  ],
+  'ParticipateArgs'
+)

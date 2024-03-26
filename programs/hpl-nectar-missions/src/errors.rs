@@ -40,4 +40,10 @@ pub enum ErrorCode {
 
     #[msg("Invalid Profile data")]
     InvalidProfileData,
+
+    #[msg("Missing required accounts")]
+    MissingRequiredAccounts,
+
+    #[msg("You don't have the required XP to take part in this mission")]
+    InsufficientXp
 }

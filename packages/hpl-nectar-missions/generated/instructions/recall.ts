@@ -7,55 +7,70 @@
 
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
+import {
+  RecallCharacterArgs,
+  recallCharacterArgsBeet,
+} from '../types/RecallCharacterArgs'
 
 /**
  * @category Instructions
  * @category Recall
  * @category generated
  */
-export const recallStruct = new beet.BeetArgsStruct<{
-  instructionDiscriminator: number[] /* size: 8 */
-}>(
-  [['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]],
+export type RecallInstructionArgs = {
+  args: RecallCharacterArgs
+}
+/**
+ * @category Instructions
+ * @category Recall
+ * @category generated
+ */
+export const recallStruct = new beet.FixableBeetArgsStruct<
+  RecallInstructionArgs & {
+    instructionDiscriminator: number[] /* size: 8 */
+  }
+>(
+  [
+    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
+    ['args', recallCharacterArgsBeet],
+  ],
   'RecallInstructionArgs'
 )
 /**
  * Accounts required by the _recall_ instruction
  *
+ * @property [] characterModel
  * @property [_writable_] project
- * @property [] stakingPool
- * @property [_writable_] nft
- * @property [] staker
  * @property [] missionPool
  * @property [] mission
- * @property [_writable_] participation
  * @property [_writable_, **signer**] wallet
- * @property [] hiveControl
- * @property [] nectarStakingProgram
- * @property [] hplEvents
- * @property [] clock
- * @property [] instructionsSysvar
  * @property [_writable_] vault
+ * @property [_writable_] merkleTree
+ * @property [] hiveControl
+ * @property [] characterManager
+ * @property [] compressionProgram
+ * @property [] instructionsSysvar
+ * @property [] clock
+ * @property [] logWrapper
  * @category Instructions
  * @category Recall
  * @category generated
  */
 export type RecallInstructionAccounts = {
+  characterModel: web3.PublicKey
   project: web3.PublicKey
-  stakingPool: web3.PublicKey
-  nft: web3.PublicKey
-  staker: web3.PublicKey
   missionPool: web3.PublicKey
   mission: web3.PublicKey
-  participation: web3.PublicKey
   wallet: web3.PublicKey
+  vault: web3.PublicKey
+  merkleTree: web3.PublicKey
   systemProgram?: web3.PublicKey
   hiveControl: web3.PublicKey
-  nectarStakingProgram: web3.PublicKey
-  hplEvents: web3.PublicKey
-  clock: web3.PublicKey
+  characterManager: web3.PublicKey
+  compressionProgram: web3.PublicKey
   instructionsSysvar: web3.PublicKey
-  vault: web3.PublicKey
+  clock: web3.PublicKey
+  logWrapper: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
@@ -67,36 +82,30 @@ export const recallInstructionDiscriminator = [
  * Creates a _Recall_ instruction.
  *
  * @param accounts that will be accessed while the instruction is processed
+ * @param args to provide as instruction data to the program
+ *
  * @category Instructions
  * @category Recall
  * @category generated
  */
 export function createRecallInstruction(
   accounts: RecallInstructionAccounts,
+  args: RecallInstructionArgs,
   programId = new web3.PublicKey('HuntaX1CmUt5EByyFPE8pMf13SpvezybmMTtjmpmGmfj')
 ) {
   const [data] = recallStruct.serialize({
     instructionDiscriminator: recallInstructionDiscriminator,
+    ...args,
   })
   const keys: web3.AccountMeta[] = [
     {
+      pubkey: accounts.characterModel,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.project,
       isWritable: true,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.stakingPool,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.nft,
-      isWritable: true,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.staker,
-      isWritable: false,
       isSigner: false,
     },
     {
@@ -110,14 +119,19 @@ export function createRecallInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.participation,
+      pubkey: accounts.wallet,
+      isWritable: true,
+      isSigner: true,
+    },
+    {
+      pubkey: accounts.vault,
       isWritable: true,
       isSigner: false,
     },
     {
-      pubkey: accounts.wallet,
+      pubkey: accounts.merkleTree,
       isWritable: true,
-      isSigner: true,
+      isSigner: false,
     },
     {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
@@ -130,17 +144,12 @@ export function createRecallInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.nectarStakingProgram,
+      pubkey: accounts.characterManager,
       isWritable: false,
       isSigner: false,
     },
     {
-      pubkey: accounts.hplEvents,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.clock,
+      pubkey: accounts.compressionProgram,
       isWritable: false,
       isSigner: false,
     },
@@ -150,8 +159,13 @@ export function createRecallInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.vault,
-      isWritable: true,
+      pubkey: accounts.clock,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.logWrapper,
+      isWritable: false,
       isSigner: false,
     },
   ]

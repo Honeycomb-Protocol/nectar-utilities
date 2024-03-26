@@ -5,7 +5,6 @@ use {
         program::HplHiveControl,
         state::{DelegateAuthority, Project},
     },
-    hpl_utils::traits::Default,
 };
 
 /// Accounts used in create mission instruction
@@ -67,8 +66,7 @@ pub struct CreateMissionArgs {
     pub name: String,
     pub min_xp: u64,
     pub cost: Currency,
-    /// The duration of the mission in seconds
-    pub duration: i64,
+    pub requirement: MissionRequirement,
     pub rewards: Vec<Reward>,
 }
 
@@ -77,14 +75,14 @@ pub fn create_mission(ctx: Context<CreateMission>, args: CreateMissionArgs) -> R
     let mission = &mut ctx.accounts.mission;
     mission.set_defaults();
 
-    mission.bump = ctx.bumps["mission"];
+    mission.bump = ctx.bumps.mission;
     mission.mission_pool = ctx.accounts.mission_pool.key();
     mission.name = args.name;
     mission.min_xp = args.min_xp;
     mission.cost = args.cost;
-    mission.duration = args.duration;
+    mission.requirement = args.requirement;
 
-    hpl_utils::reallocate(
+    hpl_toolkit::utils::reallocate(
         (Reward::LEN * args.rewards.len()) as isize,
         mission.to_account_info(),
         ctx.accounts.payer.to_account_info(),
@@ -148,7 +146,7 @@ pub struct UpdateMissionArgs {
     pub min_xp: Option<u64>,
     pub cost: Option<Currency>,
     /// The duration of the mission in seconds
-    pub duration: Option<i64>,
+    pub requirement: Option<MissionRequirement>,
     pub remove_all_rewards: Option<bool>,
     pub add_rewards: Option<Vec<Reward>>,
     pub remove_reward_indices: Option<Vec<u8>>,
@@ -160,13 +158,13 @@ pub fn update_mission(ctx: Context<UpdateMission>, args: UpdateMissionArgs) -> R
     mission.name = args.name.unwrap_or(mission.name.clone());
     mission.min_xp = args.min_xp.unwrap_or(mission.min_xp);
     mission.cost = args.cost.unwrap_or(mission.cost.clone());
-    mission.duration = args.duration.unwrap_or(mission.duration);
+    mission.requirement = args.requirement.unwrap_or(mission.requirement.clone());
 
     if args.remove_all_rewards.is_some() && args.remove_all_rewards.unwrap() {
         let curr_len = mission.rewards.len();
         mission.rewards = vec![];
         let diff = curr_len - mission.rewards.len();
-        hpl_utils::reallocate(
+        hpl_toolkit::utils::reallocate(
             (Reward::LEN * diff) as isize * -1,
             mission.to_account_info(),
             ctx.accounts.payer.to_account_info(),
@@ -184,7 +182,7 @@ pub fn update_mission(ctx: Context<UpdateMission>, args: UpdateMissionArgs) -> R
             .collect::<Vec<_>>();
 
         let diff = curr_len - mission.rewards.len();
-        hpl_utils::reallocate(
+        hpl_toolkit::utils::reallocate(
             (Reward::LEN * diff) as isize * -1,
             mission.to_account_info(),
             ctx.accounts.payer.to_account_info(),
@@ -194,7 +192,7 @@ pub fn update_mission(ctx: Context<UpdateMission>, args: UpdateMissionArgs) -> R
     }
 
     if let Some(rewards) = args.add_rewards {
-        hpl_utils::reallocate(
+        hpl_toolkit::utils::reallocate(
             (Reward::LEN * rewards.len()) as isize,
             mission.to_account_info(),
             ctx.accounts.payer.to_account_info(),
