@@ -6,21 +6,37 @@
  */
 
 import * as beet from '@metaplex-foundation/beet'
+import { PlatformData, platformDataBeet } from './PlatformData'
 export type ParticipateArgs = {
-  root: number[] /* size: 32 */
-  leafIdx: number
-  sourceHash: number[] /* size: 32 */
+  characterRoot: number[] /* size: 32 */
+  characterLeafIdx: number
+  characterSourceHash: number[] /* size: 32 */
+  profileRoot: number[] /* size: 32 */
+  profileLeafIdx: number
+  profileUserId: beet.bignum
+  profileIdentity: string
+  profileInfoHash: number[] /* size: 32 */
+  profilePlatformData: PlatformData
+  profileCustomDataHash: number[] /* size: 32 */
 }
 
 /**
  * @category userTypes
  * @category generated
  */
-export const participateArgsBeet = new beet.BeetArgsStruct<ParticipateArgs>(
-  [
-    ['root', beet.uniformFixedSizeArray(beet.u8, 32)],
-    ['leafIdx', beet.u32],
-    ['sourceHash', beet.uniformFixedSizeArray(beet.u8, 32)],
-  ],
-  'ParticipateArgs'
-)
+export const participateArgsBeet =
+  new beet.FixableBeetArgsStruct<ParticipateArgs>(
+    [
+      ['characterRoot', beet.uniformFixedSizeArray(beet.u8, 32)],
+      ['characterLeafIdx', beet.u32],
+      ['characterSourceHash', beet.uniformFixedSizeArray(beet.u8, 32)],
+      ['profileRoot', beet.uniformFixedSizeArray(beet.u8, 32)],
+      ['profileLeafIdx', beet.u32],
+      ['profileUserId', beet.u64],
+      ['profileIdentity', beet.utf8String],
+      ['profileInfoHash', beet.uniformFixedSizeArray(beet.u8, 32)],
+      ['profilePlatformData', platformDataBeet],
+      ['profileCustomDataHash', beet.uniformFixedSizeArray(beet.u8, 32)],
+    ],
+    'ParticipateArgs'
+  )

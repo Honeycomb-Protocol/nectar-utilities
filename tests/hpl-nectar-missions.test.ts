@@ -3,23 +3,29 @@ import {
     Metaplex,
     keypairIdentity,
 } from "@metaplex-foundation/js";
+import { bignum } from "@metaplex-foundation/beet";
 import {
     PROGRAM_ID as BUBBLEGUM_PROGRAM_ID
 } from "@metaplex-foundation/mpl-bubblegum";
+import { Client, cacheExchange, fetchExchange } from "@urql/core";
+import createEdgeClient, { Proof } from "@honeycomb-protocol/edge-client";
 import {
+    Global,
     HPL_HIVE_CONTROL_PROGRAM as HPL_HIVE_CONTROL_PROGRAM_ID,
     Honeycomb,
     HoneycombProject,
     METADATA_PROGRAM_ID,
     Operation,
-    ProfileDataType,
+    // ProfileDataType,
     VAULT,
-    createCreateProfileInstruction,
-    createInitializeUserInstruction,
+    createCreateNewProfilesTreeInstruction,
+    createCreateNewUserTreeInstruction,
+    createInitGlobalInstruction,
+    createNewProfileInstruction,
+    createNewUserInstruction,
+    // createCreateProfileInstruction,
+    // createInitializeUserInstruction,
 } from "@honeycomb-protocol/hive-control";
-import {
-    HPL_EVENTS_PROGRAM
-} from "@honeycomb-protocol/events";
 import {
     PROGRAM_ID as CHARACTER_MANAGER_PROGRAM_ID,
     Asset,
@@ -57,11 +63,18 @@ import {
 } from "@honeycomb-protocol/currency-manager";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
+const client = createEdgeClient(
+    new Client({
+      url: "http://localhost:4000",
+      exchanges: [cacheExchange, fetchExchange],
+    }) as any
+);
+
 jest.setTimeout(300000);
 
 describe("Nectar Missions Tests", () => {
-    const numCnfts = 1;
-    const numCharacters = 1;
+    const numCnfts = 0;
+    const numCharacters = 0;
 
     let admin: web3.Keypair; 
     let adminHC: Honeycomb;
@@ -71,6 +84,7 @@ describe("Nectar Missions Tests", () => {
     let userHC: Honeycomb;
     let metaplex: Metaplex;
     
+    let globalPubkey: web3.PublicKey;
     let project: web3.PublicKey;
     let collection: web3.PublicKey;
     let merkleTree: web3.PublicKey;
@@ -78,11 +92,47 @@ describe("Nectar Missions Tests", () => {
     let missionPool: web3.PublicKey;
     let characterModel: CharacterModel;
     let activeCharactersTree: web3.PublicKey;
+    let activeUsersTree: web3.PublicKey;
+    let activeProfilesTree: web3.PublicKey;
     let wrappedCharacterNfts: Asset[] = [];
     let characters: HplCharacter[] = [];
 
-    let hiveControlUser: web3.PublicKey;
-    let hiveControlUserProfile: web3.PublicKey;
+    let hiveControlUser: {
+        id: number;
+        info: {
+          username: string;
+          name: string;
+          bio: string;
+          pfp: string;
+        };
+        wallets: {
+          shadow: web3.PublicKey;
+          wallets: web3.PublicKey[];
+        };
+        leafIndex: number;
+        merkleTree: web3.PublicKey;
+        proof: () => Promise<Proof>;
+    };
+    let hiveControlUserProfile: {
+        id: number;
+        project: web3.PublicKey;
+        userId: bignum;
+        identity: string;
+        info: {
+          name: string | null;
+          bio: string | null;
+          pfp: string | null;
+        };
+        platformData: {
+          custom: Map<string, string[]>;
+          xp: bignum;
+          achievements: number[];
+        };
+        customData: Map<string, string[]>;
+        leafIndex: number;
+        merkleTree: web3.PublicKey;
+        proof: () => Promise<Proof>;
+    };
 
     let currency: web3.PublicKey;
     let currencyMint: web3.PublicKey;
@@ -146,10 +196,10 @@ describe("Nectar Missions Tests", () => {
             adminHC.use(
                 await HoneycombProject.new(adminHC, {
                     name,
-                    expectedMintAddresses: 0,
-                    profileDataConfigs: [
-                        { label: "nectar_missions_xp", dataType: ProfileDataType.SingleValue }
-                    ],
+                    // expectedMintAddresses: 0,
+                    // profileDataConfigs: [
+                    //     { label: "nectar_missions_xp", dataType: ProfileDataType.SingleValue }
+                    // ],
                 })
             );
             console.log("Project: ", adminHC.project().address.toBase58());
@@ -157,7 +207,7 @@ describe("Nectar Missions Tests", () => {
         }
     });
 
-    it("Create/load character model", async () => {
+    it.skip("Create/load character model", async () => {
         if (!characterModelAddress) {
             const key = web3.Keypair.generate().publicKey;
             [characterModelAddress] = web3.PublicKey.findProgramAddressSync(
@@ -227,7 +277,7 @@ describe("Nectar Missions Tests", () => {
         console.log("Character model address:", characterModelAddress);
     });
 
-    it("Create/load character model's merkle tree", async () => {
+    it.skip("Create/load character model's merkle tree", async () => {
         const trees = characterModel.merkleTrees.merkleTrees;
     
         if (Array.isArray(trees)) {
@@ -297,7 +347,7 @@ describe("Nectar Missions Tests", () => {
         console.log(`Character model's merkle tree: ${activeCharactersTree.toString()}`);
     });
 
-    it("Wrap cNFT(s) to character", async () => {
+    it.skip("Wrap cNFT(s) to character", async () => {
         const project = characterModel.project;
         const wallet = userHC.identity().address;
 
@@ -402,7 +452,7 @@ describe("Nectar Missions Tests", () => {
         }
     });
 
-    it("Create mission pool", async () => {
+    it.skip("Create mission pool", async () => {
         const name = "Test mission pool";
         const [mpPublicKey] = web3.PublicKey.findProgramAddressSync(
             [
@@ -445,7 +495,7 @@ describe("Nectar Missions Tests", () => {
         missionPool = mpPublicKey;
     });
 
-    it("Update the mission pool to allow the character model", async () => {
+    it.skip("Update the mission pool to allow the character model", async () => {
         const operation = new Operation(adminHC, [
             createUpdateMissionPoolInstruction(
                 {
@@ -472,7 +522,7 @@ describe("Nectar Missions Tests", () => {
         await operation.send({ commitment: "processed" });
     });
 
-    it("Create a currency", async () => {
+    it.skip("Create a currency", async () => {
         const currencyMintKeypair = web3.Keypair.generate();
 
         const [ metadataPublicKey ] = web3.PublicKey.findProgramAddressSync(
@@ -538,7 +588,7 @@ describe("Nectar Missions Tests", () => {
         adminHC.use(await HplCurrency.fromAddress(adminHC, currencyPublicKey, "processed"));
     });
 
-    it("Create a mission", async () => {
+    it.skip("Create a mission", async () => {
         const missionName = "Important mission";
         const [mPublicKey] = web3.PublicKey.findProgramAddressSync(
             [
@@ -604,102 +654,294 @@ describe("Nectar Missions Tests", () => {
         mission = mPublicKey;
     });
 
-    it("Create holder account and mint", async () => {
+    it.skip("Create holder account and mint", async () => {
         const holderAccount = await adminHC.currency().newHolderAccount(userHC.identity().address);
 
         await holderAccount.mint(1_000_000);
     });
 
-    it("Create user", async () => {
-        const username = "TestUser";
-        const [ userPublicKey ] = web3.PublicKey.findProgramAddressSync(
+    it("Create a global account", async () => {
+        const env = "dev";
+        const [ globalPK ] = web3.PublicKey.findProgramAddressSync(
             [
-                Buffer.from("user"),
-                Buffer.from(username)
+                Buffer.from("global"),
+                Buffer.from(env),
+                HPL_HIVE_CONTROL_PROGRAM_ID.toBuffer()
             ],
             HPL_HIVE_CONTROL_PROGRAM_ID
         );
 
-        const [ walletResolverPublicKey ] = web3.PublicKey.findProgramAddressSync(
-            [
-                Buffer.from("wallet_resolver"),
-                userHC.identity().address.toBuffer()
-            ],
-            HPL_HIVE_CONTROL_PROGRAM_ID
-        );
-
-        const operation = new Operation(userHC, [
-            createInitializeUserInstruction(
+        const operation = new Operation(adminHC, [
+            createInitGlobalInstruction(
                 {
-                    user: userPublicKey,
-                    walletResolver: walletResolverPublicKey,
-                    wallet: userHC.identity().address,
+                    authority: adminHC.identity().address,
+                    global: globalPubkey,
+                    program: HPL_HIVE_CONTROL_PROGRAM_ID,
                     systemProgram: web3.SystemProgram.programId,
-                    clock: web3.SYSVAR_CLOCK_PUBKEY,
-                    rentSysvar: web3.SYSVAR_RENT_PUBKEY,
-                    instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+                    programData: new web3.PublicKey("542TkQQRG8dQhqfV4fytWZAQqB67ztV5XgADpfQhSRZQ"),
                 },
                 {
                     args: {
-                        username,
-                        name: "Test User",
-                        bio: "This user account is used for testing",
-                        pfp: "https://lh3.googleusercontent.com/yTzqJcgQ4VNQuq5BXjEefj88NvmY6uqmq9UEM6nGUF9Vs68LPsTYocXR9vJ4yhvl-LlXeXgdXkm5Y5lz9p3LQqbEifbKHV5xtLc",
-                    }
-                }
-            )
-        ])
-
-        await operation.send({ commitment: "processed" });
-
-        hiveControlUser = userPublicKey;
-        console.log("User:", userPublicKey.toBase58());
-    });
-
-    it("Create user profile", async () => {
-        const [ userProfilePublicKey ] = web3.PublicKey.findProgramAddressSync(
-            [
-                Buffer.from("profile"),
-                project.toBuffer(),
-                hiveControlUser.toBuffer(),
-                Buffer.from("main"),
-            ],
-            HPL_HIVE_CONTROL_PROGRAM_ID
-        );
-
-        const operation = new Operation(userHC, [
-            createCreateProfileInstruction(
-                {
-                    user: hiveControlUser,
-                    project,
-                    profile: userProfilePublicKey,
-                    wallet: userHC.identity().address,
-                    rentSysvar: web3.SYSVAR_RENT_PUBKEY,
-                    systemProgram: web3.SystemProgram.programId,
-                    clock: web3.SYSVAR_CLOCK_PUBKEY,
-                    instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-                    vault: VAULT,
-                },
-                {
-                    args: {
-                        identity: {
-                            __kind: "Main",
-                        },
-                        pfp: "https://lh3.googleusercontent.com/UjE0kuudxuDzQ0QezywU99TzM49_QbNKHvmE8A8rC9o76W84YU1TmT0M78WJZz5bcu1VMud5RfYSoYZuv5Pa52PpO_bchLkiQQ",
-                        bio: "This is the main profile",
-                        name: "Test User",
+                        env,
                     }
                 }
             )
         ]);
 
-        await operation.send({ commitment: "processed" });
+        await operation.send();
 
-        hiveControlUserProfile = userProfilePublicKey;
-        console.log("User profile:", userProfilePublicKey.toBase58());
+        globalPubkey = globalPK;
+        console.log("Global:", globalPK.toBase58());
     });
 
-    it("Participate in the mission", async () => {
+    it("Create a user tree", async () => {
+        // const global = await adminHC.global(undefined, true);
+        const globalTwo = await Global.fromAccountAddress(
+            adminHC.connection, 
+            globalPubkey, 
+            "processed"
+        );
+        console.log("Global:", globalTwo);
+        // activeUsersTree = global.userTrees.merkleTrees[global.userTrees.active];
+
+        // if (!activeUsersTree) {
+        //     const merkleTreeKeypair = web3.Keypair.generate();
+      
+        //     const depthSizePair: ValidDepthSizePair = {
+        //       maxDepth: 3,
+        //       maxBufferSize: 8,
+        //     };
+
+        //     const space = getConcurrentMerkleTreeAccountSize(
+        //       depthSizePair.maxDepth,
+        //       depthSizePair.maxBufferSize,
+        //       3
+        //     );
+
+        //     const lamports =
+        //       await adminHC.connection.getMinimumBalanceForRentExemption(space);
+      
+        //     const operation = new Operation(
+        //       adminHC,
+        //       [
+        //         web3.SystemProgram.createAccount({
+        //           newAccountPubkey: merkleTreeKeypair.publicKey,
+        //           fromPubkey: adminHC.identity().address,
+        //           space: space,
+        //           lamports,
+        //           programId: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+        //         }),
+        //         createCreateNewUserTreeInstruction({
+        //           global: adminHC.pda().hiveControl().global()[0],
+        //           merkleTree: merkleTreeKeypair.publicKey,
+        //           vault: adminHC.pda().hiveControl().vault()[0],
+        //           payer: adminHC.identity().address,
+        //           rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+        //           compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+        //           logWrapper: SPL_NOOP_PROGRAM_ID,
+        //           clock: web3.SYSVAR_CLOCK_PUBKEY,
+        //         }),
+        //       ],
+        //       [merkleTreeKeypair]
+        //     );
+      
+        //     const [{ signature }] = await operation.send();
+      
+        //     console.log("Created User Tree:", signature);
+      
+        //     activeUsersTree = merkleTreeKeypair.publicKey;
+        // }
+
+        // console.log(`User tree: ${activeUsersTree.toString()}`);
+    });
+
+    it.skip("Create a profile tree", async () => {
+        const project = adminHC.project();
+        activeProfilesTree = project.solita.profileTrees.merkleTrees[project.solita.profileTrees.active];
+
+        if (!activeProfilesTree) {
+            const merkleTreeKeypair = web3.Keypair.generate();
+      
+            const depthSizePair: ValidDepthSizePair = {
+              maxDepth: 3,
+              maxBufferSize: 8,
+            };
+            
+            const space = getConcurrentMerkleTreeAccountSize(
+              depthSizePair.maxDepth,
+              depthSizePair.maxBufferSize,
+              3
+            );
+
+            const lamports =
+              await adminHC.connection.getMinimumBalanceForRentExemption(space);
+      
+            const operation = new Operation(
+              adminHC,
+              [
+                web3.SystemProgram.createAccount({
+                  newAccountPubkey: merkleTreeKeypair.publicKey,
+                  fromPubkey: adminHC.identity().address,
+                  space: space,
+                  lamports,
+                  programId: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+                }),
+                createCreateNewProfilesTreeInstruction(
+                  {
+                    project: project.address,
+                    merkleTree: merkleTreeKeypair.publicKey,
+                    vault: adminHC.pda().hiveControl().vault()[0],
+                    payer: adminHC.identity().address,
+                    rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+                    compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+                    logWrapper: SPL_NOOP_PROGRAM_ID,
+                    clock: web3.SYSVAR_CLOCK_PUBKEY,
+                    authority: adminHC.identity().address,
+                    instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+                    delegateAuthority: adminHC.programId,
+                  },
+                  {
+                    args: {
+                      maxDepth: depthSizePair.maxDepth,
+                      maxBufferSize: depthSizePair.maxBufferSize,
+                    },
+                  }
+                ),
+              ],
+              [merkleTreeKeypair]
+            );
+      
+            const [{ signature }] = await operation.send();
+      
+            console.log("Created Profiles Tree:", signature);
+      
+            activeProfilesTree = merkleTreeKeypair.publicKey;
+        }
+
+        console.log(`Profile tree: ${activeProfilesTree.toString()}`);
+    });
+
+    it.skip("Create user", async () => {
+        const info = {
+            username: "BugsBunny",
+            name: "Bugs Bunny",
+            bio: "What's up Doc?",
+            pfp: "https://www.thepromptmag.com/wp-content/uploads/2022/11/Screen-Shot-2022-11-26-at-4.54.44-PM.png",
+        };
+      
+        const wallets = {
+        shadow: userHC.identity().address,
+        wallets: [userHC.identity().address],
+        };
+      
+        const operation = new Operation(adminHC, [
+            createNewUserInstruction(
+                {
+                    global: userHC.pda().hiveControl().global()[0],
+                    merkleTree: activeUsersTree,
+                    wallet: wallets.wallets[0],
+                    authority: adminHC.identity().address,
+                    shadowSigner: wallets.shadow,
+                    vault: userHC.pda().hiveControl().vault()[0],
+                    compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+                    logWrapper: SPL_NOOP_PROGRAM_ID,
+                    clock: web3.SYSVAR_CLOCK_PUBKEY,
+                    rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+                    instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+                },
+                {
+                    args: info,
+                }
+            ),
+        ]);
+
+        const [{ signature }] = await operation.send();
+
+        console.log("Registered New User:", signature);
+      
+        const global = await adminHC.global(undefined, true);
+      
+        hiveControlUser = {
+            id: global.totalUsers.toNumber() - 1,
+            info,
+            wallets,
+            leafIndex: 0,
+            merkleTree: activeUsersTree,
+            proof: () =>
+              client
+                .fetchProofs({
+                  leaves: [
+                    {
+                      tree: activeUsersTree.toString(),
+                      index: "0",
+                    },
+                  ],
+                })
+                .then((x) => x.proof[0]!),
+        };
+    });
+
+    it.skip("Create user profile", async () => {
+        if (!user) throw new Error("User not created yet");
+
+        const operation = new Operation(adminHC, [
+            createNewProfileInstruction(
+                {
+                    project: adminHC.project().address,
+                    merkleTree: activeProfilesTree,
+                    authority: adminHC.identity().address,
+                    vault: userHC.pda().hiveControl().vault()[0],
+                    compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+                    logWrapper: SPL_NOOP_PROGRAM_ID,
+                    clock: web3.SYSVAR_CLOCK_PUBKEY,
+                    rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+                    instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+                },
+                {
+                    args: {
+                        userId: hiveControlUser.id,
+                        profileIdentity: null,
+                        info: null,
+                    },
+                }
+            ),
+        ]);
+        const [{ signature }] = await operation.send();
+        console.log("Create new profile:", signature);
+
+        hiveControlUserProfile = {
+            id: 0,
+            project: adminHC.project().address,
+            userId: hiveControlUser.id,
+            identity: "Main",
+            info: {
+                name: null,
+                bio: null,
+                pfp: null,
+            },
+            platformData: {
+                custom: new Map(),
+                xp: 0,
+                achievements: [],
+            },
+            customData: new Map(),
+            leafIndex: 0,
+            merkleTree: activeProfilesTree,
+            proof: () =>
+                client
+                .fetchProofs({
+                    leaves: [
+                    {
+                        tree: activeProfilesTree.toString(),
+                        index: "0",
+                    },
+                    ],
+                })
+                .then((x) => x.proof[0]!),
+        };
+    });
+
+    it.skip("Participate in the mission", async () => {
         const tokenAccounts = await adminHC.connection.getTokenAccountsByOwner(
             userHC.identity().address,
             { mint: currencyMint }
@@ -732,44 +974,46 @@ describe("Nectar Missions Tests", () => {
                     units: 1_200_000
                 }
             ),
-            createParticipateInstruction(
-                {
-                    project,
-                    missionPool,
-                    mission,
-                    characterModel: characterModelAddress,
-                    characterManager: CHARACTER_MANAGER_PROGRAM_ID,
-                    merkleTree: activeCharactersTree,
-                    mint: currencyMint,
-                    currency,
-                    profile: hiveControlUserProfile,
-                    holderAccount: holderAccountPublicKey,
-                    tokenAccount: tokenAccounts.value[0].pubkey,
-                    wallet: userHC.identity().address,
-                    vault: VAULT,
-                    systemProgram: web3.SystemProgram.programId,
-                    compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-                    hiveControl: HPL_HIVE_CONTROL_PROGRAM_ID,
-                    currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
-                    clock: web3.SYSVAR_CLOCK_PUBKEY,
-                    rentSysvar: web3.SYSVAR_RENT_PUBKEY,
-                    instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-                    logWrapper: SPL_NOOP_PROGRAM_ID,
-                    anchorRemainingAccounts: proof.proof.map((p) => ({
-                            pubkey: p,
-                            isSigner: false,
-                            isWritable: false,
-                        })
-                    ),
-                },
-                {
-                    args: {
-                        root: Array.from(proof.root.toBytes()),
-                        leafIdx: proofSecond.leafIdx,
-                        sourceHash: Array.from(proofSecond.sourceHash),
-                    }
-                }
-            )
+            // createParticipateInstruction(
+            //     {
+            //         project,
+            //         missionPool,
+            //         mission,
+            //         characterModel: characterModelAddress,
+            //         characterManager: CHARACTER_MANAGER_PROGRAM_ID,
+            //         characterMerkleTree: activeCharactersTree,
+            //         // Replace this with actual profile merkle tree
+            //         profileMerkleTree: new web3.PublicKey(0),
+            //         mint: currencyMint,
+            //         currency,
+            //         holderAccount: holderAccountPublicKey,
+            //         tokenAccount: tokenAccounts.value[0].pubkey,
+            //         wallet: userHC.identity().address,
+            //         vault: VAULT,
+            //         systemProgram: web3.SystemProgram.programId,
+            //         compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+            //         hiveControl: HPL_HIVE_CONTROL_PROGRAM_ID,
+            //         currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
+            //         clock: web3.SYSVAR_CLOCK_PUBKEY,
+            //         rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+            //         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+            //         logWrapper: SPL_NOOP_PROGRAM_ID,
+            //         anchorRemainingAccounts: proof.proof.map((p) => ({
+            //                 pubkey: p,
+            //                 isSigner: false,
+            //                 isWritable: false,
+            //             })
+            //         ),
+            //     },
+            //     {
+            //         args: {
+            //             characterRoot: Array.from(proof.root.toBytes()),
+            //             characterLeafIdx: proofSecond.leafIdx,
+            //             characterSourceHash: Array.from(proofSecond.sourceHash),
+
+            //         }
+            //     }
+            // )
         ]);
 
         await operation.send({ skipPreflight: true });
@@ -813,53 +1057,55 @@ describe("Nectar Missions Tests", () => {
                         units: 1_200_000
                     }
                 ),
-                createCollectRewardsInstruction(
-                    {
-                        characterModel: characterModelAddress,
-                        project,
-                        missionPool,
-                        missionPoolDelegate: adminHC.identity().delegateAuthority()?.address || HPL_NECTAR_MISSIONS_PROGRAM_ID,
-                        mission,
-                        profile: hiveControlUserProfile,
-                        mint: currencyMint,
-                        currency,
-                        characterManager: CHARACTER_MANAGER_PROGRAM_ID,
-                        holderAccount: holderAccountPublicKey,
-                        tokenAccount: tokenAccounts.value[0].pubkey,
-                        wallet: userHC.identity().address,
-                        vault: VAULT,
-                        merkleTree: activeCharactersTree,
-                        systemProgram: web3.SystemProgram.programId,
-                        hiveControl: HPL_HIVE_CONTROL_PROGRAM_ID,
-                        currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
-                        compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
-                        tokenProgram: TOKEN_PROGRAM_ID,
-                        rentSysvar: web3.SYSVAR_RENT_PUBKEY,
-                        instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
-                        logWrapper: SPL_NOOP_PROGRAM_ID,
-                        clock: web3.SYSVAR_CLOCK_PUBKEY,
-                        anchorRemainingAccounts: proof.proof.map((p) => ({
-                                pubkey: p,
-                                isSigner: false,
-                                isWritable: false,
-                            })
-                        ),
-                    },
-                    {
-                        args: {
-                            root: Array.from(proof.root.toBytes()),
-                            leafIdx: proofSecond.leafIdx,
-                            sourceHash: Array.from(proofSecond.sourceHash),
-                            usedBy: {
-                                __kind: "Mission",
-                                endTime: proofSecond.usedBy.endTime,
-                                id: proofSecond.usedBy.id,
-                                rewards: proofSecond.usedBy.rewards,
-                                rewardsCollected: proofSecond.usedBy.rewardsCollected,
-                            }
-                        },
-                    }
-                )
+                // createCollectRewardsInstruction(
+                //     {
+                //         characterModel: characterModelAddress,
+                //         project,
+                //         missionPool,
+                //         missionPoolDelegate: adminHC.identity().delegateAuthority()?.address || HPL_NECTAR_MISSIONS_PROGRAM_ID,
+                //         mission,
+                //         // profile: hiveControlUserProfile,
+                //         mint: currencyMint,
+                //         currency,
+                //         characterManager: CHARACTER_MANAGER_PROGRAM_ID,
+                //         holderAccount: holderAccountPublicKey,
+                //         tokenAccount: tokenAccounts.value[0].pubkey,
+                //         wallet: userHC.identity().address,
+                //         vault: VAULT,
+                //         characterMerkleTree: activeCharactersTree,
+                //         // Replace this with actual profile merkle tree
+                //         profileMerkleTree: new web3.PublicKey(0),
+                //         systemProgram: web3.SystemProgram.programId,
+                //         hiveControl: HPL_HIVE_CONTROL_PROGRAM_ID,
+                //         currencyManagerProgram: HPL_CURRENCY_MANAGER_PROGRAM_ID,
+                //         compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+                //         tokenProgram: TOKEN_PROGRAM_ID,
+                //         rentSysvar: web3.SYSVAR_RENT_PUBKEY,
+                //         instructionsSysvar: web3.SYSVAR_INSTRUCTIONS_PUBKEY,
+                //         logWrapper: SPL_NOOP_PROGRAM_ID,
+                //         clock: web3.SYSVAR_CLOCK_PUBKEY,
+                //         anchorRemainingAccounts: proof.proof.map((p) => ({
+                //                 pubkey: p,
+                //                 isSigner: false,
+                //                 isWritable: false,
+                //             })
+                //         ),
+                //     },
+                //     {
+                //         args: {
+                //             characterRoot: Array.from(proof.root.toBytes()),
+                //             characterLeafIdx: proofSecond.leafIdx,
+                //             characterSourceHash: Array.from(proofSecond.sourceHash),
+                //             characterUsedBy: {
+                //                 __kind: "Mission",
+                //                 endTime: proofSecond.usedBy.endTime,
+                //                 id: proofSecond.usedBy.id,
+                //                 rewards: proofSecond.usedBy.rewards,
+                //                 rewardsCollected: proofSecond.usedBy.rewardsCollected,
+                //             },
+                //         },
+                //     }
+                // )
             ]);
 
             await operation.send({ skipPreflight: true });

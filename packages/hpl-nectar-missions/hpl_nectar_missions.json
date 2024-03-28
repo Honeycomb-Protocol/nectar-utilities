@@ -399,7 +399,12 @@
           "isSigner": false
         },
         {
-          "name": "merkleTree",
+          "name": "characterMerkleTree",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "profileMerkleTree",
           "isMut": true,
           "isSigner": false
         },
@@ -573,7 +578,12 @@
           "isSigner": false
         },
         {
-          "name": "merkleTree",
+          "name": "characterMerkleTree",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "profileMerkleTree",
           "isMut": true,
           "isSigner": false
         },
@@ -976,7 +986,7 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "root",
+            "name": "characterRoot",
             "type": {
               "array": [
                 "u8",
@@ -985,11 +995,56 @@
             }
           },
           {
-            "name": "leafIdx",
+            "name": "characterLeafIdx",
             "type": "u32"
           },
           {
-            "name": "sourceHash",
+            "name": "characterSourceHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "profileRoot",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "profileLeafIdx",
+            "type": "u32"
+          },
+          {
+            "name": "profileUserId",
+            "type": "u64"
+          },
+          {
+            "name": "profileIdentity",
+            "type": "string"
+          },
+          {
+            "name": "profileInfoHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "profilePlatformData",
+            "type": {
+              "defined": "PlatformData"
+            }
+          },
+          {
+            "name": "profileCustomDataHash",
             "type": {
               "array": [
                 "u8",
@@ -1006,7 +1061,7 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "root",
+            "name": "characterRoot",
             "type": {
               "array": [
                 "u8",
@@ -1015,11 +1070,11 @@
             }
           },
           {
-            "name": "leafIdx",
+            "name": "characterLeafIdx",
             "type": "u32"
           },
           {
-            "name": "sourceHash",
+            "name": "characterSourceHash",
             "type": {
               "array": [
                 "u8",
@@ -1028,9 +1083,54 @@
             }
           },
           {
-            "name": "usedBy",
+            "name": "characterUsedBy",
             "type": {
               "defined": "CharacterUsedBy"
+            }
+          },
+          {
+            "name": "profileRoot",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "profileLeafIdx",
+            "type": "u32"
+          },
+          {
+            "name": "profileUserId",
+            "type": "u64"
+          },
+          {
+            "name": "profileUserIdentity",
+            "type": "string"
+          },
+          {
+            "name": "profileInfoHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "profilePlatformData",
+            "type": {
+              "defined": "PlatformData"
+            }
+          },
+          {
+            "name": "profileCustomDataHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
             }
           }
         ]
@@ -1345,6 +1445,35 @@
           },
           {
             "name": "Member"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlatformData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "custom",
+            "type": {
+              "hashMap": [
+                "string",
+                {
+                  "vec": "string"
+                }
+              ]
+            }
+          },
+          {
+            "name": "xp",
+            "type": "u64"
+          },
+          {
+            "name": "achievements",
+            "type": {
+              "vec": "u32"
+            }
           }
         ]
       }

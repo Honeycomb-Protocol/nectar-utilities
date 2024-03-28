@@ -7,11 +7,19 @@
 
 import * as beet from '@metaplex-foundation/beet'
 import { CharacterUsedBy, characterUsedByBeet } from './CharacterUsedBy'
+import { PlatformData, platformDataBeet } from './PlatformData'
 export type CollectRewardsArgs = {
-  root: number[] /* size: 32 */
-  leafIdx: number
-  sourceHash: number[] /* size: 32 */
-  usedBy: CharacterUsedBy
+  characterRoot: number[] /* size: 32 */
+  characterLeafIdx: number
+  characterSourceHash: number[] /* size: 32 */
+  characterUsedBy: CharacterUsedBy
+  profileRoot: number[] /* size: 32 */
+  profileLeafIdx: number
+  profileUserId: beet.bignum
+  profileUserIdentity: string
+  profileInfoHash: number[] /* size: 32 */
+  profilePlatformData: PlatformData
+  profileCustomDataHash: number[] /* size: 32 */
 }
 
 /**
@@ -21,10 +29,17 @@ export type CollectRewardsArgs = {
 export const collectRewardsArgsBeet =
   new beet.FixableBeetArgsStruct<CollectRewardsArgs>(
     [
-      ['root', beet.uniformFixedSizeArray(beet.u8, 32)],
-      ['leafIdx', beet.u32],
-      ['sourceHash', beet.uniformFixedSizeArray(beet.u8, 32)],
-      ['usedBy', characterUsedByBeet],
+      ['characterRoot', beet.uniformFixedSizeArray(beet.u8, 32)],
+      ['characterLeafIdx', beet.u32],
+      ['characterSourceHash', beet.uniformFixedSizeArray(beet.u8, 32)],
+      ['characterUsedBy', characterUsedByBeet],
+      ['profileRoot', beet.uniformFixedSizeArray(beet.u8, 32)],
+      ['profileLeafIdx', beet.u32],
+      ['profileUserId', beet.u64],
+      ['profileUserIdentity', beet.utf8String],
+      ['profileInfoHash', beet.uniformFixedSizeArray(beet.u8, 32)],
+      ['profilePlatformData', platformDataBeet],
+      ['profileCustomDataHash', beet.uniformFixedSizeArray(beet.u8, 32)],
     ],
     'CollectRewardsArgs'
   )

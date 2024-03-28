@@ -29,7 +29,7 @@
     "@honeycomb-protocol/buzz-guild": "^0.0.2-beta.2",
     "@honeycomb-protocol/character-manager": "^0.0.2-beta.4",
     "@honeycomb-protocol/currency-manager": "^0.0.84-beta.1",
-    "@honeycomb-protocol/edge-client": "^0.0.4-beta.6",
+    "@honeycomb-protocol/edge-client": "=0.0.6-beta.8",
     "@honeycomb-protocol/events": "^0.1.21",
     "@honeycomb-protocol/hive-control": "^0.2.16",
     "@metaplex-foundation/js": "^0.18.1",
@@ -39,7 +39,8 @@
     "@msgpack/msgpack": "^3.0.0-beta2",
     "@solana/spl-account-compression": "^0.2.0",
     "@solana/spl-token": "^0.3.8",
-    "@solana/web3.js": "^1.87.1"
+    "@solana/web3.js": "^1.87.1",
+    "@urql/core": "^4.3.0"
   },
   "devDependencies": {
     "@metaplex-foundation/solita": "^0.19.4",

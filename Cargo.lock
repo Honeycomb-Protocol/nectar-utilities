@@ -1065,6 +1065,7 @@ version = "0.2.19-beta.11"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
+ "bs58 0.4.0",
  "hpl-toolkit",
  "mpl-token-metadata 3.2.3",
  "spl-account-compression",

@@ -44,14 +44,15 @@ export const collectRewardsStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] project
  * @property [] missionPool
  * @property [] missionPoolDelegate (optional)
- * @property [] mission
+ * @property [_writable_] mission
  * @property [_writable_] mint (optional)
  * @property [] currency (optional)
  * @property [] holderAccount (optional)
  * @property [_writable_] tokenAccount (optional)
  * @property [_writable_, **signer**] wallet
  * @property [_writable_] vault
- * @property [_writable_] merkleTree
+ * @property [_writable_] characterMerkleTree
+ * @property [_writable_] profileMerkleTree
  * @property [] hiveControl
  * @property [] characterManager
  * @property [] currencyManagerProgram
@@ -76,7 +77,8 @@ export type CollectRewardsInstructionAccounts = {
   tokenAccount?: web3.PublicKey
   wallet: web3.PublicKey
   vault: web3.PublicKey
-  merkleTree: web3.PublicKey
+  characterMerkleTree: web3.PublicKey
+  profileMerkleTree: web3.PublicKey
   systemProgram?: web3.PublicKey
   hiveControl: web3.PublicKey
   characterManager: web3.PublicKey
@@ -216,7 +218,12 @@ export function createCollectRewardsInstruction(
     isSigner: false,
   })
   keys.push({
-    pubkey: accounts.merkleTree,
+    pubkey: accounts.characterMerkleTree,
+    isWritable: true,
+    isSigner: false,
+  })
+  keys.push({
+    pubkey: accounts.profileMerkleTree,
     isWritable: true,
     isSigner: false,
   })

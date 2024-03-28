@@ -113,7 +113,8 @@ export async function createCreateMissionPoolOperation(
       ],
     },
     delegate: missionPool,
-    project: args.project,
+    // project: args.project,
+    project: honeycomb.project(),
   }).then(({ operation }) => instructions.push(...operation.instructions));
 
   const stakingPools = args.args.stakingPools || [];

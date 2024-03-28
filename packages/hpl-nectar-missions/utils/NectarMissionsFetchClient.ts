@@ -51,7 +51,7 @@ export class NectarMissionsFetchClient extends FetchClient {
   public async pool(
     address: PublicKey,
     commitment?: Commitment,
-    forceFetch?: ForceScenario
+    forceFetch?: boolean
   ): Promise<MissionPool | null> {
     try {
       return MissionPool.fromAccountInfo(
@@ -72,7 +72,7 @@ export class NectarMissionsFetchClient extends FetchClient {
   public async mission(
     address: PublicKey,
     commitment?: Commitment,
-    forceFetch?: ForceScenario
+    forceFetch?: boolean
   ): Promise<Mission | null> {
     try {
       return Mission.fromAccountInfo(

@@ -23,7 +23,7 @@ export type ParticipateInstructionArgs = {
  * @category Participate
  * @category generated
  */
-export const participateStruct = new beet.BeetArgsStruct<
+export const participateStruct = new beet.FixableBeetArgsStruct<
   ParticipateInstructionArgs & {
     instructionDiscriminator: number[] /* size: 8 */
   }
@@ -41,7 +41,8 @@ export const participateStruct = new beet.BeetArgsStruct<
  * @property [_writable_] missionPool
  * @property [_writable_] mission
  * @property [_writable_] characterModel
- * @property [_writable_] merkleTree
+ * @property [_writable_] characterMerkleTree
+ * @property [_writable_] profileMerkleTree
  * @property [] currency
  * @property [_writable_] mint
  * @property [_writable_] holderAccount
@@ -65,7 +66,8 @@ export type ParticipateInstructionAccounts = {
   missionPool: web3.PublicKey
   mission: web3.PublicKey
   characterModel: web3.PublicKey
-  merkleTree: web3.PublicKey
+  characterMerkleTree: web3.PublicKey
+  profileMerkleTree: web3.PublicKey
   currency: web3.PublicKey
   mint: web3.PublicKey
   holderAccount: web3.PublicKey
@@ -130,7 +132,12 @@ export function createParticipateInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.merkleTree,
+      pubkey: accounts.characterMerkleTree,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.profileMerkleTree,
       isWritable: true,
       isSigner: false,
     },
